@@ -3,10 +3,12 @@
 use App\Http\Controllers\LandingController;
 use Illuminate\Support\Facades\Route;
 
+use App\Http\Controllers\Auth\AuthController;
+
 Route::get('/', [LandingController::class, 'index'])->name('landing');
 
-// Placeholder auth routes - replace with actual auth logic later
-Route::get('/login', function () {
-    return 'Login Page Placeholder'; })->name('login');
-Route::get('/register', function () {
-    return 'Register Page Placeholder'; })->name('register');
+Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
+Route::post('/login', [AuthController::class, 'login']);
+
+Route::get('/register', [AuthController::class, 'showRegisterForm'])->name('register');
+Route::post('/register', [AuthController::class, 'register']);
