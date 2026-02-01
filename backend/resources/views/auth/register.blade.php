@@ -112,6 +112,59 @@
         </div>
     </div>
 
+    <!-- Verification Mode Selection Modal -->
+    <div class="modal fade" id="verificationModal" tabindex="-1" aria-labelledby="verificationModalLabel" aria-hidden="true"
+        data-bs-backdrop="static" data-bs-keyboard="false">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content"
+                style="background-color: #0d2235; color: white; border: 1px solid rgba(255,255,255,0.1);">
+                <div class="modal-header border-bottom border-white border-opacity-10">
+                    <h5 class="modal-title fw-bold" id="verificationModalLabel">Verify Your Account</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-center p-4">
+                    <div class="mb-4">
+                        <!-- <div class="bg-primary bg-opacity-25 rounded-circle d-inline-flex align-items-center justify-content-center p-3 mb-3"
+                                    style="width: 80px; height: 80px;">
+                                    <i class="bi bi-shield-lock-fill fs-1 text-primary"></i>
+                                </div> -->
+                        <p class="mb-0 text-white-50">To secure your account, we need to verify your identity. <br> How
+                            would you like to receive your verification code?</p>
+                    </div>
+
+                    <div class="d-flex flex-column gap-3">
+                        <button type="button"
+                            class="btn btn-outline-light d-flex align-items-center justify-content-between p-3 position-relative verification-option"
+                            onclick="selectVerification('sms', this)">
+                            <div class="d-flex align-items-center gap-3">
+                                <i class="bi bi-chat-square-dots-fill fs-4 text-accent"></i>
+                                <div class="text-start">
+                                    <h6 class="mb-0 fw-bold">Via SMS</h6>
+                                    <small class="text-white-50">Code sent to mobile number</small>
+                                </div>
+                            </div>
+                            <i class="bi bi-chevron-right text-white-50"></i>
+                        </button>
+
+                        <button type="button"
+                            class="btn btn-outline-light d-flex align-items-center justify-content-between p-3 position-relative verification-option"
+                            onclick="selectVerification('email', this)">
+                            <div class="d-flex align-items-center gap-3">
+                                <i class="bi bi-envelope-fill fs-4 text-accent"></i>
+                                <div class="text-start">
+                                    <h6 class="mb-0 fw-bold">Via Email</h6>
+                                    <small class="text-white-50">Code sent to email address</small>
+                                </div>
+                            </div>
+                            <i class="bi bi-chevron-right text-white-50"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <style>
         /* Custom placeholder color override */
         ::placeholder {
@@ -125,5 +178,96 @@
             color: white !important;
             box-shadow: none;
         }
+
+        .verification-option:hover {
+            background-color: rgba(255, 255, 255, 0.05);
+            border-color: #ffc508;
+        }
+
+        .text-accent {
+            color: #ffc508 !important;
+        }
+
+        .btn-accent {
+            background-color: #ffc508;
+            color: #000;
+            border: none;
+        }
+
+        .btn-accent:hover {
+            background-color: #e0ac00;
+            color: #000;
+        }
     </style>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const form = document.querySelector('form[action="{{ route('register') }}"]');
+            const submitBtn = form.querySelector('button[type="submit"]');
+            let verificationMode = '';
+
+            // Password Toggle
+            const togglePassword = document.querySelector('.input-group-text');
+            const passwordInput = document.getElementById('password');
+            const eyeIcon = togglePassword.querySelector('i');
+
+            if (togglePassword && passwordInput) {
+                togglePassword.addEventListener('click', function () {
+                    if (passwordInput.type === 'password') {
+                        passwordInput.type = 'text';
+                        eyeIcon.classList.remove('bi-eye-slash');
+                        eyeIcon.classList.add('bi-eye');
+                    } else {
+                        passwordInput.type = 'password';
+                        eyeIcon.classList.remove('bi-eye');
+                        eyeIcon.classList.add('bi-eye-slash');
+                    }
+                });
+            }
+
+            // Intercept form submission
+            form.addEventListener('submit', function (e) {
+                if (!verificationMode) {
+                    e.preventDefault();
+                    // Show validation first (basic HTML5 validation check)
+                    if (form.checkValidity()) {
+                        const modal = new bootstrap.Modal(document.getElementById('verificationModal'));
+                        modal.show();
+                    } else {
+                        form.reportValidity();
+                    }
+                }
+            });
+
+            // Handle verification selection
+            window.selectVerification = function (mode, btnElement) {
+                verificationMode = mode;
+
+                // Add loading state to clicked button
+                const OriginalContent = btnElement.innerHTML;
+                btnElement.innerHTML = `<span class="spinner-border spinner-border-sm text-accent me-2" role="status" aria-hidden="true"></span> Sending Code...`;
+                btnElement.disabled = true;
+
+                // Disable other button
+                const buttons = document.querySelectorAll('.verification-option');
+                buttons.forEach(btn => {
+                    if (btn !== btnElement) btn.disabled = true;
+                    btn.classList.add('opacity-50');
+                });
+
+                // Add hidden input for verification mode
+                let modeInput = form.querySelector('input[name="verification_mode"]');
+                if (!modeInput) {
+                    modeInput = document.createElement('input');
+                    modeInput.type = 'hidden';
+                    modeInput.name = 'verification_mode';
+                    form.appendChild(modeInput);
+                }
+                modeInput.value = mode;
+
+                // Submit form (don't close modal, let page reload handle it)
+                form.submit();
+            };
+        });
+    </script>
 @endsection

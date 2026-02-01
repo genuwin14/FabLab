@@ -96,11 +96,74 @@
         @yield('content')
     </div>
 
+    <!-- Toast Container -->
+    <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 1055;">
+        <!-- Toasts will be dynamically pushed here -->
+    </div>
+
     <!-- Bootstrap 5 Bundle with Popper -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
     <!-- jQuery (as per TechStack) -->
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+    <!-- Global Toast Script -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const toastContainer = document.querySelector('.toast-container');
+
+            window.showToast = function (message, type = 'info') {
+                const toastId = 'toast-' + Date.now();
+                const bgColor = type === 'success' ? 'bg-success' : (type === 'error' ? 'bg-danger' :
+                    'bg-primary');
+                const textColor = 'text-white';
+                const icon = type === 'success' ? 'bi-check-circle-fill' : (type === 'error' ?
+                    'bi-exclamation-triangle-fill' : 'bi-info-circle-fill');
+
+                const toastHtml = `
+            <div id="${toastId}" class="toast align-items-center ${bgColor} ${textColor} border-0 mb-2" role="alert" aria-live="assertive" aria-atomic="true">
+                <div class="d-flex">
+                    <div class="toast-body d-flex align-items-center gap-2">
+                        <i class="bi ${icon} fs-5"></i>
+                        <span>${message}</span>
+                    </div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                </div>
+            </div>
+            `;
+
+                toastContainer.insertAdjacentHTML('beforeend', toastHtml);
+                const toastElement = document.getElementById(toastId);
+                const toast = new bootstrap.Toast(toastElement, {
+                    delay: 5000
+                });
+                toast.show();
+
+                // Remove after hide
+                toastElement.addEventListener('hidden.bs.toast', function () {
+                    toastElement.remove();
+                });
+            };
+
+            // Check for Session Flashed Messages
+            @if (session('success'))
+                showToast("{{ session('success') }}", 'success');
+            @endif
+
+            @if (session('error'))
+                showToast("{{ session('error') }}", 'error');
+            @endif
+
+            @if (session('status'))
+                showToast("{{ session('status') }}", 'info');
+            @endif
+
+            @if ($errors->any())
+                // Show first error in toast
+                showToast("{{ $errors->first() }}", 'error');
+            @endif
+        });
+    </script>
 </body>
 
 </html>

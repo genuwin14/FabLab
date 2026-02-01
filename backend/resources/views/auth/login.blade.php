@@ -47,10 +47,11 @@
                             <div class="mb-3 text-start">
                                 <label for="email" class="form-label small fw-bold text-white-50 ms-1">Email Address</label>
                                 <div class="input-group">
-                                    <span class="input-group-text border-white border-opacity-10 text-white-50"
+                                    <span
+                                        class="input-group-text border-white border-opacity-10 text-white-50 @error('email') border-danger text-danger @enderror"
                                         style="background-color: rgba(0,0,0,0.3);"><i class="bi bi-envelope"></i></span>
                                     <input type="email" name="email" id="email"
-                                        class="form-control border-start-0 border-white border-opacity-10 text-white"
+                                        class="form-control border-start-0 border-white border-opacity-10 text-white @error('email') border-danger is-invalid @enderror"
                                         placeholder="name@company.com"
                                         style="background-color: rgba(0,0,0,0.3); color: white;" required autofocus>
                                 </div>
@@ -60,10 +61,11 @@
                             <div class="mb-3 text-start">
                                 <label for="password" class="form-label small fw-bold text-white-50 ms-1">Password</label>
                                 <div class="input-group">
-                                    <span class="input-group-text border-white border-opacity-10 text-white-50"
+                                    <span
+                                        class="input-group-text border-white border-opacity-10 text-white-50 @error('password') border-danger text-danger @enderror"
                                         style="background-color: rgba(0,0,0,0.3);"><i class="bi bi-lock"></i></span>
                                     <input type="password" name="password" id="password"
-                                        class="form-control border-start-0 border-white border-opacity-10 text-white"
+                                        class="form-control border-start-0 border-white border-opacity-10 text-white @error('password') border-danger is-invalid @enderror"
                                         placeholder="Enter your password"
                                         style="background-color: rgba(0,0,0,0.3); color: white;" required>
                                 </div>
@@ -96,6 +98,59 @@
         </div>
     </div>
 
+    <!-- Verification Mode Selection Modal -->
+    <div class="modal fade" id="verificationModal" tabindex="-1" aria-labelledby="verificationModalLabel" aria-hidden="true"
+        data-bs-backdrop="static" data-bs-keyboard="false">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content"
+                style="background-color: #0d2235; color: white; border: 1px solid rgba(255,255,255,0.1);">
+                <div class="modal-header border-bottom border-white border-opacity-10">
+                    <h5 class="modal-title fw-bold" id="verificationModalLabel">Verify Your Account</h5>
+                    <!-- No close button here to force selection -->
+                </div>
+                <div class="modal-body text-center p-4">
+                    <div class="mb-4">
+                        <p class="mb-0 text-white-50">Your account is not verified yet. <br> How
+                            would you like to receive your verification code?</p>
+                    </div>
+
+                    <div class="d-flex flex-column gap-3">
+                        <form action="{{ route('verify.code.resend') }}" method="POST" id="verification-form">
+                            @csrf
+                            <input type="hidden" name="verification_mode" value="">
+
+                            <button type="button"
+                                class="btn btn-outline-light d-flex align-items-center justify-content-between p-3 position-relative verification-option w-100 mb-3"
+                                onclick="selectVerification('sms', this)">
+                                <div class="d-flex align-items-center gap-3">
+                                    <i class="bi bi-chat-square-dots-fill fs-4 text-accent"></i>
+                                    <div class="text-start">
+                                        <h6 class="mb-0 fw-bold">Via SMS</h6>
+                                        <small class="text-white-50">Code sent to your number</small>
+                                    </div>
+                                </div>
+                                <i class="bi bi-chevron-right text-white-50"></i>
+                            </button>
+
+                            <button type="button"
+                                class="btn btn-outline-light d-flex align-items-center justify-content-between p-3 position-relative verification-option w-100"
+                                onclick="selectVerification('email', this)">
+                                <div class="d-flex align-items-center gap-3">
+                                    <i class="bi bi-envelope-fill fs-4 text-accent"></i>
+                                    <div class="text-start">
+                                        <h6 class="mb-0 fw-bold">Via Email</h6>
+                                        <small class="text-white-50">Code sent to your email</small>
+                                    </div>
+                                </div>
+                                <i class="bi bi-chevron-right text-white-50"></i>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <style>
         /* Custom placeholder color override */
         ::placeholder {
@@ -119,5 +174,43 @@
         .input-group-text:has(+ .form-control:focus) {
             border-color: #ffc508 !important;
         }
+
+        .verification-option:hover {
+            background-color: rgba(255, 255, 255, 0.05);
+            border-color: #ffc508;
+        }
+
+        .text-accent {
+            color: #ffc508 !important;
+        }
     </style>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            @if(isset($showVerificationModal) && $showVerificationModal)
+                const modal = new bootstrap.Modal(document.getElementById('verificationModal'));
+                modal.show();
+            @endif
+
+            window.selectVerification = function(mode, btnElement) {
+                const form = document.getElementById('verification-form');
+                const input = form.querySelector('input[name="verification_mode"]');
+                input.value = mode;
+
+                // Add loading state
+                const OriginalContent = btnElement.innerHTML;
+                btnElement.innerHTML = `<span class="spinner-border spinner-border-sm text-accent me-2" role="status" aria-hidden="true"></span> Sending Code...`;
+                btnElement.disabled = true;
+
+                // Disable other button
+                const buttons = document.querySelectorAll('.verification-option');
+                buttons.forEach(btn => {
+                    if (btn !== btnElement) btn.disabled = true;
+                    btn.classList.add('opacity-50');
+                });
+
+                form.submit();
+            };
+        });
+    </script>
 @endsection
