@@ -116,3 +116,17 @@ This checklist tracks the implementation progress of the authentication and role
 - [ ] **Test Login**: Verify successful login and token/cookie generation.
 - [ ] **Role Access**: Verify Admin/Staff/Customer redirection and access rights.
 - [ ] **Rate Limiting**: Confirm rate limits on auth routes.
+
+### Phase 6: Socialite (Google Login) Integration
+- [x] **Installation**: Run `composer require laravel/socialite`.
+- [x] **Configuration**: Add Google Client ID, Secret, and Redirect URI to `.env` and `config/services.php`.
+- [x] **Backend Controller**:
+  - [x] Implement `redirectToGoogle()` method in `AuthController`.
+  - [x] Implement `handleGoogleCallback()` method in `AuthController`.
+  - [x] Logic:
+    - If user exists but is unverified: Redirect to verification modal.
+    - If user does not exist: Create account, mark Email as verified, set default role, but enforce Phone verification (if required) or redirect to dashboard.
+- [x] **Frontend Updates**:
+  - [x] Bind "Sign Up with Google" button in `register.blade.php`.
+  - [x] Bind "Continue with Google" button in `login.blade.php`.
+- [x] **Testing**: Verify flow for new and existing Google users.

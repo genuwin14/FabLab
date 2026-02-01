@@ -143,4 +143,42 @@ class AuthController extends Controller
                 return redirect()->intended(route('customer.dashboard'));
         }
     }
+    // ... existing methods ...
+
+    public function redirectToGoogle()
+    {
+        return \Laravel\Socialite\Facades\Socialite::driver('google')->redirect();
+    }
+
+    public function handleGoogleCallback()
+    {
+        try {
+            $googleUser = \Laravel\Socialite\Facades\Socialite::driver('google')->user();
+        } catch (\Exception $e) {
+            return redirect()->route('login')->with('error', 'Google authentication failed.');
+        }
+
+        $existingUser = User::where('email', $googleUser->getEmail())->first();
+
+        if ($existingUser) {
+            // Login existing user
+            Auth::login($existingUser);
+            return $this->authenticated(request(), $existingUser);
+        } else {
+            // Create new user
+            $user = User::create([
+                'fullname' => $googleUser->getName(),
+                'email' => $googleUser->getEmail(),
+                'password' => Hash::make(\Illuminate\Support\Str::random(16)), // Random password
+                'role' => 'customer',
+                'email_verified_at' => now(),
+                'phone_verified' => true, // Trust Google for now, or set false to force phone add
+                // We might need to ask for phone number later since it's missing
+                'contact_number' => '', // Placeholder
+            ]);
+
+            Auth::login($user);
+            return $this->authenticated(request(), $user);
+        }
+    }
 }

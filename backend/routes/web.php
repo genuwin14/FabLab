@@ -14,6 +14,10 @@ Route::get('/register', [AuthController::class, 'showRegisterForm'])->name('regi
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
+// Socialite Routes
+Route::get('/login/google', [AuthController::class, 'redirectToGoogle'])->name('auth.google');
+Route::get('/login/google/callback', [AuthController::class, 'handleGoogleCallback']);
+
 // Protected Routes (Sanctum)
 Route::middleware(['auth:sanctum'])->group(function () {
 

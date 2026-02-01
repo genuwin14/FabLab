@@ -29,12 +29,12 @@
                             @csrf
 
                             <!-- Google Button -->
-                            <button type="button"
-                                class="btn btn-light w-100 fw-bold py-2 d-flex align-items-center justify-content-center gap-2 mb-4">
+                            <a href="{{ route('auth.google') }}"
+                                class="btn btn-light w-100 fw-bold py-2 d-flex align-items-center justify-content-center gap-2 mb-4 text-decoration-none">
                                 <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google"
                                     style="width: 20px; height: 20px;">
                                 <span>Continue with Google</span>
-                            </button>
+                            </a>
 
                             <!-- Divider -->
                             <div class="d-flex align-items-center mb-4">
