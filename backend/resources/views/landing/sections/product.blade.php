@@ -5,7 +5,8 @@
                 <span class="text-accent fw-bold text-uppercase small">Product Modules</span>
                 <h2 class="display-6 fw-bold mt-2 text-white">Comprehensive Inventory Solutions</h2>
                 <p class="text-white-50 lead">
-                    Designed to handle every aspect of your stock management lifecycle, from procurement to sales.
+                    Designed to handle every aspect of your stock management lifecycle, from procurement to
+                    distribution.
                 </p>
 
                 <div class="d-flex flex-column gap-4 mt-4">
@@ -27,13 +28,13 @@
                         <div class="flex-shrink-0">
                             <div class="d-flex align-items-center justify-content-center bg-accent text-primary rounded-circle"
                                 style="width: 40px; height: 40px;">
-                                <i class="bi bi-cart-check"></i>
+                                <i class="bi bi-clipboard-data"></i>
                             </div>
                         </div>
                         <div>
-                            <h5 class="fw-bold">Sales Integration</h5>
-                            <p class="text-secondary mb-0">Seamlessly connect your POS and online sales channels for
-                                unified inventory updates.</p>
+                            <h5 class="fw-bold text-white">Usage Monitoring</h5>
+                            <p class="text-white-50 mb-0">Track equipment usage and material consumption in real-time
+                                for accurate inventory control.</p>
                         </div>
                     </div>
 
@@ -45,8 +46,8 @@
                             </div>
                         </div>
                         <div>
-                            <h5 class="fw-bold">Predictive Analytics</h5>
-                            <p class="text-secondary mb-0">Forecast demand and optimize reorder points using historical
+                            <h5 class="fw-bold text-white">Predictive Analytics</h5>
+                            <p class="text-white-50 mb-0">Forecast demand and optimize reorder points using historical
                                 data analysis.</p>
                         </div>
                     </div>
