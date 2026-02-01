@@ -41,7 +41,7 @@ class OtpController extends Controller
                     return redirect()->route('staff.dashboard');
                 case 'customer':
                 default:
-                    return redirect()->route('customer.dashboard');
+                    return redirect()->route('customer.shop');
             }
         }
 

@@ -140,7 +140,7 @@ class AuthController extends Controller
                 return redirect()->intended(route('staff.dashboard'));
             case 'customer':
             default:
-                return redirect()->intended(route('customer.dashboard'));
+                return redirect()->intended(route('customer.shop'));
         }
     }
     // ... existing methods ...
