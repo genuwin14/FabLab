@@ -150,6 +150,7 @@ class AuthController extends Controller
         return \Laravel\Socialite\Facades\Socialite::driver('google')->redirect();
     }
 
+    // ... existing Google Callback ...
     public function handleGoogleCallback()
     {
         try {
@@ -180,5 +181,150 @@ class AuthController extends Controller
             Auth::login($user);
             return $this->authenticated(request(), $user);
         }
+    }
+
+    // Forgot Password Methods
+
+    public function showForgotPasswordForm()
+    {
+        return view('auth.forgot-password');
+    }
+
+    public function checkUserForReset(Request $request)
+    {
+        $request->validate(['email' => 'required|email']);
+
+        $user = User::where('email', $request->email)->first();
+
+        if (!$user) {
+            throw ValidationException::withMessages([
+                'email' => ['We could not find an account with that email address.'],
+            ]);
+        }
+
+        // Mask Email
+        $emailParts = explode('@', $user->email);
+        $maskedEmail = substr($emailParts[0], 0, 2) . '***' . substr($emailParts[0], -1) . '@' . $emailParts[1];
+
+        // Mask Phone
+        $maskedPhone = 'Not available';
+        if ($user->contact_number) {
+            $maskedPhone = substr($user->contact_number, 0, 4) . '****' . substr($user->contact_number, -3);
+        }
+
+        return view('auth.forgot-password', [
+            'showMethodSelection' => true,
+            'email' => $user->email,
+            'maskedEmail' => $maskedEmail,
+            'maskedPhone' => $maskedPhone,
+        ]);
+    }
+
+    public function sendResetCode(Request $request, \App\Services\SmsService $smsService)
+    {
+        $request->validate([
+            'email' => 'required|email|exists:users,email',
+            'verification_mode' => 'required|in:sms,email',
+        ]);
+
+        $user = User::where('email', $request->email)->first();
+        $otp = str_pad(rand(0, 999999), 6, '0', STR_PAD_LEFT);
+
+        // Store OTP in Session for verification (or DB password_resets table, but following docs "Session")
+        // Docs: "a 6-digit code is generated and stored in the Session"
+        session([
+            'password_reset_otp' => $otp,
+            'password_reset_email' => $user->email,
+            'password_reset_expires' => now()->addMinutes(10), // 10 min expiry
+        ]);
+
+        $message = "Your FABLAB password reset code is: {$otp}";
+
+        if ($request->verification_mode === 'email') {
+            \Illuminate\Support\Facades\Mail::raw($message, function ($mail) use ($user) {
+                $mail->to($user->email)
+                    ->subject('FABLAB Password Reset Code');
+            });
+        } else {
+            if (!$user->contact_number) {
+                return back()->withErrors(['email' => 'User does not have a phone number linked.']);
+            }
+            $smsService->send($user->contact_number, $message);
+        }
+
+        return redirect()->route('password.verify.show');
+    }
+
+    public function showResetVerificationForm()
+    {
+        if (!session('password_reset_email')) {
+            return redirect()->route('password.request');
+        }
+        return view('auth.verify-reset-code'); // We might need to create this or reuse verify-code
+    }
+    public function verifyResetCode(Request $request)
+    {
+        $request->validate([
+            'otp' => 'required|string|size:6',
+        ]);
+
+        $sessionOtp = session('password_reset_otp');
+        $sessionEmail = session('password_reset_email');
+        $expires = session('password_reset_expires');
+
+        if (!$sessionOtp || !$sessionEmail || now()->greaterThan($expires)) {
+            return redirect()->route('password.request')->withErrors(['email' => 'Session expired. Please try again.']);
+        }
+
+        if ($request->otp !== $sessionOtp) {
+            return back()->withErrors(['otp' => 'Invalid OTP code.']);
+        }
+
+        // OTP Valid!
+        // You would typically redirect to a "Reset Password" form here where they enter the new password.
+        // For now, let's just log them in or show success (since user asked to "add functionalities" but didn't specify reset pwd form)
+        // Actually, the standard flow is -> Show Reset Password Form.
+
+        // Let's create a temporary token to allow them to reset password.
+        $token = \Illuminate\Support\Str::random(60);
+
+        // Store token in password_resets table or session
+        session(['password_reset_token' => $token, 'password_reset_verified_email' => $sessionEmail]);
+
+        // For this task, I'll redirect to a simple "Reset Password" view, but first let's fix the POST error.
+        // Let's assume we redirect to a route called 'password.reset' which shows the form.
+        return redirect()->route('password.reset.form');
+    }
+    public function showResetPasswordForm()
+    {
+        if (!session('password_reset_token')) {
+            return redirect()->route('password.request');
+        }
+        return view('auth.reset-password');
+    }
+
+    public function resetPassword(Request $request)
+    {
+        $request->validate([
+            'password' => 'required|confirmed|min:8',
+        ]);
+
+        $token = session('password_reset_token');
+        $email = session('password_reset_verified_email');
+
+        if (!$token || !$email) {
+            return redirect()->route('login')->withErrors(['email' => 'Invalid session. Please try again.']);
+        }
+
+        $user = User::where('email', $email)->first();
+        if ($user) {
+            $user->password = Hash::make($request->password);
+            $user->save();
+        }
+
+        // Clear session
+        session()->forget(['password_reset_otp', 'password_reset_email', 'password_reset_expires', 'password_reset_token', 'password_reset_verified_email']);
+
+        return redirect()->route('login')->with('status', 'Password has been reset successfully. Please login.');
     }
 }

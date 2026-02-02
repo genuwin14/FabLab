@@ -18,6 +18,16 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 Route::get('/login/google', [AuthController::class, 'redirectToGoogle'])->name('auth.google');
 Route::get('/login/google/callback', [AuthController::class, 'handleGoogleCallback']);
 
+// Forgot Password Routes
+Route::get('/forgot-password', [AuthController::class, 'showForgotPasswordForm'])->name('password.request');
+Route::post('/forgot-password', [AuthController::class, 'checkUserForReset'])->name('password.email.check');
+Route::post('/forgot-password/send', [AuthController::class, 'sendResetCode'])->name('password.code.send');
+Route::get('/forgot-password/verify', [AuthController::class, 'showResetVerificationForm'])->name('password.verify.show');
+Route::post('/forgot-password/verify', [AuthController::class, 'verifyResetCode'])->name('password.verify.submit');
+
+Route::get('/reset-password', [AuthController::class, 'showResetPasswordForm'])->name('password.reset.form');
+Route::post('/reset-password', [AuthController::class, 'resetPassword'])->name('password.update');
+
 // Protected Routes (Sanctum)
 Route::middleware(['auth:sanctum'])->group(function () {
 

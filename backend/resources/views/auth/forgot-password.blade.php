@@ -19,32 +19,25 @@
                     <div class="p-4 p-md-5 rounded-4 shadow-lg border border-white border-opacity-10 backdrop-blur text-center"
                         style="background-color: rgba(255, 255, 255, 0.05);">
 
-                        <!-- Header -->
-                        <div class="mb-4">
-                            <h4 class="fw-bold text-white">Welcome Back</h4>
-                            <p class="text-white-50 small">Sign in to continue to FABLAB</p>
+                        <!-- Back Link -->
+                        <div class="d-flex justify-content-start mb-3">
+                            <a href="{{ route('login') }}"
+                                class="text-white-50 text-decoration-none small hover-text-white transition-colors">
+                                <i class="bi bi-arrow-left me-1"></i> Back to Login
+                            </a>
                         </div>
 
-                        <form action="{{ route('login') }}" method="POST">
+                        <!-- Header -->
+                        <div class="mb-4">
+                            <h4 class="fw-bold text-white">Forgot Password?</h4>
+                            <p class="text-white-50 small">Enter your email to search for your account.</p>
+                        </div>
+
+                        <form action="{{ route('password.email.check') }}" method="POST">
                             @csrf
 
-                            <!-- Google Button -->
-                            <a href="{{ route('auth.google') }}"
-                                class="btn btn-light w-100 fw-bold py-2 d-flex align-items-center justify-content-center gap-2 mb-4 text-decoration-none">
-                                <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google"
-                                    style="width: 20px; height: 20px;">
-                                <span>Continue with Google</span>
-                            </a>
-
-                            <!-- Divider -->
-                            <div class="d-flex align-items-center mb-4">
-                                <hr class="flex-grow-1 border-white border-opacity-10">
-                                <span class="px-3 text-white-50 small text-small">or login with email</span>
-                                <hr class="flex-grow-1 border-white border-opacity-10">
-                            </div>
-
                             <!-- Email -->
-                            <div class="mb-3 text-start">
+                            <div class="mb-4 text-start">
                                 <label for="email" class="form-label small fw-bold text-white-50 ms-1">Email Address</label>
                                 <div class="input-group">
                                     <span
@@ -52,53 +45,19 @@
                                         style="background-color: rgba(0,0,0,0.3);"><i class="bi bi-envelope"></i></span>
                                     <input type="email" name="email" id="email"
                                         class="form-control border-start-0 border-white border-opacity-10 text-white @error('email') border-danger is-invalid @enderror"
-                                        placeholder="name@company.com"
+                                        placeholder="name@company.com" value="{{ old('email') }}"
                                         style="background-color: rgba(0,0,0,0.3); color: white;" required autofocus>
                                 </div>
+                                @error('email')
+                                    <div class="text-danger small mt-1 ms-1">{{ $message }}</div>
+                                @enderror
                             </div>
 
-                            <!-- Password -->
-                            <div class="mb-3 text-start">
-                                <label for="password" class="form-label small fw-bold text-white-50 ms-1">Password</label>
-                                <div class="input-group">
-                                    <span
-                                        class="input-group-text border-white border-opacity-10 text-white-50 @error('password') border-danger text-danger @enderror"
-                                        style="background-color: rgba(0,0,0,0.3);"><i class="bi bi-lock"></i></span>
-                                    <input type="password" name="password" id="password"
-                                        class="form-control border-start-0 border-white border-opacity-10 text-white @error('password') border-danger is-invalid @enderror"
-                                        placeholder="Enter your password"
-                                        style="background-color: rgba(0,0,0,0.3); color: white;" required>
-                                </div>
-                            </div>
-
-                            <!-- Forgot Password & Show Password -->
-                            <div class="d-flex justify-content-between align-items-center mb-4">
-                                <div class="form-check">
-                                    <input class="form-check-input bg-transparent border-white border-opacity-10"
-                                        type="checkbox" id="showPassword">
-                                    <label class="form-check-label small text-white-50" for="showPassword">
-                                        Show Password
-                                    </label>
-                                </div>
-                                <a href="{{ route('password.request') }}"
-                                    class="small text-accent text-decoration-none hover-text-white transition-colors">Forgot
-                                    Password?</a>
-                            </div>
-
-                            <!-- Login Button -->
+                            <!-- Search Button -->
                             <button type="submit" class="btn btn-accent w-100 fw-bold py-2 mb-4 shadow-sm">
-                                Log In
+                                Search Account
                             </button>
                         </form>
-
-                        <!-- Register Link -->
-                        <div class="text-center">
-                            <p class="text-white-50 small mb-0">
-                                Don't have an account?
-                                <a href="{{ route('register') }}" class="text-white fw-bold text-decoration-none ms-1">Sign
-                                    Up</a>
-                            </p>
-                        </div>
                     </div>
                 </div>
             </div>
@@ -106,34 +65,36 @@
     </div>
 
     <!-- Verification Mode Selection Modal -->
-    <div class="modal fade" id="verificationModal" tabindex="-1" aria-labelledby="verificationModalLabel" aria-hidden="true"
-        data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal fade" id="methodSelectionModal" tabindex="-1" aria-labelledby="methodSelectionModalLabel"
+        aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content"
                 style="background-color: #0d2235; color: white; border: 1px solid rgba(255,255,255,0.1);">
                 <div class="modal-header border-bottom border-white border-opacity-10">
-                    <h5 class="modal-title fw-bold" id="verificationModalLabel">Verify Your Account</h5>
-                    <!-- No close button here to force selection -->
+                    <h5 class="modal-title fw-bold" id="methodSelectionModalLabel">Select Recovery Method</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
                 </div>
                 <div class="modal-body text-center p-4">
                     <div class="mb-4">
-                        <p class="mb-0 text-white-50">Your account is not verified yet. <br> How
-                            would you like to receive your verification code?</p>
+                        <p class="mb-0 text-white-50">Account found! <br> How would you like to receive your password reset
+                            code?</p>
                     </div>
 
                     <div class="d-flex flex-column gap-3">
-                        <form action="{{ route('verify.code.resend') }}" method="POST" id="verification-form">
+                        <form action="{{ route('password.code.send') }}" method="POST" id="method-form">
                             @csrf
+                            <input type="hidden" name="email" value="{{ $email ?? '' }}">
                             <input type="hidden" name="verification_mode" value="">
 
                             <button type="button"
                                 class="btn btn-outline-light d-flex align-items-center justify-content-between p-3 position-relative verification-option w-100 mb-3"
-                                onclick="selectVerification('sms', this)">
+                                onclick="selectMethod('sms', this)">
                                 <div class="d-flex align-items-center gap-3">
                                     <i class="bi bi-chat-square-dots-fill fs-4 text-accent"></i>
                                     <div class="text-start">
                                         <h6 class="mb-0 fw-bold">Via SMS</h6>
-                                        <small class="text-white-50">Code sent to your number</small>
+                                        <small class="text-white-50">Code sent to {{ $maskedPhone ?? 'your phone' }}</small>
                                     </div>
                                 </div>
                                 <i class="bi bi-chevron-right text-white-50"></i>
@@ -141,12 +102,12 @@
 
                             <button type="button"
                                 class="btn btn-outline-light d-flex align-items-center justify-content-between p-3 position-relative verification-option w-100"
-                                onclick="selectVerification('email', this)">
+                                onclick="selectMethod('email', this)">
                                 <div class="d-flex align-items-center gap-3">
                                     <i class="bi bi-envelope-fill fs-4 text-accent"></i>
                                     <div class="text-start">
                                         <h6 class="mb-0 fw-bold">Via Email</h6>
-                                        <small class="text-white-50">Code sent to your email</small>
+                                        <small class="text-white-50">Code sent to {{ $maskedEmail ?? 'your email' }}</small>
                                     </div>
                                 </div>
                                 <i class="bi bi-chevron-right text-white-50"></i>
@@ -176,7 +137,6 @@
             box-shadow: none;
         }
 
-        /* Ensure input group text border color matches focus */
         .form-control:focus+.input-group-text,
         .input-group-text:has(+ .form-control:focus) {
             border-color: #ffc508 !important;
@@ -190,32 +150,26 @@
         .text-accent {
             color: #ffc508 !important;
         }
+
+        .hover-text-white:hover {
+            color: white !important;
+        }
     </style>
 
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            // Show Password Toggle
-            const showPasswordCheckbox = document.getElementById('showPassword');
-            const passwordInput = document.getElementById('password');
-
-            if (showPasswordCheckbox && passwordInput) {
-                showPasswordCheckbox.addEventListener('change', function () {
-                    passwordInput.type = this.checked ? 'text' : 'password';
-                });
-            }
-            @if(isset($showVerificationModal) && $showVerificationModal)
-                const modal = new bootstrap.Modal(document.getElementById('verificationModal'));
+            @if(isset($showMethodSelection) && $showMethodSelection)
+                const modal = new bootstrap.Modal(document.getElementById('methodSelectionModal'));
                 modal.show();
             @endif
 
-            window.selectVerification = function(mode, btnElement) {
-                const form = document.getElementById('verification-form');
+            window.selectMethod = function(mode, btnElement) {
+                const form = document.getElementById('method-form');
                 const input = form.querySelector('input[name="verification_mode"]');
                 input.value = mode;
 
                 // Add loading state
-                const OriginalContent = btnElement.innerHTML;
-                btnElement.innerHTML = `<span class="spinner-border spinner-border-sm text-accent me-2" role="status" aria-hidden="true"></span> Sending Code...`;
+                btnElement.innerHTML = `<span class="spinner-border spinner-border-sm text-accent me-2" role="status" aria-hidden="true"></span> Sending...`;
                 btnElement.disabled = true;
 
                 // Disable other button

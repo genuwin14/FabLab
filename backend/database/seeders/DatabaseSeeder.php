@@ -34,7 +34,7 @@ class DatabaseSeeder extends Seeder
         // Customer User
         User::factory()->create([
             'fullname' => 'Customer User',
-            'email' => 'customer@gmail.com', // Using valid domain as per docs
+            'email' => 'kristianbas14@gmail.com', // Using valid domain as per docs
             'role' => 'customer',
             'password' => 'password123',
             'contact_number' => '+639123456789', // Adding contact number as it might be required
