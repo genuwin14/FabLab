@@ -97,6 +97,9 @@
         @yield('content')
     </div>
 
+    <!-- Logout Modal -->
+    @include('admin.partials.modal-logout')
+
     <!-- Toast Container -->
     <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 1055;">
         <!-- Toasts will be dynamically pushed here -->

@@ -1,83 +1,143 @@
 <div class="d-flex flex-column p-3 text-white h-100" style="background-color: #05111a;">
-    <a href="{{ route('admin.dashboard') }}" class="d-flex align-items-center mb-2 text-white text-decoration-none">
-        <img src="{{ asset('FABLAB-LOGO.png') }}" alt="FABLAB" width="40" height="40" class="me-2">
-        <span class="fs-4 fw-bold tracking-tight">FAB<span class="text-warning">LAB</span></span>
-    </a>
-    <hr class="mt-0 mb-3 opacity-25">
-    <ul class="nav nav-pills flex-column mb-auto gap-2">
-        <li class="nav-item">
-            <a href="{{ route('admin.dashboard') }}"
-                class="nav-link {{ request()->routeIs('admin.dashboard') ? 'active bg-accent text-primary fw-bold' : 'text-white hover-accent' }}"
-                aria-current="page">
-                <i class="bi bi-speedometer2 me-2"></i>
-                Dashboard
-            </a>
-        </li>
-        <li>
-            <a href="#" class="nav-link text-white hover-accent">
-                <i class="bi bi-box-fill me-2"></i>
-                Products
-            </a>
-        </li>
-        <li>
-            <a href="#" class="nav-link text-white hover-accent">
-                <i class="bi bi-clipboard-data me-2"></i>
-                Inventory
-            </a>
-        </li>
-        <li>
-            <a href="#" class="nav-link text-white hover-accent">
-                <i class="bi bi-cart4 me-2"></i>
-                Orders
-            </a>
-        </li>
-        <li>
-            <a href="#" class="nav-link text-white hover-accent">
-                <i class="bi bi-receipt me-2"></i>
-                POS
-            </a>
-        </li>
-        <li>
-            <a href="#" class="nav-link text-white hover-accent">
-                <i class="bi bi-wallet2 me-2"></i>
-                Purchasing
-            </a>
-        </li>
-        <li>
-            <a href="#" class="nav-link text-white hover-accent">
-                <i class="bi bi-tools me-2"></i>
-                Machines
-            </a>
-        </li>
-        <li>
-            <a href="#" class="nav-link text-white hover-accent">
-                <i class="bi bi-palette me-2"></i>
-                Customization
-            </a>
-        </li>
-        <li>
-            <a href="#" class="nav-link text-white hover-accent">
-                <i class="bi bi-bar-chart-fill me-2"></i>
-                Reports
-            </a>
-        </li>
-    </ul>
+    <!-- Fixed Header -->
+    <div class="flex-shrink-0">
+        <a href="{{ route('admin.dashboard') }}" class="d-flex align-items-center mb-4 text-white text-decoration-none">
+            <img src="{{ asset('FABLAB-LOGO.png') }}" alt="FABLAB" width="40" height="40" class="me-2">
+            <span class="fs-4 fw-bold tracking-tight">CSPC FAB<span class="text-warning">LAB</span></span>
+        </a>
+    </div>
 
-    <hr>
+    <!-- Scrollable Menu Content -->
+    <div class="flex-grow-1 overflow-y-auto pe-1 custom-scrollbar">
+        <!-- General Section -->
+        <div class="mb-2 text-uppercase text-white-50 small fw-bold px-2">General</div>
+        <ul class="nav nav-pills flex-column mb-3 gap-1">
+            <li class="nav-item">
+                <a href="{{ route('admin.dashboard') }}"
+                    class="nav-link {{ request()->routeIs('admin.dashboard') ? 'active bg-accent text-primary fw-bold' : 'text-white hover-accent' }}">
+                    <i class="bi bi-speedometer2 me-2"></i>
+                    Dashboard
+                </a>
+            </li>
+        </ul>
 
-    <ul class="nav nav-pills flex-column mb-3">
-        <li>
-            <a href="#" class="nav-link text-white hover-accent">
-                <i class="bi bi-gear me-2"></i>
-                Settings
-            </a>
-        </li>
-    </ul>
+        <!-- Inventory Control Section -->
+        <div class="mb-2 text-uppercase text-white-50 small fw-bold px-2">Inventory Control</div>
+        <ul class="nav nav-pills flex-column mb-3 gap-1">
+            <li class="nav-item">
+                <a href="{{ route('admin.products.index') }}"
+                    class="nav-link {{ request()->routeIs('admin.products.index') ? 'active bg-accent text-primary fw-bold' : 'text-white hover-accent' }}">
+                    <i class="bi bi-box-seam me-2"></i>
+                    Products
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{{ route('admin.categories.index') }}"
+                    class="nav-link {{ request()->routeIs('admin.categories.index') ? 'active bg-accent text-primary fw-bold' : 'text-white hover-accent' }}">
+                    <i class="bi bi-tags me-2"></i>
+                    Categories
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="#" class="nav-link text-white hover-accent">
+                    <i class="bi bi-boxes me-2"></i>
+                    Raw Materials
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="#" class="nav-link text-white hover-accent">
+                    <i class="bi bi-layers me-2"></i>
+                    Textures
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="#" class="nav-link text-white hover-accent">
+                    <i class="bi bi-clipboard-data me-2"></i>
+                    Inventory Logs
+                </a>
+            </li>
+        </ul>
+
+        <!-- Sales & Orders Section -->
+        <div class="mb-2 text-uppercase text-white-50 small fw-bold px-2">Sales & Orders</div>
+        <ul class="nav nav-pills flex-column mb-3 gap-1">
+            <li class="nav-item">
+                <a href="#" class="nav-link text-white hover-accent">
+                    <i class="bi bi-cart4 me-2"></i>
+                    All Orders
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="#" class="nav-link text-white hover-accent">
+                    <i class="bi bi-palette me-2"></i>
+                    Customized Orders
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="#" class="nav-link text-white hover-accent">
+                    <i class="bi bi-receipt me-2"></i>
+                    Order Items
+                </a>
+            </li>
+        </ul>
+
+        <!-- Procurement Section -->
+        <div class="mb-2 text-uppercase text-white-50 small fw-bold px-2">Procurement</div>
+        <ul class="nav nav-pills flex-column mb-3 gap-1">
+            <li class="nav-item">
+                <a href="#" class="nav-link text-white hover-accent">
+                    <i class="bi bi-bag-check me-2"></i>
+                    Purchase
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{{ route('admin.suppliers.index') }}"
+                    class="nav-link {{ request()->routeIs('admin.suppliers.index') ? 'active bg-accent text-primary fw-bold' : 'text-white hover-accent' }}">
+                    <i class="bi bi-truck me-2"></i>
+                    Suppliers
+                </a>
+            </li>
+        </ul>
+
+        <!-- Administration Section -->
+        <div class="mb-2 text-uppercase text-white-50 small fw-bold px-2">Administration</div>
+        <ul class="nav nav-pills flex-column mb-3 gap-1">
+            <li class="nav-item">
+                <a href="#" class="nav-link text-white hover-accent">
+                    <i class="bi bi-people me-2"></i>
+                    Users
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="#" class="nav-link text-white hover-accent">
+                    <i class="bi bi-bar-chart-fill me-2"></i>
+                    Reports
+                </a>
+            </li>
+        </ul>
+    </div>
+
+    <!-- Fixed Footer (Settings) -->
+    <div class="flex-shrink-0 mt-2">
+        <hr class="opacity-25 mt-0 mb-2">
+        <ul class="nav nav-pills flex-column">
+            <li>
+                <a href="#" class="nav-link text-white hover-accent">
+                    <i class="bi bi-gear me-2"></i>
+                    Settings
+                </a>
+            </li>
+        </ul>
+    </div>
 </div>
 
 <style>
     .nav-link.hover-accent:hover {
         background-color: rgba(255, 197, 8, 0.1);
+        color: #ffc508 !important;
+    }
+
+    .nav-link.hover-accent:hover i {
         color: #ffc508 !important;
     }
 
@@ -87,5 +147,23 @@
 
     .text-primary {
         color: #0e2e45 !important;
+    }
+
+    /* Scrollbar styling for webkit browsers */
+    ::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    ::-webkit-scrollbar-track {
+        background: #05111a;
+    }
+
+    ::-webkit-scrollbar-thumb {
+        background: #1a2c38;
+        border-radius: 3px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+        background: #2a4153;
     }
 </style>

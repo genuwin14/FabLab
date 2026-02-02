@@ -3,9 +3,14 @@
 @section('content')
     <div class="d-flex min-vh-100" style="background-color: #f8f9fa;">
         <!-- Desktop Sidebar -->
-        <aside class="d-none d-md-block border-end shadow-sm" style="width: 280px; z-index: 1040;">
+        <!-- Desktop Sidebar -->
+        <aside class="d-none d-md-block border-end shadow-sm position-fixed top-0 start-0 h-100"
+            style="width: 280px; z-index: 1040;">
             @include('admin.partials.sidebar')
         </aside>
+
+        <!-- Spacer for fixed sidebar -->
+        <div class="d-none d-md-block" style="width: 280px;"></div>
 
         <!-- Mobile Sidebar (Offcanvas) -->
         <div class="offcanvas offcanvas-start border-0" tabindex="-1" id="adminSidebarOffcanvas"

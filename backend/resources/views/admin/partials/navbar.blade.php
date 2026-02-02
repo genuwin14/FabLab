@@ -9,8 +9,13 @@
         <!-- Page Title (Responsive) -->
         <div class="me-auto overflow-hidden text-nowrap">
             <h5 class="fw-bold mb-0 text-dark">
-                @if(request()->routeIs('admin.dashboard')) Admin Dashboard
-                @else Admin Panel @endif
+                @if(request()->routeIs('admin.dashboard'))
+                    Admin Dashboard
+                @elseif(request()->routeIs('admin.products*'))
+                    Product Management
+                @else
+                    Admin Panel
+                @endif
             </h5>
         </div>
 
@@ -21,8 +26,17 @@
                 <span id="live-clock" class="text-secondary small fw-medium"></span>
             </div>
 
+            <!-- Inbox -->
+            <a class="nav-link position-relative text-dark p-1" href="#" data-bs-toggle="tooltip" title="Inbox">
+                <i class="bi bi-inbox fs-5"></i>
+                <span
+                    class="position-absolute top-0 start-100 translate-middle p-1 bg-primary border border-light rounded-circle">
+                    <span class="visually-hidden">New messages</span>
+                </span>
+            </a>
+
             <!-- Notifications -->
-            <a class="nav-link position-relative text-dark p-1" href="#">
+            <a class="nav-link position-relative text-dark p-1" href="#" data-bs-toggle="tooltip" title="Notifications">
                 <i class="bi bi-bell fs-5"></i>
                 <span
                     class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle">
@@ -65,6 +79,8 @@
         </div>
     </div>
 </nav>
+
+
 
 <script>
     function updateClock() {
