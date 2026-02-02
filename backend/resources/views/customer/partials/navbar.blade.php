@@ -13,7 +13,7 @@
                 @elseif(request()->routeIs('customer.customize*')) Customize Product
                 @elseif(request()->routeIs('customer.design*')) Personal Design
                 @elseif(request()->routeIs('customer.orders*')) My Orders
-                @elseif(request()->routeIs('customer.cart*')) Cart
+                @elseif(request()->routeIs('customer.cart*')) My Cart
                 @elseif(request()->routeIs('customer.settings*')) Settings
                 @else Shop Products @endif
             </h5>
@@ -26,8 +26,18 @@
                 <span id="live-clock" class="text-secondary small fw-medium"></span>
             </div>
 
+            <!-- Cart -->
+            <a class="nav-link position-relative text-dark p-1 me-2" href="{{ route('customer.cart.index') }}">
+                <i class="bi bi-cart3 fs-5"></i>
+                <span
+                    class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger shadow-sm cart-badge"
+                    style="font-size: 0.65rem; padding: 0.25em 0.5em;">
+                    {{ collect(session('cart', []))->sum('quantity') }}
+                </span>
+            </a>
+
             <!-- Notifications -->
-            <a class="nav-link position-relative text-dark p-1" href="#">
+            <a class="nav-link position-relative text-dark p-1 me-1" href="#">
                 <i class="bi bi-bell fs-5"></i>
                 <span
                     class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle">
