@@ -76,47 +76,47 @@
                                     style="background-color: rgba(0,0,0,0.3);">
                                     <div class="d-flex align-items-center gap-3">
                                         <div class="bg-white bg-opacity-10 rounded p-2"><i
-                                                class="bi bi-cpu text-accent"></i></div>
+                                                class="bi bi-tag-fill text-accent"></i></div>
                                         <div>
-                                            <div class="fw-bold text-white">Processor i9-13900K</div>
-                                            <div class="small text-white-50">SKU-29381</div>
+                                            <div class="fw-bold text-white">Cotton T-Shirt (Black)</div>
+                                            <div class="small text-white-50">SKU-SHIRT-BLK</div>
                                         </div>
                                     </div>
                                     <div class="text-end">
                                         <div class="fw-bold text-success">In Stock</div>
-                                        <div class="small text-white-50">42 Units</div>
+                                        <div class="small text-white-50">150 Units</div>
                                     </div>
                                 </div>
                                 <div class="rounded p-3 mb-3 d-flex align-items-center justify-content-between border border-white border-opacity-10"
                                     style="background-color: rgba(0,0,0,0.3);">
                                     <div class="d-flex align-items-center gap-3">
                                         <div class="bg-white bg-opacity-10 rounded p-2"><i
-                                                class="bi bi-gpu-card text-accent"></i>
+                                                class="bi bi-bag-fill text-accent"></i>
                                         </div>
                                         <div>
-                                            <div class="fw-bold text-white">Graphics Card RTX 4080</div>
-                                            <div class="small text-white-50">SKU-99212</div>
+                                            <div class="fw-bold text-white">Canvas Tote Bag</div>
+                                            <div class="small text-white-50">SKU-BAG-001</div>
                                         </div>
                                     </div>
                                     <div class="text-end">
                                         <div class="fw-bold text-warning">Low Stock</div>
-                                        <div class="small text-white-50">3 Units</div>
+                                        <div class="small text-white-50">15 Units</div>
                                     </div>
                                 </div>
                                 <div class="rounded p-3 d-flex align-items-center justify-content-between border border-white border-opacity-10"
                                     style="background-color: rgba(0,0,0,0.3);">
                                     <div class="d-flex align-items-center gap-3">
                                         <div class="bg-white bg-opacity-10 rounded p-2"><i
-                                                class="bi bi-motherboard text-accent"></i>
+                                                class="bi bi-cup-hot-fill text-accent"></i>
                                         </div>
                                         <div>
-                                            <div class="fw-bold text-white">Motherboard Z790</div>
-                                            <div class="small text-white-50">SKU-11234</div>
+                                            <div class="fw-bold text-white">Insulated Tumbler</div>
+                                            <div class="small text-white-50">SKU-TUMB-500</div>
                                         </div>
                                     </div>
                                     <div class="text-end">
                                         <div class="fw-bold text-success">In Stock</div>
-                                        <div class="small text-white-50">18 Units</div>
+                                        <div class="small text-white-50">85 Units</div>
                                     </div>
                                 </div>
                             </div>
