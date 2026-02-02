@@ -111,6 +111,8 @@
     <!-- jQuery (as per TechStack) -->
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 
+    @stack('scripts')
+
     <!-- Global Toast Script -->
     <script>
         document.addEventListener('DOMContentLoaded', function () {
