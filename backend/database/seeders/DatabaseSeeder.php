@@ -15,29 +15,11 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // Admin User
-        User::factory()->create([
-            'fullname' => 'Admin User',
-            'email' => 'admin@gmail.com',
-            'role' => 'admin',
-            'password' => 'password123',
-        ]);
-
-        // Staff User
-        User::factory()->create([
-            'fullname' => 'Staff User',
-            'email' => 'staff@gmail.com',
-            'role' => 'staff',
-            'password' => 'password123',
-        ]);
-
-        // Customer User
-        User::factory()->create([
-            'fullname' => 'Customer User',
-            'email' => 'kristianbas14@gmail.com', // Using valid domain as per docs
-            'role' => 'customer',
-            'password' => 'password123',
-            'contact_number' => '+639123456789', // Adding contact number as it might be required
+        $this->call([
+            UserSeeder::class,
+            CategorySeeder::class,
+            SupplierSeeder::class,
+            ProductSeeder::class,
         ]);
     }
 }
