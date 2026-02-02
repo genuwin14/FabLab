@@ -23,7 +23,7 @@ return new class extends Migration {
             $table->foreignId('category_id')->constrained('categories', 'category_id')->onDelete('cascade');
             $table->foreignId('supplier_id')->nullable()->constrained('suppliers', 'supplier_id')->onDelete('set null');
 
-            $table->string('status')->nullable(); // functional, defective
+            $table->string('status')->default('active'); // active, functional, maintenance, broken, defective
             $table->boolean('is_customizable')->default(false);
             $table->integer('low_stock_threshold')->nullable();
             $table->string('unit')->default('pcs');
