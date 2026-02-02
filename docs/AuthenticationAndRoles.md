@@ -10,14 +10,14 @@ The system is built around three distinct user roles, defined in the `users` dat
 | :--- | :--- | :--- |
 | **Admin** | Full system access. manages users, products, inventory, settings, and reports. | `/admin/dashboard` |
 | **Staff** | Operational access. Manages orders, supplies, and day-to-day inventory tasks. | `/staff/dashboard` |
-| **Customer** | End-user access. Can browse products, manage cart, place orders, and customize items. | `/customer/dashboard` |
+| **Customer** | End-user access. Can browse products, manage cart, place orders, and customize items. | `/customer/shop` |
 
 ### Role Determination
 - **Registration**: All new users registering via the signup form or Google Login are assigned the **Customer** role by default.
 - **Login Redirection**: 
   - Users with `@admin.com` emails are redirected to the Admin Dashboard.
   - Users with `@staff.com` emails are redirected to the Staff Dashboard.
-  - Others are redirected to the Customer Dashboard.
+  - Others are redirected to the Customer Shop.
 - **Middleware Enforcement**: Strict access control is enforced via the `CheckRole` middleware, ensuring users can only access routes authorized for their specific role.
 
 ## 2. Authentication Mechanisms
