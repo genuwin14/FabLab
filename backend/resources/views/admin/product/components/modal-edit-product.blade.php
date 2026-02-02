@@ -90,12 +90,22 @@
                                     <hr class="text-muted opacity-25 my-1">
                                 </div>
 
-                                <div class="col-md-6">
+                                <div class="col-md-4">
                                     <label class="form-label small fw-bold text-muted text-uppercase">Brand</label>
                                     <input type="text" name="brand" id="editBrand"
                                         class="form-control rounded-3 bg-light border-0 px-3">
                                 </div>
-                                <div class="col-md-6">
+                                <div class="col-md-4">
+                                    <label class="form-label small fw-bold text-muted text-uppercase">Status</label>
+                                    <select name="status" id="editStatus"
+                                        class="form-select rounded-3 bg-light border-0 px-3">
+                                        <option value="active">Active</option>
+                                        <option value="functional">Functional</option>
+                                        <option value="maintenance">Maintenance</option>
+                                        <option value="broken">Broken / Defective</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-4">
                                     <label class="form-label small fw-bold text-muted text-uppercase">Supplier</label>
                                     <select name="supplier_id" id="editSupplierId"
                                         class="form-select rounded-3 bg-light border-0 px-3">

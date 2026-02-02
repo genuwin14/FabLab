@@ -76,9 +76,15 @@
                                 <div class="col-md-6">
                                     <label class="form-label small fw-bold text-muted text-uppercase">SKU / Code <span
                                             class="text-danger">*</span></label>
-                                    <input type="text" name="sku"
-                                        class="form-control rounded-3 bg-light border-0 px-3 font-monospace"
-                                        placeholder="e.g. MUG-WHT-11" required>
+                                    <div class="input-group">
+                                        <input type="text" name="sku" id="addSku"
+                                            class="form-control rounded-start-3 bg-light border-0 px-3 font-monospace"
+                                            placeholder="e.g. PRD-123456" required>
+                                        <button class="btn btn-primary rounded-end-3 shadow-sm px-3" type="button"
+                                            id="btnGenerateSku" title="Auto-generate SKU">
+                                            <i class="bi bi-magic"></i>
+                                        </button>
+                                    </div>
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label small fw-bold text-muted text-uppercase">Category <span
@@ -97,13 +103,22 @@
                                 </div>
 
                                 <!-- Classification -->
-                                <div class="col-md-6">
+                                <div class="col-md-4">
                                     <label class="form-label small fw-bold text-muted text-uppercase">Brand</label>
                                     <input type="text" name="brand"
                                         class="form-control rounded-3 bg-light border-0 px-3"
                                         placeholder="e.g. Yiwu / Epson">
                                 </div>
-                                <div class="col-md-6">
+                                <div class="col-md-4">
+                                    <label class="form-label small fw-bold text-muted text-uppercase">Status</label>
+                                    <select name="status" class="form-select rounded-3 bg-light border-0 px-3">
+                                        <option value="active" selected>Active</option>
+                                        <option value="functional">Functional</option>
+                                        <option value="maintenance">Maintenance</option>
+                                        <option value="broken">Broken / Defective</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-4">
                                     <label class="form-label small fw-bold text-muted text-uppercase">Supplier</label>
                                     <select name="supplier_id" class="form-select rounded-3 bg-light border-0 px-3">
                                         <option selected value="">Select Supplier</option>
@@ -161,7 +176,6 @@
                                     <input type="number" name="low_stock_threshold"
                                         class="form-control rounded-3 bg-light border-0 px-3" placeholder="e.g. 20">
                                 </div>
-
                                 <div class="col-12 mt-4 text-end">
                                     <button type="button" class="btn btn-light rounded-pill px-4 me-2"
                                         data-bs-dismiss="modal">Cancel</button>
@@ -176,4 +190,38 @@
         </div>
     </div>
 </div>
-</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const btnGenerate = document.getElementById('btnGenerateSku');
+        const skuInput = document.getElementById('addSku');
+
+        if (btnGenerate) {
+            btnGenerate.addEventListener('click', function () {
+                // Generate a random SKU: PRD + Year + Month + Day + 4 random characters
+                const now = new Date();
+                const year = now.getFullYear().toString().slice(-2);
+                const month = (now.getMonth() + 1).toString().padStart(2, '0');
+                const day = now.getDate().toString().padStart(2, '0');
+                const random = Math.random().toString(36).substring(2, 6).toUpperCase();
+
+                const generatedSku = `PRD-${year}${month}${day}-${random}`;
+                skuInput.value = generatedSku;
+
+                // Subtle animation or feedback
+                skuInput.classList.add('is-valid');
+                setTimeout(() => skuInput.classList.remove('is-valid'), 1500);
+            });
+        }
+
+        // Auto-generate if modal is opened and SKU is empty
+        const addProductModal = document.getElementById('addProductModal');
+        if (addProductModal) {
+            addProductModal.addEventListener('show.bs.modal', function () {
+                if (!skuInput.value) {
+                    btnGenerate.click();
+                }
+            });
+        }
+    });
+</script>

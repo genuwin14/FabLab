@@ -156,7 +156,7 @@
                                                     </div>
                                                 </td>
                                                 <td>
-                                                    @if($product->stock <= 0)
+                                                    @if ($product->stock <= 0)
                                                         <span
                                                             class="badge bg-danger bg-opacity-10 text-danger px-2 py-1 rounded-pill d-flex align-items-center gap-1 w-auto d-inline-flex">
                                                             <i class="bi bi-x-circle-fill" style="font-size: 0.75rem;"></i> Out of
@@ -169,40 +169,38 @@
                                                                 style="font-size: 0.75rem;"></i> Low Stock
                                                         </span>
                                                     @else
+                                                        @php
+                                                            $statusClass = 'bg-success text-success';
+                                                            $statusIcon = 'bi-check-circle-fill';
+
+                                                            if (in_array($product->status, ['broken', 'defective'])) {
+                                                                $statusClass = 'bg-danger text-danger';
+                                                                $statusIcon = 'bi-x-circle';
+                                                            } elseif ($product->status === 'maintenance') {
+                                                                $statusClass = 'bg-warning text-warning';
+                                                                $statusIcon = 'bi-tools';
+                                                            }
+                                                        @endphp
                                                         <span
-                                                            class="badge bg-success bg-opacity-10 text-success px-2 py-1 rounded-pill d-flex align-items-center gap-1 w-auto d-inline-flex">
-                                                            <i class="bi bi-check-circle-fill" style="font-size: 0.75rem;"></i>
-                                                            Active
+                                                            class="badge {{ $statusClass }} bg-opacity-10 px-2 py-1 rounded-pill d-flex align-items-center gap-1 w-auto d-inline-flex">
+                                                            <i class="bi {{ $statusIcon }}" style="font-size: 0.75rem;"></i>
+                                                            {{ ucfirst($product->status ?? 'active') }}
                                                         </span>
                                                     @endif
                                                 </td>
                                                 <td class="text-end pe-4">
-                                                    <div class="dropdown">
-                                                        <button class="btn btn-light btn-sm rounded-circle" type="button"
-                                                            data-bs-toggle="dropdown">
-                                                            <i class="bi bi-three-dots-vertical text-muted"></i>
+                                                    <div class="d-flex justify-content-end gap-2">
+                                                        <button class="btn btn-light btn-sm rounded-circle"
+                                                            data-bs-toggle="modal" data-bs-target="#editProductModal"
+                                                            data-product="{{ json_encode($product) }}" title="Edit Product">
+                                                            <i class="bi bi-pencil text-warning"></i>
                                                         </button>
-                                                        <ul
-                                                            class="dropdown-menu dropdown-menu-end border-0 shadow-sm rounded-3">
-                                                            <li>
-                                                                <button class="dropdown-item small" data-bs-toggle="modal"
-                                                                    data-bs-target="#editProductModal"
-                                                                    data-product="{{ json_encode($product) }}">
-                                                                    <i class="bi bi-pencil me-2 text-warning"></i> Edit
-                                                                </button>
-                                                            </li>
-                                                            <li>
-                                                                <hr class="dropdown-divider">
-                                                            </li>
-                                                            <li>
-                                                                <button class="dropdown-item small text-danger"
-                                                                    data-bs-toggle="modal" data-bs-target="#deleteProductModal"
-                                                                    data-id="{{ $product->product_id }}"
-                                                                    data-name="{{ $product->name }}">
-                                                                    <i class="bi bi-trash me-2"></i> Delete
-                                                                </button>
-                                                            </li>
-                                                        </ul>
+                                                        <button class="btn btn-light btn-sm rounded-circle"
+                                                            data-bs-toggle="modal" data-bs-target="#deleteProductModal"
+                                                            data-id="{{ $product->product_id }}"
+                                                            data-name="{{ $product->name }}" title="Delete Product">
+                                                            <i class="bi bi-trash text-danger"></i>
+                                                        </button>
                                                     </div>
                                                 </td>
                                             </tr>
@@ -283,6 +281,7 @@
                 document.getElementById('editLowStock').value = product.low_stock_threshold;
                 document.getElementById('editDescription').value = product.description;
                 document.getElementById('editIsCustomizable').checked = product.is_customizable == 1;
+                document.getElementById('editStatus').value = product.status || "active";
 
                 if (product.supplier_id) {
                     document.getElementById('editSupplierId').value = product.supplier_id;

@@ -33,12 +33,18 @@ class ProductController extends Controller
             'cost' => 'nullable|numeric|min:0',
             'low_stock_threshold' => 'nullable|integer|min:0',
             'description' => 'nullable|string',
+            'status' => 'nullable|string|max:50',
             'image_file' => 'nullable|image|max:2048', // 2MB Max
             // is_customizable handled as checkbox
         ]);
 
         $data = $request->except('image_file');
         $data['is_customizable'] = $request->has('is_customizable');
+
+        // Set default status to 'active' if not provided
+        if (empty($data['status'])) {
+            $data['status'] = 'active';
+        }
 
         // Handle Image Upload -> Base64
         if ($request->hasFile('image_file')) {
@@ -66,6 +72,7 @@ class ProductController extends Controller
             'cost' => 'nullable|numeric|min:0',
             'low_stock_threshold' => 'nullable|integer|min:0',
             'description' => 'nullable|string',
+            'status' => 'nullable|string|max:50',
             'image_file' => 'nullable|image|max:2048',
         ]);
 
@@ -73,6 +80,11 @@ class ProductController extends Controller
 
         $data = $request->except('image_file');
         $data['is_customizable'] = $request->has('is_customizable');
+
+        // Set default status to 'active' if not provided
+        if (empty($data['status'])) {
+            $data['status'] = 'active';
+        }
 
         if ($request->hasFile('image_file')) {
             $image = $request->file('image_file');
