@@ -3,7 +3,7 @@
     <div class="flex-shrink-0">
         <a href="{{ route('admin.dashboard') }}" class="d-flex align-items-center mb-4 text-white text-decoration-none">
             <img src="{{ asset('FABLAB-LOGO.png') }}" alt="FABLAB" width="40" height="40" class="me-2">
-            <span class="fs-4 fw-bold tracking-tight">CSPC FAB<span class="text-warning">LAB</span></span>
+            <span class="fs-4 fw-bold tracking-tight">FAB<span class="text-gradient-gold">LAB</span></span>
         </a>
     </div>
 

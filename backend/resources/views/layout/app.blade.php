@@ -89,6 +89,16 @@
             border-color: #eebb07;
             color: #0e2e45;
         }
+
+        /* Text Gradient Gold */
+        .text-gradient-gold {
+            background: linear-gradient(45deg, #FFD700, #FDB931);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            color: #ffc508;
+            /* Fallback */
+        }
     </style>
 </head>
 
