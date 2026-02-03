@@ -136,6 +136,80 @@ class CartController extends Controller
     }
 
     /**
+     * Checkout and create order
+     */
+    public function checkout(Request $request)
+    {
+        $selectedItems = $request->input('selected_items', []);
+        $cart = session()->get('cart', []);
+
+        if (empty($selectedItems)) {
+            return redirect()->back()->with('error', 'Please select at least one item to checkout.');
+        }
+
+        // Filter cart to only selected items
+        $checkoutItems = [];
+        foreach ($selectedItems as $id) {
+            if (isset($cart[$id])) {
+                $checkoutItems[$id] = $cart[$id];
+            }
+        }
+
+        if (empty($checkoutItems)) {
+            return redirect()->back()->with('error', 'Selected items are no longer available in cart.');
+        }
+
+        try {
+            \Illuminate\Support\Facades\DB::beginTransaction();
+
+            $total = 0;
+            foreach ($checkoutItems as $item) {
+                $total += $item['price'] * $item['quantity'];
+
+                // Verify stock again just in case
+                $product = Product::find($item['product_id']);
+                if (!$product || $product->stock < $item['quantity']) {
+                    throw new \Exception("Insufficient stock for product: " . $item['name']);
+                }
+            }
+
+            // Create Order
+            $order = \App\Models\Order::create([
+                'order_number' => 'ORDR-' . strtoupper(uniqid()),
+                'user_id' => auth()->id(),
+                'status' => 'pending',
+                'total_amount' => $total,
+            ]);
+
+            // Create Order Items
+            foreach ($checkoutItems as $item) {
+                \App\Models\OrderItem::create([
+                    'order_id' => $order->order_id,
+                    'product_id' => $item['product_id'],
+                    'quantity' => $item['quantity'],
+                    'price' => $item['price']
+                ]);
+            }
+
+            \Illuminate\Support\Facades\DB::commit();
+
+            // Remove only checked out items from cart
+            foreach ($selectedItems as $id) {
+                if (isset($cart[$id])) {
+                    unset($cart[$id]);
+                }
+            }
+            session()->put('cart', $cart);
+
+            return redirect()->route('customer.orders.index')->with('success', 'Order placed successfully! Please pay cash on pickup.');
+
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\DB::rollBack();
+            return redirect()->back()->with('error', 'Checkout failed: ' . $e->getMessage());
+        }
+    }
+
+    /**
      * Get the total items in the cart
      */
     public function count()
