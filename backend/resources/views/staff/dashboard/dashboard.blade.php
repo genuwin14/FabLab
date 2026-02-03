@@ -34,8 +34,9 @@
                                     <h2 class="fw-bold display-6">Hello, Staff {{ Auth::user()->fullname }}!</h2>
                                     <p class="lead opacity-75">There are 3 pending orders and 1 stock request to review.</p>
                                     <div class="d-flex gap-2 mt-3">
-                                        <button class="btn btn-warning fw-bold text-dark px-4"><i
-                                                class="bi bi-cart4 me-2"></i>Go to Orders</button>
+                                        <a href="{{ route('staff.orders.index') }}"
+                                            class="btn btn-warning fw-bold text-dark px-4"><i
+                                                class="bi bi-cart4 me-2"></i>Go to Orders</a>
                                         <button class="btn btn-outline-light fw-bold px-4"><i
                                                 class="bi bi-upc-scan me-2"></i>Open POS</button>
                                     </div>

@@ -193,6 +193,14 @@ class CartController extends Controller
 
             \Illuminate\Support\Facades\DB::commit();
 
+            // Send Receipt Email
+            try {
+                \Illuminate\Support\Facades\Mail::to(auth()->user()->email)->send(new \App\Mail\OrderReceipt($order));
+            } catch (\Exception $e) {
+                // Log email error but don't fail the order
+                \Illuminate\Support\Facades\Log::error('Failed to send receipt email: ' . $e->getMessage());
+            }
+
             // Remove only checked out items from cart
             foreach ($selectedItems as $id) {
                 if (isset($cart[$id])) {
@@ -201,7 +209,7 @@ class CartController extends Controller
             }
             session()->put('cart', $cart);
 
-            return redirect()->route('customer.orders.index')->with('success', 'Order placed successfully! Please pay cash on pickup.');
+            return redirect()->route('customer.orders.index')->with('success', 'Order placed successfully! Please check your email for the receipt to present at the cashier.');
 
         } catch (\Exception $e) {
             \Illuminate\Support\Facades\DB::rollBack();

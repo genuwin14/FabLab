@@ -1,69 +1,133 @@
 <div class="modal fade" id="checkoutPreviewModal" tabindex="-1" aria-labelledby="checkoutPreviewModalLabel"
     aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-lg">
-        <div class="modal-content rounded-4 border-0 shadow">
-            <div class="modal-header border-bottom-0">
-                <h5 class="modal-title fw-bold" id="checkoutPreviewModalLabel">Confirm Your Order</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body p-4">
-                <div class="alert alert-info border-0 rounded-3 mb-4 d-flex align-items-center">
-                    <i class="bi bi-info-circle-fill me-2 fs-5"></i>
-                    <div>
-                        Please review your order details below before placing it.
-                        <strong>Payment is Cash on Pickup.</strong>
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 bg-transparent shadow-none">
+
+            <!-- Receipt Container -->
+            <div class="receipt-container mx-auto position-relative bg-white pt-4 px-4 pb-5 shadow-lg"
+                style="width: 100%; max-width: 380px; clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%); border-radius: 5px;">
+
+                <!-- Receipt Header -->
+                <div class="text-center mb-4">
+                    <img src="{{ asset('img/FABLAB-LOGO.png') }}" alt="Logo" class="mb-2"
+                        style="width: 60px; height: 60px; object-fit: contain; filter: grayscale(100%);">
+                    <h5 class="fw-bold text-uppercase mb-0" style="letter-spacing: 2px;">CSPC FABLAB</h5>
+                    <p class="text-muted small mb-0">Camarines Sur Polytechnic Colleges</p>
+                    <div class="my-3 border-bottom border-dark border-2 border-dashed"></div>
+                    <h6 class="fw-bold text-uppercase mb-0">Order Preview</h6>
+                    <p class="text-muted small" id="receiptDate"></p>
+                </div>
+
+                <!-- Customer Info -->
+                <div class="mb-3 small">
+                    <div class="d-flex justify-content-between">
+                        <span class="text-muted">Customer:</span>
+                        <span class="fw-bold text-dark text-end">{{ auth()->user()->name }}</span>
                     </div>
                 </div>
 
-                <h6 class="fw-bold mb-3 text-uppercase text-muted small">Order Items</h6>
-                <div class="table-responsive bg-light rounded-3 p-3 mb-4">
-                    <table class="table table-borderless table-sm align-middle mb-0" id="previewTable">
-                        <thead>
-                            <tr class="text-muted small">
-                                <th>Product</th>
-                                <th class="text-center">Qty</th>
-                                <th class="text-end">Subtotal</th>
-                            </tr>
-                        </thead>
+                <!-- Items Line -->
+                <div class="border-top border-dark border-dashed my-2"></div>
+
+                <!-- Items Table -->
+                <div class="">
+                    <table class="table table-borderless table-sm mb-0 small" id="previewTable">
                         <tbody id="previewItemsBody">
                             <!-- Items will be injected via JS -->
                         </tbody>
-                        <tfoot class="border-top">
-                            <tr>
-                                <td colspan="2" class="text-end fw-bold pt-3">Total Amount:</td>
-                                <td class="text-end fw-bold pt-3 fs-5 text-primary" id="previewTotal"></td>
-                            </tr>
-                        </tfoot>
                     </table>
                 </div>
 
-                <div class="row g-3">
-                    <div class="col-md-6">
-                        <div class="p-3 border rounded-3 h-100">
-                            <h6 class="fw-bold mb-2 small text-uppercase text-muted">Customer Details</h6>
-                            <p class="mb-0 fw-medium text-dark">{{ auth()->user()->name }}</p>
-                            <p class="mb-0 text-muted small">{{ auth()->user()->email }}</p>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="p-3 border rounded-3 h-100 bg-light">
-                            <h6 class="fw-bold mb-2 small text-uppercase text-muted">Payment Method</h6>
-                            <div class="d-flex align-items-center text-success fw-bold">
-                                <i class="bi bi-cash me-2 fs-5"></i>
-                                Cash on Pickup
-                            </div>
-                        </div>
-                    </div>
+                <!-- Totals -->
+                <div class="border-top border-dark border-dashed my-2"></div>
+
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="fw-bold text-uppercase small">Total Amount</span>
+                    <span class="fw-bold fs-5" id="previewTotal"></span>
                 </div>
+
+                <div class="border-top border-dark border-dashed my-3"></div>
+
+                <!-- Payment Info -->
+                <div class="text-center mb-4">
+                    <p class="small fw-bold mb-1">PAYMENT INSTRUCTION</p>
+                    <p class="small text-muted mb-0">Please present this receipt at the<br><strong>CSPC Cashier</strong>
+                        for payment.</p>
+                </div>
+
+                <!-- Barcode Placeholder -->
+                <div class="text-center opacity-75 mt-2">
+                    <svg id="receiptBarcode"></svg>
+                </div>
+
+                <!-- Actions -->
+                <div class="mt-4 d-grid gap-2">
+                    <button type="button" class="btn btn-dark rounded-0 fw-bold py-2 text-uppercase"
+                        id="confirmPlaceOrderBtn" style="letter-spacing: 1px;">
+                        Confirm Order
+                    </button>
+                    <button type="button"
+                        class="btn btn-outline-secondary rounded-0 fw-bold py-2 text-uppercase small border-0"
+                        data-bs-dismiss="modal">
+                        Cancel
+                    </button>
+                </div>
+
+                <!-- Jagged Bottom Edge (CSS Trick) -->
+                <div class="receipt-jagged-edge"></div>
             </div>
-            <div class="modal-footer border-top-0 p-4 pt-0">
-                <button type="button" class="btn btn-light rounded-pill px-4 fw-bold" data-bs-dismiss="modal">Back to
-                    Cart</button>
-                <button type="button" class="btn btn-primary rounded-pill px-5 fw-bold shadow-sm"
-                    id="confirmPlaceOrderBtn">
-                    Place Order Now
-                </button>
-            </div>
+
         </div>
     </div>
 </div>
+
+<style>
+    .receipt-container {
+        font-family: 'Courier New', Courier, monospace;
+        position: relative;
+    }
+
+    .border-dashed {
+        border-style: dashed !important;
+    }
+
+    /* Jagged edge effect */
+    .receipt-jagged-edge {
+        position: absolute;
+        bottom: -10px;
+        left: 0;
+        width: 100%;
+        height: 20px;
+        background: radial-gradient(circle, transparent 50%, #fff 50%) 0 0/20px 20px repeat-x;
+        transform: rotate(180deg);
+    }
+</style>
+
+<!-- JsBarcode CDN -->
+<script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.0/dist/JsBarcode.all.min.js"></script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const checkoutModalEl = document.getElementById('checkoutPreviewModal');
+        checkoutModalEl.addEventListener('show.bs.modal', function (event) {
+            // Set dynamic date
+            const options = { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' };
+            document.getElementById('receiptDate').innerText = new Date().toLocaleDateString('en-US', options);
+
+            // Generate a temporary Reference Number for the barcode (e.g. TMP-Timestamp)
+            const tempRef = 'REF-' + Date.now().toString().slice(-8);
+
+            JsBarcode("#receiptBarcode", tempRef, {
+                format: "CODE128",
+                width: 1.5,
+                height: 40,
+                displayValue: true,
+                fontSize: 14,
+                fontOptions: "bold",
+                background: "transparent",
+                marginTop: 10,
+                marginBottom: 10
+            });
+        });
+    });
+</script>

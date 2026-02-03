@@ -42,10 +42,11 @@
                                                     $statusColors = [
                                                         'pending' => 'bg-warning text-dark',
                                                         'processing' => 'bg-info text-white',
+                                                        'ready_for_pickup' => 'bg-primary text-white',
                                                         'completed' => 'bg-success text-white',
                                                         'cancelled' => 'bg-danger text-white',
                                                     ];
-                                                    $statusLabel = ucfirst($order->status);
+                                                    $statusLabel = ucwords(str_replace('_', ' ', $order->status));
                                                     $badgeClass = $statusColors[$order->status] ?? 'bg-secondary text-white';
                                                 @endphp
                                                 <span
@@ -68,6 +69,18 @@
                                                     <span class="fw-medium">{{ $order->orderItems->sum('quantity') }} items</span>
                                                 </div>
                                             </div>
+
+                                            @if($order->status == 'ready_for_pickup')
+                                                <div class="alert alert-success d-flex align-items-start mb-3 p-2 small border-0 bg-success bg-opacity-10 text-success rounded-3"
+                                                    role="alert">
+                                                    <i class="bi bi-geo-alt-fill me-2 mt-1"></i>
+                                                    <div class="lh-sm">
+                                                        <span class="fw-bold">Ready for Pickup!</span><br>
+                                                        Please proceed to Fablab office to get your product.<br>
+                                                        And bring the payment receipt for checking.
+                                                    </div>
+                                                </div>
+                                            @endif
 
                                             <div class="mt-auto">
                                                 <div class="d-flex gap-2">

@@ -19,6 +19,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        \Illuminate\Pagination\Paginator::useBootstrapFive();
+
         \Illuminate\Support\Facades\View::composer('customer.partials.sidebar', function ($view) {
             $count = 0;
             if (\Illuminate\Support\Facades\Auth::check()) {

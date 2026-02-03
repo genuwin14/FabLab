@@ -146,9 +146,12 @@
                                         <span class="fw-medium">₱0.00</span>
                                     </div>
 
-                                    <div class="d-flex justify-content-between mb-3">
-                                        <span class="text-muted">Payment Method</span>
-                                        <span class="fw-medium text-success"><i class="bi bi-cash me-1"></i> Cash on Pickup</span>
+                                    <div class="alert alert-info border-0 rounded-3 mb-4 d-flex align-items-start">
+                                        <i class="bi bi-info-circle-fill me-2 fs-5 mt-1"></i>
+                                        <div class="small">
+                                            <strong>Payment Notice:</strong><br>
+                                            After placing your order, a receipt will be generated. Please present this receipt at the <strong>CSPC Cashier</strong> for payment.
+                                        </div>
                                     </div>
 
                                     <hr class="my-4 opacity-50">
@@ -190,6 +193,30 @@
         
         .curs-pointer {
             cursor: pointer;
+        }
+
+        .custom-radio-box {
+            border: 1px solid #dee2e6;
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            transition: all 0.2s ease;
+        }
+        
+        .custom-radio-box:not(.disabled-payment):hover {
+            border-color: #0d6efd;
+            background-color: #f8fbff;
+        }
+
+        .custom-radio-box:has(.form-check-input:checked) {
+            border-color: #0d6efd;
+            background-color: #f0f7ff;
+            box-shadow: 0 2px 4px rgba(13, 110, 253, 0.05);
+        }
+
+        .disabled-payment {
+            background-color: #f8f9fa;
+            opacity: 0.7;
+            cursor: not-allowed;
         }
     </style>
 
