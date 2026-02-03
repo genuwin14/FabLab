@@ -42,9 +42,14 @@
         <div class="mb-2 text-uppercase text-white-50 small fw-bold px-2">Transactions</div>
         <ul class="nav nav-pills flex-column mb-3 gap-1">
             <li class="nav-item">
-                <a href="#" class="nav-link text-white hover-accent">
+                <a href="{{ route('customer.orders.index') }}"
+                    class="nav-link {{ request()->routeIs('customer.orders.index') ? 'active bg-accent text-primary fw-bold' : 'text-white hover-accent' }}">
                     <i class="bi bi-bag-check me-2"></i>
                     My Orders
+                    @if(isset($inProgressCount) && $inProgressCount > 0)
+                        <span
+                            class="badge bg-warning text-dark rounded-pill float-end smaller">{{ $inProgressCount }}</span>
+                    @endif
                 </a>
             </li>
         </ul>
