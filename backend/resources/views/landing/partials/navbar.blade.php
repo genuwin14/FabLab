@@ -2,7 +2,7 @@
     <div
         class="container bg-primary bg-opacity-50 backdrop-blur rounded-pill px-4 py-2 shadow-lg border border-white border-opacity-10">
         <a class="navbar-brand d-flex align-items-center gap-2 text-white" href="#">
-            <span class="fw-bold tracking-wider">FAB<span class="text-accent">LAB</span></span>
+            <span class="fw-bold tracking-wider">FAB<span class="text-gradient-gold">LAB</span></span>
         </a>
         <button class="navbar-toggler border-0 text-white" type="button" data-bs-toggle="collapse"
             data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
