@@ -5,17 +5,17 @@
         <!-- Desktop Sidebar -->
         <aside class="d-none d-md-block border-end shadow-sm position-fixed top-0 start-0 h-100"
             style="width: 280px; z-index: 1040;">
-            @include('staff.partials.sidebar')
+            @include('admin.partials.sidebar')
         </aside>
 
         <!-- Spacer for fixed sidebar -->
         <div class="d-none d-md-block" style="width: 280px;"></div>
 
         <!-- Mobile Sidebar (Offcanvas) -->
-        <div class="offcanvas offcanvas-start border-0" tabindex="-1" id="staffSidebarOffcanvas"
-            aria-labelledby="staffSidebarOffcanvasLabel" style="width: 280px; background-color: #0e2e45;">
+        <div class="offcanvas offcanvas-start border-0" tabindex="-1" id="adminSidebarOffcanvas"
+            aria-labelledby="adminSidebarOffcanvasLabel" style="width: 280px; background-color: #0e2e45;">
             <div class="offcanvas-body p-0 overflow-hidden">
-                @include('staff.partials.sidebar')
+                @include('admin.partials.sidebar')
             </div>
         </div>
 
@@ -23,7 +23,7 @@
         <div class="flex-grow-1 d-flex flex-column" style="background-color: #f1f4f8; overflow-x: hidden;">
             <!-- Top Navbar -->
             <header class="sticky-top bg-white shadow-sm" style="z-index: 1030;">
-                @include('staff.partials.navbar')
+                @include('admin.partials.navbar')
             </header>
 
             <!-- Page Content -->
@@ -33,14 +33,16 @@
                     <div class="d-flex justify-content-between align-items-center mb-4">
                         <div>
                             <h2 class="fw-bold text-dark">Order Management</h2>
-                            <p class="text-muted small mb-0">Manage incoming orders and update their status.</p>
+                            <p class="text-muted small mb-0">View and manage customer orders.</p>
+                        </div>
+                        <div>
                         </div>
                     </div>
 
-                    <!-- Filters Card -->
-                    <div class="card border-0 p-2 shadow-sm rounded-2 mb-2">
+                    <!-- Filters -->
+                    <div class="card border-0 p-2 shadow-sm rounded-2 mb-2  ">
                         <div class="card-body p-2">
-                            <form action="{{ route('staff.orders.index') }}" method="GET" class="w-100">
+                            <form action="{{ route('admin.orders.index') }}" method="GET" class="w-100">
                                 <div class="d-flex justify-content-between align-items-center gap-2">
                                     <!-- Search -->
                                     <div class="flex-grow-1">
@@ -49,9 +51,7 @@
                                                     class="bi bi-search text-muted"></i></span>
                                             <input type="text" name="search" value="{{ request('search') }}"
                                                 class="form-control bg-transparent border-0 shadow-none"
-                                                placeholder="Search orders by ID, Customer..." autocomplete="off"
-                                                onchange="this.form.submit()"
-                                                onkeydown="if(event.key === 'Enter'){this.form.submit();}">
+                                                placeholder="Search orders by ID, Customer..." autocomplete="off">
                                         </div>
                                     </div>
 
@@ -75,7 +75,7 @@
                                                     Order Status
                                                 </h6>
                                                 <div class="d-flex flex-column gap-2 mb-3">
-                                                    @foreach(['pending', 'processing', 'ready_for_pickup', 'completed', 'cancelled'] as $status)
+                                                    @foreach(['pending', 'processing', 'completed', 'cancelled'] as $status)
                                                         <div class="form-check">
                                                             <input class="form-check-input" type="checkbox" name="status[]"
                                                                 value="{{ $status }}" id="status{{ ucfirst($status) }}"
@@ -83,7 +83,7 @@
                                                                 onchange="this.form.submit()">
                                                             <label class="form-check-label small fw-bold text-capitalize"
                                                                 for="status{{ ucfirst($status) }}">
-                                                                {{ str_replace('_', ' ', $status) }}
+                                                                {{ $status }}
                                                             </label>
                                                         </div>
                                                     @endforeach
@@ -129,102 +129,66 @@
                         </div>
                     </div>
 
-                    <!-- Orders Table Card -->
+                    <!-- Orders Table -->
                     <div class="card border-0 shadow-sm rounded-2 overflow-hidden">
                         <div class="card-body p-2">
                             <div class="table-responsive">
-                                <table class="table table-hover align-middle mb-0" id="ordersTable">
+                                <table class="table table-hover align-middle mb-0">
                                     <thead class="bg-light">
                                         <tr>
-                                            <th scope="col" class="py-3 ps-4 border-0 rounded-start text-uppercase small text-muted fw-bold">Order ID</th>
-                                            <th scope="col" class="py-3 border-0 text-uppercase small text-muted fw-bold">Ref No</th>
-                                            <th scope="col" class="py-3 border-0 text-uppercase small text-muted fw-bold">Customer</th>
-                                            <th scope="col" class="py-3 border-0 text-uppercase small text-muted fw-bold">Date</th>
-                                            <th scope="col" class="py-3 border-0 text-uppercase small text-muted fw-bold">Status</th>
-                                            <th scope="col" class="py-3 border-0 text-uppercase small text-muted fw-bold">Total</th>
-                                            <th scope="col" class="py-3 pe-4 border-0 rounded-end text-uppercase small text-muted fw-bold text-end">Action</th>
+                                            <th scope="col"
+                                                class="py-3 ps-4 border-0 rounded-start text-uppercase small text-muted fw-bold">
+                                                Order ID</th>
+                                            <th scope="col" class="py-3 border-0 text-uppercase small text-muted fw-bold">
+                                                Ref No</th>
+                                            <th scope="col" class="py-3 border-0 text-uppercase small text-muted fw-bold">
+                                                Customer</th>
+                                            <th scope="col" class="py-3 border-0 text-uppercase small text-muted fw-bold">
+                                                Date</th>
+                                            <th scope="col" class="py-3 border-0 text-uppercase small text-muted fw-bold">
+                                                Items</th>
+                                            <th scope="col" class="py-3 border-0 text-uppercase small text-muted fw-bold">
+                                                Total</th>
+                                            <th scope="col"
+                                                class="py-3 pe-4 border-0 rounded-end text-uppercase small text-muted fw-bold">
+                                                Status</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         @forelse($orders as $order)
-                                            <tr class="order-row filter-item" data-status="{{ $order->status }}">
-                                                <td class="ps-4 fw-bold text-dark">#{{ $order->order_number }}</td>
-                                                <td class="small fw-bold text-muted">
-                                                    @if($order->payment_reference)
-                                                        REF: {{ $order->payment_reference }}
-                                                    @else
-                                                        <span class="text-muted fst-italic fw-normal">No reference</span>
-                                                    @endif
+                                            <tr>
+                                                <td class="ps-4 fw-bold">#{{ $order->order_number }}</td>
+                                                <td class="small fw-bold text-muted">REF:
+                                                    {{ $order->payment_reference ?? 'N/A' }}
                                                 </td>
                                                 <td>
                                                     <div class="d-flex align-items-center">
                                                         <div class="avatar-sm bg-primary bg-opacity-10 rounded-circle fw-bold text-primary d-flex align-items-center justify-content-center me-2"
                                                             style="width: 32px; height: 32px;">
-                                                            {{ substr($order->user->name ?? 'G', 0, 2) }}
+                                                            {{ substr($order->user->fullname ?? 'G', 0, 2) }}
                                                         </div>
-                                                        <div class="d-flex flex-column">
-                                                            <span class="text-dark fw-bold small">{{ $order->user->name ?? 'Guest' }}</span>
-                                                            <span class="text-muted small" style="font-size: 0.75rem;">{{ $order->user->email ?? '' }}</span>
-                                                        </div>
+                                                        <span>{{ $order->user->fullname ?? 'Guest' }}</span>
                                                     </div>
                                                 </td>
-                                                <td class="text-muted small fw-bold">{{ $order->created_at->format('M d, Y h:i A') }}</td>
+                                                <td>{{ $order->created_at->format('M d, Y') }}</td>
+                                                <td>{{ $order->orderItems->count() }}</td>
+                                                <td class="fw-bold">₱{{ number_format($order->total_amount, 2) }}</td>
                                                 <td>
                                                     @php
                                                         $statusClass = match ($order->status) {
-                                                            'completed' => 'bg-success text-success bg-opacity-10',
-                                                            'processing' => 'bg-info text-info bg-opacity-10',
-                                                            'cancelled' => 'bg-danger text-danger bg-opacity-10',
+                                                            'completed' => 'bg-success text-success',
+                                                            'processing' => 'bg-info text-info',
+                                                            'cancelled' => 'bg-danger text-danger',
                                                             default => 'bg-warning text-dark bg-opacity-25 text-opacity-75',
                                                         };
-                                                        // Ensure pending keys match admin style
-                                                        if($order->status == 'pending') {
-                                                            $statusClass = 'bg-warning text-dark bg-opacity-25 text-opacity-75';
+
+                                                        // Adjust opacity for success/info/danger if needed to match the design
+                                                        if ($order->status == 'completed' || $order->status == 'processing' || $order->status == 'cancelled') {
+                                                            $statusClass .= ' bg-opacity-10';
                                                         }
                                                     @endphp
-                                                    <span class="badge {{ $statusClass }} px-3 py-2 rounded-pill text-capitalize">{{ $order->status }}</span>
-                                                </td>
-                                                <td class="fw-bold text-dark">₱{{ number_format($order->total_amount, 2) }}</td>
-                                                <td class="pe-4 text-end">
-                                                    @if($order->status === 'cancelled')
-                                                        <span class="badge bg-danger bg-opacity-10 text-danger rounded-pill px-3 py-2 me-1">Cancelled</span>
-                                                    @elseif($order->status === 'completed')
-                                                        <span class="badge bg-success bg-opacity-10 text-success rounded-pill px-3 py-2 me-1">Completed</span>
-                                                    @else
-                                                        @php
-                                                            $nextStatus = match ($order->status) {
-                                                                'pending' => 'processing',
-                                                                'processing' => 'ready_for_pickup',
-                                                                'ready_for_pickup' => 'completed',
-                                                                default => 'pending'
-                                                            };
-
-                                                            $btnLabel = match ($order->status) {
-                                                                'pending' => 'Process',
-                                                                'processing' => 'Ready',
-                                                                'ready_for_pickup' => 'Complete',
-                                                                default => 'Update'
-                                                            };
-
-                                                            $btnClass = match ($order->status) {
-                                                                'pending' => 'btn-primary',
-                                                                'processing' => 'btn-info text-white',
-                                                                'ready_for_pickup' => 'btn-success text-white',
-                                                                default => 'btn-secondary'
-                                                            };
-                                                        @endphp
-                                                        <button class="btn btn-sm {{ $btnClass }} rounded-2 border-0 shadow-sm btn-update-status fw-bold px-3 me-1"
-                                                            data-id="{{ $order->order_id }}" data-status="{{ $order->status }}"
-                                                            data-next-status="{{ $nextStatus }}">
-                                                            {{ $btnLabel }}
-                                                        </button>
-                                                    @endif
-
-                                                    <button class="btn btn-sm btn-light rounded-2 border shadow-sm btn-view-order fw-bold"
-                                                        data-order="{{ json_encode($order) }}"
-                                                        data-items="{{ json_encode($order->orderItems) }}">
-                                                        <i class="bi bi-eye"></i>
-                                                    </button>
+                                                    <span
+                                                        class="badge {{ $statusClass }} px-3 py-2 rounded-pill text-capitalize">{{ $order->status }}</span>
                                                 </td>
                                             </tr>
                                         @empty
@@ -239,13 +203,12 @@
                                 </table>
                             </div>
                         </div>
-                        
-                        <!-- Pagination -->
                         <div class="card-footer bg-transparent border-0 py-4 px-4">
                             <div class="d-flex justify-content-between align-items-center">
                                 <div class="text-muted small">
                                     Showing <span class="fw-bold text-dark">{{ $orders->firstItem() ?? 0 }}</span> to <span
-                                        class="fw-bold text-dark">{{ $orders->lastItem() ?? 0 }}</span> of <span class="fw-bold text-dark">{{ $orders->total() }}</span>
+                                        class="fw-bold text-dark">{{ $orders->lastItem() ?? 0 }}</span> of <span
+                                        class="fw-bold text-dark">{{ $orders->total() }}</span>
                                     results
                                 </div>
                                 <nav aria-label="Page navigation">
@@ -281,103 +244,10 @@
                             </div>
                         </div>
                     </div>
+
                 </div>
             </main>
         </div>
     </div>
-
-    @include('staff.order.components.order-detail-modal')
-    @include('staff.order.components.update-status-modal')
-
-    @push('scripts')
-        <script>
-            $(document).ready(function () {
-
-
-                // View Order Details
-                $('.btn-view-order').on('click', function () {
-                    const order = $(this).data('order');
-                    const items = $(this).data('items');
-
-                    $('#viewOrderNumber').text(order.order_number);
-                    $('#viewCustomerName').text(order.user ? order.user.name : 'Guest');
-                    $('#viewOrderDate').text(new Date(order.created_at).toLocaleString());
-                    $('#viewPaymentMethod').text('Cash on Pickup');
-
-                    if (order.payment_reference) {
-                        $('#viewPaymentRef').text(order.payment_reference);
-                        $('#viewPaymentRefContainer').removeClass('d-none');
-                    } else {
-                        $('#viewPaymentRefContainer').addClass('d-none');
-                    }
-
-                    const tbody = $('#viewOrderItems');
-                    tbody.empty();
-
-                    let total = 0;
-                    items.forEach(item => {
-                        const productName = item.product ? item.product.name : 'Unknown Product';
-                        const subtotal = item.quantity * item.price;
-                        total += subtotal; 
-
-                        tbody.append(`
-                            <tr>
-                                <td>
-                                     <div class="d-flex align-items-center">
-                                        <div class="bg-light rounded p-1 me-2" style="width: 40px; height: 40px;">
-                                            <i class="bi bi-box-seam h-100 w-100 d-flex align-items-center justify-content-center text-muted"></i>
-                                        </div>
-                                        <span class="fw-medium text-dark small">${productName}</span>
-                                    </div>
-                                </td>
-                                <td class="text-center text-muted small">x${item.quantity}</td>
-                                <td class="text-end fw-bold text-dark small">₱${parseFloat(item.price).toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
-                                <td class="text-end fw-bold text-dark small">₱${subtotal.toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
-                            </tr>
-                        `);
-                    });
-
-                    $('#viewOrderTotal').text('₱' + parseFloat(order.total_amount).toLocaleString('en-US', { minimumFractionDigits: 2 }));
-
-                    const modal = new bootstrap.Modal(document.getElementById('orderDetailModal'));
-                    modal.show();
-                });
-
-                // Update Status Modal
-                $('.btn-update-status').on('click', function () {
-                    const id = $(this).data('id');
-                    const nextStatus = $(this).data('next-status');
-
-                    $('#updateOrderId').val(id);
-                    $('#updateStatusInput').val(nextStatus);
-
-                    // Set form action dynamically
-                    const actionUrl = "{{ route('staff.orders.updateStatus', ':id') }}".replace(':id', id);
-                    $('#updateStatusForm').attr('action', actionUrl);
-
-                    // Logic for Payment Reference Field
-                    const paymentContainer = $('#paymentRefContainer');
-                    const paymentInput = $('#paymentReference');
-                    const confirmText = $('#modalConfirmationText');
-
-                    if (nextStatus === 'processing') {
-                        paymentContainer.removeClass('d-none');
-                        paymentInput.prop('required', true);
-                        confirmText.text("Please enter the Payment Reference Number from the Cashier to start processing this order.");
-                    } else {
-                        paymentContainer.addClass('d-none');
-                        paymentInput.prop('required', false);
-
-                        // Human readable status
-                        let statusText = nextStatus.replace(/_/g, ' ');
-                        statusText = statusText.charAt(0).toUpperCase() + statusText.slice(1);
-                        confirmText.text(`Are you sure you want to mark this order as ${statusText}?`);
-                    }
-
-                    const modal = new bootstrap.Modal(document.getElementById('updateStatusModal'));
-                    modal.show();
-                });
-            });
-        </script>
-    @endpush
+    @include('admin.partials.modal-logout')
 @endsection

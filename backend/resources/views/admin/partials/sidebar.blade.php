@@ -62,7 +62,8 @@
         <div class="mb-2 text-uppercase text-white-50 small fw-bold px-2">Sales & Orders</div>
         <ul class="nav nav-pills flex-column mb-3 gap-1">
             <li class="nav-item">
-                <a href="#" class="nav-link text-white hover-accent">
+                <a href="{{ route('admin.orders.index') }}"
+                    class="nav-link {{ request()->routeIs('admin.orders.index') ? 'active bg-accent text-primary fw-bold' : 'text-white hover-accent' }}">
                     <i class="bi bi-cart4 me-2"></i>
                     All Orders
                 </a>

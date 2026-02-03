@@ -5,7 +5,7 @@
             <div class="modal-body p-4 text-center">
                 <div class="mb-3">
                     <div class="bg-warning bg-opacity-10 text-warning rounded-circle d-inline-flex align-items-center justify-content-center"
-                        style="width: 64px; height: 64px;">
+                        style="width: 50px; height: 50px;">
                         <i class="bi bi-box-arrow-right fs-3"></i>
                     </div>
                 </div>

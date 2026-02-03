@@ -111,7 +111,7 @@ class AuthController extends Controller
 
         $request->session()->regenerateToken();
 
-        return redirect('/');
+        return redirect('/login');
     }
 
     protected function authenticated(Request $request, $user)
