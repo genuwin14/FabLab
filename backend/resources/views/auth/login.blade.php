@@ -55,6 +55,9 @@
                                         placeholder="name@company.com"
                                         style="background-color: rgba(0,0,0,0.3); color: white;" required autofocus>
                                 </div>
+                                @error('email')
+                                    <div class="text-danger small mt-1 text-start">{{ $message }}</div>
+                                @enderror
                             </div>
 
                             <!-- Password -->
@@ -69,6 +72,9 @@
                                         placeholder="Enter your password"
                                         style="background-color: rgba(0,0,0,0.3); color: white;" required>
                                 </div>
+                                @error('password')
+                                    <div class="text-danger small mt-1 text-start">{{ $message }}</div>
+                                @enderror
                             </div>
 
                             <!-- Forgot Password & Show Password -->

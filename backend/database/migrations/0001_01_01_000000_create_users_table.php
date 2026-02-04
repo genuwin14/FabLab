@@ -26,6 +26,7 @@ return new class extends Migration {
             $table->string('section')->nullable();
             $table->string('gender')->nullable();
             $table->string('photo')->nullable();
+            $table->enum('status', ['active', 'disabled'])->default('active');
             $table->enum('role', ['customer', 'staff', 'admin'])->default('customer');
             $table->rememberToken();
             $table->timestamps();

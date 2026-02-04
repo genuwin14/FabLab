@@ -104,7 +104,8 @@
         <div class="mb-2 text-uppercase text-white-50 small fw-bold px-2">Administration</div>
         <ul class="nav nav-pills flex-column mb-3 gap-1">
             <li class="nav-item">
-                <a href="#" class="nav-link text-white hover-accent">
+                <a href="{{ route('admin.users.index') }}"
+                    class="nav-link {{ request()->routeIs('admin.users*') ? 'active bg-accent text-primary fw-bold' : 'text-white hover-accent' }}">
                     <i class="bi bi-people me-2"></i>
                     Users
                 </a>

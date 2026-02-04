@@ -34,6 +34,14 @@ class AuthController extends Controller
         ]);
 
         if (Auth::attempt($credentials)) {
+            // Check if user is active
+            if (Auth::user()->status === 'disabled') {
+                Auth::logout();
+                throw ValidationException::withMessages([
+                    'email' => 'Your account has been disabled. Please contact support.',
+                ]);
+            }
+
             $request->session()->regenerate();
 
             return $this->authenticated($request, Auth::user());
@@ -167,6 +175,11 @@ class AuthController extends Controller
         $existingUser = User::where('email', $googleUser->getEmail())->first();
 
         if ($existingUser) {
+            // Check if user is active
+            if ($existingUser->status === 'disabled') {
+                return redirect()->route('login')->with('error', 'Your account has been disabled. Please contact support.');
+            }
+
             // Login existing user
             Auth::login($existingUser);
 
