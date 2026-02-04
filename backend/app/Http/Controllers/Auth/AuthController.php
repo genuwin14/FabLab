@@ -9,8 +9,13 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 
+use Illuminate\Support\Facades\Storage;
+
 class AuthController extends Controller
 {
+    // ... (keep start of class)
+
+    // ... (inside handleGoogleCallback)
     public function showLoginForm()
     {
         return view('auth.login');
@@ -150,7 +155,7 @@ class AuthController extends Controller
         return \Laravel\Socialite\Facades\Socialite::driver('google')->redirect();
     }
 
-    // ... existing Google Callback ...
+    // ... existing Google Callback ... 
     public function handleGoogleCallback()
     {
         try {
@@ -164,18 +169,25 @@ class AuthController extends Controller
         if ($existingUser) {
             // Login existing user
             Auth::login($existingUser);
+
+            // If no photo, use Google Avatar URL
+            if (!$existingUser->photo && $googleUser->getAvatar()) {
+                $existingUser->photo = $googleUser->getAvatar();
+                $existingUser->save();
+            }
+
             return $this->authenticated(request(), $existingUser);
         } else {
             // Create new user
             $user = User::create([
                 'fullname' => $googleUser->getName(),
                 'email' => $googleUser->getEmail(),
-                'password' => Hash::make(\Illuminate\Support\Str::random(16)), // Random password
+                'password' => null,
                 'role' => 'customer',
                 'email_verified_at' => now(),
-                'phone_verified' => true, // Trust Google for now, or set false to force phone add
-                // We might need to ask for phone number later since it's missing
-                'contact_number' => '', // Placeholder
+                'phone_verified' => true,
+                'contact_number' => '',
+                'photo' => $googleUser->getAvatar(), // Store URL directly
             ]);
 
             Auth::login($user);

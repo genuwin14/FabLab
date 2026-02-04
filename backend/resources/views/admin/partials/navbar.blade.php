@@ -49,8 +49,8 @@
                 <a href="#"
                     class="d-flex align-items-center text-dark text-decoration-none border rounded-pill p-1 p-md-2 user-dropdown-btn bg-white"
                     id="dropdownUser1" data-bs-toggle="dropdown" aria-expanded="false">
-                    <img src="https://ui-avatars.com/api/?name={{ urlencode(Auth::user()->fullname) }}&background=0e2e45&color=fff"
-                        alt="" width="30" height="30" class="rounded-circle">
+                    <img src="{{ Auth::user()->photo ? (Str::startsWith(Auth::user()->photo, 'http') ? Auth::user()->photo : asset('storage/' . Auth::user()->photo)) : 'https://ui-avatars.com/api/?name=' . urlencode(Auth::user()->fullname) . '&background=0e2e45&color=fff' }}"
+                        alt="" width="30" height="30" class="rounded-circle object-fit-cover">
                     <span
                         class="d-none d-md-inline ms-2 me-1 fw-bold small text-nowrap">{{ Auth::user()->fullname }}</span>
                 </a>
@@ -62,8 +62,12 @@
                             {{ Auth::user()->fullname }}
                         </h6>
                     </li>
-                    <li><a class="dropdown-item text-white hover-accent small py-2" href="#"><i
-                                class="bi bi-person me-2"></i> Profile</a></li>
+                    <li>
+                        <a class="dropdown-item text-white hover-accent small py-2" href="#" data-bs-toggle="modal"
+                            data-bs-target="#profileModal">
+                            <i class="bi bi-person me-2"></i> Profile
+                        </a>
+                    </li>
                     <li>
                         <hr class="dropdown-divider border-white border-opacity-10 my-1">
                     </li>
@@ -130,3 +134,5 @@
         height: 65px;
     }
 </style>
+
+@include('admin.profile.modal-profile')
