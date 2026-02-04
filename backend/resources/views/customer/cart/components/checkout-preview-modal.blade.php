@@ -22,7 +22,7 @@
                 <div class="mb-3 small">
                     <div class="d-flex justify-content-between">
                         <span class="text-muted">Customer:</span>
-                        <span class="fw-bold text-dark text-end">{{ auth()->user()->name }}</span>
+                        <span class="fw-bold text-dark text-end">{{ auth()->user()->fullname }}</span>
                     </div>
                 </div>
 

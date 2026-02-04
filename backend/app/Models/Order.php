@@ -13,7 +13,8 @@ class Order extends Model
         'user_id',
         'status',
         'total_amount',
-        'payment_reference'
+        'payment_reference',
+        'reason'
     ];
 
     /**

@@ -41,7 +41,7 @@ class TestSendReceipt extends Command
             $this->warn("No existing orders found in database. Creating a temporary dummy order for testing...");
 
             // Create a dummy structure that mimics the Order model with relationships
-            $user = new User(['name' => 'Test User', 'email' => $email]);
+            $user = new User(['fullname' => 'Test User', 'email' => $email]);
 
             $product1 = new Product(['name' => 'Test Product A', 'price' => 150.00]);
             $product2 = new Product(['name' => 'Test Product B', 'price' => 500.00]);

@@ -150,8 +150,11 @@
                                             <th scope="col" class="py-3 border-0 text-uppercase small text-muted fw-bold">
                                                 Total</th>
                                             <th scope="col"
-                                                class="py-3 pe-4 border-0 rounded-end text-uppercase small text-muted fw-bold">
+                                                class="py-3 pe-4 border-0 text-uppercase small text-muted fw-bold">
                                                 Status</th>
+                                            <th scope="col"
+                                                class="py-3 pe-4 border-0 rounded-end text-uppercase small text-muted fw-bold text-end">
+                                                Action</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -163,7 +166,7 @@
                                                 </td>
                                                 <td>
                                                     <div class="d-flex align-items-center">
-                                                        <div class="avatar-sm bg-primary bg-opacity-10 rounded-circle fw-bold text-primary d-flex align-items-center justify-content-center me-2"
+                                                        <div class="avatar-sm bg-primary bg-opacity-10 rounded-circle fw-bold text-white d-flex align-items-center justify-content-center me-2"
                                                             style="width: 32px; height: 32px;">
                                                             {{ substr($order->user->fullname ?? 'G', 0, 2) }}
                                                         </div>
@@ -189,6 +192,18 @@
                                                     @endphp
                                                     <span
                                                         class="badge {{ $statusClass }} px-3 py-2 rounded-pill text-capitalize">{{ $order->status }}</span>
+                                                </td>
+                                                <td class="pe-4 text-end">
+                                                    @if($order->status == 'pending')
+                                                        <button class="btn btn-primary btn-sm rounded-pill px-3 fw-bold shadow-sm btn-review-order" 
+                                                            data-bs-toggle="modal" data-bs-target="#reviewOrderModal"
+                                                            data-order="{{ json_encode($order) }}"
+                                                            data-items="{{ json_encode($order->orderItems()->with('product')->get()) }}">
+                                                            Review
+                                                        </button>
+                                                    @else
+                                                        <span class="text-muted small">-</span>
+                                                    @endif
                                                 </td>
                                             </tr>
                                         @empty
@@ -249,5 +264,68 @@
             </main>
         </div>
     </div>
-    @include('admin.partials.modal-logout')
+    @include('auth.modal-logout')
+    @include('admin.order.components.review-modal')
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const reviewModal = document.getElementById('reviewOrderModal');
+            if (reviewModal) {
+                reviewModal.addEventListener('show.bs.modal', function (event) {
+                    const button = event.relatedTarget;
+                    const order = JSON.parse(button.getAttribute('data-order'));
+                    const items = JSON.parse(button.getAttribute('data-items'));
+                    
+                    // Set Form Action
+                    const form = document.getElementById('reviewOrderForm');
+                    form.action = `/admin/orders/${order.order_id}/review`;
+
+                    // Populate Info
+                    document.getElementById('reviewOrderNumber').textContent = order.order_number;
+                    document.getElementById('reviewCustomerName').textContent = order.user ? order.user.name : 'Guest';
+
+                    // Populate Items
+                    const tbody = document.getElementById('reviewItemsBody');
+                    tbody.innerHTML = '';
+                    
+                    let allAvailable = true;
+
+                    items.forEach(item => {
+                        const product = item.product;
+                        const stock = product ? product.stock : 0;
+                        const isAvailable = stock >= item.quantity;
+                        
+                        if (!isAvailable) allAvailable = false;
+
+                        const row = `
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="rounded border p-1 me-2" style="width: 40px; height: 40px;">
+                                            <img src="${product.image ? product.image : '/img/FABLAB-LOGO.png'}" class="w-100 h-100 object-fit-cover" alt="">
+                                        </div>
+                                        <div>
+                                            <div class="fw-bold text-dark small">${product.name}</div>
+                                            <div class="text-muted" style="font-size: 0.75rem;">SKU: ${product.sku}</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="text-center fw-bold text-dark">${item.quantity}</td>
+                                <td class="text-center fw-bold ${stock < item.quantity ? 'text-danger' : 'text-success'}">${stock}</td>
+                                <td class="text-end">
+                                    ${isAvailable 
+                                        ? '<span class="badge bg-success bg-opacity-10 text-success rounded-pill">Available</span>' 
+                                        : '<span class="badge bg-danger bg-opacity-10 text-danger rounded-pill">Insufficient</span>'}
+                                </td>
+                            </tr>
+                        `;
+                        tbody.innerHTML += row;
+                    });
+
+                    // Toggle Buttons based on availability (Optional: Admin can decided regardless, but visually we can warn)
+                    // Currently we allow admin to decide.
+                });
+            }
+        });
+    </script>
 @endsection

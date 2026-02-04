@@ -32,17 +32,20 @@ class OrderReceipt extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Order Receipt - ' . $this->order->order_number,
+            subject: 'Transaction Slip - ' . $this->order->order_number,
         );
     }
 
     /**
      * Get the message content definition.
      */
+    /**
+     * Get the message content definition.
+     */
     public function content(): Content
     {
         return new Content(
-            view: 'emails.orders.receipt',
+            view: 'emails.orders.message',
         );
     }
 
@@ -53,6 +56,11 @@ class OrderReceipt extends Mailable
      */
     public function attachments(): array
     {
-        return [];
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('emails.orders.transaction-slip', ['order' => $this->order]);
+
+        return [
+            \Illuminate\Mail\Mailables\Attachment::fromData(fn() => $pdf->output(), 'Transaction-Slip-' . $this->order->order_number . '.pdf')
+                ->withMime('application/pdf'),
+        ];
     }
 }

@@ -49,4 +49,27 @@ class OrderController extends Controller
         $orders = $query->paginate(10)->withQueryString();
         return view('admin.order.order', compact('orders'));
     }
+    public function review(Request $request, $id)
+    {
+        $request->validate([
+            'status' => 'required|in:approved,cancelled',
+            'reason' => 'nullable|string|required_if:status,cancelled'
+        ]);
+
+        $order = Order::with(['user', 'orderItems.product'])->findOrFail($id);
+        $order->update([
+            'status' => $request->status,
+            'reason' => $request->reason
+        ]);
+
+        if ($request->status === 'approved') {
+            try {
+                \Illuminate\Support\Facades\Mail::to($order->user->email)->send(new \App\Mail\OrderReceipt($order));
+            } catch (\Exception $e) {
+                \Illuminate\Support\Facades\Log::error('Failed to send transaction slip email: ' . $e->getMessage());
+            }
+        }
+
+        return redirect()->back()->with('success', 'Order status updated successfully.');
+    }
 }

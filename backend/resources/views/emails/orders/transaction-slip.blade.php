@@ -74,16 +74,31 @@
 <body>
     <div class="receipt-container">
         <div class="text-center mb-4">
+            {{-- Logo temporarily disabled due to GD extension issues
+            @php
+            $logoPath = public_path('img/FABLAB-LOGO.png');
+            if (file_exists($logoPath)) {
+            $logoData = base64_encode(file_get_contents($logoPath));
+            $logoSrc = 'data:image/png;base64,' . $logoData;
+            } else {
+            $logoSrc = '';
+            }
+            @endphp
+            @if($logoSrc)
+            <img src="{{ $logoSrc }}" alt="Logo"
+                style="width: 60px; height: 60px; margin-bottom: 5px; filter: grayscale(100%);">
+            @endif
+            --}}
             <h2 class="fw-bold text-uppercase mb-0" style="letter-spacing: 2px;">CSPC FABLAB</h2>
             <p class="text-muted small mb-0">Camarines Sur Polytechnic Colleges</p>
             <div class="border-dashed"></div>
-            <h3 class="fw-bold text-uppercase mb-0">Order Receipt</h3>
+            <h3 class="fw-bold text-uppercase mb-0">Transaction Slip</h3>
             <p class="text-muted small">{{ $order->created_at->format('M d, Y h:i A') }}</p>
             <p class="small">Order #: {{ $order->order_number }}</p>
         </div>
 
         <div class="small">
-            <p><span class="text-muted">Customer:</span> <span class="fw-bold">{{ $order->user->name }}</span></p>
+            <p><span class="text-muted">Customer:</span> <span class="fw-bold">{{ $order->user->fullname }}</span></p>
         </div>
 
         <div class="border-dashed"></div>
@@ -122,10 +137,16 @@
                 payment.</p>
         </div>
 
-        <div class="text-center">
-            <img src="https://bwipjs-api.metafloor.com/?bcid=code128&text={{ $order->order_number }}&scale=2&height=10&incltext=N&color=000000"
-                alt="Barcode" style="width: 100%; max-width: 250px; height: auto;">
-            <p class="text-muted small mt-1" style="font-size: 0.7rem;">SYSTEM GENERATED RECEIPT</p>
+        <div class="text-center" style="margin-top: 15px;">
+            @php
+                $generator = new \Picqer\Barcode\BarcodeGeneratorHTML();
+                // widthFactor: 1 (thinner bars), height: 30
+                $barcode = $generator->getBarcode($order->order_number, $generator::TYPE_CODE_128, 1, 30);
+            @endphp
+            <div style="margin: 0 auto; display: inline-block; padding: 5px; background: white;">
+                {!! $barcode !!}
+            </div>
+            <p class="text-muted small mt-1" style="font-size: 0.7rem; margin-top: 5px;">SYSTEM GENERATED RECEIPT</p>
         </div>
     </div>
 </body>

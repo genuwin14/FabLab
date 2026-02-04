@@ -75,7 +75,7 @@
                                                     Order Status
                                                 </h6>
                                                 <div class="d-flex flex-column gap-2 mb-3">
-                                                    @foreach(['pending', 'processing', 'ready_for_pickup', 'completed', 'cancelled'] as $status)
+                                                    @foreach(['pending', 'approved', 'processing', 'ready_for_pickup', 'completed', 'cancelled'] as $status)
                                                         <div class="form-check">
                                                             <input class="form-check-input" type="checkbox" name="status[]"
                                                                 value="{{ $status }}" id="status{{ ucfirst($status) }}"
@@ -158,12 +158,12 @@
                                                 </td>
                                                 <td>
                                                     <div class="d-flex align-items-center">
-                                                        <div class="avatar-sm bg-primary bg-opacity-10 rounded-circle fw-bold text-primary d-flex align-items-center justify-content-center me-2"
+                                                        <div class="avatar-sm bg-primary bg-opacity-10 rounded-circle fw-bold text-white d-flex align-items-center justify-content-center me-2"
                                                             style="width: 32px; height: 32px;">
-                                                            {{ substr($order->user->name ?? 'G', 0, 2) }}
+                                                            {{ substr($order->user->fullname ?? 'G', 0, 2) }}
                                                         </div>
                                                         <div class="d-flex flex-column">
-                                                            <span class="text-dark fw-bold small">{{ $order->user->name ?? 'Guest' }}</span>
+                                                            <span class="text-dark fw-bold small">{{ $order->user->fullname ?? 'Guest' }}</span>
                                                             <span class="text-muted small" style="font-size: 0.75rem;">{{ $order->user->email ?? '' }}</span>
                                                         </div>
                                                     </div>
@@ -194,30 +194,40 @@
                                                         @php
                                                             $nextStatus = match ($order->status) {
                                                                 'pending' => 'processing',
+                                                                'approved' => 'processing',
                                                                 'processing' => 'ready_for_pickup',
                                                                 'ready_for_pickup' => 'completed',
                                                                 default => 'pending'
                                                             };
 
                                                             $btnLabel = match ($order->status) {
-                                                                'pending' => 'Process',
+                                                                'pending' => 'Waiting for admin approval',
+                                                                'approved' => 'Process',
                                                                 'processing' => 'Ready',
                                                                 'ready_for_pickup' => 'Complete',
                                                                 default => 'Update'
                                                             };
 
                                                             $btnClass = match ($order->status) {
-                                                                'pending' => 'btn-primary',
+                                                                'pending' => 'btn-light text-muted border',
+                                                                'approved' => 'btn-primary',
                                                                 'processing' => 'btn-info text-white',
                                                                 'ready_for_pickup' => 'btn-success text-white',
                                                                 default => 'btn-secondary'
                                                             };
                                                         @endphp
-                                                        <button class="btn btn-sm {{ $btnClass }} rounded-2 border-0 shadow-sm btn-update-status fw-bold px-3 me-1"
-                                                            data-id="{{ $order->order_id }}" data-status="{{ $order->status }}"
-                                                            data-next-status="{{ $nextStatus }}">
-                                                            {{ $btnLabel }}
-                                                        </button>
+
+                                                        @if($order->status == 'pending')
+                                                            <span class="badge bg-light text-muted border rounded-pill px-3 py-2 me-1">
+                                                                <i class="bi bi-hourglass-split me-1"></i> Waiting for admin approval
+                                                            </span>
+                                                        @else
+                                                            <button class="btn btn-sm {{ $btnClass }} rounded-2 border-0 shadow-sm btn-update-status fw-bold px-3 me-1"
+                                                                data-id="{{ $order->order_id }}" data-status="{{ $order->status }}"
+                                                                data-next-status="{{ $nextStatus }}">
+                                                                {{ $btnLabel }}
+                                                            </button>
+                                                        @endif
                                                     @endif
 
                                                     <button class="btn btn-sm btn-light rounded-2 border shadow-sm btn-view-order fw-bold"

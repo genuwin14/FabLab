@@ -15,7 +15,8 @@ return new class extends Migration {
             $table->string('order_number')->unique(); // e.g., ORDR-2024-001
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade'); // The buyer
             $table->string('payment_reference')->nullable(); // Cashier receipt reference
-            $table->enum('status', ['pending', 'processing', 'ready_for_pickup', 'completed', 'cancelled'])->default('pending');
+            $table->enum('status', ['pending', 'approved', 'processing', 'ready_for_pickup', 'completed', 'cancelled'])->default('pending');
+            $table->text('reason')->nullable();
             $table->decimal('total_amount', 12, 2); // Final transaction price
             $table->timestamps();
         });

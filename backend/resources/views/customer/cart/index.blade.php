@@ -32,7 +32,7 @@
                                 <div class="card-header bg-white border-bottom p-4">
                                     <div class="d-flex justify-content-between align-items-center">
                                         <h5 class="fw-bold mb-0 text-dark">Your Shopping Cart</h5>
-                                        <span class="badge bg-primary rounded-pill">{{ collect($cart)->sum('quantity') }}
+                                        <span class="badge bg-primary rounded-pill" id="cartTotalCount">{{ collect($cart)->sum('quantity') }}
                                             Items</span>
                                     </div>
                                 </div>
@@ -57,7 +57,7 @@
                                                     @foreach($cart as $id => $item)
                                                         @php $subtotal = $item['price'] * $item['quantity'];
                                                         $total += $subtotal; @endphp
-                                                        <tr data-id="{{ $id }}">
+                                                        <tr data-id="{{ $id }}" data-price="{{ $item['price'] }}">
                                                             <td class="ps-4 py-4 border-bottom-0">
                                                                 <input type="checkbox" class="form-check-input shadow-sm curs-pointer item-checkbox" 
                                                                     value="{{ $id }}" 
@@ -87,16 +87,16 @@
                                                                     style="width: 110px;">
                                                                     <button class="btn btn-light border-0 px-2 btn-decrease"
                                                                         type="button"><i class="bi bi-dash"></i></button>
-                                                                    <input type="text"
-                                                                        class="form-control border-0 text-center fw-bold bg-white cart-quantity"
-                                                                        value="{{ $item['quantity'] }}" readonly>
+                                                                    <input type="number"
+                                                                        class="form-control border-0 text-center fw-bold bg-white cart-quantity shadow-none"
+                                                                        value="{{ $item['quantity'] }}" min="1">
                                                                     <button class="btn btn-light border-0 px-2 btn-increase"
                                                                         type="button"><i class="bi bi-plus"></i></button>
                                                                 </div>
                                                             </td>
                                                             <td class="py-4 border-bottom-0">
                                                                 <span
-                                                                    class="fw-bold text-primary">₱{{ number_format($subtotal, 2) }}</span>
+                                                                    class="fw-bold text-primary cart-subtotal">₱{{ number_format($subtotal, 2) }}</span>
                                                             </td>
                                                             <td class="pe-4 py-4 border-bottom-0 text-end">
                                                                 <button
@@ -181,8 +181,19 @@
 
     @include('customer.cart.components.delete-modal')
     @include('customer.cart.components.checkout-preview-modal')
+    @include('customer.cart.components.approval-modal')
 
     <style>
+        /* Hide spin buttons */
+        .cart-quantity::-webkit-outer-spin-button,
+        .cart-quantity::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        .cart-quantity[type=number] {
+            -moz-appearance: textfield;
+        }
+
         .cart-quantity:focus {
             box-shadow: none;
         }
@@ -269,7 +280,7 @@
                 
                 const selectedItems = $('.item-checkbox:checked');
                 if (selectedItems.length === 0) {
-                     alert('Please select at least one item.');
+                     showToast('Please select at least one item.', 'error');
                      return;
                 }
 
@@ -304,40 +315,101 @@
 
             // Confirm Place Order
             $('#confirmPlaceOrderBtn').on('click', function() {
-                // Prepare form
-                const form = $('#checkoutForm');
-                $('#selectedItemsContainer').empty();
+                const btn = $(this);
+                btn.prop('disabled', true).text('Processing...');
 
+                // Collect selected items
+                let selectedItems = [];
                 $('.item-checkbox:checked').each(function() {
-                    $('<input>').attr({
-                        type: 'hidden',
-                        name: 'selected_items[]',
-                        value: $(this).val()
-                    }).appendTo('#selectedItemsContainer');
+                    selectedItems.push($(this).val());
                 });
 
-                // Submit
-                form.submit();
+                $.ajax({
+                    url: "{{ route('customer.cart.checkout') }}",
+                    method: "POST",
+                    data: {
+                        _token: "{{ csrf_token() }}",
+                        selected_items: selectedItems
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            // Hide preview modal
+                            const previewModalEl = document.getElementById('checkoutPreviewModal');
+                            const previewModal = bootstrap.Modal.getInstance(previewModalEl);
+                            if (previewModal) {
+                                previewModal.hide();
+                            }
+
+                            // Show approval modal
+                            const approvalModal = new bootstrap.Modal(document.getElementById('approvalModal'));
+                            approvalModal.show();
+                        } else {
+                             showToast(response.message || 'Checkout failed', 'error');
+                             btn.prop('disabled', false).text('Confirm Order');
+                        }
+                    },
+                    error: function(xhr) {
+                        btn.prop('disabled', false).text('Confirm Order');
+                        let msg = 'Checkout failed';
+                        if(xhr.responseJSON && xhr.responseJSON.message) {
+                            msg = xhr.responseJSON.message;
+                        }
+                        showToast(msg, 'error');
+                    }
+                });
             });
 
 
             // --- Existing Cart Logic ---
 
+            // Store initial value on focus to allow revert on error
+            $('.cart-quantity').on('focus', function() {
+                $(this).data('previous-val', $(this).val());
+            });
+
+            // Input Change
+            $('.cart-quantity').on('change', function() {
+                const row = $(this).closest('tr');
+                const id = row.data('id');
+                let qty = parseInt($(this).val());
+                const previousQty = $(this).data('previous-val') || 1;
+                
+                if (isNaN(qty) || qty < 1) {
+                    qty = 1;
+                    // updateRowUI will set the value
+                }
+                
+                updateCart(id, qty, row, previousQty);
+                // Update previous value for next change (will be reverted if error occurs)
+                $(this).data('previous-val', qty); 
+            });
+
             // Increase Quantity
             $('.btn-increase').on('click', function () {
                 const row = $(this).closest('tr');
                 const id = row.data('id');
-                let qty = parseInt(row.find('.cart-quantity').val());
-                updateCart(id, qty + 1);
+                const input = row.find('.cart-quantity');
+                let qty = parseInt(input.val());
+                if(isNaN(qty)) qty = 0;
+                
+                const previousQty = qty;
+                const newQty = qty + 1;
+                
+                updateCart(id, newQty, row, previousQty);
             });
 
             // Decrease Quantity
             $('.btn-decrease').on('click', function () {
                 const row = $(this).closest('tr');
                 const id = row.data('id');
-                let qty = parseInt(row.find('.cart-quantity').val());
+                const input = row.find('.cart-quantity');
+                let qty = parseInt(input.val());
+                if(isNaN(qty)) qty = 2; 
+                
                 if (qty > 1) {
-                    updateCart(id, qty - 1);
+                    const previousQty = qty;
+                    const newQty = qty - 1;
+                    updateCart(id, newQty, row, previousQty);
                 }
             });
 
@@ -355,7 +427,35 @@
                 }
             });
 
-            function updateCart(id, qty) {
+            function updateRowUI(row, qty) {
+                const price = parseFloat(row.data('price'));
+                const subtotal = price * qty;
+                
+                // Update Input Value
+                row.find('.cart-quantity').val(qty);
+                
+                // Update Subtotal Text
+                row.find('.cart-subtotal').text('₱' + subtotal.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}));
+                
+                // Update Checkbox Data
+                row.find('.item-checkbox').data('subtotal', subtotal);
+                
+                // Update Badge Count
+                let totalQty = 0;
+                $('.cart-quantity').each(function() {
+                    totalQty += parseInt($(this).val()) || 0;
+                });
+                $('#cartTotalCount').text(totalQty + ' Items');
+
+                // Recalculate Summary
+                updateSummary();
+            }
+
+            function updateCart(id, qty, row, previousQty) {
+                // Optimistic UI Update
+                updateRowUI(row, qty);
+
+                // Send Request
                 $.ajax({
                     url: "{{ route('customer.cart.update') }}",
                     method: "POST",
@@ -364,11 +464,23 @@
                         product_id: id,
                         quantity: qty
                     },
-                    success: function () {
-                        location.reload();
+                    success: function (response) {
+                        // Success - UI already updated
+                        console.log('Cart updated successfully');
                     },
                     error: function (xhr) {
-                        alert(xhr.responseJSON.message || 'Error updating cart');
+                        // Revert on error
+                        showToast(xhr.responseJSON.message || 'Error updating cart', 'error');
+                        
+                        // Revert UI to previous state if available
+                        if (previousQty !== undefined) {
+                            updateRowUI(row, previousQty);
+                            // Also revert the stored data for input change tracking
+                            row.find('.cart-quantity').data('previous-val', previousQty);
+                        } else {
+                            // Fallback if no previous state (shouldn't happen with new logic)
+                            location.reload();
+                        }
                     }
                 });
             }
@@ -383,6 +495,9 @@
                     },
                     success: function () {
                         location.reload();
+                    },
+                    error: function (xhr) {
+                         showToast(xhr.responseJSON.message || 'Error removing item', 'error');
                     }
                 });
             }

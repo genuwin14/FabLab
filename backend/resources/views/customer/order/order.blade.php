@@ -70,6 +70,40 @@
                                                 </div>
                                             </div>
 
+                                            @if($order->status == 'pending')
+                                                <div class="alert alert-warning d-flex align-items-start mb-3 p-2 small border-0 bg-warning bg-opacity-10 text-dark rounded-3"
+                                                    role="alert">
+                                                    <i class="bi bi-hourglass-split me-2 mt-1"></i>
+                                                    <div class="lh-sm">
+                                                        <span class="fw-bold">Waiting for Approval</span><br>
+                                                        Please wait for admin approval before paying.
+                                                    </div>
+                                                </div>
+                                            @endif
+
+                                            @if($order->status == 'approved')
+                                                <div class="alert alert-info d-flex align-items-start mb-3 p-2 small border-0 bg-info bg-opacity-10 text-primary rounded-3"
+                                                    role="alert">
+                                                    <i class="bi bi-envelope-check-fill me-2 mt-1"></i>
+                                                    <div class="lh-sm">
+                                                        <span class="fw-bold">Order Approved - Action Required</span><br>
+                                                        A transaction slip has been sent to your email. Please present it to the cashier
+                                                        to process your payment.
+                                                    </div>
+                                                </div>
+                                            @endif
+
+                                            @if($order->status == 'processing')
+                                                <div class="alert alert-info d-flex align-items-start mb-3 p-2 small border-0 bg-info bg-opacity-10 text-info rounded-3"
+                                                    role="alert">
+                                                    <i class="bi bi-gear-wide-connected me-2 mt-1"></i>
+                                                    <div class="lh-sm">
+                                                        <span class="fw-bold">Processing Order</span><br>
+                                                        Your order is being processed by our staff. Please wait for updates.
+                                                    </div>
+                                                </div>
+                                            @endif
+
                                             @if($order->status == 'ready_for_pickup')
                                                 <div class="alert alert-success d-flex align-items-start mb-3 p-2 small border-0 bg-success bg-opacity-10 text-success rounded-3"
                                                     role="alert">
@@ -78,6 +112,28 @@
                                                         <span class="fw-bold">Ready for Pickup!</span><br>
                                                         Please proceed to Fablab office to get your product.<br>
                                                         And bring the payment receipt for checking.
+                                                    </div>
+                                                </div>
+                                            @endif
+
+                                            @if($order->status == 'completed')
+                                                <div class="alert alert-success d-flex align-items-start mb-3 p-2 small border-0 bg-success bg-opacity-10 text-success rounded-3"
+                                                    role="alert">
+                                                    <i class="bi bi-patch-check-fill me-2 mt-1"></i>
+                                                    <div class="lh-sm">
+                                                        <span class="fw-bold">Order Completed</span><br>
+                                                        Thank you for choosing Fablab! We hope to serve you again soon.
+                                                    </div>
+                                                </div>
+                                            @endif
+
+                                            @if($order->status == 'cancelled' && $order->reason)
+                                                <div class="alert alert-danger d-flex align-items-start mb-3 p-2 small border-0 bg-danger bg-opacity-10 text-danger rounded-3"
+                                                    role="alert">
+                                                    <i class="bi bi-x-circle-fill me-2 mt-1"></i>
+                                                    <div class="lh-sm">
+                                                        <span class="fw-bold">Order Cancelled</span><br>
+                                                        Reason: {{ $order->reason }}
                                                     </div>
                                                 </div>
                                             @endif
@@ -168,26 +224,10 @@
     @include('customer.order.components.cancel-modal')
 
     @push('scripts')
-        <script>
-            document.addEventListener('DOMContentLoaded', function () {
-                var cancelModal = document.getElementById('cancelOrderModal');
-                cancelModal.addEventListener('show.bs.modal', function (event) {
-                    // Button that triggered the modal
-                    var button = event.relatedTarget;
-
-                    // Extract info from data-bs-* attributes
-                    var orderId = button.getAttribute('data-order-id');
-                    var orderNumber = button.getAttribute('data-order-number');
-                    var cancelUrl = button.getAttribute('data-url');
-
-                    // Update the modal's content.
-                    var modalOrderNumberSpan = cancelModal.querySelector('#cancelOrderNumber');
-                    var modalForm = cancelModal.querySelector('#cancelOrderForm');
-
-                    modalOrderNumberSpan.textContent = '#' + orderNumber;
-                    modalForm.action = cancelUrl;
-                });
-            });
+        <script>     document.addEventListener('DOMContentLoaded', function () {         var cancelModal = document.getElementById('cancelOrderModal');         cancelModal.addEventListener('show.bs.modal', function (event) {             // Button that triggered the modal             var button = event.relatedTarget;
+                     // Extract info from data-bs-* attributes             var orderId = button.getAttribute('data-order-id');             var orderNumber = button.getAttribute('data-order-number');             var cancelUrl = button.getAttribute('data-url');
+                     // Update the modal's content.             var modalOrderNumberSpan = cancelModal.querySelector('#cancelOrderNumber');             var modalForm = cancelModal.querySelector('#cancelOrderForm');
+                     modalOrderNumberSpan.textContent = '#' + orderNumber;             modalForm.action = cancelUrl;         });     });
         </script>
     @endpush
 @endsection
