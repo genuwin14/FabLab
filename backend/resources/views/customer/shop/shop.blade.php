@@ -1,9 +1,9 @@
 @extends('layout.app')
 
 @section('content')
-    <div class="d-flex min-vh-100" style="background-color: #f8f9fa;">
+    <div class="d-flex h-screen overflow-hidden" style="background-color: #f8f9fa;">
         <!-- Desktop Sidebar -->
-        <aside class="d-none d-md-block border-end shadow-sm" style="width: 280px; z-index: 1040;">
+        <aside class="d-none d-md-block border-end shadow-sm flex-shrink-0" style="width: 280px; z-index: 1040;">
             @include('customer.partials.sidebar')
         </aside>
 
@@ -16,14 +16,14 @@
         </div>
 
         <!-- Main Content -->
-        <div class="flex-grow-1 d-flex flex-column" style="background-color: #f1f4f8; overflow-x: hidden;">
+        <div class="flex-grow-1 d-flex flex-column overflow-hidden" style="background-color: #f1f4f8;">
             <!-- Top Navbar -->
             <header class="sticky-top bg-white shadow-sm" style="z-index: 1030;">
                 @include('customer.partials.navbar')
             </header>
 
             <!-- Page Content -->
-            <main class="flex-grow-1 p-4">
+            <main class="flex-grow-1 p-4 overflow-y-auto custom-scrollbar">
                 <div class="container-fluid">
                     
                     <!-- Search & Categories Header -->
@@ -135,9 +135,9 @@
                                             <i class="bi bi-eye me-1"></i> Quick View
                                         </button>
                                         @if($product->is_customizable)
-                                        <button class="btn btn-accent text-primary fw-bold rounded-pill w-100 small shadow-sm py-2">
+                                        <a href="{{ route('customer.customize.index', ['product_id' => $product->product_id]) }}" class="btn btn-accent text-primary fw-bold rounded-pill w-100 small shadow-sm py-2 text-decoration-none text-center">
                                             <i class="bi bi-magic me-1"></i> Customize Now
-                                        </button>
+                                        </a>
                                         @endif
                                     </div>
                                 </div>

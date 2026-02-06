@@ -99,6 +99,11 @@
             color: #ffc508;
             /* Fallback */
         }
+
+        /* Helper Classes */
+        .h-screen {
+            height: 100vh;
+        }
     </style>
 </head>
 
