@@ -16,12 +16,10 @@ class Product extends Model
         'price',
         'stock',
         'category_id',
-        'supplier_id',
         'status',
         'is_customizable',
         'low_stock_threshold',
         'unit',
-        'cost',
         'image'
     ];
 
@@ -30,9 +28,11 @@ class Product extends Model
         return $this->belongsTo(Category::class, 'category_id');
     }
 
-    public function supplier()
+    public function suppliers()
     {
-        return $this->belongsTo(Supplier::class, 'supplier_id');
+        return $this->belongsToMany(Supplier::class, 'product_suppliers', 'product_id', 'supplier_id')
+            ->withPivot(['cost', 'is_default', 'min_order_qty', 'lead_time_days'])
+            ->withTimestamps();
     }
 
     public function orderItems()

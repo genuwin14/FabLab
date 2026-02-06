@@ -13,12 +13,13 @@ class ProductController extends Controller
 {
     public function index()
     {
-        $products = Product::with(['category', 'supplier'])->latest()->get();
+        $products = Product::with(['category', 'suppliers'])->latest()->get();
         $categories = Category::all();
         $suppliers = Supplier::all();
         return view('admin.product.products', compact('products', 'categories', 'suppliers'));
     }
 
+    // Phase 1: Create supplier-agnostic product
     public function store(Request $request)
     {
         $request->validate([
@@ -29,8 +30,6 @@ class ProductController extends Controller
             'stock' => 'required|integer|min:0',
             'unit' => 'required|string',
             'brand' => 'nullable|string|max:255',
-            'supplier_id' => 'nullable|exists:suppliers,supplier_id',
-            'cost' => 'nullable|numeric|min:0',
             'low_stock_threshold' => 'nullable|integer|min:0',
             'description' => 'nullable|string',
             'status' => 'nullable|string|max:50',
@@ -53,9 +52,11 @@ class ProductController extends Controller
             $data['image'] = 'data:' . $image->getClientMimeType() . ';base64,' . $base64Image;
         }
 
-        Product::create($data);
+        $product = Product::create($data);
 
-        return redirect()->route('admin.products.index')->with('success', 'Product created successfully.');
+        // Redirect to supplier assignment page
+        return redirect()->route('admin.products.suppliers.assign', $product->product_id)
+            ->with('success', 'Product created successfully. Now assign suppliers.');
     }
 
     public function update(Request $request, $id)
@@ -68,8 +69,6 @@ class ProductController extends Controller
             'stock' => 'required|integer|min:0',
             'unit' => 'required|string',
             'brand' => 'nullable|string|max:255',
-            'supplier_id' => 'nullable|exists:suppliers,supplier_id',
-            'cost' => 'nullable|numeric|min:0',
             'low_stock_threshold' => 'nullable|integer|min:0',
             'description' => 'nullable|string',
             'status' => 'nullable|string|max:50',
@@ -103,5 +102,47 @@ class ProductController extends Controller
         $product->delete();
 
         return redirect()->route('admin.products.index')->with('success', 'Product deleted successfully.');
+    }
+
+    // Phase 2: Supplier Assignment Page
+    public function assignSuppliers($id)
+    {
+        $product = Product::with('suppliers')->findOrFail($id);
+        $suppliers = Supplier::all();
+
+        return view('admin.product.assign-suppliers', compact('product', 'suppliers'));
+    }
+
+    // Phase 2: Save Supplier Assignments
+    public function storeSuppliers(Request $request, $id)
+    {
+        $product = Product::findOrFail($id);
+
+        $request->validate([
+            'suppliers' => 'nullable|array',
+            'suppliers.*' => 'exists:suppliers,supplier_id',
+            'cost.*' => 'nullable|numeric|min:0',
+            'min_order_qty.*' => 'nullable|integer|min:0',
+            'lead_time_days.*' => 'nullable|integer|min:0',
+            'is_default' => 'nullable|exists:suppliers,supplier_id',
+        ]);
+
+        // Detach all existing suppliers
+        $product->suppliers()->detach();
+
+        // Attach new suppliers with pivot data
+        if ($request->has('suppliers') && is_array($request->suppliers)) {
+            foreach ($request->suppliers as $supplierId) {
+                $product->suppliers()->attach($supplierId, [
+                    'cost' => $request->input("cost.{$supplierId}", 0),
+                    'min_order_qty' => $request->input("min_order_qty.{$supplierId}", 0),
+                    'lead_time_days' => $request->input("lead_time_days.{$supplierId}", 0),
+                    'is_default' => $request->is_default == $supplierId,
+                ]);
+            }
+        }
+
+        return redirect()->route('admin.products.index')
+            ->with('success', 'Suppliers assigned successfully.');
     }
 }

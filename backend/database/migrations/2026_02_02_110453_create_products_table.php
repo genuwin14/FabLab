@@ -21,13 +21,11 @@ return new class extends Migration {
 
             // Foreign Keys
             $table->foreignId('category_id')->constrained('categories', 'category_id')->onDelete('cascade');
-            $table->foreignId('supplier_id')->nullable()->constrained('suppliers', 'supplier_id')->onDelete('set null');
 
-            $table->string('status')->default('active'); // active, functional, maintenance, broken, defective
+            $table->string('status')->nullable(); // functional, defective (for assets)
             $table->boolean('is_customizable')->default(false);
             $table->integer('low_stock_threshold')->nullable();
             $table->string('unit')->default('pcs');
-            $table->decimal('cost', 12, 2)->nullable();
             $table->longText('image')->nullable(); // Base64 image
 
             $table->timestamps();

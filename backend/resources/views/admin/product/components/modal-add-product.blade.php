@@ -103,13 +103,13 @@
                                 </div>
 
                                 <!-- Classification -->
-                                <div class="col-md-4">
+                                <div class="col-md-6">
                                     <label class="form-label small fw-bold text-muted text-uppercase">Brand</label>
                                     <input type="text" name="brand"
                                         class="form-control rounded-3 bg-light border-0 px-3"
                                         placeholder="e.g. Yiwu / Epson">
                                 </div>
-                                <div class="col-md-4">
+                                <div class="col-md-6">
                                     <label class="form-label small fw-bold text-muted text-uppercase">Status</label>
                                     <select name="status" class="form-select rounded-3 bg-light border-0 px-3">
                                         <option value="active" selected>Active</option>
@@ -118,22 +118,13 @@
                                         <option value="broken">Broken / Defective</option>
                                     </select>
                                 </div>
-                                <div class="col-md-4">
-                                    <label class="form-label small fw-bold text-muted text-uppercase">Supplier</label>
-                                    <select name="supplier_id" class="form-select rounded-3 bg-light border-0 px-3">
-                                        <option selected value="">Select Supplier</option>
-                                        @foreach($suppliers as $supplier)
-                                            <option value="{{ $supplier->supplier_id }}">{{ $supplier->name }}</option>
-                                        @endforeach
-                                    </select>
-                                </div>
 
                                 <!-- Pricing Section -->
                                 <div class="col-12 mt-4 mb-2">
                                     <h6 class="fw-bold text-primary border-bottom pb-2">Pricing & Inventory</h6>
                                 </div>
 
-                                <div class="col-md-4">
+                                <div class="col-md-6">
                                     <label class="form-label small fw-bold text-muted text-uppercase">Selling
                                         Price</label>
                                     <div class="input-group">
@@ -143,15 +134,7 @@
                                             placeholder="0.00" required>
                                     </div>
                                 </div>
-                                <div class="col-md-4">
-                                    <label class="form-label small fw-bold text-muted text-uppercase">Cost Price</label>
-                                    <div class="input-group">
-                                        <span class="input-group-text bg-light border-0 text-muted">₱</span>
-                                        <input type="number" step="0.01" name="cost"
-                                            class="form-control bg-light border-0" placeholder="0.00">
-                                    </div>
-                                </div>
-                                <div class="col-md-4">
+                                <div class="col-md-6">
                                     <label class="form-label small fw-bold text-muted text-uppercase">Unit</label>
                                     <select name="unit" class="form-select rounded-3 bg-light border-0 px-3" required>
                                         <option value="pcs" selected>Pieces (pcs)</option>

@@ -190,6 +190,11 @@
                                                 </td>
                                                 <td class="text-end pe-4">
                                                     <div class="d-flex justify-content-end gap-2">
+                                                        <a href="{{ route('admin.products.suppliers.assign', $product->product_id) }}"
+                                                            class="btn btn-light btn-sm rounded-circle"
+                                                            title="Manage Suppliers">
+                                                            <i class="bi bi-truck text-primary"></i>
+                                                        </a>
                                                         <button class="btn btn-light btn-sm rounded-circle"
                                                             data-bs-toggle="modal" data-bs-target="#editProductModal"
                                                             data-product="{{ json_encode($product) }}" title="Edit Product">
@@ -275,7 +280,6 @@
                 document.getElementById('editCategoryId').value = product.category_id;
                 document.getElementById('editBrand').value = product.brand;
                 document.getElementById('editPrice').value = product.price;
-                document.getElementById('editCost').value = product.cost;
                 document.getElementById('editUnit').value = product.unit;
                 document.getElementById('editStock').value = product.stock;
                 document.getElementById('editLowStock').value = product.low_stock_threshold;
@@ -283,11 +287,6 @@
                 document.getElementById('editIsCustomizable').checked = product.is_customizable == 1;
                 document.getElementById('editStatus').value = product.status || "active";
 
-                if (product.supplier_id) {
-                    document.getElementById('editSupplierId').value = product.supplier_id;
-                } else {
-                    document.getElementById('editSupplierId').value = "";
-                }
 
                 // Handle Image
                 var preview = document.getElementById('editImagePreview');
