@@ -51,9 +51,10 @@
                 </a>
             </li>
             <li class="nav-item">
-                <a href="#" class="nav-link text-white hover-accent">
-                    <i class="bi bi-clipboard-data me-2"></i>
-                    Inventory Logs
+                <a href="{{ route('admin.inventory.index') }}"
+                    class="nav-link {{ request()->routeIs('admin.inventory.index') ? 'active bg-accent text-primary fw-bold' : 'text-white hover-accent' }}">
+                    <i class="bi bi-graph-up-arrow me-2"></i>
+                    Stock Monitoring
                 </a>
             </li>
         </ul>
@@ -86,9 +87,10 @@
         <div class="mb-2 text-uppercase text-white-50 small fw-bold px-2">Procurement</div>
         <ul class="nav nav-pills flex-column mb-3 gap-1">
             <li class="nav-item">
-                <a href="#" class="nav-link text-white hover-accent">
+                <a href="{{ route('admin.purchase.index') }}"
+                    class="nav-link {{ request()->routeIs('admin.purchase.*') ? 'active bg-accent text-primary fw-bold' : 'text-white hover-accent' }}">
                     <i class="bi bi-bag-check me-2"></i>
-                    Purchase
+                    Purchase Orders
                 </a>
             </li>
             <li class="nav-item">
