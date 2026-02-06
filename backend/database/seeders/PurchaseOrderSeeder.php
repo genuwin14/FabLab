@@ -48,7 +48,7 @@ class PurchaseOrderSeeder extends Seeder
         ]);
 
         PurchaseOrderItem::create([
-            'purchase_order_id' => $po1->id,
+            'purchase_order_id' => $po1->purchase_order_id,
             'product_id' => $filament->product_id, // Red Filament
             'quantity' => 5,
             'cost' => 600.00
@@ -66,7 +66,7 @@ class PurchaseOrderSeeder extends Seeder
         ]);
 
         PurchaseOrderItem::create([
-            'purchase_order_id' => $po2->id,
+            'purchase_order_id' => $po2->purchase_order_id,
             'product_id' => $mugWhite->product_id,
             'quantity' => 100,
             'cost' => 45.00
@@ -85,7 +85,7 @@ class PurchaseOrderSeeder extends Seeder
         ]);
 
         PurchaseOrderItem::create([
-            'purchase_order_id' => $po3->id,
+            'purchase_order_id' => $po3->purchase_order_id,
             'product_id' => $mugBlack->product_id,
             'quantity' => 100,
             'cost' => 55.00

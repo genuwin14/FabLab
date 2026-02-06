@@ -11,7 +11,7 @@ return new class extends Migration {
     public function up(): void
     {
         Schema::create('purchase_orders', function (Blueprint $table) {
-            $table->id();
+            $table->id('purchase_order_id');
             $table->string('po_number')->unique(); // e.g., PO-2024-001
             $table->foreignId('supplier_id')->constrained('suppliers', 'supplier_id')->onDelete('cascade');
             $table->enum('status', ['draft', 'sent', 'confirmed', 'delivered', 'cancelled'])->default('draft');

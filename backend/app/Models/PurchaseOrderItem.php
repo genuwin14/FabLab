@@ -8,6 +8,8 @@ class PurchaseOrderItem extends Model
 {
     public $timestamps = false;
 
+    protected $primaryKey = 'purchase_order_item_id';
+
     protected $fillable = [
         'purchase_order_id',
         'product_id',

@@ -84,7 +84,7 @@
                                                 <td class="text-end fw-bold text-dark">₱{{ number_format($po->total_cost, 2) }}
                                                 </td>
                                                 <td class="text-end pe-4">
-                                                    <a href="{{ route('admin.purchase.show', $po->id) }}"
+                                                    <a href="{{ route('admin.purchase.show', $po->purchase_order_id) }}"
                                                         class="btn btn-light btn-sm rounded-circle text-primary">
                                                         <i class="bi bi-eye"></i>
                                                     </a>

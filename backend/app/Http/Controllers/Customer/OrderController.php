@@ -34,6 +34,14 @@ class OrderController extends Controller
         if ($order->status === 'pending') {
             $order->status = 'cancelled';
             $order->save();
+
+            // Return Stock
+            foreach ($order->orderItems as $item) {
+                if ($item->product) {
+                    $item->product->increment('stock', $item->quantity);
+                }
+            }
+
             return redirect()->back()->with('success', 'Order cancelled successfully.');
         }
 

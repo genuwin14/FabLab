@@ -62,10 +62,10 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::put('/admin/suppliers/{id}', [\App\Http\Controllers\Admin\SupplierController::class, 'update'])->name('admin.suppliers.update');
     Route::delete('/admin/suppliers/{id}', [\App\Http\Controllers\Admin\SupplierController::class, 'destroy'])->name('admin.suppliers.destroy');
 
-    // Admin Routes/Inventory (Phase 3)
+    // Admin Routes/Inventory
     Route::get('/admin/inventory', [\App\Http\Controllers\Admin\InventoryController::class, 'index'])->name('admin.inventory.index');
 
-    // Admin Routes/Purchase Orders (Phase 4)
+    // Admin Routes/Purchase Orders
     Route::get('/admin/purchase', [\App\Http\Controllers\Admin\PurchaseOrderController::class, 'index'])->name('admin.purchase.index');
     Route::get('/admin/purchase/create', [\App\Http\Controllers\Admin\PurchaseOrderController::class, 'create'])->name('admin.purchase.create');
     Route::post('/admin/purchase', [\App\Http\Controllers\Admin\PurchaseOrderController::class, 'store'])->name('admin.purchase.store');

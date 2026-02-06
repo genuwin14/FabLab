@@ -57,10 +57,21 @@ class OrderController extends Controller
         ]);
 
         $order = Order::with(['user', 'orderItems.product'])->findOrFail($id);
+        $oldStatus = $order->status;
+
         $order->update([
             'status' => $request->status,
             'reason' => $request->reason
         ]);
+
+        // If newly cancelled, return stock
+        if ($request->status === 'cancelled' && $oldStatus !== 'cancelled') {
+            foreach ($order->orderItems as $item) {
+                if ($item->product) {
+                    $item->product->increment('stock', $item->quantity);
+                }
+            }
+        }
 
         if ($request->status === 'approved') {
             try {

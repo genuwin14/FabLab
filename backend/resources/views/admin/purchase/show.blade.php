@@ -33,7 +33,7 @@
                         <h4 class="fw-bold text-dark mb-0">Purchase Order Details</h4>
                         <div class="d-flex gap-2">
                             <!-- Status Actions -->
-                            <form action="{{ route('admin.purchase.updateStatus', $purchaseOrder->id) }}" method="POST">
+                            <form action="{{ route('admin.purchase.updateStatus', $purchaseOrder->purchase_order_id) }}" method="POST">
                                 @csrf
                                 @method('PUT')
                                 

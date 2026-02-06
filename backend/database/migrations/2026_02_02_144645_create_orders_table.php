@@ -11,10 +11,12 @@ return new class extends Migration {
     public function up(): void
     {
         Schema::create('orders', function (Blueprint $table) {
-            $table->id();
+            $table->id('order_id'); // Custom primary key name
             $table->string('order_number')->unique(); // e.g., ORDR-2024-001
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade'); // The buyer
-            $table->enum('status', ['pending', 'processing', 'completed', 'cancelled'])->default('pending');
+            $table->enum('status', ['pending', 'approved', 'processing', 'ready_for_pickup', 'completed', 'cancelled'])->default('pending');
+            $table->string('payment_reference')->nullable();
+            $table->text('reason')->nullable();
             $table->decimal('total_amount', 12, 2); // Final transaction price
             $table->timestamps();
         });

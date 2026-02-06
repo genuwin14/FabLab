@@ -11,7 +11,7 @@ return new class extends Migration {
     public function up(): void
     {
         Schema::create('product_suppliers', function (Blueprint $table) {
-            $table->id();
+            $table->id('product_supplier_id');
             $table->foreignId('product_id')->constrained('products', 'product_id')->onDelete('cascade');
             $table->foreignId('supplier_id')->constrained('suppliers', 'supplier_id')->onDelete('cascade');
             $table->decimal('cost', 12, 2); // Supplier acquisition cost

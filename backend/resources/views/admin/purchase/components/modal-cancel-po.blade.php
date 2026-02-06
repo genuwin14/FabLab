@@ -22,8 +22,8 @@
             <div class="modal-footer border-top-0 px-4 pb-4 justify-content-center">
                 <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Keep
                     Order</button>
-                <form action="{{ route('admin.purchase.updateStatus', $purchaseOrder->id) }}" method="POST"
-                    class="d-inline">
+                <form action="{{ route('admin.purchase.updateStatus', $purchaseOrder->purchase_order_id) }}"
+                    method="POST" class="d-inline">
                     @csrf
                     @method('PUT')
                     <input type="hidden" name="status" value="cancelled">

@@ -189,6 +189,10 @@ class CartController extends Controller
                     'quantity' => $item['quantity'],
                     'price' => $item['price']
                 ]);
+
+                // Decrease Stock
+                $product = Product::find($item['product_id']);
+                $product->decrement('stock', $item['quantity']);
             }
 
             \Illuminate\Support\Facades\DB::commit();

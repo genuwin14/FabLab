@@ -224,10 +224,26 @@
     @include('customer.order.components.cancel-modal')
 
     @push('scripts')
-        <script>     document.addEventListener('DOMContentLoaded', function () {         var cancelModal = document.getElementById('cancelOrderModal');         cancelModal.addEventListener('show.bs.modal', function (event) {             // Button that triggered the modal             var button = event.relatedTarget;
-                     // Extract info from data-bs-* attributes             var orderId = button.getAttribute('data-order-id');             var orderNumber = button.getAttribute('data-order-number');             var cancelUrl = button.getAttribute('data-url');
-                     // Update the modal's content.             var modalOrderNumberSpan = cancelModal.querySelector('#cancelOrderNumber');             var modalForm = cancelModal.querySelector('#cancelOrderForm');
-                     modalOrderNumberSpan.textContent = '#' + orderNumber;             modalForm.action = cancelUrl;         });     });
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                var cancelModal = document.getElementById('cancelOrderModal');
+                if (cancelModal) {
+                    cancelModal.addEventListener('show.bs.modal', function (event) {
+                        // Button that triggered the modal
+                        var button = event.relatedTarget;
+                        // Extract info from data-bs-* attributes
+                        var orderNumber = button.getAttribute('data-order-number');
+                        var cancelUrl = button.getAttribute('data-url');
+
+                        // Update the modal's content.
+                        var modalOrderNumberSpan = cancelModal.querySelector('#cancelOrderNumber');
+                        var modalForm = cancelModal.querySelector('#cancelOrderForm');
+
+                        modalOrderNumberSpan.textContent = '#' + orderNumber;
+                        modalForm.action = cancelUrl;
+                    });
+                }
+            });
         </script>
     @endpush
 @endsection
