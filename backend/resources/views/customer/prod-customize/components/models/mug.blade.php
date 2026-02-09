@@ -9,7 +9,7 @@ const loader = new THREE.GLTFLoader();
 
 console.log("Loading cup.glb...");
 
-loader.load('/cup.glb', function(gltf) {
+loader.load('/gbl/cup.glb', function(gltf) {
 const model = gltf.scene;
 
 // Position and Scale for Cup

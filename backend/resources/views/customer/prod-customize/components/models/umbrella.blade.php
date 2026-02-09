@@ -9,7 +9,7 @@ const loader = new THREE.GLTFLoader();
 
 console.log("Loading umbrella.glb...");
 
-loader.load('/umbrella.glb', function(gltf) {
+loader.load('/gbl/umbrella.glb', function(gltf) {
 const model = gltf.scene;
 
 // Position and Scale for Umbrella

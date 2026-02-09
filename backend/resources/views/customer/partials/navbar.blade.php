@@ -1,14 +1,14 @@
-<nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom py-2">
+<nav class="navbar navbar-expand-lg border-bottom py-2 custom-navbar">
     <div class="container-fluid">
         <!-- Sidebar Toggle (Mobile Only) -->
-        <button class="btn btn-link text-dark d-md-none me-2 p-0" type="button" data-bs-toggle="offcanvas"
+        <button class="btn btn-link text-white d-md-none me-2 p-0" type="button" data-bs-toggle="offcanvas"
             data-bs-target="#customerSidebarOffcanvas" aria-controls="customerSidebarOffcanvas">
             <i class="bi bi-list fs-2"></i>
         </button>
 
         <!-- Page Title (Responsive) -->
         <div class="me-auto overflow-hidden text-nowrap">
-            <h5 class="fw-bold mb-0 text-dark">
+            <h5 class="fw-bold mb-0 text-white">
                 @if(request()->routeIs('customer.shop')) Shop Products
                 @elseif(request()->routeIs('customer.customize*')) Customize Product
                 @elseif(request()->routeIs('customer.design*')) Personal Design
@@ -22,25 +22,25 @@
         <!-- Right Side -->
         <div class="d-flex align-items-center gap-2 gap-md-3">
             <!-- Clock (Desktop Only) -->
-            <div class="d-none d-lg-block border-end pe-3 me-1">
-                <span id="live-clock" class="text-secondary small fw-medium"></span>
+            <div class="d-none d-lg-block border-end border-white border-opacity-10 pe-3 me-1">
+                <span id="live-clock" class="text-white-50 small fw-medium"></span>
             </div>
 
             <!-- Cart -->
-            <a class="nav-link position-relative text-dark p-1 me-2" href="{{ route('customer.cart.index') }}">
+            <a class="nav-link position-relative text-white p-1 me-2" href="{{ route('customer.cart.index') }}">
                 <i class="bi bi-cart3 fs-5"></i>
                 <span
-                    class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger shadow-sm cart-badge"
+                    class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-accent text-primary shadow-sm cart-badge"
                     style="font-size: 0.65rem; padding: 0.25em 0.5em;">
                     {{ collect(session('cart', []))->sum('quantity') }}
                 </span>
             </a>
 
             <!-- Notifications -->
-            <a class="nav-link position-relative text-dark p-1 me-1" href="#">
+            <a class="nav-link position-relative text-white p-1 me-1" href="#">
                 <i class="bi bi-bell fs-5"></i>
                 <span
-                    class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle">
+                    class="position-absolute top-0 start-100 translate-middle p-1 bg-accent border border-dark rounded-circle">
                     <span class="visually-hidden">New alerts</span>
                 </span>
             </a>
@@ -48,7 +48,7 @@
             <!-- User Dropdown -->
             <div class="dropdown">
                 <a href="#"
-                    class="d-flex align-items-center text-dark text-decoration-none border rounded-pill p-1 p-md-2 user-dropdown-btn bg-white"
+                    class="d-flex align-items-center text-white text-decoration-none border border-white border-opacity-10 rounded-pill p-1 p-md-2 user-dropdown-btn bg-darker-glass shadow-sm"
                     id="dropdownUser1" data-bs-toggle="dropdown" aria-expanded="false">
                     <img src="{{ Auth::user()->photo ? (Str::startsWith(Auth::user()->photo, 'http') ? Auth::user()->photo : asset('storage/' . Auth::user()->photo)) : 'https://ui-avatars.com/api/?name=' . urlencode(Auth::user()->fullname) . '&background=0e2e45&color=fff' }}"
                         alt="" width="30" height="30" class="rounded-circle object-fit-cover">
@@ -69,7 +69,6 @@
                             <i class="bi bi-person me-2"></i> Profile
                         </a>
                     </li>
-                    <!-- <li><a class="dropdown-item text-white hover-accent small" href="#">Settings</a></li> -->
                     <li>
                         <hr class="dropdown-divider border-white border-opacity-10 my-1">
                     </li>
@@ -107,31 +106,45 @@
 </script>
 
 <style>
+    .custom-navbar {
+        background-color: #05111a;
+        border-color: rgba(255, 255, 255, 0.1) !important;
+        height: 65px;
+    }
+
     .user-dropdown-btn {
         transition: all 0.2s ease;
-        border-color: #dee2e6 !important;
+        border-color: rgba(255, 255, 255, 0.1) !important;
     }
 
     .user-dropdown-btn:hover,
     .user-dropdown-btn[aria-expanded="true"] {
-        background-color: #f8f9fa;
+        background-color: rgba(255, 255, 255, 0.05);
         border-color: #ffc508 !important;
-        /* Gold border */
-        box-shadow: 0 0 0 2px rgba(255, 197, 8, 0.1);
+        box-shadow: 0 0 10px rgba(255, 197, 8, 0.1);
+    }
+
+    .bg-darker-glass {
+        background-color: rgba(3, 10, 16, 0.6);
+        backdrop-filter: blur(5px);
     }
 
     .custom-dropdown-menu {
-        background-color: rgba(14, 46, 69, 0.98);
-        backdrop-filter: blur(10px);
+        background-color: #05111a;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
     }
 
     .dropdown-item.hover-accent:hover {
-        background-color: rgba(255, 255, 255, 0.05);
+        background-color: rgba(255, 197, 8, 0.1);
         color: #ffc508 !important;
     }
 
-    .navbar {
-        height: 65px;
+    .bg-accent {
+        background-color: #ffc508 !important;
+    }
+
+    .text-primary {
+        color: #0e2e45 !important;
     }
 </style>
 

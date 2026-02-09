@@ -9,7 +9,7 @@ const loader = new THREE.GLTFLoader();
 
 console.log("Loading shorts.glb...");
 
-loader.load('/shorts.glb', function(gltf) {
+loader.load('/gbl/shorts.glb', function(gltf) {
 const model = gltf.scene;
 
 // Position and Scale for Shorts
