@@ -112,8 +112,9 @@
         width: 100%;
     }
 
-    /* Shape Selection Styling */
-    .btn-shape {
+    /* Shape & Size Selection Styling */
+    .btn-shape,
+    .btn-size {
         background: rgba(255, 255, 255, 0.03);
         border: 1px solid rgba(255, 255, 255, 0.05);
         border-radius: 12px;
@@ -122,13 +123,15 @@
         transition: all 0.3s ease;
     }
 
-    .btn-shape:hover {
+    .btn-shape:hover,
+    .btn-size:hover {
         background: rgba(255, 255, 255, 0.08);
         border-color: rgba(255, 255, 255, 0.2);
         color: white;
     }
 
-    .btn-shape.active {
+    .btn-shape.active,
+    .btn-size.active {
         background: rgba(255, 197, 8, 0.1);
         border-color: #ffc508;
         color: #ffc508;

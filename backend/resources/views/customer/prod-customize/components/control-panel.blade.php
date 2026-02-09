@@ -17,41 +17,86 @@
                 Style</label>
             <div class="row g-2">
                 <div class="col-4">
-                    <button class="btn btn-shape active w-100" data-shape="placeholder" title="Default Shape">
-                        <div class="shape-icon"><i class="bi bi-box-seam"></i></div>
-                        <div class="tiny mt-1 fw-bold">Default</div>
+                    <button class="btn btn-shape active w-100" data-shape="t-shirt" title="Cotton T-Shirt">
+                        <div class="shape-icon">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                                style="width: 24px; height: 24px;">
+                                <path
+                                    d="M20.38 3.46L16 2a4 4 0 0 1-8 0L3.62 3.46a2 2 0 0 0-1.34 2.23l.58 3.47a1 1 0 0 0 .99.84H6v10c0 1.1.9 2 2 2h8a2 2 0 0 0 2-2V10h2.15a1 1 0 0 0 .99-.84l.58-3.47a2 2 0 0 0-1.34-2.23z">
+                                </path>
+                            </svg>
+                        </div>
+                        <div class="tiny mt-1 fw-bold">T-Shirt</div>
+                    </button>
+                </div>
+                <div class="col-4">
+                    <button class="btn btn-shape w-100" data-shape="shorts" title="Casual Shorts">
+                        <div class="shape-icon">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                                style="width: 24px; height: 24px;">
+                                <path d="M4 2v10l3 10h4v-7h2v7h4l3-10V2H4z"></path>
+                            </svg>
+                        </div>
+                        <div class="tiny mt-1 fw-bold">Shorts</div>
                     </button>
                 </div>
                 <div class="col-4">
                     <button class="btn btn-shape w-100" data-shape="mug" title="Ceramic Mug">
-                        <div class="shape-icon"><i class="bi bi-cup-hot"></i></div>
+                        <div class="shape-icon">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                                style="width: 24px; height: 24px;">
+                                <path d="M17 8h1a4 4 0 1 1 0 8h-1"></path>
+                                <path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V8z"></path>
+                                <line x1="6" y1="2" x2="6" y2="4"></line>
+                                <line x1="10" y1="2" x2="10" y2="4"></line>
+                                <line x1="14" y1="2" x2="14" y2="4"></line>
+                            </svg>
+                        </div>
                         <div class="tiny mt-1 fw-bold">Mug</div>
                     </button>
                 </div>
                 <div class="col-4">
-                    <button class="btn btn-shape w-100" data-shape="tumbler" title="Travel Tumbler">
-                        <div class="shape-icon"><i class="bi bi-cup-straw"></i></div>
-                        <div class="tiny mt-1 fw-bold">Tumbler</div>
-                    </button>
-                </div>
-                <div class="col-4">
-                    <button class="btn btn-shape w-100" data-shape="bag" title="Laptop Bag">
-                        <div class="shape-icon"><i class="bi bi-briefcase"></i></div>
-                        <div class="tiny mt-1 fw-bold">Bag</div>
-                    </button>
-                </div>
-                <div class="col-4">
-                    <button class="btn btn-shape w-100" data-shape="lace" title="ID Lace / Lanyard">
-                        <div class="shape-icon"><i class="bi bi-person-vcard"></i></div>
-                        <div class="tiny mt-1 fw-bold">ID Lace</div>
+                    <button class="btn btn-shape w-100" data-shape="umbrella" title="Vintage Umbrella">
+                        <div class="shape-icon">
+                            <i class="bi bi-umbrella"></i>
+                        </div>
+                        <div class="tiny mt-1 fw-bold">Umbrella</div>
                     </button>
                 </div>
             </div>
         </div>
 
-        <!-- Step 1: Component Selection -->
+        <!-- Step 1: Select Size -->
         <div class="mb-5">
-            <label class="text-accent small text-uppercase fw-bold tracking-wider mb-3 d-block">1. Select
+            <label class="text-accent small text-uppercase fw-bold tracking-wider mb-3 d-block">1. Select Size</label>
+            <div class="row g-2">
+                <div class="col-4">
+                    <button class="btn btn-size w-100" data-size="small" title="Small Size">
+                        <div class="shape-icon fw-bold">S</div>
+                        <div class="tiny mt-1 fw-bold">Small</div>
+                    </button>
+                </div>
+                <div class="col-4">
+                    <button class="btn btn-size active w-100" data-size="medium" title="Medium Size">
+                        <div class="shape-icon fw-bold">M</div>
+                        <div class="tiny mt-1 fw-bold">Medium</div>
+                    </button>
+                </div>
+                <div class="col-4">
+                    <button class="btn btn-size w-100" data-size="large" title="Large Size">
+                        <div class="shape-icon fw-bold">L</div>
+                        <div class="tiny mt-1 fw-bold">Large</div>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 2: Component Selection -->
+        <div class="mb-5">
+            <label class="text-accent small text-uppercase fw-bold tracking-wider mb-3 d-block">2. Select
                 Component</label>
             <div class="component-list d-grid gap-2">
                 <button class="btn btn-config active" data-component="base">
@@ -87,9 +132,9 @@
             </div>
         </div>
 
-        <!-- Step 2: Materials & Textures -->
+        <!-- Step 3: Materials & Textures -->
         <div class="mb-5">
-            <label class="text-accent small text-uppercase fw-bold tracking-wider mb-3 d-block">2. Materials &
+            <label class="text-accent small text-uppercase fw-bold tracking-wider mb-3 d-block">3. Materials &
                 Finishes</label>
             <div class="row g-3">
                 <div class="col-4">
@@ -128,9 +173,9 @@
             </div>
         </div>
 
-        <!-- Step 3: Additional Features -->
+        <!-- Step 4: Additional Features -->
         <div class="mb-4">
-            <label class="text-accent small text-uppercase fw-bold tracking-wider mb-3 d-block">3. Additional
+            <label class="text-accent small text-uppercase fw-bold tracking-wider mb-3 d-block">4. Additional
                 Features</label>
             <div class="feature-item mb-3">
                 <div class="form-check form-switch custom-switch p-0 d-flex justify-content-between align-items-center">

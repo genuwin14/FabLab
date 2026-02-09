@@ -1,36 +1,54 @@
 function createMugModel() {
+// Clear existing children from model_group
 while (model_group.children.length > 0) {
 model_group.remove(model_group.children[0]);
 }
 
-// Mug Body
-const mugGeom = new THREE.CylinderGeometry(1, 1, 2.2, 32, 1, true);
-const bottomGeom = new THREE.CircleGeometry(1, 32);
+// Initialize GLTFLoader
+const loader = new THREE.GLTFLoader();
 
-const mugMat = new THREE.MeshStandardMaterial({
-color: getActiveColor(),
-roughness: 0.1,
-metalness: 0.2,
-side: THREE.DoubleSide
+console.log("Loading cup.glb...");
+
+loader.load('/cup.glb', function(gltf) {
+const model = gltf.scene;
+
+// Position and Scale for Cup
+model.position.set(0, -1, 0); // Center the cup
+model.scale.set(10, 10, 10); // Adjust scale as needed
+
+// Traverse to ensure the material responds to the base color logic
+model.traverse((child) => {
+if (child.isMesh) {
+child.name = 'base';
+// Standard Ceramic look
+if (child.material) {
+child.material.color.setHex(getActiveColor());
+child.material.roughness = 0.1;
+child.material.metalness = 0.2;
+}
+}
 });
 
-const body = new THREE.Mesh(mugGeom, mugMat);
-const bottom = new THREE.Mesh(bottomGeom, mugMat);
-bottom.rotation.x = -Math.PI / 2;
-bottom.position.y = -1.1;
+model_group.add(model);
+console.log("Cup model loaded successfully.");
+},
+function (xhr) {
+if (xhr.total > 0) {
+console.log((xhr.loaded / xhr.total * 100) + '% loaded');
+}
+},
+function(error) {
+console.error('An error happened while loading the cup:', error);
 
-const mugGroup = new THREE.Group();
-mugGroup.add(body);
-mugGroup.add(bottom);
-mugGroup.name = 'base';
-
-// Handle
-const handleGeom = new THREE.TorusGeometry(0.6, 0.15, 16, 32, Math.PI);
-const handle = new THREE.Mesh(handleGeom, mugMat);
-handle.position.set(0.9, 0, 0);
-handle.rotation.z = -Math.PI / 2;
-mugGroup.add(handle);
-
-mugGroup.position.y = 1.1;
-model_group.add(mugGroup);
+// Fallback to Cylinder if Cup fails
+const geometry = new THREE.CylinderGeometry(1, 1, 2.2, 32);
+const material = new THREE.MeshStandardMaterial({
+color: getActiveColor(),
+roughness: 0.1,
+metalness: 0.2
+});
+const mesh = new THREE.Mesh(geometry, material);
+mesh.name = 'base';
+model_group.add(mesh);
+});
 }

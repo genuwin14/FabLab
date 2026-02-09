@@ -60,8 +60,8 @@
             model_group = new THREE.Group();
             scene.add(model_group);
 
-            // Adding a stylized placeholder product
-            createPlaceholderProduct();
+            // Initial model: T-Shirt
+            createTshirtModel();
 
             // 7. Event Listeners
             window.addEventListener('resize', onWindowResize);
@@ -76,11 +76,10 @@
         }
 
         // --- Model Creation Functions ---
-        @include('customer.prod-customize.components.models.placeholder')
         @include('customer.prod-customize.components.models.mug')
-        @include('customer.prod-customize.components.models.tumbler')
-        @include('customer.prod-customize.components.models.bag')
-        @include('customer.prod-customize.components.models.lace')
+        @include('customer.prod-customize.components.models.t-shirt')
+        @include('customer.prod-customize.components.models.shorts')
+        @include('customer.prod-customize.components.models.umbrella')
 
         function getActiveColor() {
             const activeTexture = $('.texture-option.active').data('texture');
@@ -140,6 +139,14 @@
                 updateModelMaterial(texture);
             });
 
+            // Size Selection Logic
+            $('.btn-size').on('click', function () {
+                $('.btn-size').removeClass('active');
+                $(this).addClass('active');
+                const size = $(this).data('size');
+                updateModelSize(size);
+            });
+
             // Shape Selection Logic
             $('.btn-shape').on('click', function () {
                 $('.btn-shape').removeClass('active');
@@ -147,12 +154,15 @@
                 const shape = $(this).data('shape');
                 model_group.scale.set(1, 1, 1);
                 if (shape === 'mug') createMugModel();
-                else if (shape === 'tumbler') createTumblerModel();
-                else if (shape === 'bag') createBagModel();
-                else if (shape === 'lace') createLaceModel();
-                else createPlaceholderProduct();
+                else if (shape === 't-shirt') createTshirtModel();
+                else if (shape === 'shorts') createShortsModel();
+                else if (shape === 'umbrella') createUmbrellaModel();
                 const currentTexture = $('.texture-option.active').data('texture');
                 if (currentTexture) updateModelMaterial(currentTexture);
+
+                // Keep the current size when switching shapes
+                const currentSize = $('.btn-size.active').data('size');
+                if (currentSize) updateModelSize(currentSize);
             });
 
             // Component Selection Logic
@@ -184,6 +194,20 @@
                         child.material.roughness = rough;
                     }
                 });
+            }
+
+            function updateModelSize(size) {
+                if (!model_group) return;
+                let scale = 1.0;
+                if (size === 'small') scale = 0.85;
+                else if (size === 'medium') scale = 1.0;
+                else if (size === 'large') scale = 1.15;
+
+                // Visual feedback: brief pop animation
+                model_group.scale.set(scale * 1.05, scale * 1.05, scale * 1.05);
+                setTimeout(() => {
+                    model_group.scale.set(scale, scale, scale);
+                }, 100);
             }
         });
     </script>
