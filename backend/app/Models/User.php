@@ -64,4 +64,12 @@ class User extends Authenticatable
     {
         return $this->hasMany(Order::class);
     }
+
+    /**
+     * Get the customized designs created by the user.
+     */
+    public function customDesigns()
+    {
+        return $this->hasMany(CustomDesign::class);
+    }
 }

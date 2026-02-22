@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Customer;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Product;
+use App\Models\CustomDesign;
 
 class CartController extends Controller
 {
@@ -24,6 +25,8 @@ class CartController extends Controller
     {
         $productId = $request->input('product_id');
         $quantity = $request->input('quantity', 1);
+        $recipe = $request->input('custom_recipe');
+        $snapshot = $request->input('custom_snapshot');
 
         $product = Product::findOrFail($productId);
 
@@ -36,10 +39,30 @@ class CartController extends Controller
         }
 
         $cart = session()->get('cart', []);
+        $price = $product->price;
+        $designId = null;
+
+        // Handle Customization
+        if ($recipe) {
+            $recipeData = json_decode($recipe, true);
+            $price = $this->calculateCustomPrice($product->price, $recipeData);
+
+            // Save Design (Normalized)
+            $design = CustomDesign::create([
+                'user_id' => auth()->id(),
+                'product_id' => $productId,
+                'recipe' => $recipeData,
+                'snapshot' => $snapshot
+            ]);
+            $designId = $design->custom_design_id;
+        }
+
+        // Generate unique key for cart (allows multiple different designs of same product)
+        $cartKey = $designId ? $productId . '_custom_' . $designId : $productId;
 
         // Check if item already exists in cart, update quantity if so
-        if (isset($cart[$productId])) {
-            $newQuantity = $cart[$productId]['quantity'] + $quantity;
+        if (isset($cart[$cartKey])) {
+            $newQuantity = $cart[$cartKey]['quantity'] + $quantity;
 
             if ($product->stock < $newQuantity) {
                 return response()->json([
@@ -48,15 +71,16 @@ class CartController extends Controller
                 ], 400);
             }
 
-            $cart[$productId]['quantity'] = $newQuantity;
+            $cart[$cartKey]['quantity'] = $newQuantity;
         } else {
             // New item to cart
-            $cart[$productId] = [
+            $cart[$cartKey] = [
                 "product_id" => $product->product_id,
-                "name" => $product->name,
+                "custom_design_id" => $designId,
+                "name" => $product->name . ($designId ? ' (Customized)' : ''),
                 "quantity" => (int) $quantity,
-                "price" => $product->price,
-                "image" => $product->image,
+                "price" => $price,
+                "image" => $snapshot ?: $product->image,
                 "unit" => $product->unit,
                 "sku" => $product->sku
             ];
@@ -186,6 +210,7 @@ class CartController extends Controller
                 \App\Models\OrderItem::create([
                     'order_id' => $order->order_id,
                     'product_id' => $item['product_id'],
+                    'custom_design_id' => $item['custom_design_id'] ?? null,
                     'quantity' => $item['quantity'],
                     'price' => $item['price']
                 ]);
@@ -249,5 +274,24 @@ class CartController extends Controller
             $totalItems += $item['quantity'];
         }
         return $totalItems;
+    }
+
+    /**
+     * Helper to calculate customization price server-side
+     */
+    private function calculateCustomPrice($basePrice, $recipe)
+    {
+        $extra = 0;
+        $elements = $recipe['elements'] ?? [];
+
+        $extra += count($elements['text'] ?? []) * 50;
+        $extra += count($elements['shapes'] ?? []) * 30;
+        $extra += count($elements['logos'] ?? []) * 150;
+
+        if (isset($recipe['features']['led_lighting']) && $recipe['features']['led_lighting']) {
+            $extra += 500;
+        }
+
+        return $basePrice + $extra;
     }
 }

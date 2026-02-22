@@ -13,9 +13,18 @@ class OrderItem extends Model
     protected $fillable = [
         'order_id',
         'product_id',
+        'custom_design_id',
         'quantity',
         'price'
     ];
+
+    /**
+     * Get the customized design associated with the order item.
+     */
+    public function customDesign()
+    {
+        return $this->belongsTo(CustomDesign::class, 'custom_design_id', 'custom_design_id');
+    }
 
     /**
      * Get the order that owns the order item.

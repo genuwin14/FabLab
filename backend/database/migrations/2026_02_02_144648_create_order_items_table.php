@@ -15,6 +15,7 @@ return new class extends Migration {
             $table->unsignedBigInteger('order_id');
             $table->foreign('order_id')->references('order_id')->on('orders')->onDelete('cascade'); // Parent order
             $table->foreignId('product_id')->constrained('products', 'product_id')->onDelete('cascade'); // Item purchased
+            $table->unsignedBigInteger('custom_design_id')->nullable(); // Link to customization if applicable
             $table->integer('quantity'); // Amount purchased
             $table->decimal('price', 12, 2); // Snapshot price at time of purchase
         });

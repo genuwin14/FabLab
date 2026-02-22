@@ -17,7 +17,8 @@
                 Style</label>
             <div class="row g-2">
                 <div class="col-6">
-                    <button class="btn btn-shape active w-100" data-shape="t-shirt" title="Cotton T-Shirt">
+                    <button class="btn btn-shape {{ ($initialShape ?? 't-shirt') === 't-shirt' ? 'active' : '' }} w-100"
+                        data-shape="t-shirt" title="Cotton T-Shirt">
                         <div class="shape-icon">
                             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
@@ -32,7 +33,8 @@
                 </div>
 
                 <div class="col-6">
-                    <button class="btn btn-shape w-100" data-shape="mug" title="Ceramic Mug">
+                    <button class="btn btn-shape {{ ($initialShape ?? 't-shirt') === 'mug' ? 'active' : '' }} w-100"
+                        data-shape="mug" title="Ceramic Mug">
                         <div class="shape-icon">
                             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
@@ -109,7 +111,8 @@
         <div class="mb-5">
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <label class="text-accent small text-uppercase fw-bold tracking-wider mb-0">3. Custom Text</label>
-                <button type="button" id="addTextBtn" class="btn btn-tiny btn-outline-accent rounded-pill px-2 py-1 small" style="font-size: 0.65rem;">
+                <button type="button" id="addTextBtn"
+                    class="btn btn-tiny btn-outline-accent rounded-pill px-2 py-1 small" style="font-size: 0.65rem;">
                     <i class="bi bi-plus-lg"></i> Add Text
                 </button>
             </div>
@@ -122,7 +125,8 @@
         <div class="mb-5">
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <label class="text-accent small text-uppercase fw-bold tracking-wider mb-0">4. Custom Shapes</label>
-                <button type="button" id="addShapeBtn" class="btn btn-tiny btn-outline-accent rounded-pill px-2 py-1 small" style="font-size: 0.65rem;">
+                <button type="button" id="addShapeBtn"
+                    class="btn btn-tiny btn-outline-accent rounded-pill px-2 py-1 small" style="font-size: 0.65rem;">
                     <i class="bi bi-plus-lg"></i> Add Shape
                 </button>
             </div>
@@ -137,7 +141,9 @@
                 <label class="text-accent small text-uppercase fw-bold tracking-wider mb-0">5. Custom Logos</label>
                 <div>
                     <input type="file" id="logoInput" class="d-none" accept="image/*,.svg">
-                    <button type="button" onclick="document.getElementById('logoInput').click()" class="btn btn-tiny btn-outline-accent rounded-pill px-2 py-1 small" style="font-size: 0.65rem;">
+                    <button type="button" onclick="document.getElementById('logoInput').click()"
+                        class="btn btn-tiny btn-outline-accent rounded-pill px-2 py-1 small"
+                        style="font-size: 0.65rem;">
                         <i class="bi bi-upload"></i> Upload Logo
                     </button>
                 </div>
@@ -165,21 +171,25 @@
     <div class="p-4 border-top border-white-10 bg-darker-glass">
         <div class="d-flex justify-content-between align-items-end mb-4">
             <div>
-                <div class="text-white-50 tiny text-uppercase fw-bold mb-1">Estimated Base Price</div>
-                <div class="text-white h4 fw-bold mb-0">₱4,500.00</div>
+                <div class="text-white-50 tiny text-uppercase fw-bold mb-1">Total Estimated Price</div>
+                <div id="total-price-display" class="text-white h4 fw-bold mb-0">
+                    ₱{{ number_format($product->price ?? 0, 2) }}</div>
             </div>
             <div class="text-end">
-                <span class="badge bg-accent text-primary rounded-pill px-3">+ ₱500 Premium</span>
+                <span id="customization-fee-badge"
+                    class="badge bg-accent text-primary rounded-pill px-3">Standard</span>
             </div>
         </div>
         <div class="row g-2">
             <div class="col-6">
-                <button class="btn btn-outline-light border-white-10 w-100 rounded-pill py-2 small fw-bold">
+                <button id="btn-save-design"
+                    class="btn btn-outline-light border-white-10 w-100 rounded-pill py-2 small fw-bold">
                     <i class="bi bi-save me-1"></i> Save
                 </button>
             </div>
             <div class="col-6">
-                <button class="btn btn-accent w-100 rounded-pill py-2 small fw-bold shadow-gold">
+                <button id="btn-add-to-cart-custom"
+                    class="btn btn-accent w-100 rounded-pill py-2 small fw-bold shadow-gold">
                     <i class="bi bi-cart-plus me-1"></i> Add to Cart
                 </button>
             </div>

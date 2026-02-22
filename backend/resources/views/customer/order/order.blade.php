@@ -176,13 +176,17 @@
                                                                             <td style="width: 40px;">
                                                                                 <div class="rounded-2 overflow-hidden border bg-white"
                                                                                     style="width: 30px; height: 30px;">
-                                                                                    <img src="{{ $item->product->image ?: asset('img/FABLAB-LOGO.png') }}"
+                                                                                    <img src="{{ ($item->customDesign && $item->customDesign->snapshot) ? $item->customDesign->snapshot : ($item->product->image ?: asset('img/FABLAB-LOGO.png')) }}"
                                                                                         class="w-100 h-100 object-fit-cover" alt="">
                                                                                 </div>
                                                                             </td>
                                                                             <td>
                                                                                 <div class="fw-bold text-dark">
                                                                                     {{ $item->product->name }}
+                                                                                    @if($item->custom_design_id)
+                                                                                        <span
+                                                                                            class="badge bg-soft-primary text-primary tiny rounded-pill border border-primary-subtle ms-1">Custom</span>
+                                                                                    @endif
                                                                                 </div>
                                                                             </td>
                                                                             <td class="text-end fw-medium">

@@ -42,14 +42,14 @@ class ProductSeeder extends Seeder
                     ['id' => $ecoMaterials->supplier_id, 'cost' => 380.00, 'moq' => 10, 'lead' => 3, 'default' => true]
                 ]
             ],
-            // Scenario 2: Low Stock (Trigger Monitoring), Multiple Suppliers
+            // Scenario 2: Healthy Stock (Customizable), Multiple Suppliers
             [
                 'sku' => 'MG-WHT-11',
                 'name' => 'White Ceramic Mug 11oz',
                 'description' => 'Blank white mugs for sublimation printing.',
                 'brand' => 'Yiwu',
                 'price' => 85.00,
-                'stock' => 8, // Below threshold of 24
+                'stock' => 100, // Healthy stock for easy testing
                 'category_id' => $merchandiseId,
                 'unit' => 'pcs',
                 'low_stock_threshold' => 24,
@@ -106,7 +106,7 @@ class ProductSeeder extends Seeder
                 'status' => 'active',
                 'suppliers' => [] // No suppliers assigned yet
             ],
-            // Scenario 6: Healthy Stock
+            // Scenario 6: Healthy Stock (Customizable)
             [
                 'sku' => 'MG-BLK-11',
                 'name' => 'Black Ceramic Mug 11oz',
@@ -117,9 +117,27 @@ class ProductSeeder extends Seeder
                 'category_id' => $merchandiseId,
                 'unit' => 'pcs',
                 'low_stock_threshold' => 24,
+                'is_customizable' => true,
                 'status' => 'active',
                 'suppliers' => [
                     ['id' => $genMerch->supplier_id, 'cost' => 55.00, 'moq' => 36, 'lead' => 7, 'default' => true]
+                ]
+            ],
+            // Scenario 7: Customizable T-Shirt
+            [
+                'sku' => 'TS-CTN-WHT',
+                'name' => 'White Cotton T-Shirt',
+                'description' => 'Premium 100% cotton white t-shirt for DTG or vinyl printing.',
+                'brand' => 'BlueCorner',
+                'price' => 180.00,
+                'stock' => 200,
+                'category_id' => $merchandiseId,
+                'unit' => 'pcs',
+                'low_stock_threshold' => 50,
+                'is_customizable' => true,
+                'status' => 'active',
+                'suppliers' => [
+                    ['id' => $genMerch->supplier_id, 'cost' => 110.00, 'moq' => 20, 'lead' => 5, 'default' => true]
                 ]
             ]
         ];

@@ -39,4 +39,12 @@ class Product extends Model
     {
         return $this->hasMany(OrderItem::class, 'product_id', 'product_id');
     }
+
+    /**
+     * Get the customized designs created for this product.
+     */
+    public function customDesigns()
+    {
+        return $this->hasMany(CustomDesign::class, 'product_id', 'product_id');
+    }
 }

@@ -32,7 +32,8 @@
                 </a>
             </li>
             <li class="nav-item">
-                <a href="#" class="nav-link text-white hover-accent">
+                <a href="{{ route('customer.customize.my-designs') }}"
+                    class="nav-link {{ request()->routeIs('customer.customize.my-designs') ? 'active bg-accent text-primary fw-bold' : 'text-white hover-accent' }}">
                     <i class="bi bi-vector-pen me-2"></i>
                     Personal Design
                 </a>

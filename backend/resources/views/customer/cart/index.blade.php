@@ -74,7 +74,12 @@
                                                                     </div>
                                                                     <div>
                                                                         <h6 class="fw-bold text-dark mb-1">{{ $item['name'] }}</h6>
-                                                                        <div class="small text-muted">{{ $item['sku'] }}</div>
+                                                                        <div class="d-flex align-items-center gap-2">
+                                                                            <div class="small text-muted">{{ $item['sku'] }}</div>
+                                                                            @if(isset($item['custom_design_id']))
+                                                                                <span class="badge bg-soft-primary text-primary border border-primary-subtle tiny rounded-pill">Custom Design</span>
+                                                                            @endif
+                                                                        </div>
                                                                     </div>
                                                                 </div>
                                                             </td>
