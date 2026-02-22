@@ -16,7 +16,7 @@
             <label class="text-accent small text-uppercase fw-bold tracking-wider mb-3 d-block">0. Choose Base
                 Style</label>
             <div class="row g-2">
-                <div class="col-4">
+                <div class="col-6">
                     <button class="btn btn-shape active w-100" data-shape="t-shirt" title="Cotton T-Shirt">
                         <div class="shape-icon">
                             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -30,19 +30,8 @@
                         <div class="tiny mt-1 fw-bold">T-Shirt</div>
                     </button>
                 </div>
-                <div class="col-4">
-                    <button class="btn btn-shape w-100" data-shape="shorts" title="Casual Shorts">
-                        <div class="shape-icon">
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                                style="width: 24px; height: 24px;">
-                                <path d="M4 2v10l3 10h4v-7h2v7h4l3-10V2H4z"></path>
-                            </svg>
-                        </div>
-                        <div class="tiny mt-1 fw-bold">Shorts</div>
-                    </button>
-                </div>
-                <div class="col-4">
+
+                <div class="col-6">
                     <button class="btn btn-shape w-100" data-shape="mug" title="Ceramic Mug">
                         <div class="shape-icon">
                             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -56,14 +45,6 @@
                             </svg>
                         </div>
                         <div class="tiny mt-1 fw-bold">Mug</div>
-                    </button>
-                </div>
-                <div class="col-4">
-                    <button class="btn btn-shape w-100" data-shape="umbrella" title="Vintage Umbrella">
-                        <div class="shape-icon">
-                            <i class="bi bi-umbrella"></i>
-                        </div>
-                        <div class="tiny mt-1 fw-bold">Umbrella</div>
                     </button>
                 </div>
             </div>
@@ -94,101 +75,83 @@
             </div>
         </div>
 
-        <!-- Step 2: Component Selection -->
-        <div class="mb-5">
-            <label class="text-accent small text-uppercase fw-bold tracking-wider mb-3 d-block">2. Select
-                Component</label>
-            <div class="component-list d-grid gap-2">
-                <button class="btn btn-config active" data-component="base">
-                    <div class="d-flex align-items-center gap-3">
-                        <div class="icon-box"><i class="bi bi-layers"></i></div>
-                        <div class="text-start">
-                            <div class="fw-bold small">Main Base</div>
-                            <div class="text-white-50 tiny">Primary Structure</div>
-                        </div>
-                    </div>
-                    <i class="bi bi-check2-circle ms-auto"></i>
-                </button>
-                <button class="btn btn-config" data-component="accents">
-                    <div class="d-flex align-items-center gap-3">
-                        <div class="icon-box"><i class="bi bi-stars"></i></div>
-                        <div class="text-start">
-                            <div class="fw-bold small">Accent Trim</div>
-                            <div class="text-white-50 tiny">Decorative Elements</div>
-                        </div>
-                    </div>
-                    <i class="bi bi-circle ms-auto opacity-25"></i>
-                </button>
-                <button class="btn btn-config" data-component="hardware">
-                    <div class="d-flex align-items-center gap-3">
-                        <div class="icon-box"><i class="bi bi-nut"></i></div>
-                        <div class="text-start">
-                            <div class="fw-bold small">Hardware</div>
-                            <div class="text-white-50 tiny">Fixtures & Bolts</div>
-                        </div>
-                    </div>
-                    <i class="bi bi-circle ms-auto opacity-25"></i>
-                </button>
-            </div>
-        </div>
 
-        <!-- Step 3: Materials & Textures -->
+
+        <!-- Step 2: Materials & Textures -->
         <div class="mb-5">
-            <label class="text-accent small text-uppercase fw-bold tracking-wider mb-3 d-block">3. Materials &
+            <label class="text-accent small text-uppercase fw-bold tracking-wider mb-3 d-block">2. Materials &
                 Finishes</label>
             <div class="row g-3">
-                <div class="col-4">
-                    <div class="texture-option active" data-texture="gold" title="Gold">
-                        <div class="texture-preview" style="background: linear-gradient(45deg, #FFD700, #FDB931);">
-                        </div>
+                <div class="col-3">
+                    <div class="texture-option active" data-texture="blue" title="Blue">
+                        <div class="texture-preview" style="background-color: #0000FF;"></div>
                     </div>
                 </div>
-                <div class="col-4">
-                    <div class="texture-option" data-texture="carbon" title="Carbon Fiber">
-                        <div class="texture-preview"
-                            style="background: radial-gradient(circle, #2c3e50 0%, #000000 100%);"></div>
+                <div class="col-3">
+                    <div class="texture-option" data-texture="black" title="Black">
+                        <div class="texture-preview" style="background-color: #000000;"></div>
                     </div>
                 </div>
-                <div class="col-4">
-                    <div class="texture-option" data-texture="chrome" title="Chrome">
-                        <div class="texture-preview"
-                            style="background: linear-gradient(135deg, #e6e9f0 0%, #eef1f5 100%);"></div>
+                <div class="col-3">
+                    <div class="texture-option" data-texture="white" title="White">
+                        <div class="texture-preview" style="background-color: #FFFFFF; border: 1px solid #ccc;"></div>
                     </div>
                 </div>
-                <div class="col-4">
-                    <div class="texture-option" data-texture="matte-black" title="Matte Black">
-                        <div class="texture-preview" style="background-color: #1a1a1a;"></div>
-                    </div>
-                </div>
-                <div class="col-4">
-                    <div class="texture-option" data-texture="royal-blue" title="Royal Blue">
-                        <div class="texture-preview" style="background-color: #0047AB;"></div>
-                    </div>
-                </div>
-                <div class="col-4">
-                    <div class="texture-option" data-texture="emerald" title="Emerald Green">
-                        <div class="texture-preview" style="background-color: #50C878;"></div>
+                <div class="col-3">
+                    <div class="texture-option" data-texture="yellow" title="Dark Yellow">
+                        <div class="texture-preview" style="background-color: #FFC107;"></div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Step 4: Additional Features -->
+        <!-- Step 3: Custom Text -->
+        <div class="mb-5">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <label class="text-accent small text-uppercase fw-bold tracking-wider mb-0">3. Custom Text</label>
+                <button type="button" id="addTextBtn" class="btn btn-tiny btn-outline-accent rounded-pill px-2 py-1 small" style="font-size: 0.65rem;">
+                    <i class="bi bi-plus-lg"></i> Add Text
+                </button>
+            </div>
+            <div id="textList" class="d-grid gap-3">
+                <!-- Dynamic text items go here -->
+            </div>
+        </div>
+
+        <!-- Step 4: Custom Shapes -->
+        <div class="mb-5">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <label class="text-accent small text-uppercase fw-bold tracking-wider mb-0">4. Custom Shapes</label>
+                <button type="button" id="addShapeBtn" class="btn btn-tiny btn-outline-accent rounded-pill px-2 py-1 small" style="font-size: 0.65rem;">
+                    <i class="bi bi-plus-lg"></i> Add Shape
+                </button>
+            </div>
+            <div id="shapeList" class="d-grid gap-3">
+                <!-- Dynamic shape items go here -->
+            </div>
+        </div>
+
+        <!-- Step 5: Custom Logos / Images -->
+        <div class="mb-5">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <label class="text-accent small text-uppercase fw-bold tracking-wider mb-0">5. Custom Logos</label>
+                <div>
+                    <input type="file" id="logoInput" class="d-none" accept="image/*,.svg">
+                    <button type="button" onclick="document.getElementById('logoInput').click()" class="btn btn-tiny btn-outline-accent rounded-pill px-2 py-1 small" style="font-size: 0.65rem;">
+                        <i class="bi bi-upload"></i> Upload Logo
+                    </button>
+                </div>
+            </div>
+            <div id="logoList" class="d-grid gap-3">
+                <!-- Dynamic logo items go here -->
+            </div>
+        </div>
+
+        <!-- Step 6: Additional Features -->
         <div class="mb-4">
-            <label class="text-accent small text-uppercase fw-bold tracking-wider mb-3 d-block">4. Additional
+            <label class="text-accent small text-uppercase fw-bold tracking-wider mb-3 d-block">6. Additional
                 Features</label>
-            <div class="feature-item mb-3">
-                <div class="form-check form-switch custom-switch p-0 d-flex justify-content-between align-items-center">
-                    <label class="form-check-label text-white small" for="glossyFinish">Premium Glossy Finish</label>
-                    <input class="form-check-input" type="checkbox" id="glossyFinish" checked>
-                </div>
-            </div>
-            <div class="feature-item mb-3">
-                <div class="form-check form-switch custom-switch p-0 d-flex justify-content-between align-items-center">
-                    <label class="form-check-label text-white small" for="engraving">Laser Engraving</label>
-                    <input class="form-check-input" type="checkbox" id="engraving">
-                </div>
-            </div>
+
             <div class="feature-item">
                 <div class="form-check form-switch custom-switch p-0 d-flex justify-content-between align-items-center">
                     <label class="form-check-label text-white small" for="lighting">Internal LED Lighting</label>
