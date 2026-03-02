@@ -3,7 +3,7 @@
 @section('content')
     <div class="d-flex h-screen overflow-hidden" style="background-color: #05111a;">
         <!-- Desktop Sidebar -->
-        <aside class="d-none d-md-block border-end border-white-10"
+        <aside class="d-none d-md-block border-end border-white border-opacity-10 flex-shrink-0"
             style="width: 280px; z-index: 1040; background-color: #05111a;">
             @include('customer.partials.sidebar')
         </aside>
@@ -19,7 +19,8 @@
         <!-- Main Content -->
         <div class="flex-grow-1 d-flex flex-column overflow-hidden">
             <!-- Top Navbar -->
-            <header class="sticky-top bg-white shadow-sm" style="z-index: 1030;">
+            <header class="sticky-top border-bottom border-white border-opacity-10"
+                style="z-index: 1030; background-color: #05111a;">
                 @include('customer.partials.navbar')
             </header>
 
@@ -29,16 +30,16 @@
                 <!-- LEFT PANEL: Components, Features, Textures -->
                 @include('customer.prod-customize.components.control-panel')
 
-                    <!-- RIGHT PANEL: 3D Visualization -->
-                    @include('customer.prod-customize.components.viewer-panel')
+                <!-- RIGHT PANEL: 3D Visualization -->
+                @include('customer.prod-customize.components.viewer-panel')
 
-                </main>
-            </div>
+            </main>
         </div>
+    </div>
 
-        <!-- Customizer Styles -->
-        @include('customer.prod-customize.components.styles')
+    <!-- Customizer Styles -->
+    @include('customer.prod-customize.components.styles')
 
-        <!-- Customizer Scripts -->
-        @include('customer.prod-customize.components.scripts')
+    <!-- Customizer Scripts -->
+    @include('customer.prod-customize.components.scripts')
 @endsection

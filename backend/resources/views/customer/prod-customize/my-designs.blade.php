@@ -3,31 +3,22 @@
 @section('content')
     <div class="d-flex h-screen overflow-hidden" style="background-color: #f8f9fa;">
         <!-- Desktop Sidebar -->
-        <aside class="d-none d-md-block border-end shadow-sm flex-shrink-0" style="width: 280px; z-index: 1040;">
+        <aside class="d-none d-md-block border-end border-white border-opacity-10 flex-shrink-0"
+            style="width: 280px; z-index: 1040; background-color: #05111a;">
             @include('customer.partials.sidebar')
         </aside>
 
         <!-- Main Content -->
         <div class="flex-grow-1 d-flex flex-column overflow-hidden" style="background-color: #f1f4f8;">
             <!-- Top Navbar -->
-            <header class="sticky-top bg-white shadow-sm" style="z-index: 1030;">
+            <header class="sticky-top border-bottom border-white border-opacity-10"
+                style="z-index: 1030; background-color: #05111a;">
                 @include('customer.partials.navbar')
             </header>
 
             <!-- Page Content -->
             <main class="flex-grow-1 p-4 overflow-y-auto custom-scrollbar">
                 <div class="container-fluid">
-                    <div class="d-flex justify-content-between align-items-center mb-4">
-                        <div>
-                            <h4 class="fw-bold text-dark mb-1">My Personal Designs</h4>
-                            <p class="text-muted small mb-0">Manage and view your custom creations.</p>
-                        </div>
-                        <a href="{{ route('customer.customize.index') }}"
-                            class="btn btn-primary rounded-pill px-4 fw-bold small">
-                            <i class="bi bi-plus-lg me-1"></i> Create New
-                        </a>
-                    </div>
-
                     <div class="row g-4">
                         @forelse($designs as $design)
                             <div class="col-sm-6 col-md-4 col-xl-3">
@@ -52,31 +43,41 @@
                                                 {{ $design->created_at->diffForHumans() }}
                                             </span>
                                         </div>
-                                    </div>
-                                    <div class="card-body p-3">
-                                        <h6 class="fw-bold text-dark mb-1 text-truncate">
-                                            {{ $design->product->name ?? 'Custom Design' }}
-                                        </h6>
-                                        <p class="text-muted tiny mb-3">
-                                            {{ count($design->recipe['elements']['text'] ?? []) }} Text |
-                                            {{ count($design->recipe['elements']['logos'] ?? []) }} Logos
-                                        </p>
 
+                                        <!-- Bottom Info Overlay -->
+                                        <div class="position-absolute bottom-0 start-0 w-100 p-3"
+                                            style="background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 100%); z-index: 5;">
+                                            <h6 class="fw-bold text-white mb-1 text-truncate"
+                                                style="text-shadow: 0 2px 4px rgba(0,0,0,0.5);">
+                                                {{ $design->product->name ?? 'Custom Design' }}
+                                            </h6>
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <p class="text-white-50 tiny mb-0">
+                                                    {{ count($design->recipe['elements']['text'] ?? []) }} Text |
+                                                    {{ count($design->recipe['elements']['logos'] ?? []) }} Logos
+                                                </p>
+                                                <span
+                                                    class="fw-bold text-accent">₱{{ number_format($design->calculated_price, 2) }}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="card-body p-3">
                                         <div class="d-flex gap-2">
                                             <a href="{{ route('customer.customize.index', ['design_id' => $design->custom_design_id]) }}"
-                                                class="btn btn-soft-primary flex-grow-1 rounded-pill tiny fw-bold">
+                                                class="btn btn-soft-primary flex-grow-1 rounded-3 tiny fw-bold py-2">
                                                 <i class="bi bi-pencil-square me-1"></i> Edit
                                             </a>
-                                            @if($design->product_id)
-                                                <button class="btn btn-accent rounded-pill tiny fw-bold btn-order-again"
-                                                    data-id="{{ $design->product_id }}"
-                                                    data-recipe="{{ json_encode($design->recipe) }}"
-                                                    data-snapshot="{{ $design->snapshot }}">
-                                                    Order
-                                                </button>
-                                            @endif
-                                            <button class="btn btn-soft-danger rounded-circle tiny p-2 btn-delete-design"
-                                                data-id="{{ $design->custom_design_id }}" title="Delete Design">
+                                            <button class="btn btn-soft-accent rounded-3 tiny fw-bold btn-order-again py-2"
+                                                data-id="{{ $design->product_id }}"
+                                                data-recipe="{{ json_encode($design->recipe) }}"
+                                                data-snapshot="{{ $design->snapshot }}" title="Add to Cart"
+                                                style="width: 42px;">
+                                                <i class="bi bi-cart-plus"></i>
+                                            </button>
+                                            <button class="btn btn-soft-danger rounded-3 tiny fw-bold py-2 btn-delete-design"
+                                                data-id="{{ $design->custom_design_id }}" title="Delete Design"
+                                                style="width: 42px;">
                                                 <i class="bi bi-trash"></i>
                                             </button>
                                         </div>
@@ -101,6 +102,7 @@
     </div>
 
     @include('customer.prod-customize.modals.preview-3d')
+    @include('customer.prod-customize.modals.delete-confirm')
 
     <style>
         .design-card {
@@ -135,17 +137,24 @@
             background-color: #fff1f2;
             color: #ef4444;
             border: none;
-            width: 32px;
-            height: 32px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
             transition: all 0.2s;
         }
 
         .btn-soft-danger:hover {
             background-color: #ef4444;
             color: white;
+        }
+
+        .btn-soft-accent {
+            background-color: #fff9e6;
+            color: #ffc508;
+            border: none;
+            transition: all 0.2s;
+        }
+
+        .btn-soft-accent:hover {
+            background-color: #ffc508;
+            color: #0e2e45;
         }
 
         .btn-soft-secondary {
@@ -167,11 +176,12 @@
         }
 
         .btn-dark-glass:hover {
-            background: rgba(239, 68, 68, 0.8) !important;
-            /* Soft red hover for exit */
-            color: white !important;
-            border-color: transparent;
-            transform: rotate(90deg);
+            background: rgba(255, 255, 255, 0.2) !important;
+            /* Lighter glass on hover */
+            color: #f1f4f8 !important;
+            /* Soft red icon on hover */
+            border-color: rgba(255, 255, 255, 0.5);
+            transform: scale(1.1);
         }
     </style>
 
@@ -197,8 +207,11 @@
                 let currentDesignData = null;
                 let currentInitialShape = 't-shirt';
                 let currentDesignId = null;
+                let isEngineInitializing = false;
 
                 $('.btn-preview-design').on('click', function () {
+                    if (isEngineInitializing) return;
+
                     const btn = $(this);
                     currentDesignId = btn.data('id');
                     currentDesignData = btn.data('recipe');
@@ -207,14 +220,14 @@
                     $('#previewDesignModal').modal('show');
 
                     $('#preview-three-container').empty();
-                    $('#preview-loader').show();
                 });
 
                 // Initialize 3D ONLY when modal is fully visible
                 $('#previewDesignModal').off('shown.bs.modal').on('shown.bs.modal', function () {
                     // Safety check to prevent double init
-                    if ($('#preview-three-container canvas').length > 0) return;
+                    if (isEngineInitializing || $('#preview-three-container canvas').length > 0) return;
 
+                    isEngineInitializing = true;
                     window.CustomizerConfig = window.CustomizerConfig || {};
                     window.CustomizerConfig.initialShape = currentInitialShape;
                     window.CustomizerConfig.productId = currentDesignId;
@@ -228,8 +241,16 @@
                     $('#preview-btn-edit').attr('href', `/customer/customize?design_id=${currentDesignId}`);
                 });
 
+                // Clear focus to prevent ARIA warnings
+                $('#previewDesignModal').on('hide.bs.modal', function () {
+                    if (document.activeElement && document.activeElement instanceof HTMLElement) {
+                        document.activeElement.blur();
+                    }
+                });
+
                 // Clear scene when modal is hidden
                 $('#previewDesignModal').off('hidden.bs.modal').on('hidden.bs.modal', function () {
+                    isEngineInitializing = false;
                     if (typeof renderer !== 'undefined' && renderer) {
                         renderer.dispose();
                         if (renderer.domElement && renderer.domElement.parentNode) {
@@ -238,7 +259,6 @@
                         renderer = null;
                     }
                     $('#preview-three-container').empty();
-                    $('#preview-loader').show();
                 });
                 $('.btn-order-again').on('click', function () {
                     const btn = $(this);
@@ -272,39 +292,51 @@
                     });
                 });
 
+                let designToDelete = null;
+                let cardToDelete = null;
+
                 $('.btn-delete-design').on('click', function () {
                     const btn = $(this);
-                    const designId = btn.data('id');
-                    const card = btn.closest('.col-sm-6');
+                    designToDelete = btn.data('id');
+                    cardToDelete = btn.closest('.col-sm-6');
 
-                    if (confirm('Are you sure you want to delete this design? This action cannot be undone.')) {
-                        btn.prop('disabled', true);
-                        btn.html('<span class="spinner-border spinner-border-sm"></span>');
+                    $('#deleteConfirmModal').modal('show');
+                });
 
-                        $.ajax({
-                            url: `/customer/customize/${designId}`,
-                            method: "DELETE",
-                            data: {
-                                _token: "{{ csrf_token() }}"
-                            },
-                            success: function (response) {
-                                if (response.success) {
-                                    showToast(response.message, 'success');
-                                    card.fadeOut(300, function () {
-                                        $(this).remove();
-                                        if ($('.design-card').length === 0) {
-                                            location.reload(); // Reload to show empty state
-                                        }
-                                    });
-                                }
-                            },
-                            error: function () {
-                                showToast('Error deleting design', 'error');
-                                btn.prop('disabled', false);
-                                btn.html('<i class="bi bi-trash"></i>');
+                $('#confirm-delete-btn').on('click', function () {
+                    const btn = $(this);
+                    const originalContent = btn.html();
+
+                    btn.prop('disabled', true);
+                    btn.html('<span class="spinner-border spinner-border-sm"></span> Deleting...');
+
+                    $.ajax({
+                        url: `/customer/customize/${designToDelete}`,
+                        method: "DELETE",
+                        data: {
+                            _token: "{{ csrf_token() }}"
+                        },
+                        success: function (response) {
+                            $('#deleteConfirmModal').modal('hide');
+                            if (response.success) {
+                                showToast(response.message, 'success');
+                                cardToDelete.fadeOut(300, function () {
+                                    $(this).remove();
+                                    if ($('.design-card').length === 0) {
+                                        location.reload();
+                                    }
+                                });
                             }
-                        });
-                    }
+                        },
+                        error: function () {
+                            $('#deleteConfirmModal').modal('hide');
+                            showToast('Error deleting design', 'error');
+                        },
+                        complete: function () {
+                            btn.prop('disabled', false);
+                            btn.html(originalContent);
+                        }
+                    });
                 });
             });
         </script>

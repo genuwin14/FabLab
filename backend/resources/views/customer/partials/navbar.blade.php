@@ -10,8 +10,8 @@
         <div class="me-auto overflow-hidden text-nowrap">
             <h5 class="fw-bold mb-0 text-white">
                 @if(request()->routeIs('customer.shop')) Shop Products
-                @elseif(request()->routeIs('customer.customize*')) Customize Product
-                @elseif(request()->routeIs('customer.design*')) Personal Design
+                @elseif(request()->routeIs('customer.customize.my-designs')) My Personal Design
+                @elseif(request()->routeIs('customer.customize.index')) Customize Product
                 @elseif(request()->routeIs('customer.orders*')) My Orders
                 @elseif(request()->routeIs('customer.cart*')) My Cart
                 @elseif(request()->routeIs('customer.settings*')) Settings
