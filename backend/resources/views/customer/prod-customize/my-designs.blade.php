@@ -32,7 +32,9 @@
                                             <button
                                                 class="btn btn-dark-glass text-white rounded-circle backdrop-blur tiny p-2 btn-preview-design"
                                                 data-id="{{ $design->custom_design_id }}"
+                                                data-product-id="{{ $design->product_id }}"
                                                 data-recipe="{{ json_encode($design->recipe) }}"
+                                                data-snapshot="{{ $design->snapshot }}"
                                                 data-shape="{{ $design->recipe['base_style'] ?? 't-shirt' }}"
                                                 title="View 3D Model">
                                                 <i class="bi bi-eye"></i>
@@ -69,7 +71,7 @@
                                                 <i class="bi bi-pencil-square me-1"></i> Edit
                                             </a>
                                             <button class="btn btn-soft-accent rounded-3 tiny fw-bold btn-order-again py-2"
-                                                data-id="{{ $design->product_id }}"
+                                                data-product-id="{{ $design->product_id }}"
                                                 data-recipe="{{ json_encode($design->recipe) }}"
                                                 data-snapshot="{{ $design->snapshot }}" title="Add to Cart"
                                                 style="width: 42px;">
@@ -207,6 +209,8 @@
                 let currentDesignData = null;
                 let currentInitialShape = 't-shirt';
                 let currentDesignId = null;
+                let currentProductId = null;
+                let currentSnapshot = null;
                 let isEngineInitializing = false;
 
                 $('.btn-preview-design').on('click', function () {
@@ -216,9 +220,10 @@
                     currentDesignId = btn.data('id');
                     currentDesignData = btn.data('recipe');
                     currentInitialShape = btn.data('shape');
+                    currentProductId = btn.data('product-id');
+                    currentSnapshot = btn.data('snapshot');
 
                     $('#previewDesignModal').modal('show');
-
                     $('#preview-three-container').empty();
                 });
 
@@ -260,21 +265,30 @@
                     }
                     $('#preview-three-container').empty();
                 });
-                $('.btn-order-again').on('click', function () {
-                    const btn = $(this);
+                /**
+                 * Common Add to Cart Logic
+                 */
+                function addDesignToCart(productId, recipe, snapshot, btn) {
                     const originalContent = btn.html();
                     btn.html('<span class="spinner-border spinner-border-sm"></span>');
                     btn.prop('disabled', true);
+
+                    if (!productId) {
+                        showToast('Product information missing', 'error');
+                        btn.html(originalContent);
+                        btn.prop('disabled', false);
+                        return;
+                    }
 
                     $.ajax({
                         url: "{{ route('customer.cart.add') }}",
                         method: "POST",
                         data: {
                             _token: "{{ csrf_token() }}",
-                            product_id: btn.data('id'),
+                            product_id: productId,
                             quantity: 1,
-                            custom_recipe: JSON.stringify(btn.data('recipe')),
-                            custom_snapshot: btn.data('snapshot')
+                            custom_recipe: typeof recipe === 'string' ? recipe : JSON.stringify(recipe),
+                            custom_snapshot: snapshot
                         },
                         success: function (response) {
                             if (response.success) {
@@ -282,14 +296,26 @@
                                 $('.cart-badge').text(response.cart_count);
                             }
                         },
-                        error: function () {
-                            showToast('Error adding to cart', 'error');
+                        error: function (xhr) {
+                            const msg = xhr.responseJSON ? xhr.responseJSON.message : 'Error adding to cart';
+                            showToast(msg, 'error');
                         },
                         complete: function () {
                             btn.html(originalContent);
                             btn.prop('disabled', false);
                         }
                     });
+                }
+
+                // Grid Cart Click
+                $('.btn-order-again').on('click', function () {
+                    const btn = $(this);
+                    addDesignToCart(btn.data('product-id'), btn.data('recipe'), btn.data('snapshot'), btn);
+                });
+
+                // Preview Modal Cart Click
+                $('#preview-btn-add-to-cart').on('click', function () {
+                    addDesignToCart(currentProductId, currentDesignData, currentSnapshot, $(this));
                 });
 
                 let designToDelete = null;
