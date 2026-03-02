@@ -41,6 +41,7 @@ class CustomizeController extends Controller
     public function save(Request $request)
     {
         $productId = $request->input('product_id');
+        $designId = $request->input('design_id');
         $recipe = $request->input('custom_recipe');
         $snapshot = $request->input('custom_snapshot');
 
@@ -50,16 +51,24 @@ class CustomizeController extends Controller
 
         $recipeData = json_decode($recipe, true);
 
-        $design = \App\Models\CustomDesign::create([
-            'user_id' => auth()->id(),
-            'product_id' => $productId,
-            'recipe' => $recipeData,
-            'snapshot' => $snapshot
-        ]);
+        // Update existing if designId is provided, otherwise create new
+        $design = \App\Models\CustomDesign::updateOrCreate(
+            [
+                'custom_design_id' => $designId,
+                'user_id' => auth()->id()
+            ],
+            [
+                'product_id' => $productId,
+                'recipe' => $recipeData,
+                'snapshot' => $snapshot
+            ]
+        );
+
+        $isUpdate = (bool) $designId && $design->wasRecentlyCreated === false;
 
         return response()->json([
             'success' => true,
-            'message' => 'Design saved to your personal collection!',
+            'message' => $isUpdate ? 'Design updated successfully!' : 'Design saved to your personal collection!',
             'design_id' => $design->custom_design_id
         ]);
     }
@@ -68,5 +77,20 @@ class CustomizeController extends Controller
     {
         $designs = auth()->user()->customDesigns()->with('product')->latest()->get();
         return view('customer.prod-customize.my-designs', compact('designs'));
+    }
+
+    public function destroy($id)
+    {
+        $design = \App\Models\CustomDesign::where('custom_design_id', $id)
+            ->where('user_id', auth()->id())
+            ->first();
+
+        if (!$design) {
+            return response()->json(['success' => false, 'message' => 'Design not found or unauthorized.'], 404);
+        }
+
+        $design->delete();
+
+        return response()->json(['success' => true, 'message' => 'Design deleted successfully!']);
     }
 }

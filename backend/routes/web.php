@@ -108,6 +108,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     // Customer Routes/Customize
     Route::get('/customer/customize', [\App\Http\Controllers\Customer\CustomizeController::class, 'index'])->name('customer.customize.index');
     Route::post('/customer/customize/save', [\App\Http\Controllers\Customer\CustomizeController::class, 'save'])->name('customer.customize.save');
+    Route::delete('/customer/customize/{id}', [\App\Http\Controllers\Customer\CustomizeController::class, 'destroy'])->name('customer.customize.destroy');
     Route::get('/customer/my-designs', [\App\Http\Controllers\Customer\CustomizeController::class, 'myDesigns'])->name('customer.customize.my-designs');
 
     // Customer Routes/Profile

@@ -37,6 +37,16 @@
                                             <img src="{{ $design->snapshot }}" class="object-fit-cover w-100 h-100"
                                                 alt="Design Snapshot">
                                         </div>
+                                        <div class="position-absolute top-0 start-0 m-3" style="z-index: 5;">
+                                            <button
+                                                class="btn btn-dark-glass text-white rounded-circle backdrop-blur tiny p-2 btn-preview-design"
+                                                data-id="{{ $design->custom_design_id }}"
+                                                data-recipe="{{ json_encode($design->recipe) }}"
+                                                data-shape="{{ $design->recipe['base_style'] ?? 't-shirt' }}"
+                                                title="View 3D Model">
+                                                <i class="bi bi-eye"></i>
+                                            </button>
+                                        </div>
                                         <div class="position-absolute top-0 end-0 m-3">
                                             <span class="badge bg-dark-glass text-white rounded-pill backdrop-blur tiny">
                                                 {{ $design->created_at->diffForHumans() }}
@@ -65,6 +75,10 @@
                                                     Order
                                                 </button>
                                             @endif
+                                            <button class="btn btn-soft-danger rounded-circle tiny p-2 btn-delete-design"
+                                                data-id="{{ $design->custom_design_id }}" title="Delete Design">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
                                         </div>
                                     </div>
                                 </div>
@@ -85,6 +99,8 @@
             </main>
         </div>
     </div>
+
+    @include('customer.prod-customize.modals.preview-3d')
 
     <style>
         .design-card {
@@ -114,11 +130,116 @@
             background-color: #0d6efd;
             color: white;
         }
+
+        .btn-soft-danger {
+            background-color: #fff1f2;
+            color: #ef4444;
+            border: none;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .btn-soft-danger:hover {
+            background-color: #ef4444;
+            color: white;
+        }
+
+        .btn-soft-secondary {
+            background-color: #f1f4f8;
+            color: #6c757d;
+            border: none;
+        }
+
+        .btn-dark-glass {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.2s ease;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-dark-glass:hover {
+            background: rgba(239, 68, 68, 0.8) !important;
+            /* Soft red hover for exit */
+            color: white !important;
+            border-color: transparent;
+            transform: rotate(90deg);
+        }
     </style>
 
     @push('scripts')
+        <!-- Three.js Libraries -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+
+        <!-- Modular Customizer Scripts -->
+        <script src="{{ asset('js/customizer/state.js') }}"></script>
+        <script src="{{ asset('js/customizer/core.js') }}"></script>
+        <script src="{{ asset('js/customizer/models/mug.js') }}"></script>
+        <script src="{{ asset('js/customizer/models/t-shirt.js') }}"></script>
+        <script src="{{ asset('js/customizer/models/shorts.js') }}"></script>
+        <script src="{{ asset('js/customizer/models/umbrella.js') }}"></script>
+        <script src="{{ asset('js/customizer/rendering.js') }}"></script>
+        <script src="{{ asset('js/customizer/logic.js') }}"></script>
+        <script src="{{ asset('js/customizer/persistence.js') }}"></script>
+
         <script>
             $(document).ready(function () {
+                let currentDesignData = null;
+                let currentInitialShape = 't-shirt';
+                let currentDesignId = null;
+
+                $('.btn-preview-design').on('click', function () {
+                    const btn = $(this);
+                    currentDesignId = btn.data('id');
+                    currentDesignData = btn.data('recipe');
+                    currentInitialShape = btn.data('shape');
+
+                    $('#previewDesignModal').modal('show');
+
+                    $('#preview-three-container').empty();
+                    $('#preview-loader').show();
+                });
+
+                // Initialize 3D ONLY when modal is fully visible
+                $('#previewDesignModal').off('shown.bs.modal').on('shown.bs.modal', function () {
+                    // Safety check to prevent double init
+                    if ($('#preview-three-container canvas').length > 0) return;
+
+                    window.CustomizerConfig = window.CustomizerConfig || {};
+                    window.CustomizerConfig.initialShape = currentInitialShape;
+                    window.CustomizerConfig.productId = currentDesignId;
+
+                    init('preview-three-container');
+
+                    if (currentDesignData) {
+                        loadDesignRecipePreview(currentDesignData);
+                    }
+
+                    $('#preview-btn-edit').attr('href', `/customer/customize?design_id=${currentDesignId}`);
+                });
+
+                // Clear scene when modal is hidden
+                $('#previewDesignModal').off('hidden.bs.modal').on('hidden.bs.modal', function () {
+                    if (typeof renderer !== 'undefined' && renderer) {
+                        renderer.dispose();
+                        if (renderer.domElement && renderer.domElement.parentNode) {
+                            renderer.domElement.parentNode.removeChild(renderer.domElement);
+                        }
+                        renderer = null;
+                    }
+                    $('#preview-three-container').empty();
+                    $('#preview-loader').show();
+                });
                 $('.btn-order-again').on('click', function () {
                     const btn = $(this);
                     const originalContent = btn.html();
@@ -149,6 +270,41 @@
                             btn.prop('disabled', false);
                         }
                     });
+                });
+
+                $('.btn-delete-design').on('click', function () {
+                    const btn = $(this);
+                    const designId = btn.data('id');
+                    const card = btn.closest('.col-sm-6');
+
+                    if (confirm('Are you sure you want to delete this design? This action cannot be undone.')) {
+                        btn.prop('disabled', true);
+                        btn.html('<span class="spinner-border spinner-border-sm"></span>');
+
+                        $.ajax({
+                            url: `/customer/customize/${designId}`,
+                            method: "DELETE",
+                            data: {
+                                _token: "{{ csrf_token() }}"
+                            },
+                            success: function (response) {
+                                if (response.success) {
+                                    showToast(response.message, 'success');
+                                    card.fadeOut(300, function () {
+                                        $(this).remove();
+                                        if ($('.design-card').length === 0) {
+                                            location.reload(); // Reload to show empty state
+                                        }
+                                    });
+                                }
+                            },
+                            error: function () {
+                                showToast('Error deleting design', 'error');
+                                btn.prop('disabled', false);
+                                btn.html('<i class="bi bi-trash"></i>');
+                            }
+                        });
+                    }
                 });
             });
         </script>
