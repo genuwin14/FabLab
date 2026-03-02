@@ -52,7 +52,7 @@
                                         style="background-color: rgba(0,0,0,0.3);"><i class="bi bi-envelope"></i></span>
                                     <input type="email" name="email" id="email"
                                         class="form-control border-start-0 border-white border-opacity-10 text-white @error('email') border-danger is-invalid @enderror"
-                                        placeholder="name@company.com"
+                                        placeholder="name@company.com" value="{{ old('email') }}"
                                         style="background-color: rgba(0,0,0,0.3); color: white;" required autofocus>
                                 </div>
                                 @error('email')
