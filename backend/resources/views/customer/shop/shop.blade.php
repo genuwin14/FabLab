@@ -3,7 +3,7 @@
 @section('content')
     <div class="d-flex h-screen overflow-hidden" style="background-color: #f8f9fa;">
         <!-- Desktop Sidebar -->
-        <aside class="d-none d-md-block border-end shadow-sm flex-shrink-0" style="width: 280px; z-index: 1040;">
+        <aside class="d-none d-md-block flex-shrink-0" style="width: 280px; z-index: 1040;">
             @include('customer.partials.sidebar')
         </aside>
 
@@ -18,7 +18,7 @@
         <!-- Main Content -->
         <div class="flex-grow-1 d-flex flex-column overflow-hidden" style="background-color: #f1f4f8;">
             <!-- Top Navbar -->
-            <header class="sticky-top bg-white shadow-sm" style="z-index: 1030;">
+            <header class="sticky-top bg-white" style="z-index: 1030;">
                 @include('customer.partials.navbar')
             </header>
 
@@ -60,7 +60,7 @@
                     <!-- Products Grid (4 Columns) -->
                     <div class="row g-4">
                         @forelse($products as $product)
-                        <div class="col-sm-6 col-lg-4 col-xl-3">
+                        <div class="col-sm-6 col-md-4 col-lg-3 col-xl-2dot4">
                             <div class="card h-100 border-0 shadow-sm rounded-4 product-card overflow-hidden">
                                 <!-- Image Preview -->
                                 <div class="position-relative">
@@ -198,8 +198,8 @@
         }
 
         .product-card:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 15px 30px rgba(0,0,0,0.1) !important;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 10px rgba(0,0,0,0.08) !important;
         }
 
         .product-overlay {
@@ -208,7 +208,7 @@
             left: 0;
             right: 0;
             background: linear-gradient(to top, rgba(14, 46, 69, 0.95), transparent);
-            padding: 20px;
+            padding: 5px;
             opacity: 0;
             transition: opacity 0.3s ease;
             display: flex;
@@ -265,6 +265,13 @@
         .pagination-container .page-item.active .page-link {
             background-color: #0e2e45;
             color: white;
+        }
+
+        @media (min-width: 1200px) {
+            .col-xl-2dot4 {
+                flex: 0 0 auto;
+                width: 20%; /* 100% / 5 columns */
+            }
         }
     </style>
     @push('scripts')

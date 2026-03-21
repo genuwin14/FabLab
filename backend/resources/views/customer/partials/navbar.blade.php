@@ -1,4 +1,4 @@
-<nav class="navbar navbar-expand-lg border-bottom py-2 custom-navbar">
+<nav class="navbar navbar-expand-lg py-2 custom-navbar">
     <div class="container-fluid">
         <!-- Sidebar Toggle (Mobile Only) -->
         <button class="btn btn-link text-white d-md-none me-2 p-0" type="button" data-bs-toggle="offcanvas"
@@ -110,11 +110,13 @@
         background-color: #05111a;
         border-color: rgba(255, 255, 255, 0.1) !important;
         height: 65px;
+        border-left: none !important;
     }
 
     .user-dropdown-btn {
         transition: all 0.2s ease;
         border-color: rgba(255, 255, 255, 0.1) !important;
+        border-left-color: transparent !important;
     }
 
     .user-dropdown-btn:hover,
