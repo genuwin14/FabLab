@@ -3,7 +3,7 @@
 @section('content')
     <div class="d-flex h-screen overflow-hidden" style="background-color: #f8f9fa;">
         <!-- Desktop Sidebar -->
-        <aside class="d-none d-md-block border-end border-white border-opacity-10 flex-shrink-0"
+        <aside class="d-none d-md-block flex-shrink-0"
             style="width: 280px; z-index: 1040; background-color: #05111a;">
             @include('customer.partials.sidebar')
         </aside>
@@ -11,8 +11,7 @@
         <!-- Main Content -->
         <div class="flex-grow-1 d-flex flex-column overflow-hidden" style="background-color: #f1f4f8;">
             <!-- Top Navbar -->
-            <header class="sticky-top border-bottom border-white border-opacity-10"
-                style="z-index: 1030; background-color: #05111a;">
+            <header class="sticky-top" style="z-index: 1030; background-color: #05111a;">
                 @include('customer.partials.navbar')
             </header>
 
