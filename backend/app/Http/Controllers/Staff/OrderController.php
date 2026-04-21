@@ -10,7 +10,7 @@ class OrderController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Order::with(['user', 'orderItems.product'])->latest();
+        $query = Order::with(['user', 'orderItems.product', 'orderItems.customDesign'])->latest();
 
         // Search Filter
         if ($request->filled('search')) {

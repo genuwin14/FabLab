@@ -31,12 +31,6 @@
                     Orders
                 </a>
             </li>
-            <li class="nav-item">
-                <a href="#" class="nav-link text-white hover-accent">
-                    <i class="bi bi-palette me-2"></i>
-                    Customize Orders
-                </a>
-            </li>
         </ul>
 
         <!-- Inventory Control Section -->

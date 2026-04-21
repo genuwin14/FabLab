@@ -136,19 +136,48 @@
                                 <table class="table table-hover align-middle mb-0" id="ordersTable">
                                     <thead class="bg-light">
                                         <tr>
-                                            <th scope="col" class="py-3 ps-4 border-0 rounded-start text-uppercase small text-muted fw-bold">Order ID</th>
-                                            <th scope="col" class="py-3 border-0 text-uppercase small text-muted fw-bold">Ref No</th>
-                                            <th scope="col" class="py-3 border-0 text-uppercase small text-muted fw-bold">Customer</th>
-                                            <th scope="col" class="py-3 border-0 text-uppercase small text-muted fw-bold">Date</th>
-                                            <th scope="col" class="py-3 border-0 text-uppercase small text-muted fw-bold">Status</th>
-                                            <th scope="col" class="py-3 border-0 text-uppercase small text-muted fw-bold">Total</th>
-                                            <th scope="col" class="py-3 pe-4 border-0 rounded-end text-uppercase small text-muted fw-bold text-end">Action</th>
+                                            <th scope="col" class="py-3 ps-4 border-0 rounded-start text-uppercase tiny text-muted fw-bold">Design</th>
+                                            <th scope="col" class="py-3 border-0 text-uppercase tiny text-muted fw-bold">Order ID</th>
+                                            <th scope="col" class="py-3 border-0 text-uppercase tiny text-muted fw-bold">Ref No</th>
+                                            <th scope="col" class="py-3 border-0 text-uppercase tiny text-muted fw-bold">Customer</th>
+                                            <th scope="col" class="py-3 border-0 text-uppercase tiny text-muted fw-bold">Date</th>
+                                            <th scope="col" class="py-3 border-0 text-uppercase tiny text-muted fw-bold">Status</th>
+                                            <th scope="col" class="py-3 border-0 text-uppercase tiny text-muted fw-bold">Total</th>
+                                            <th scope="col" class="py-3 pe-4 border-0 rounded-end text-uppercase tiny text-muted fw-bold text-end">Action</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         @forelse($orders as $order)
                                             <tr class="order-row filter-item" data-status="{{ $order->status }}">
-                                                <td class="ps-4 fw-bold text-dark">#{{ $order->order_number }}</td>
+                                                <td class="ps-4">
+                                                    @php
+                                                        $customItem = $order->orderItems->firstWhere('custom_design_id', '!==', null);
+                                                        $customCount = $order->orderItems->whereNotNull('custom_design_id')->count();
+                                                    @endphp
+                                                    <div class="position-relative btn-view-order" style="width: 50px; height: 50px; cursor: pointer;" 
+                                                        data-order='@json($order)' data-items='@json($order->orderItems)'>
+                                                        @if($customItem && $customItem->customDesign)
+                                                            <img src="{{ $customItem->customDesign->snapshot }}" class="rounded-3 border shadow-sm w-100 h-100 object-fit-cover">
+                                                            @if($customCount > 1)
+                                                                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-primary border border-light tiny" style="z-index: 2;">
+                                                                    +{{ $customCount - 1 }}
+                                                                </span>
+                                                            @endif
+                                                        @else
+                                                            <div class="bg-light rounded-3 border w-100 h-100 d-flex align-items-center justify-content-center text-muted">
+                                                                <i class="bi bi-box-seam fs-5"></i>
+                                                            </div>
+                                                        @endif
+                                                    </div>
+                                                </td>
+                                                <td class="fw-bold text-dark">
+                                                    #{{ $order->order_number }}
+                                                    @if($customCount > 0)
+                                                        <span class="ms-1 text-primary" title="Contains Customized Items">
+                                                            <i class="bi bi-palette-fill tiny"></i>
+                                                        </span>
+                                                    @endif
+                                                </td>
                                                 <td class="small fw-bold text-muted">
                                                     @if($order->payment_reference)
                                                         REF: {{ $order->payment_reference }}
@@ -231,8 +260,8 @@
                                                     @endif
 
                                                     <button class="btn btn-sm btn-light rounded-2 border shadow-sm btn-view-order fw-bold"
-                                                        data-order="{{ json_encode($order) }}"
-                                                        data-items="{{ json_encode($order->orderItems) }}">
+                                                        data-order='@json($order)'
+                                                        data-items='@json($order->orderItems)'>
                                                         <i class="bi bi-eye"></i>
                                                     </button>
                                                 </td>
@@ -300,6 +329,21 @@
     @include('staff.order.components.update-status-modal')
 
     @push('scripts')
+        <!-- Three.js Libraries -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+
+        <!-- Customizer Core Logic (Excluding UI Handlers) -->
+        <script src="{{ asset('js/customizer/state.js') }}"></script>
+        <script src="{{ asset('js/customizer/core.js') }}"></script>
+        <script src="{{ asset('js/customizer/models/mug.js') }}"></script>
+        <script src="{{ asset('js/customizer/models/t-shirt.js') }}"></script>
+        <script src="{{ asset('js/customizer/models/shorts.js') }}"></script>
+        <script src="{{ asset('js/customizer/models/umbrella.js') }}"></script>
+        <script src="{{ asset('js/customizer/rendering.js') }}"></script>
+        <script src="{{ asset('js/customizer/persistence.js') }}"></script>
+
         <script>
             $(document).ready(function () {
 
@@ -310,7 +354,15 @@
                     const items = $(this).data('items');
 
                     $('#viewOrderNumber').text(order.order_number);
-                    $('#viewCustomerName').text(order.user ? order.user.name : 'Guest');
+                    $('#viewCustomerName').text(order.user ? order.user.fullname : 'Guest');
+                    $('#viewCustomerEmail').text(order.user ? order.user.email : 'No email available');
+                    $('#viewCustomerAddress').text(order.user && order.user.address ? order.user.address : 'No address provided');
+                    $('#viewCustomerPhone').text(order.user && order.user.contact_number ? order.user.contact_number : 'No contact provided');
+                    
+                    // Avatar Initial
+                    const name = order.user ? order.user.fullname : 'G';
+                    $('#customerAvatar').text(name.substring(0, 2).toUpperCase());
+
                     $('#viewOrderDate').text(new Date(order.created_at).toLocaleString());
                     $('#viewPaymentMethod').text('Cash on Pickup');
 
@@ -330,19 +382,38 @@
                         const subtotal = item.quantity * item.price;
                         total += subtotal; 
 
+                        let designInfoHtml = '';
+                        if (item.custom_design_id && (item.custom_design || item.customDesign)) {
+                            const design = item.custom_design || item.customDesign;
+                            const snapshot = design.snapshot;
+                            // Attach product name for more robust shape detection in the viewer
+                            design.product_name = productName; 
+                            
+                            designInfoHtml = `
+                                <div class="position-relative flex-shrink-0">
+                                    ${snapshot ? 
+                                        `<img src="${snapshot}" class="rounded-3 border shadow-sm btn-popout-design" style="width: 70px; height: 70px; object-fit: cover; cursor: zoom-in;" data-design='${JSON.stringify(design).replace(/'/g, "&apos;")}'>` : 
+                                        `<div class="bg-white rounded-3 border d-flex align-items-center justify-content-center text-muted" style="width: 70px; height: 70px;"><i class="bi bi-image tiny"></i></div>`
+                                    }
+                                </div>
+                            `;
+                        }
+
                         tbody.append(`
-                            <tr>
-                                <td>
-                                     <div class="d-flex align-items-center">
-                                        <div class="bg-light rounded p-1 me-2" style="width: 40px; height: 40px;">
-                                            <i class="bi bi-box-seam h-100 w-100 d-flex align-items-center justify-content-center text-muted"></i>
+                            <tr class="border-light">
+                                <td class="ps-3 py-4">
+                                     <div class="d-flex align-items-center gap-4">
+                                        ${designInfoHtml}
+                                        <div class="flex-grow-1">
+                                            <div class="fw-bold text-dark mb-1 fs-6">${productName}</div>
+                                            <div class="text-secondary small">Product Code: <span class="text-dark fw-bold">${item.product ? item.product.sku : 'N/A'}</span></div>
+                                            ${item.custom_design_id ? '<span class="badge bg-primary text-white tiny border border-primary border-opacity-10 mt-1">TAILORED DESIGN</span>' : ''}
                                         </div>
-                                        <span class="fw-medium text-dark small">${productName}</span>
                                     </div>
                                 </td>
-                                <td class="text-center text-muted small">x${item.quantity}</td>
-                                <td class="text-end fw-bold text-dark small">₱${parseFloat(item.price).toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
-                                <td class="text-end fw-bold text-dark small">₱${subtotal.toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
+                                <td class="text-center text-secondary fw-bold fs-6">x${item.quantity}</td>
+                                <td class="text-end fw-bold text-dark fs-6">₱${parseFloat(item.price).toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
+                                <td class="text-end pe-3 fw-bold text-primary fs-5">₱${subtotal.toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
                             </tr>
                         `);
                     });
@@ -351,6 +422,79 @@
 
                     const modal = new bootstrap.Modal(document.getElementById('orderDetailModal'));
                     modal.show();
+                });
+
+                // Design Detail Popout (Zoom/Recipe + 3D View)
+                $(document).on('click', '.btn-popout-design', function() {
+                    const design = $(this).data('design');
+                    if (!design) return;
+
+                    // 1. Basic Info
+                    $('#detailPopupImage').attr('src', design.snapshot || '').removeClass('d-none');
+                    $('#preview-loader').removeClass('d-none');
+                    
+                    let recipe = design.recipe;
+                    if (typeof recipe === 'string') {
+                        try { recipe = JSON.parse(recipe); } catch(e) {}
+                    }
+                    $('#detailPopupRecipe').text(JSON.stringify(recipe || {}, null, 4));
+
+                    const modal = new bootstrap.Modal(document.getElementById('designDetailPopup'));
+                    modal.show();
+
+                    // 2. 3D Inspection Logic (Resilient Model Detection)
+                    setTimeout(() => {
+                        try {
+                            // Cleanup old renderer/scene if exists
+                            const container = document.getElementById('staff-three-container');
+                            if (container.querySelector('canvas')) {
+                                container.querySelector('canvas').remove();
+                                if (typeof renderer !== 'undefined' && renderer) {
+                                    renderer.dispose();
+                                    renderer = null;
+                                }
+                            }
+
+                            // IMPROVED DETECTION: Prioritize Name over the potentially corrupted recipe.base_style
+                            const itemName = (design.product_name || '').toLowerCase();
+                            let baseShape = 't-shirt'; // Default
+
+                            if (itemName.includes('mug')) baseShape = 'mug';
+                            else if (itemName.includes('umbrella')) baseShape = 'umbrella';
+                            else if (itemName.includes('shorts')) baseShape = 'shorts';
+                            else if (recipe.base_style) baseShape = recipe.base_style;
+
+                            window.CustomizerConfig = {
+                                initialShape: baseShape,
+                                activeColor: recipe.color || 'blue'
+                            };
+
+                            init('staff-three-container');
+                            
+                            // Load the recipe into the scene
+                            setTimeout(() => {
+                                loadDesignRecipePreview(recipe);
+                                $('#preview-loader').addClass('d-none');
+                                $('#detailPopupImage').addClass('d-none'); // Hide fallback once 3D is live
+                            }, 800);
+
+                        } catch (err) {
+                            console.error('3D Preview failed to initialize:', err);
+                            $('#preview-loader').html('<div class="text-danger small">3D Engine failed to start. Reviewing snapshot instead.</div>');
+                        }
+                    }, 500); // Wait for modal animation
+                });
+
+                // Handle cleanup when modal closes
+                $('#designDetailPopup').on('hidden.bs.modal', function () {
+                    const container = document.getElementById('staff-three-container');
+                    if (container.querySelector('canvas')) {
+                        container.querySelector('canvas').remove();
+                    }
+                    if (typeof renderer !== 'undefined' && renderer) {
+                        renderer.dispose();
+                        renderer = null;
+                    }
                 });
 
                 // Update Status Modal

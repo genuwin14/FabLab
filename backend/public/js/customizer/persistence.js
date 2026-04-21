@@ -193,7 +193,7 @@ function loadDesignRecipe(recipe) {
  * Serialize design to JSON string
  */
 function serializeDesign() {
-    const activeShape = $('.btn-shape.active').data('shape') || 't-shirt';
+    const activeShape = $('.btn-shape.active').data('shape') || (typeof CustomizerConfig !== 'undefined' ? CustomizerConfig.initialShape : 't-shirt');
     const activeSize = $('.btn-size.active').data('size') || 'medium';
     const activeColor = $('.texture-option.active').data('texture') || 'blue';
     const ledLighting = $('#lighting').is(':checked');
