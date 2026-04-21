@@ -16,6 +16,7 @@
             csrfToken: '{{ csrf_token() }}',
             designId: '{{ $design->custom_design_id ?? '' }}',
             designRecipe: @json($design?->recipe ?? null),
+            requiresSelection: {{ $requiresSelection ? 'true' : 'false' }},
             routes: {
                 save: "{{ route('customer.customize.save') }}",
                 addToCart: "{{ route('customer.cart.add') }}"

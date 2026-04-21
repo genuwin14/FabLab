@@ -11,6 +11,7 @@
     </div>
 
     <div class="flex-grow-1 overflow-y-auto p-4 customizer-scrollbar">
+        @if(!$product)
         <!-- Step 0: Choose Base Shape -->
         <div class="mb-5">
             <label class="text-accent small text-uppercase fw-bold tracking-wider mb-3 d-block">0. Choose Base
@@ -51,6 +52,7 @@
                 </div>
             </div>
         </div>
+        @endif
 
         <!-- Step 1: Select Size -->
         <div class="mb-5">
@@ -183,13 +185,15 @@
         <div class="row g-2">
             <div class="col-6">
                 <button id="btn-save-design"
-                    class="btn btn-outline-light border-white-10 w-100 rounded-pill py-2 small fw-bold">
+                    class="btn btn-outline-light border-white-10 w-100 rounded-pill py-2 small fw-bold"
+                    {{ $requiresSelection ? 'disabled' : '' }}>
                     <i class="bi bi-save me-1"></i> Save
                 </button>
             </div>
             <div class="col-6">
                 <button id="btn-add-to-cart-custom"
-                    class="btn btn-accent w-100 rounded-pill py-2 small fw-bold shadow-gold">
+                    class="btn btn-accent w-100 rounded-pill py-2 small fw-bold shadow-gold"
+                    {{ $requiresSelection ? 'disabled' : '' }}>
                     <i class="bi bi-cart-plus me-1"></i> Add to Cart
                 </button>
             </div>

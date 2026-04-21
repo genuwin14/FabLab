@@ -35,7 +35,12 @@ class CustomizeController extends Controller
             }
         }
 
-        return view('customer.prod-customize.customize-product', compact('product', 'initialShape', 'design'));
+        $requiresSelection = false;
+        if (!$product && !$design) {
+            $requiresSelection = true;
+        }
+
+        return view('customer.prod-customize.customize-product', compact('product', 'initialShape', 'design', 'requiresSelection'));
     }
 
     public function save(Request $request)
@@ -64,11 +69,14 @@ class CustomizeController extends Controller
             ]
         );
 
-        $isUpdate = (bool) $designId && $design->wasRecentlyCreated === false;
+        $message = 'Design saved to your personal collection!';
+        if (!$design->wasRecentlyCreated) {
+            $message = $design->wasChanged() ? 'Design changes updated successfully!' : 'Design is already up to date in your collection!';
+        }
 
         return response()->json([
             'success' => true,
-            'message' => $isUpdate ? 'Design updated successfully!' : 'Design saved to your personal collection!',
+            'message' => $message,
             'design_id' => $design->custom_design_id
         ]);
     }

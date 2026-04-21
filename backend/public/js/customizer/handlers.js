@@ -5,6 +5,12 @@ $(document).ready(function () {
     // 1. Initialize 3D Engine
     init();
 
+    // 1.1 Check if product selection is required
+    if (typeof CustomizerConfig !== 'undefined' && CustomizerConfig.requiresSelection) {
+        const productRequiredModal = new bootstrap.Modal(document.getElementById('productRequiredModal'));
+        productRequiredModal.show();
+    }
+
     // 2. Control Panel Listeners
     $('.texture-option').on('click', function () {
         $('.texture-option').removeClass('active');
@@ -270,11 +276,16 @@ $(document).ready(function () {
                 product_id: productId,
                 quantity: 1,
                 custom_recipe: recipe,
-                custom_snapshot: snapshot
+                custom_snapshot: snapshot,
+                custom_design_id: CustomizerConfig.designId
             },
             success: function (response) {
                 if (response.success) {
                     showToast(response.message, 'success');
+                    
+                    // Update designId so subsequent saves/adds update the same record
+                    CustomizerConfig.designId = response.design_id;
+
                     if (window.parent && window.parent.updateCartBadge) {
                         window.parent.updateCartBadge(response.cart_count);
                     } else if (typeof updateCartBadge === 'function') {

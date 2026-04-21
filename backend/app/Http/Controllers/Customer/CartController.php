@@ -40,20 +40,25 @@ class CartController extends Controller
 
         $cart = session()->get('cart', []);
         $price = $product->price;
-        $designId = null;
+        $designId = $request->input('custom_design_id');
 
         // Handle Customization
         if ($recipe) {
             $recipeData = json_decode($recipe, true);
             $price = $this->calculateCustomPrice($product->price, $recipeData);
 
-            // Save Design (Normalized)
-            $design = CustomDesign::create([
-                'user_id' => auth()->id(),
-                'product_id' => $productId,
-                'recipe' => $recipeData,
-                'snapshot' => $snapshot
-            ]);
+            // Save/Update Design (Normalized)
+            $design = CustomDesign::updateOrCreate(
+                [
+                    'custom_design_id' => $designId,
+                    'user_id' => auth()->id()
+                ],
+                [
+                    'product_id' => $productId,
+                    'recipe' => $recipeData,
+                    'snapshot' => $snapshot
+                ]
+            );
             $designId = $design->custom_design_id;
         }
 
@@ -88,10 +93,22 @@ class CartController extends Controller
 
         session()->put('cart', $cart);
 
+        $message = 'Product added to cart successfully!';
+        if ($recipe) {
+            if ($design->wasRecentlyCreated) {
+                $message = 'Design saved and added to cart!';
+            } elseif ($design->wasChanged()) {
+                $message = 'Design updated and added to cart!';
+            } else {
+                $message = 'Product added to cart!'; // Already saved design
+            }
+        }
+
         return response()->json([
             'success' => true,
-            'message' => 'Product added to cart successfully!',
-            'cart_count' => $this->getCartCount()
+            'message' => $message,
+            'cart_count' => $this->getCartCount(),
+            'design_id' => $designId
         ]);
     }
 

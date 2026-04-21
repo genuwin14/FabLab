@@ -103,6 +103,11 @@
     // Update immediately and then every second
     updateClock();
     setInterval(updateClock, 1000);
+
+    // Global Cart Badge Update
+    window.updateCartBadge = function(count) {
+        $('.cart-badge').text(count);
+    };
 </script>
 
 <style>
