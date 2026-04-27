@@ -14,21 +14,18 @@ use Illuminate\Support\Str;
 
 class PurchaseOrderController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $purchaseOrders = PurchaseOrder::with(['supplier', 'creator'])
             ->latest()
             ->paginate(15);
-        return view('admin.purchase.index', compact('purchaseOrders'));
-    }
 
-    public function create(Request $request)
-    {
+        // Data for Create Modal
         $suppliers = Supplier::all();
         $products = Product::all();
         $rawMaterials = RawMaterial::all();
 
-        // Pre-fill data if coming from Reorder Suggestions
+        // Handle pre-fill if coming from suggestions
         $selectedSupplierId = $request->query('supplier_id');
         $prefillItems = [];
 
@@ -87,13 +84,10 @@ class PurchaseOrderController extends Controller
                 ];
             }
         }
-        
-        // Build supplier-item mapping for the frontend filter
+
         $supplierItems = [];
         foreach ($suppliers as $s) {
             $items = [];
-            
-            // Get Products for this supplier
             $supplierProducts = Product::whereHas('suppliers', function($q) use ($s) {
                 $q->where('product_suppliers.supplier_id', $s->supplier_id);
             })->with(['suppliers' => function($q) use ($s) {
@@ -106,7 +100,6 @@ class PurchaseOrderController extends Controller
                 if ($supplierInfo && $supplierInfo->pivot) {
                     $cost = $supplierInfo->pivot->cost ?? $p->price;
                 }
-
                 $items[] = [
                     'type' => 'product',
                     'id' => $p->product_id,
@@ -116,7 +109,6 @@ class PurchaseOrderController extends Controller
                 ];
             }
 
-            // Get Raw Materials for this supplier
             $supplierMaterials = RawMaterial::where('supplier_id', $s->supplier_id)->get();
             foreach($supplierMaterials as $m) {
                 $items[] = [
@@ -127,11 +119,23 @@ class PurchaseOrderController extends Controller
                     'cost' => $m->cost_per_unit
                 ];
             }
-
             $supplierItems[$s->supplier_id] = $items;
         }
 
-        return view('admin.purchase.create', compact('suppliers', 'products', 'rawMaterials', 'selectedSupplierId', 'prefillItems', 'supplierItems'));
+        return view('admin.purchase.index', compact(
+            'purchaseOrders', 
+            'suppliers', 
+            'products', 
+            'rawMaterials', 
+            'selectedSupplierId', 
+            'prefillItems', 
+            'supplierItems'
+        ));
+    }
+
+    public function create(Request $request)
+    {
+        return redirect()->route('admin.purchase.index', $request->query());
     }
 
     public function store(Request $request)
