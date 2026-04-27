@@ -8,15 +8,17 @@ use Illuminate\Http\Request;
 use App\Models\Product;
 use App\Models\Category;
 use App\Models\Supplier;
+use App\Models\RawMaterial;
 
 class ProductController extends Controller
 {
     public function index()
     {
-        $products = Product::with(['category', 'suppliers'])->latest()->get();
+        $products = Product::with(['category', 'suppliers', 'rawMaterials'])->latest()->paginate(10);
         $categories = Category::all();
         $suppliers = Supplier::all();
-        return view('admin.product.products', compact('products', 'categories', 'suppliers'));
+        $rawMaterials = RawMaterial::all();
+        return view('admin.product.products', compact('products', 'categories', 'suppliers', 'rawMaterials'));
     }
 
     // Phase 1: Create supplier-agnostic product
@@ -93,7 +95,20 @@ class ProductController extends Controller
 
         $product->update($data);
 
-        return redirect()->route('admin.products.index')->with('success', 'Product updated successfully.');
+        // Sync BOM
+        if ($request->has('materials')) {
+            $materialsData = [];
+            foreach ($request->materials as $m) {
+                if (isset($m['raw_material_id']) && isset($m['quantity_required'])) {
+                    $materialsData[$m['raw_material_id']] = ['quantity_required' => $m['quantity_required']];
+                }
+            }
+            $product->rawMaterials()->sync($materialsData);
+        } else {
+            $product->rawMaterials()->detach();
+        }
+
+        return redirect()->route('admin.products.index')->with('success', 'Product and BOM updated successfully.');
     }
 
     public function destroy($id)

@@ -153,71 +153,125 @@
 
     <!-- Template for JS -->
     @php
-        // Pass products to JS for the select dropdown
         $jsProducts = $products->map(function ($p) {
             return [
                 'id' => $p->product_id,
                 'name' => $p->name,
                 'sku' => $p->sku,
-                // We could map costs per supplier here if we want advanced logic, 
-                // but for now we'll just let user manual enter or use default cost logic if we had it loaded.
-                // Since this view loads ALL products, loading pivot for ALL is heavy.
-                // We will rely on user input or pre-fill.
+                'type' => 'product'
+            ];
+        });
+
+        $jsMaterials = $rawMaterials->map(function ($m) {
+            return [
+                'id' => $m->raw_material_id,
+                'name' => $m->name,
+                'sku' => 'MAT-' . $m->raw_material_id,
+                'type' => 'material'
             ];
         });
     @endphp
 
     <script>
-        const allProducts = @json($jsProducts);
+        const supplierItems = @json($supplierItems);
         const prefillData = @json($prefillItems);
         let rowCount = 0;
 
         document.addEventListener('DOMContentLoaded', function () {
+            const supplierSelect = document.getElementById('supplierSelect');
             const itemsBody = document.getElementById('itemsBody');
             const addItemBtn = document.getElementById('addItemBtn');
             const emptyState = document.getElementById('emptyState');
 
-            // Initialize with prefill data if any
+            // Handle Supplier Change
+            supplierSelect.addEventListener('change', function() {
+                if (itemsBody.children.length > 0) {
+                    if (confirm('Changing the supplier will clear all current items. Proceed?')) {
+                        itemsBody.innerHTML = '';
+                        calculateGrandTotal();
+                        if (emptyState) emptyState.style.display = 'block';
+                    } else {
+                        // Revert to previous value (simulated)
+                        // This is tricky without storing old value. Let's just clear for now as it's safer.
+                    }
+                }
+            });
+
             if (prefillData && prefillData.length > 0) {
                 if (emptyState) emptyState.style.display = 'none';
                 prefillData.forEach(item => {
                     addRow(item);
                 });
-            } else {
-                // If manual mode, maybe start with 1 empty row? No, wait for user.
             }
 
             addItemBtn.addEventListener('click', function () {
+                if (!supplierSelect.value) {
+                    alert('Please select a supplier first.');
+                    return;
+                }
                 if (emptyState) emptyState.style.display = 'none';
                 addRow();
             });
 
             function addRow(data = null) {
+                const supplierId = supplierSelect.value;
+                const itemsForSupplier = supplierItems[supplierId] || [];
+
+                if (itemsForSupplier.length === 0 && !data) {
+                    alert('This supplier has no assigned products or raw materials.');
+                    return;
+                }
+
                 rowCount++;
                 const tr = document.createElement('tr');
                 tr.className = 'item-row';
 
-                const productId = data ? data.product_id : '';
+                const selectedId = data ? (data.type === 'product' ? `product_${data.id}` : `material_${data.id}`) : '';
                 const qty = data ? data.quantity : 1;
                 const cost = data ? data.cost : 0;
 
-                let optionsHtml = '<option value="" disabled selected>Select Product</option>';
-                allProducts.forEach(p => {
-                    const selected = p.id == productId ? 'selected' : '';
-                    optionsHtml += `<option value="${p.id}" ${selected}>${p.name} (${p.sku})</option>`;
-                });
+                let optionsHtml = '<option value="" disabled selected>Select Item</option>';
+                
+                // Group items by type
+                const prods = itemsForSupplier.filter(i => i.type === 'product');
+                const mats = itemsForSupplier.filter(i => i.type === 'material');
+
+                if (prods.length > 0) {
+                    optionsHtml += '<optgroup label="Products">';
+                    prods.forEach(p => {
+                        const val = `product_${p.id}`;
+                        optionsHtml += `<option value="${val}" ${selectedId == val ? 'selected' : ''}>${p.name} (${p.sku})</option>`;
+                    });
+                    optionsHtml += '</optgroup>';
+                }
+
+                if (mats.length > 0) {
+                    optionsHtml += '<optgroup label="Raw Materials">';
+                    mats.forEach(m => {
+                        const val = `material_${m.id}`;
+                        optionsHtml += `<option value="${val}" ${selectedId == val ? 'selected' : ''}>${m.name} (${m.sku})</option>`;
+                    });
+                    optionsHtml += '</optgroup>';
+                }
+
+                // If pre-filled data is NOT in the supplier list (safety), still show it
+                if (data && !itemsForSupplier.find(i => i.type === data.type && i.id == data.id)) {
+                    optionsHtml += `<option value="${selectedId}" selected>${data.name} (Override)</option>`;
+                }
 
                 tr.innerHTML = `
                         <td class="ps-4">
-                            <select name="products[${rowCount}][product_id]" class="form-select form-select-sm bg-light border-0" required>
+                            <select class="form-select form-select-sm bg-light border-0 item-select" required>
                                 ${optionsHtml}
                             </select>
+                            <input type="hidden" name="items[${rowCount}][product_id]" class="product-id-input" value="${data && data.type === 'product' ? data.id : ''}">
+                            <input type="hidden" name="items[${rowCount}][raw_material_id]" class="material-id-input" value="${data && data.type === 'material' ? data.id : ''}">
                         </td>
                         <td>
-                            <input type="number" name="products[${rowCount}][quantity]" class="form-control form-control-sm bg-light border-0 quantity-input" value="${qty}" min="1" required>
+                            <input type="number" step="0.01" name="items[${rowCount}][quantity]" class="form-control form-control-sm bg-light border-0 quantity-input" value="${qty}" min="0.01" required>
                         </td>
                         <td>
-                            <input type="number" step="0.01" name="products[${rowCount}][cost]" class="form-control form-control-sm bg-light border-0 cost-input" value="${cost}" min="0" required>
+                            <input type="number" step="0.01" name="items[${rowCount}][cost]" class="form-control form-control-sm bg-light border-0 cost-input" value="${cost}" min="0" required>
                         </td>
                         <td class="text-end fw-bold text-dark row-total">
                             ₱0.00
@@ -233,10 +287,31 @@
                 updateRowTotal(tr);
                 calculateGrandTotal();
 
-                // Attach Events
+                const itemSelect = tr.querySelector('.item-select');
                 const qtyInput = tr.querySelector('.quantity-input');
                 const costInput = tr.querySelector('.cost-input');
                 const removeBtn = tr.querySelector('.remove-row');
+
+                itemSelect.addEventListener('change', function() {
+                    const val = this.value;
+                    const [type, id] = val.split('_');
+                    
+                    // Find cost in mapping
+                    const itemData = itemsForSupplier.find(i => i.type === type && i.id == id);
+                    if (itemData) {
+                        costInput.value = itemData.cost;
+                    }
+
+                    if (type === 'product') {
+                        tr.querySelector('.product-id-input').value = id;
+                        tr.querySelector('.material-id-input').value = '';
+                    } else {
+                        tr.querySelector('.product-id-input').value = '';
+                        tr.querySelector('.material-id-input').value = id;
+                    }
+                    updateRowTotal(tr);
+                    calculateGrandTotal();
+                });
 
                 qtyInput.addEventListener('input', () => { updateRowTotal(tr); calculateGrandTotal(); });
                 costInput.addEventListener('input', () => { updateRowTotal(tr); calculateGrandTotal(); });

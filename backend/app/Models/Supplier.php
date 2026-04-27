@@ -15,4 +15,9 @@ class Supplier extends Model
         'phone',
         'address'
     ];
+
+    public function rawMaterials()
+    {
+        return $this->hasMany(RawMaterial::class, 'supplier_id', 'supplier_id');
+    }
 }

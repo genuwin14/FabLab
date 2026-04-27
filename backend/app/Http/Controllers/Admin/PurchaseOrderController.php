@@ -8,6 +8,7 @@ use App\Models\PurchaseOrder;
 use App\Models\PurchaseOrderItem;
 use App\Models\Supplier;
 use App\Models\Product;
+use App\Models\RawMaterial;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 
@@ -25,14 +26,14 @@ class PurchaseOrderController extends Controller
     {
         $suppliers = Supplier::all();
         $products = Product::all();
+        $rawMaterials = RawMaterial::all();
 
         // Pre-fill data if coming from Reorder Suggestions
         $selectedSupplierId = $request->query('supplier_id');
         $prefillItems = [];
 
         if ($selectedSupplierId) {
-            // Find products with this default supplier that are low stock
-            // This logic allows "Quick Create" from the dashboard
+            // 1. Find products with this default supplier that are low stock
             $lowStockProducts = Product::whereColumn('stock', '<=', 'low_stock_threshold')
                 ->whereHas('suppliers', function ($q) use ($selectedSupplierId) {
                     $q->where('suppliers.supplier_id', $selectedSupplierId)
@@ -47,13 +48,8 @@ class PurchaseOrderController extends Controller
 
             foreach ($lowStockProducts as $product) {
                 $supplierPivot = $product->suppliers->first()->pivot;
-
-                // Logic: Quantity = Max(MOQ, Threshold - Stock + Buffer?)
-                // User requirement: (low_stock_threshold - current_stock)
-                // We will ensure at least 1, or MOQ if higher.
                 $needed = max(0, $product->low_stock_threshold - $product->stock);
-                if ($needed == 0)
-                    continue; // Should not happen if query is correct, but safety.
+                if ($needed == 0) continue;
 
                 $qty = $needed;
                 if (isset($supplierPivot->min_order_qty) && $qty < $supplierPivot->min_order_qty) {
@@ -61,7 +57,8 @@ class PurchaseOrderController extends Controller
                 }
 
                 $prefillItems[] = [
-                    'product_id' => $product->product_id,
+                    'type' => 'product',
+                    'id' => $product->product_id,
                     'name' => $product->name,
                     'sku' => $product->sku,
                     'quantity' => $qty,
@@ -69,9 +66,72 @@ class PurchaseOrderController extends Controller
                     'unit' => $product->unit
                 ];
             }
+
+            // 2. Find raw materials with this supplier that are low stock
+            $lowStockMaterials = RawMaterial::where('supplier_id', $selectedSupplierId)
+                ->whereColumn('stock_quantity', '<=', 'low_stock_threshold')
+                ->get();
+
+            foreach ($lowStockMaterials as $material) {
+                $needed = max(0, $material->low_stock_threshold - $material->stock_quantity);
+                if ($needed == 0) continue;
+
+                $prefillItems[] = [
+                    'type' => 'material',
+                    'id' => $material->raw_material_id,
+                    'name' => $material->name,
+                    'sku' => 'MAT-' . $material->raw_material_id,
+                    'quantity' => $needed,
+                    'cost' => $material->cost_per_unit,
+                    'unit' => $material->unit
+                ];
+            }
+        }
+        
+        // Build supplier-item mapping for the frontend filter
+        $supplierItems = [];
+        foreach ($suppliers as $s) {
+            $items = [];
+            
+            // Get Products for this supplier
+            $supplierProducts = Product::whereHas('suppliers', function($q) use ($s) {
+                $q->where('product_suppliers.supplier_id', $s->supplier_id);
+            })->with(['suppliers' => function($q) use ($s) {
+                $q->where('suppliers.supplier_id', $s->supplier_id);
+            }])->get();
+
+            foreach($supplierProducts as $p) {
+                $cost = $p->price;
+                $supplierInfo = $p->suppliers->first();
+                if ($supplierInfo && $supplierInfo->pivot) {
+                    $cost = $supplierInfo->pivot->cost ?? $p->price;
+                }
+
+                $items[] = [
+                    'type' => 'product',
+                    'id' => $p->product_id,
+                    'name' => $p->name,
+                    'sku' => $p->sku,
+                    'cost' => $cost
+                ];
+            }
+
+            // Get Raw Materials for this supplier
+            $supplierMaterials = RawMaterial::where('supplier_id', $s->supplier_id)->get();
+            foreach($supplierMaterials as $m) {
+                $items[] = [
+                    'type' => 'material',
+                    'id' => $m->raw_material_id,
+                    'name' => $m->name,
+                    'sku' => 'MAT-' . $m->raw_material_id,
+                    'cost' => $m->cost_per_unit
+                ];
+            }
+
+            $supplierItems[$s->supplier_id] = $items;
         }
 
-        return view('admin.purchase.create', compact('suppliers', 'products', 'selectedSupplierId', 'prefillItems'));
+        return view('admin.purchase.create', compact('suppliers', 'products', 'rawMaterials', 'selectedSupplierId', 'prefillItems', 'supplierItems'));
     }
 
     public function store(Request $request)
@@ -79,18 +139,18 @@ class PurchaseOrderController extends Controller
         $request->validate([
             'supplier_id' => 'required|exists:suppliers,supplier_id',
             'expected_delivery_date' => 'nullable|date',
-            'products' => 'required|array|min:1',
-            'products.*.product_id' => 'required|exists:products,product_id',
-            'products.*.quantity' => 'required|integer|min:1',
-            'products.*.cost' => 'required|numeric|min:0',
+            'items' => 'required|array|min:1',
+            'items.*.product_id' => 'nullable|exists:products,product_id',
+            'items.*.raw_material_id' => 'nullable|exists:raw_materials,raw_material_id',
+            'items.*.quantity' => 'required|numeric|min:0.01',
+            'items.*.cost' => 'required|numeric|min:0',
         ]);
 
         $totalCost = 0;
-        foreach ($request->products as $item) {
+        foreach ($request->items as $item) {
             $totalCost += $item['quantity'] * $item['cost'];
         }
 
-        // Generate PO Number (e.g., PO-YYYYMMDD-XXXX)
         $dateCode = now()->format('Ymd');
         $random = strtoupper(Str::random(4));
         $poNumber = "PO-{$dateCode}-{$random}";
@@ -98,16 +158,17 @@ class PurchaseOrderController extends Controller
         $po = PurchaseOrder::create([
             'po_number' => $poNumber,
             'supplier_id' => $request->supplier_id,
-            'status' => 'draft', // Default status
+            'status' => 'draft',
             'expected_delivery_date' => $request->expected_delivery_date,
             'total_cost' => $totalCost,
-            'created_by' => Auth::id(), // Ensure user is logged in
+            'created_by' => Auth::id(),
         ]);
 
-        foreach ($request->products as $item) {
+        foreach ($request->items as $item) {
             PurchaseOrderItem::create([
                 'purchase_order_id' => $po->purchase_order_id,
-                'product_id' => $item['product_id'],
+                'product_id' => $item['product_id'] ?? null,
+                'raw_material_id' => $item['raw_material_id'] ?? null,
                 'quantity' => $item['quantity'],
                 'cost' => $item['cost'],
             ]);
@@ -118,7 +179,7 @@ class PurchaseOrderController extends Controller
 
     public function show($id)
     {
-        $purchaseOrder = PurchaseOrder::with(['supplier', 'items.product', 'creator'])->findOrFail($id);
+        $purchaseOrder = PurchaseOrder::with(['supplier', 'items.product', 'items.rawMaterial', 'creator'])->findOrFail($id);
         return view('admin.purchase.show', compact('purchaseOrder'));
     }
 
@@ -128,25 +189,27 @@ class PurchaseOrderController extends Controller
             'status' => 'required|in:draft,sent,confirmed,delivered,cancelled'
         ]);
 
-        $po = PurchaseOrder::findOrFail($id);
+        $po = PurchaseOrder::with('items')->findOrFail($id);
         $oldStatus = $po->status;
         $newStatus = $request->status;
 
-        // If status changing to 'delivered' (from something else), update product stock
         if ($newStatus === 'delivered' && $oldStatus !== 'delivered') {
             foreach ($po->items as $item) {
-                // Increment product stock
-                $item->product->increment('stock', $item->quantity);
-
-                // TODO: Log stock movement here if table exists
+                if ($item->product_id) {
+                    $item->product->increment('stock', $item->quantity);
+                } elseif ($item->raw_material_id) {
+                    $item->rawMaterial->increment('stock_quantity', $item->quantity);
+                }
             }
         }
 
-        // If reverting FROM delivered (e.g. cancelled after delivery?), revert stock?
-        // Usually you can't cancel a delivered order easily, but for safety:
         if ($oldStatus === 'delivered' && $newStatus !== 'delivered') {
             foreach ($po->items as $item) {
-                $item->product->decrement('stock', $item->quantity);
+                if ($item->product_id) {
+                    $item->product->decrement('stock', $item->quantity);
+                } elseif ($item->raw_material_id) {
+                    $item->rawMaterial->decrement('stock_quantity', $item->quantity);
+                }
             }
         }
 

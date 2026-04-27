@@ -66,10 +66,10 @@
                                 </div>
                                 <div class="col-md-3">
                                     <select class="form-select rounded-pill">
-                                        <option selected>All Categories</option>
-                                        <option value="1">Electronics</option>
-                                        <option value="2">Raw Materials</option>
-                                        <option value="3">Finished Goods</option>
+                                        <option value="">All Categories</option>
+                                        @foreach($categories as $category)
+                                            <option value="{{ $category->category_id }}">{{ $category->name }}</option>
+                                        @endforeach
                                     </select>
                                 </div>
                                 <div class="col-md-3">
@@ -220,20 +220,11 @@
 
                             <!-- Pagination -->
                             <div class="d-flex justify-content-between align-items-center p-3 border-top">
-                                <span class="text-muted small">Showing 1 to 10 of 42 entries</span>
+                                <span class="text-muted small">
+                                    Showing {{ $products->firstItem() }} to {{ $products->lastItem() }} of {{ $products->total() }} entries
+                                </span>
                                 <nav>
-                                    <ul class="pagination pagination-sm mb-0 gap-1">
-                                        <li class="page-item disabled"><a class="page-link rounded-2 border-0"
-                                                href="#">Prev</a></li>
-                                        <li class="page-item active"><a class="page-link rounded-2 border-0 bg-primary"
-                                                href="#">1</a></li>
-                                        <li class="page-item"><a class="page-link rounded-2 border-0 text-dark"
-                                                href="#">2</a></li>
-                                        <li class="page-item"><a class="page-link rounded-2 border-0 text-dark"
-                                                href="#">3</a></li>
-                                        <li class="page-item"><a class="page-link rounded-2 border-0 text-primary"
-                                                href="#">Next</a></li>
-                                    </ul>
+                                    {{ $products->links() }}
                                 </nav>
                             </div>
                         </div>
@@ -264,6 +255,50 @@
             }
         }
 
+        const allMaterials = @json($rawMaterials);
+
+        function addMaterialRow(data = null) {
+            const body = document.getElementById('bomItemsBody');
+            const emptyState = document.getElementById('bomEmptyState');
+            if (emptyState) emptyState.style.display = 'none';
+
+            const tr = document.createElement('tr');
+            const rowIndex = body.children.length;
+
+            let optionsHtml = '<option value="" disabled selected>Select Material</option>';
+            allMaterials.forEach(m => {
+                const selected = data && data.raw_material_id == m.raw_material_id ? 'selected' : '';
+                optionsHtml += `<option value="${m.raw_material_id}" ${selected}>${m.name} (${m.unit})</option>`;
+            });
+
+            tr.innerHTML = `
+                <td class="ps-4">
+                    <select name="materials[${rowIndex}][raw_material_id]" class="form-select form-select-sm bg-white border" required>
+                        ${optionsHtml}
+                    </select>
+                </td>
+                <td>
+                    <input type="number" step="0.01" name="materials[${rowIndex}][quantity_required]" 
+                        class="form-control form-control-sm bg-white border" 
+                        value="${data ? data.pivot.quantity_required : 1}" required>
+                </td>
+                <td class="text-end pe-4">
+                    <button type="button" class="btn btn-link text-danger p-0" onclick="this.closest('tr').remove(); checkBomEmptyState();">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </td>
+            `;
+            body.appendChild(tr);
+        }
+
+        function checkBomEmptyState() {
+            const body = document.getElementById('bomItemsBody');
+            const emptyState = document.getElementById('bomEmptyState');
+            if (body.children.length === 0) {
+                emptyState.style.display = 'block';
+            }
+        }
+
         document.addEventListener('DOMContentLoaded', function () {
             // Edit Modal Logic
             var editProductModal = document.getElementById('editProductModal');
@@ -287,6 +322,15 @@
                 document.getElementById('editIsCustomizable').checked = product.is_customizable == 1;
                 document.getElementById('editStatus').value = product.status || "active";
 
+                // Populate BOM
+                const bomBody = document.getElementById('bomItemsBody');
+                bomBody.innerHTML = '';
+                if (product.raw_materials && product.raw_materials.length > 0) {
+                    product.raw_materials.forEach(material => {
+                        addMaterialRow(material);
+                    });
+                }
+                checkBomEmptyState();
 
                 // Handle Image
                 var preview = document.getElementById('editImagePreview');

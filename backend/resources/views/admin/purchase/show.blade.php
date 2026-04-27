@@ -130,10 +130,23 @@
                                         @foreach($purchaseOrder->items as $item)
                                             <tr>
                                                 <td>
-                                                    <div class="fw-bold small">{{ $item->product->name }}</div>
-                                                    <div class="text-muted small font-monospace">{{ $item->product->sku }}</div>
+                                                    @if($item->product_id)
+                                                        <div class="fw-bold small">{{ $item->product->name }}</div>
+                                                        <div class="text-muted small font-monospace">{{ $item->product->sku }}</div>
+                                                    @elseif($item->raw_material_id)
+                                                        <div class="fw-bold small">{{ $item->rawMaterial->name }}</div>
+                                                        <div class="text-muted small">Raw Material</div>
+                                                    @else
+                                                        <div class="text-danger small italic">Item deleted</div>
+                                                    @endif
                                                 </td>
-                                                <td class="text-center small">{{ $item->product->unit }}</td>
+                                                <td class="text-center small">
+                                                    @if($item->product_id)
+                                                        {{ $item->product->unit }}
+                                                    @elseif($item->raw_material_id)
+                                                        {{ $item->rawMaterial->unit }}
+                                                    @endif
+                                                </td>
                                                 <td class="text-center fw-bold">{{ $item->quantity }}</td>
                                                 <td class="text-end text-muted">₱{{ number_format($item->cost, 2) }}</td>
                                                 <td class="text-end fw-bold">₱{{ number_format($item->quantity * $item->cost, 2) }}</td>

@@ -35,12 +35,12 @@
                         </div>
                     </div>
 
-                    @if($lowStockProducts->isEmpty())
+                    @if($allLowStockItems->isEmpty())
                         <div class="card border-0 shadow-sm rounded-4">
                             <div class="card-body p-5 text-center">
                                 <i class="bi bi-check-circle-fill text-success fs-1 mb-3"></i>
                                 <h5 class="fw-bold text-dark">All Stock Levels Optimal</h5>
-                                <p class="text-muted">There are no products below their low stock threshold at this time.</p>
+                                <p class="text-muted">There are no products or raw materials below their low stock threshold at this time.</p>
                             </div>
                         </div>
                     @else
@@ -48,7 +48,7 @@
                             <i class="bi bi-exclamation-triangle-fill fs-4 me-3"></i>
                             <div>
                                 <h6 class="fw-bold mb-0">Attention Needed</h6>
-                                <p class="mb-0 small">{{ $lowStockProducts->count() }} products are running low on stock. Review suggestions below.</p>
+                                <p class="mb-0 small">{{ $allLowStockItems->count() }} items are running low on stock. Review suggestions below.</p>
                             </div>
                         </div>
 
@@ -83,28 +83,42 @@
                                                 <table class="table table-hover align-middle mb-0">
                                                     <thead class="bg-light bg-opacity-50">
                                                         <tr>
-                                                            <th class="ps-4 border-0 small text-uppercase text-muted">Product</th>
+                                                            <th class="ps-4 border-0 small text-uppercase text-muted">Item Name</th>
+                                                            <th class="border-0 small text-uppercase text-muted">Type</th>
                                                             <th class="border-0 small text-uppercase text-muted text-center">Current</th>
                                                             <th class="border-0 small text-uppercase text-muted text-center">Threshold</th>
                                                             <th class="border-0 small text-uppercase text-muted text-end pe-4">Status</th>
                                                         </tr>
                                                     </thead>
                                                     <tbody>
-                                                        @foreach($items as $product)
+                                                        @foreach($items as $item)
                                                             <tr>
                                                                 <td class="ps-4 py-3">
                                                                     <div class="d-flex align-items-center gap-2">
-                                                                        <div class="bg-light rounded-2 d-flex align-items-center justify-content-center overflow-hidden" style="width: 32px; height: 32px; flex-shrink: 0; background-image: url('{{ $product->image }}'); background-size: cover;"></div>
+                                                                        @if($item->type === 'Product')
+                                                                            <div class="bg-light rounded-2 d-flex align-items-center justify-content-center overflow-hidden" style="width: 32px; height: 32px; flex-shrink: 0; background-image: url('{{ $item->image }}'); background-size: cover;"></div>
+                                                                        @else
+                                                                            <div class="bg-light rounded-2 d-flex align-items-center justify-content-center text-primary" style="width: 32px; height: 32px; flex-shrink: 0;">
+                                                                                <i class="bi bi-box"></i>
+                                                                            </div>
+                                                                        @endif
                                                                         <div>
-                                                                            <div class="fw-bold text-dark small">{{ $product->name }}</div>
-                                                                            <div class="text-muted small font-monospace" style="font-size: 0.75rem;">{{ $product->sku }}</div>
+                                                                            <div class="fw-bold text-dark small">{{ $item->name }}</div>
+                                                                            @if($item->type === 'Product')
+                                                                                <div class="text-muted small font-monospace" style="font-size: 0.75rem;">{{ $item->sku }}</div>
+                                                                            @endif
                                                                         </div>
                                                                     </div>
                                                                 </td>
-                                                                <td class="text-center fw-bold text-danger">{{ $product->stock }}</td>
-                                                                <td class="text-center text-muted">{{ $product->low_stock_threshold }}</td>
+                                                                <td>
+                                                                    <span class="badge {{ $item->type === 'Product' ? 'bg-info text-dark' : 'bg-secondary text-white' }} rounded-pill small" style="font-size: 0.7rem;">
+                                                                        {{ $item->type }}
+                                                                    </span>
+                                                                </td>
+                                                                <td class="text-center fw-bold text-danger">{{ $item->display_stock }} {{ $item->unit }}</td>
+                                                                <td class="text-center text-muted">{{ $item->display_threshold }}</td>
                                                                 <td class="text-end pe-4">
-                                                                    @if($product->stock == 0)
+                                                                    @if($item->display_stock == 0)
                                                                          <span class="badge bg-danger bg-opacity-10 text-danger rounded-pill">Out of Stock</span>
                                                                     @else
                                                                          <span class="badge bg-warning bg-opacity-10 text-warning rounded-pill">Low Stock</span>
@@ -118,7 +132,7 @@
                                         </div>
                                         @if($supplierId === 'no_supplier')
                                             <div class="card-footer bg-white border-top-0 p-3 text-center">
-                                                <small class="text-muted">Go to <a href="{{ route('admin.products.index') }}">Products > Manage Suppliers</a> to fix this.</small>
+                                                <small class="text-muted">Check <a href="{{ route('admin.products.index') }}">Products</a> or <a href="{{ route('admin.raw-materials.index') }}">Raw Materials</a> to fix this.</small>
                                             </div>
                                         @endif
                                     </div>

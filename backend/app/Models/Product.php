@@ -3,9 +3,11 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Product extends Model
 {
+    use SoftDeletes;
     protected $primaryKey = 'product_id';
 
     protected $fillable = [
@@ -46,5 +48,12 @@ class Product extends Model
     public function customDesigns()
     {
         return $this->hasMany(CustomDesign::class, 'product_id', 'product_id');
+    }
+
+    public function rawMaterials(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    {
+        return $this->belongsToMany(RawMaterial::class, 'product_raw_materials', 'product_id', 'raw_material_id')
+            ->withPivot('quantity_required')
+            ->withTimestamps();
     }
 }

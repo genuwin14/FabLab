@@ -39,13 +39,15 @@
                 </a>
             </li>
             <li class="nav-item">
-                <a href="#" class="nav-link text-white hover-accent">
+                <a href="{{ route('admin.raw-materials.index') }}"
+                    class="nav-link {{ request()->routeIs('admin.raw-materials.*') ? 'active bg-accent text-primary fw-bold' : 'text-white hover-accent' }}">
                     <i class="bi bi-boxes me-2"></i>
                     Raw Materials
                 </a>
             </li>
             <li class="nav-item">
-                <a href="#" class="nav-link text-white hover-accent">
+                <a href="{{ route('admin.textures.index') }}"
+                    class="nav-link {{ request()->routeIs('admin.textures.*') ? 'active bg-accent text-primary fw-bold' : 'text-white hover-accent' }}">
                     <i class="bi bi-layers me-2"></i>
                     Textures
                 </a>

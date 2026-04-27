@@ -61,6 +61,16 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::post('/admin/suppliers', [\App\Http\Controllers\Admin\SupplierController::class, 'store'])->name('admin.suppliers.store');
     Route::put('/admin/suppliers/{id}', [\App\Http\Controllers\Admin\SupplierController::class, 'update'])->name('admin.suppliers.update');
     Route::delete('/admin/suppliers/{id}', [\App\Http\Controllers\Admin\SupplierController::class, 'destroy'])->name('admin.suppliers.destroy');
+    // Admin Routes/Raw Materials
+    Route::get('/admin/raw-materials', [\App\Http\Controllers\Admin\RawMaterialController::class, 'index'])->name('admin.raw-materials.index');
+    Route::post('/admin/raw-materials', [\App\Http\Controllers\Admin\RawMaterialController::class, 'store'])->name('admin.raw-materials.store');
+    Route::put('/admin/raw-materials/{id}', [\App\Http\Controllers\Admin\RawMaterialController::class, 'update'])->name('admin.raw-materials.update');
+    Route::delete('/admin/raw-materials/{id}', [\App\Http\Controllers\Admin\RawMaterialController::class, 'destroy'])->name('admin.raw-materials.destroy');
+    // Admin Routes/Textures
+    Route::get('/admin/textures', [\App\Http\Controllers\Admin\TextureController::class, 'index'])->name('admin.textures.index');
+    Route::post('/admin/textures', [\App\Http\Controllers\Admin\TextureController::class, 'store'])->name('admin.textures.store');
+    Route::put('/admin/textures/{id}', [\App\Http\Controllers\Admin\TextureController::class, 'update'])->name('admin.textures.update');
+    Route::delete('/admin/textures/{id}', [\App\Http\Controllers\Admin\TextureController::class, 'destroy'])->name('admin.textures.destroy');
 
     // Admin Routes/Inventory
     Route::get('/admin/inventory', [\App\Http\Controllers\Admin\InventoryController::class, 'index'])->name('admin.inventory.index');

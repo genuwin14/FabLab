@@ -103,8 +103,13 @@
                             </div>
 
                             <!-- Pagination -->
-                            <div class="p-3 border-top">
-                                {{ $purchaseOrders->links() }}
+                            <div class="d-flex justify-content-between align-items-center p-3 border-top">
+                                <span class="text-muted small">
+                                    Showing {{ $purchaseOrders->firstItem() }} to {{ $purchaseOrders->lastItem() }} of {{ $purchaseOrders->total() }} entries
+                                </span>
+                                <nav>
+                                    {{ $purchaseOrders->links() }}
+                                </nav>
                             </div>
                         </div>
                     </div>
