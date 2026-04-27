@@ -1,8 +1,10 @@
 @extends('layout.app')
 
 @section('content')
+    <!-- ApexCharts CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+
     <div class="d-flex min-vh-100" style="background-color: #f8f9fa;">
-        <!-- Desktop Sidebar -->
         <!-- Desktop Sidebar -->
         <aside class="d-none d-md-block border-end shadow-sm position-fixed top-0 start-0 h-100"
             style="width: 280px; z-index: 1040;">
@@ -30,126 +32,177 @@
             <!-- Page Content -->
             <main class="flex-grow-1 p-4">
                 <div class="container-fluid">
-                    <!-- Welcome Banner -->
-                    <div class="row mb-4">
-                        <div class="col-12">
-                            <div class="p-5 rounded-4 text-white position-relative overflow-hidden"
-                                style="background: linear-gradient(135deg, #0e2e45 0%, #1a4b6e 100%);">
-                                <div class="position-relative z-1">
-                                    <h2 class="fw-bold display-6">Welcome, Admin {{ Auth::user()->fullname }}!</h2>
-                                    <p class="lead opacity-75">Overview of system performance and activities.</p>
-                                </div>
-                                <!-- Decor -->
-                                <div class="position-absolute top-0 end-0 opacity-10">
-                                    <i class="bi bi-speedometer2"
-                                        style="font-size: 15rem; transform: rotate(-15deg) translate(20px, -20px);"></i>
-                                </div>
-                            </div>
+                    
+                    <!-- Welcome Header -->
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <div>
+                            <h3 class="fw-bold text-primary mb-1">Dashboard Overview</h3>
+                            <p class="text-muted small mb-0">Good evening, {{ Auth::user()->fullname }}. Here's what's happening today.</p>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-white rounded-pill px-3 shadow-sm border small fw-bold text-muted hover-accent">
+                                <i class="bi bi-calendar3 me-2"></i>Last 30 Days
+                            </button>
+                            <button class="btn btn-primary rounded-pill px-3 shadow-sm small fw-bold">
+                                <i class="bi bi-download me-2"></i>Export Report
+                            </button>
                         </div>
                     </div>
 
-                    <!-- Stats Cards -->
+                    <!-- Stats Grid -->
                     <div class="row g-4 mb-4">
                         <div class="col-md-3">
-                            <div class="card border-0 shadow-sm h-100 rounded-4">
-                                <div class="card-body p-4 d-flex align-items-center gap-3">
-                                    <div class="rounded-circle bg-primary bg-opacity-10 p-3 text-primary">
-                                        <i class="bi bi-currency-dollar fs-3"></i>
+                            <div class="card border-0 shadow-sm rounded-4 overflow-hidden stat-card">
+                                <div class="card-body p-4 position-relative">
+                                    <div class="d-flex justify-content-between align-items-start mb-3">
+                                        <div class="rounded-3 bg-primary bg-opacity-10 p-3 text-primary">
+                                            <i class="bi bi-currency-dollar fs-4"></i>
+                                        </div>
+                                        <span class="badge bg-success bg-opacity-10 text-success rounded-pill px-2 py-1 small">
+                                            <i class="bi bi-arrow-up-short"></i>12%
+                                        </span>
                                     </div>
-                                    <div>
-                                        <h6 class="text-muted small fw-bold text-uppercase mb-1">Total Revenue</h6>
-                                        <h3 class="fw-bold mb-0">$12,450</h3>
-                                    </div>
+                                    <h6 class="text-muted small fw-bold text-uppercase mb-1">Total Revenue</h6>
+                                    <h3 class="fw-bold mb-0">₱{{ number_format($totalRevenue, 2) }}</h3>
+                                    <div class="stat-pattern"></div>
                                 </div>
                             </div>
                         </div>
                         <div class="col-md-3">
-                            <div class="card border-0 shadow-sm h-100 rounded-4">
-                                <div class="card-body p-4 d-flex align-items-center gap-3">
-                                    <div class="rounded-circle bg-success bg-opacity-10 p-3 text-success">
-                                        <i class="bi bi-people fs-3"></i>
+                            <div class="card border-0 shadow-sm rounded-4 overflow-hidden stat-card">
+                                <div class="card-body p-4 position-relative">
+                                    <div class="d-flex justify-content-between align-items-start mb-3">
+                                        <div class="rounded-3 bg-success bg-opacity-10 p-3 text-success">
+                                            <i class="bi bi-people fs-4"></i>
+                                        </div>
+                                        <span class="badge bg-success bg-opacity-10 text-success rounded-pill px-2 py-1 small">
+                                            <i class="bi bi-arrow-up-short"></i>5%
+                                        </span>
                                     </div>
-                                    <div>
-                                        <h6 class="text-muted small fw-bold text-uppercase mb-1">Active Users</h6>
-                                        <h3 class="fw-bold mb-0">1,240</h3>
-                                    </div>
+                                    <h6 class="text-muted small fw-bold text-uppercase mb-1">Total Users</h6>
+                                    <h3 class="fw-bold mb-0">{{ number_format($activeUsersCount) }}</h3>
+                                    <div class="stat-pattern bg-success"></div>
                                 </div>
                             </div>
                         </div>
                         <div class="col-md-3">
-                            <div class="card border-0 shadow-sm h-100 rounded-4">
-                                <div class="card-body p-4 d-flex align-items-center gap-3">
-                                    <div class="rounded-circle bg-warning bg-opacity-10 p-3 text-warning">
-                                        <i class="bi bi-box-seam fs-3"></i>
+                            <div class="card border-0 shadow-sm rounded-4 overflow-hidden stat-card">
+                                <div class="card-body p-4 position-relative">
+                                    <div class="d-flex justify-content-between align-items-start mb-3">
+                                        <div class="rounded-3 bg-warning bg-opacity-10 p-3 text-warning">
+                                            <i class="bi bi-box-seam fs-4"></i>
+                                        </div>
+                                        @if($lowStockCount > 0)
+                                            <span class="badge bg-danger bg-opacity-10 text-danger rounded-pill px-2 py-1 small">
+                                                Critical
+                                            </span>
+                                        @endif
                                     </div>
-                                    <div>
-                                        <h6 class="text-muted small fw-bold text-uppercase mb-1">Low Stock Items</h6>
-                                        <h3 class="fw-bold mb-0">5</h3>
-                                    </div>
+                                    <h6 class="text-muted small fw-bold text-uppercase mb-1">Low Stock Items</h6>
+                                    <h3 class="fw-bold mb-0">{{ $lowStockCount }}</h3>
+                                    <div class="stat-pattern bg-warning"></div>
                                 </div>
                             </div>
                         </div>
                         <div class="col-md-3">
-                            <div class="card border-0 shadow-sm h-100 rounded-4">
-                                <div class="card-body p-4 d-flex align-items-center gap-3">
-                                    <div class="rounded-circle bg-info bg-opacity-10 p-3 text-info">
-                                        <i class="bi bi-cart-check fs-3"></i>
+                            <div class="card border-0 shadow-sm rounded-4 overflow-hidden stat-card">
+                                <div class="card-body p-4 position-relative">
+                                    <div class="d-flex justify-content-between align-items-start mb-3">
+                                        <div class="rounded-3 bg-info bg-opacity-10 p-3 text-info">
+                                            <i class="bi bi-cart-check fs-4"></i>
+                                        </div>
+                                        <span class="badge bg-primary bg-opacity-10 text-primary rounded-pill px-2 py-1 small">
+                                            Pending
+                                        </span>
                                     </div>
-                                    <div>
-                                        <h6 class="text-muted small fw-bold text-uppercase mb-1">Pending Orders</h6>
-                                        <h3 class="fw-bold mb-0">8</h3>
-                                    </div>
+                                    <h6 class="text-muted small fw-bold text-uppercase mb-1">Active Orders</h6>
+                                    <h3 class="fw-bold mb-0">{{ $pendingOrdersCount }}</h3>
+                                    <div class="stat-pattern bg-info"></div>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Recent Activity / Orders -->
-                    <div class="row g-4">
+                    <!-- Charts Row -->
+                    <div class="row g-4 mb-4">
                         <div class="col-lg-8">
                             <div class="card border-0 shadow-sm rounded-4 h-100">
-                                <div
-                                    class="card-header bg-transparent border-0 p-4 pb-0 d-flex justify-content-between align-items-center">
-                                    <h5 class="fw-bold mb-0">Recent Orders</h5>
-                                    <a href="#" class="text-decoration-none text-primary fw-bold small">View All</a>
+                                <div class="card-header bg-white border-0 p-4 pb-0 d-flex justify-content-between align-items-center">
+                                    <h5 class="fw-bold mb-0">Sales Revenue Trend</h5>
+                                    <div class="dropdown">
+                                        <button class="btn btn-light btn-sm rounded-pill px-3 border" type="button" data-bs-toggle="dropdown">
+                                            Yearly <i class="bi bi-chevron-down ms-1"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body p-4">
+                                    <div id="salesChart" style="min-height: 350px;"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-4">
+                            <div class="card border-0 shadow-sm rounded-4 h-100">
+                                <div class="card-header bg-white border-0 p-4 pb-0">
+                                    <h5 class="fw-bold mb-0">Inventory by Category</h5>
+                                </div>
+                                <div class="card-body p-4">
+                                    <div id="categoryChart" style="min-height: 350px;"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Bottom Row: Recent Orders & Top Products -->
+                    <div class="row g-4">
+                        <div class="col-lg-8">
+                            <div class="card border-0 shadow-sm rounded-4">
+                                <div class="card-header bg-white border-0 p-4 pb-0 d-flex justify-content-between align-items-center">
+                                    <h5 class="fw-bold mb-0">Recent Transactions</h5>
+                                    <a href="#" class="btn btn-light btn-sm rounded-pill px-3 border small text-primary">View All</a>
                                 </div>
                                 <div class="card-body p-4">
                                     <div class="table-responsive">
-                                        <table class="table table-hover align-middle">
-                                            <thead class="table-light">
+                                        <table class="table table-hover align-middle mb-0">
+                                            <thead class="bg-light bg-opacity-50">
                                                 <tr>
-                                                    <th scope="col" class="border-0 rounded-start">Order ID</th>
-                                                    <th scope="col" class="border-0">Customer</th>
-                                                    <th scope="col" class="border-0">Amount</th>
-                                                    <th scope="col" class="border-0">Status</th>
-                                                    <th scope="col" class="border-0 text-end rounded-end">Action</th>
+                                                    <th class="ps-3 border-0 small text-uppercase text-muted">Order ID</th>
+                                                    <th class="border-0 small text-uppercase text-muted">Customer</th>
+                                                    <th class="border-0 small text-uppercase text-muted">Amount</th>
+                                                    <th class="border-0 small text-uppercase text-muted">Status</th>
+                                                    <th class="border-0 small text-uppercase text-muted text-end pe-3">Action</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
-                                                <tr>
-                                                    <td class="fw-bold">#ORD-005</td>
-                                                    <td>John Doe</td>
-                                                    <td>$50.00</td>
-                                                    <td><span
-                                                            class="badge bg-warning text-dark bg-opacity-25 text-opacity-75 px-3 py-2 rounded-pill">Pending</span>
-                                                    </td>
-                                                    <td class="text-end">
-                                                        <button class="btn btn-sm btn-light rounded-circle"><i
-                                                                class="bi bi-eye"></i></button>
-                                                    </td>
-                                                </tr>
-                                                <tr>
-                                                    <td class="fw-bold">#ORD-004</td>
-                                                    <td>Jane Smith</td>
-                                                    <td>$120.00</td>
-                                                    <td><span
-                                                            class="badge bg-success bg-opacity-10 text-success px-3 py-2 rounded-pill">Completed</span>
-                                                    </td>
-                                                    <td class="text-end">
-                                                        <button class="btn btn-sm btn-light rounded-circle"><i
-                                                                class="bi bi-eye"></i></button>
-                                                    </td>
-                                                </tr>
+                                                @forelse($recentOrders as $order)
+                                                    <tr>
+                                                        <td class="ps-3 py-3 font-monospace fw-bold text-primary">{{ $order->order_number }}</td>
+                                                        <td>
+                                                            <div class="fw-bold text-dark small">{{ $order->user->fullname }}</div>
+                                                            <div class="text-muted small" style="font-size: 0.7rem;">{{ $order->created_at->diffForHumans() }}</div>
+                                                        </td>
+                                                        <td class="fw-bold text-dark small">₱{{ number_format($order->total_amount, 2) }}</td>
+                                                        <td>
+                                                            @php
+                                                                $statusClass = 'bg-secondary';
+                                                                if($order->status === 'pending') $statusClass = 'bg-warning text-warning';
+                                                                if($order->status === 'completed') $statusClass = 'bg-success text-success';
+                                                                if($order->status === 'cancelled') $statusClass = 'bg-danger text-danger';
+                                                            @endphp
+                                                            <span class="badge {{ $statusClass }} bg-opacity-10 rounded-pill px-2 py-1 text-uppercase" style="font-size: 0.65rem;">
+                                                                {{ ucfirst($order->status) }}
+                                                            </span>
+                                                        </td>
+                                                        <td class="text-end pe-3">
+                                                            <a href="#" class="btn btn-light btn-sm rounded-circle text-primary border">
+                                                                <i class="bi bi-eye"></i>
+                                                            </a>
+                                                        </td>
+                                                    </tr>
+                                                @empty
+                                                    <tr>
+                                                        <td colspan="5" class="text-center py-4 text-muted">No recent orders.</td>
+                                                    </tr>
+                                                @endforelse
                                             </tbody>
                                         </table>
                                     </div>
@@ -157,33 +210,34 @@
                             </div>
                         </div>
                         <div class="col-lg-4">
-                            <div class="card border-0 shadow-sm rounded-4 h-100">
-                                <div class="card-header bg-transparent border-0 p-4 pb-0">
-                                    <h5 class="fw-bold mb-0">System Alerts</h5>
+                            <div class="card border-0 shadow-sm rounded-4">
+                                <div class="card-header bg-white border-0 p-4 pb-0">
+                                    <h5 class="fw-bold mb-0">Top Products</h5>
                                 </div>
                                 <div class="card-body p-4">
-                                    <div class="d-flex gap-3 mb-3">
-                                        <div class="flex-shrink-0">
-                                            <div class="bg-danger bg-opacity-10 text-danger rounded-circle p-2">
-                                                <i class="bi bi-exclamation-triangle"></i>
+                                    @forelse($topProducts as $product)
+                                        <div class="d-flex align-items-center mb-3 p-2 rounded-3 hover-bg-light transition-all">
+                                            <div class="flex-shrink-0 me-3">
+                                                @if($product->image)
+                                                    <img src="{{ asset('storage/' . $product->image) }}" class="rounded-3 shadow-sm" style="width: 48px; height: 48px; object-fit: cover;">
+                                                @else
+                                                    <div class="rounded-3 bg-light d-flex align-items-center justify-content-center text-muted" style="width: 48px; height: 48px;">
+                                                        <i class="bi bi-image"></i>
+                                                    </div>
+                                                @endif
+                                            </div>
+                                            <div class="flex-grow-1 overflow-hidden">
+                                                <h6 class="fw-bold text-dark mb-0 text-truncate small">{{ $product->name }}</h6>
+                                                <p class="text-muted mb-0 small">{{ $product->category->name }}</p>
+                                            </div>
+                                            <div class="text-end flex-shrink-0 ms-2">
+                                                <div class="fw-bold text-primary small">{{ $product->total_sold }} sold</div>
+                                                <div class="text-muted small" style="font-size: 0.7rem;">₱{{ number_format($product->price, 2) }}</div>
                                             </div>
                                         </div>
-                                        <div>
-                                            <h6 class="fw-bold mb-1">Low Stock Warning</h6>
-                                            <p class="text-muted small mb-0">Item SKU-123 is running low (2 units left).</p>
-                                        </div>
-                                    </div>
-                                    <div class="d-flex gap-3 mb-3">
-                                        <div class="flex-shrink-0">
-                                            <div class="bg-info bg-opacity-10 text-info rounded-circle p-2">
-                                                <i class="bi bi-info-circle"></i>
-                                            </div>
-                                        </div>
-                                        <div>
-                                            <h6 class="fw-bold mb-1">New User Registration</h6>
-                                            <p class="text-muted small mb-0">User 'Mark' joined 2 hours ago.</p>
-                                        </div>
-                                    </div>
+                                    @empty
+                                        <p class="text-muted text-center py-4">No top products yet.</p>
+                                    @endforelse
                                 </div>
                             </div>
                         </div>
@@ -194,28 +248,122 @@
         </div>
     </div>
 
-    <!-- Logout Confirmation Modal -->
-    <div class="modal fade" id="logoutModal" tabindex="-1" aria-labelledby="logoutModalLabel" aria-hidden="true"
-        style="z-index: 9999;">
-        <div class="modal-dialog modal-dialog-centered modal-sm">
-            <div class="modal-content border-0 shadow-lg rounded-4">
-                <div class="modal-body p-4 text-center">
-                    <div class="mb-3">
-                        <i class="bi bi-exclamation-circle text-warning display-4"></i>
-                    </div>
-                    <h5 class="fw-bold mb-2 text-dark">Sign Out?</h5>
-                    <p class="text-muted small mb-4">Are you sure you want to log out of the Admin Panel?</p>
+    <style>
+        .stat-card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.05) !important;
+        }
+        .stat-pattern {
+            position: absolute;
+            bottom: -20px;
+            right: -20px;
+            width: 100px;
+            height: 100px;
+            background-color: var(--bs-primary);
+            opacity: 0.03;
+            border-radius: 50%;
+            z-index: 0;
+        }
+        .hover-accent:hover {
+            background-color: #f8f9fa !important;
+        }
+        .hover-bg-light:hover {
+            background-color: #f8f9fa;
+        }
+        .transition-all {
+            transition: all 0.2s ease-in-out;
+        }
+    </style>
 
-                    <div class="d-flex gap-2 justify-content-center">
-                        <button type="button" class="btn btn-light px-4 rounded-pill fw-bold small"
-                            data-bs-dismiss="modal">Cancel</button>
-                        <form action="{{ route('logout') }}" method="POST">
-                            @csrf
-                            <button type="submit" class="btn btn-danger px-4 rounded-pill fw-bold small">Log Out</button>
-                        </form>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-@endsection
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Sales Chart
+            const salesOptions = {
+                series: [{
+                    name: 'Revenue',
+                    data: @json($salesTrend->pluck('total'))
+                }],
+                chart: {
+                    type: 'area',
+                    height: 350,
+                    toolbar: { show: false },
+                    zoom: { enabled: false },
+                    fontFamily: 'Inter, sans-serif'
+                },
+                dataLabels: { enabled: false },
+                stroke: { curve: 'smooth', width: 3, colors: ['#0d6efd'] },
+                fill: {
+                    type: 'gradient',
+                    gradient: {
+                        shadeIntensity: 1,
+                        opacityFrom: 0.45,
+                        opacityTo: 0.05,
+                        stops: [20, 100]
+                    }
+                },
+                xaxis: {
+                    categories: @json($salesTrend->pluck('month')),
+                    axisBorder: { show: false },
+                    axisTicks: { show: false }
+                },
+                yaxis: {
+                    labels: {
+                        formatter: function (val) { return '₱' + val.toLocaleString(); }
+                    }
+                },
+                grid: {
+                    borderColor: '#f1f1f1',
+                    strokeDashArray: 4
+                },
+                tooltip: {
+                    y: {
+                        formatter: function (val) { return '₱' + val.toLocaleString(); }
+                    }
+                },
+                colors: ['#0d6efd']
+            };
+
+            const salesChart = new ApexCharts(document.querySelector("#salesChart"), salesOptions);
+            salesChart.render();
+
+            // Category Chart (Bar Chart - No Pie!)
+            const categoryOptions = {
+                series: [{
+                    name: 'Products',
+                    data: @json($categoryDistribution->pluck('count'))
+                }],
+                chart: {
+                    type: 'bar',
+                    height: 350,
+                    toolbar: { show: false },
+                    fontFamily: 'Inter, sans-serif'
+                },
+                plotOptions: {
+                    bar: {
+                        borderRadius: 8,
+                        columnWidth: '45%',
+                        distributed: true,
+                    }
+                },
+                dataLabels: { enabled: false },
+                legend: { show: false },
+                xaxis: {
+                    categories: @json($categoryDistribution->pluck('name')),
+                    axisBorder: { show: false },
+                    axisTicks: { show: false }
+                },
+                grid: {
+                    borderColor: '#f1f1f1',
+                    strokeDashArray: 4
+                },
+                colors: ['#0d6efd', '#198754', '#ffc107', '#0dcaf0', '#6610f2', '#fd7e14']
+            };
+
+            const categoryChart = new ApexCharts(document.querySelector("#categoryChart"), categoryOptions);
+            categoryChart.render();
+        });
+    </script>
+@endsection
