@@ -32,6 +32,10 @@ class CategorySeeder extends Seeder
             [
                 'name' => 'Electronics',
                 'description' => 'Sensors, microcontrollers, and wiring components.'
+            ],
+            [
+                'name' => 'Furniture',
+                'description' => 'Large scale furniture items like sofas, tables, and chairs.'
             ]
         ];
 

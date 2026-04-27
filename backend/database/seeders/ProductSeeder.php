@@ -18,6 +18,7 @@ class ProductSeeder extends Seeder
         $rawMaterialsId = Category::where('name', 'Raw Materials')->first()->category_id;
         $machineryId = Category::where('name', 'Machinery & Equipment')->first()->category_id;
         $merchandiseId = Category::where('name', 'Merchandise')->first()->category_id;
+        $furnitureId = Category::where('name', 'Furniture')->first()->category_id;
 
         // Get Suppliers
         $suppliers = Supplier::all();
@@ -138,6 +139,23 @@ class ProductSeeder extends Seeder
                 'status' => 'active',
                 'suppliers' => [
                     ['id' => $genMerch->supplier_id, 'cost' => 110.00, 'moq' => 20, 'lead' => 5, 'default' => true]
+                ]
+            ],
+            // Scenario 8: Furniture with complex BOM
+            [
+                'sku' => 'FN-SFA-LTH-BLK',
+                'name' => 'Luxury Leather Sofa (3-Seater)',
+                'description' => 'A premium 3-seater sofa made with high-density foam and genuine leather.',
+                'brand' => 'FabHome',
+                'price' => 45000.00,
+                'stock' => 5,
+                'category_id' => $furnitureId,
+                'unit' => 'set',
+                'low_stock_threshold' => 2,
+                'is_customizable' => true,
+                'status' => 'active',
+                'suppliers' => [
+                    ['id' => $ecoMaterials->supplier_id, 'cost' => 30000.00, 'moq' => 1, 'lead' => 14, 'default' => true]
                 ]
             ]
         ];
