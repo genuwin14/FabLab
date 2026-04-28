@@ -6,12 +6,12 @@
             <span class="fs-4 fw-bold tracking-tight sidebar-label">FAB<span class="text-gradient-gold">LAB</span></span>
         </a>
     </div>
-    <hr class="sidebar-header-divider opacity-25 mt-0 mb-3">
+    <hr class="sidebar-header-divider opacity-25 mt-0 mb-4">
 
     <!-- Scrollable Menu Content -->
     <div class="flex-grow-1 overflow-y-auto pe-1 custom-scrollbar">
         <!-- General Section -->
-        <div class="mb-2 text-uppercase text-white-50 small fw-bold px-2 sidebar-section-title">General</div>
+        <div class="mb-2 text-uppercase text-white-50 small fw-bold sidebar-section-title mt-2">General</div>
         <ul class="nav nav-pills flex-column mb-3 gap-1">
             <li class="nav-item">
                 <a href="{{ route('admin.dashboard') }}"
@@ -24,7 +24,7 @@
         </ul>
 
         <!-- Inventory Control Section -->
-        <div class="mb-2 text-uppercase text-white-50 small fw-bold px-2 sidebar-section-title">Inventory Control</div>
+        <div class="mb-2 text-uppercase text-white-50 small fw-bold sidebar-section-title">Inventory Control</div>
         <ul class="nav nav-pills flex-column mb-3 gap-1">
             <li class="nav-item">
                 <a href="{{ route('admin.products.index') }}"
@@ -69,7 +69,7 @@
         </ul>
 
         <!-- Sales & Orders Section -->
-        <div class="mb-2 text-uppercase text-white-50 small fw-bold px-2 sidebar-section-title">Sales & Orders</div>
+        <div class="mb-2 text-uppercase text-white-50 small fw-bold sidebar-section-title">Sales & Orders</div>
         <ul class="nav nav-pills flex-column mb-3 gap-1">
             <li class="nav-item">
                 <a href="{{ route('admin.orders.index') }}"
@@ -89,7 +89,7 @@
         </ul>
 
         <!-- Procurement Section -->
-        <div class="mb-2 text-uppercase text-white-50 small fw-bold px-2 sidebar-section-title">Procurement</div>
+        <div class="mb-2 text-uppercase text-white-50 small fw-bold sidebar-section-title">Procurement</div>
         <ul class="nav nav-pills flex-column mb-3 gap-1">
             <li class="nav-item">
                 <a href="{{ route('admin.suppliers.index') }}"
@@ -110,7 +110,7 @@
         </ul>
 
         <!-- Administration Section -->
-        <div class="mb-2 text-uppercase text-white-50 small fw-bold px-2 sidebar-section-title">Administration</div>
+        <div class="mb-2 text-uppercase text-white-50 small fw-bold sidebar-section-title">Administration</div>
         <ul class="nav nav-pills flex-column mb-3 gap-1">
             <li class="nav-item">
                 <a href="{{ route('admin.users.index') }}"
@@ -189,6 +189,7 @@
         padding: 0 !important; color: transparent; overflow: hidden;
     }
     .sidebar-inner.sidebar-collapsed .sidebar-section-title:first-of-type { display: none !important; }
+    .sidebar-inner.sidebar-collapsed .nav:first-of-type { margin-top: 0.75rem !important; }
     .sidebar-inner.sidebar-collapsed .nav-link {
         justify-content: center; width: 42px; height: 42px; padding: 0; margin: 0 auto; border-radius: 0.5rem;
     }

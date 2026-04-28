@@ -6,12 +6,12 @@
             <span class="fs-4 fw-bold tracking-tight sidebar-label">FAB<span class="text-gradient-gold">LAB</span></span>
         </a>
     </div>
-    <hr class="sidebar-header-divider opacity-25 mt-0 mb-3">
+    <hr class="sidebar-header-divider opacity-25 mt-0 mb-4">
 
     <!-- Scrollable Menu Content -->
     <div class="flex-grow-1 overflow-y-auto pe-1 custom-scrollbar">
         <!-- Explore Section -->
-        <div class="mb-2 text-uppercase text-white-50 small fw-bold px-2 sidebar-section-title">Explore</div>
+        <div class="mb-2 text-uppercase text-white-50 small fw-bold sidebar-section-title">Explore</div>
         <ul class="nav nav-pills flex-column mb-3 gap-1">
             <li class="nav-item">
                 <a href="{{ route('customer.shop') }}"
@@ -24,7 +24,7 @@
         </ul>
 
         <!-- Design Center Section -->
-        <div class="mb-2 text-uppercase text-white-50 small fw-bold px-2 sidebar-section-title">Design Center</div>
+        <div class="mb-2 text-uppercase text-white-50 small fw-bold sidebar-section-title">Design Center</div>
         <ul class="nav nav-pills flex-column mb-3 gap-1">
             <li class="nav-item">
                 <a href="{{ route('customer.customize.index') }}"
@@ -45,7 +45,7 @@
         </ul>
 
         <!-- Transactions Section -->
-        <div class="mb-2 text-uppercase text-white-50 small fw-bold px-2 sidebar-section-title">Transactions</div>
+        <div class="mb-2 text-uppercase text-white-50 small fw-bold sidebar-section-title">Transactions</div>
         <ul class="nav nav-pills flex-column mb-3 gap-1">
             <li class="nav-item">
                 <a href="{{ route('customer.orders.index') }}"
@@ -284,6 +284,9 @@
 
                 var spacer = aside.parentElement.querySelector('.sidebar-spacer');
                 var icon   = btn.querySelector('.sidebar-collapse-icon');
+
+                aside.style.transition = 'width 0.3s ease';
+                if (spacer) spacer.style.transition = 'width 0.3s ease';
 
                 aside.style.transition = 'width 0.3s ease';
                 if (spacer) spacer.style.transition = 'width 0.3s ease';
