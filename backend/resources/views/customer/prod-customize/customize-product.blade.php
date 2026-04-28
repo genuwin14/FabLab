@@ -1,12 +1,14 @@
 @extends('layout.app')
 
 @section('content')
-    <div class="d-flex h-screen overflow-hidden" style="background-color: #05111a;">
+    <div class="d-flex vh-100" style="background-color: #05111a; overflow: hidden;">
         <!-- Desktop Sidebar -->
-        <aside class="d-none d-md-block border-end border-white border-opacity-10 flex-shrink-0"
-            style="width: 280px; z-index: 1040; background-color: #05111a;">
+        <aside class="d-none d-md-block border-end border-white border-opacity-10 shadow-sm position-fixed top-0 start-0 h-100" style="width: 280px; z-index: 1040; background-color: #05111a;">
             @include('customer.partials.sidebar')
         </aside>
+
+        <!-- Spacer for fixed sidebar -->
+        <div class='d-none d-md-block sidebar-spacer flex-shrink-0' style='width: 280px;'></div>
 
         <!-- Mobile Sidebar (Offcanvas) -->
         <div class="offcanvas offcanvas-start border-0 text-white" tabindex="-1" id="customerSidebarOffcanvas"
@@ -17,10 +19,10 @@
         </div>
 
         <!-- Main Content -->
-        <div class="flex-grow-1 d-flex flex-column overflow-hidden">
+        <div class="flex-grow-1 d-flex flex-column" style="overflow: hidden;">
             <!-- Top Navbar -->
-            <header class="sticky-top border-bottom border-white border-opacity-10"
-                style="z-index: 1030; background-color: #05111a;">
+            <header class="flex-shrink-0 border-bottom border-white border-opacity-10 shadow-sm"
+                style="z-index: 1042; background-color: #05111a;">
                 @include('customer.partials.navbar')
             </header>
 

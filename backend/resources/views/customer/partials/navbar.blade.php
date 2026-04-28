@@ -116,6 +116,7 @@
         border-color: rgba(255, 255, 255, 0.1) !important;
         height: 65px;
         border-left: none !important;
+        z-index: 1042 !important;
     }
 
     .user-dropdown-btn {

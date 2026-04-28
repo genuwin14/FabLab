@@ -1,22 +1,27 @@
 @extends('layout.app')
 
 @section('content')
-    <div class="d-flex h-screen overflow-hidden" style="background-color: #f8f9fa;">
+    <div class="d-flex vh-100" style="background-color: #f8f9fa; overflow: hidden;">
         <!-- Desktop Sidebar -->
-        <aside class="d-none d-md-block flex-shrink-0"
-            style="width: 280px; z-index: 1040; background-color: #05111a;">
+        <aside class="d-none d-md-block border-end border-white border-opacity-10 shadow-sm position-fixed top-0 start-0 h-100" style="width: 280px; z-index: 1040; background-color: #05111a;">
             @include('customer.partials.sidebar')
         </aside>
 
+        <!-- Spacer for fixed sidebar -->
+        <div class='d-none d-md-block sidebar-spacer flex-shrink-0' style='width: 280px;'></div>
+
+        <!-- Spacer for fixed sidebar -->
+        
+
         <!-- Main Content -->
-        <div class="flex-grow-1 d-flex flex-column overflow-hidden" style="background-color: #f1f4f8;">
+        <div class="flex-grow-1 d-flex flex-column" style="background-color: #f1f4f8; overflow: hidden;">
             <!-- Top Navbar -->
-            <header class="sticky-top" style="z-index: 1030; background-color: #05111a;">
+            <header class="sticky-top" style="z-index: 1042; background-color: #05111a;">
                 @include('customer.partials.navbar')
             </header>
 
             <!-- Page Content -->
-            <main class="flex-grow-1 p-4 overflow-y-auto custom-scrollbar">
+            <main class="flex-grow-1 p-4" style="overflow-y: auto;">
                 <div class="container-fluid">
                     <div class="row g-4">
                         @forelse($designs as $design)

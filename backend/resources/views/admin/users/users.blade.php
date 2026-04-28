@@ -3,7 +3,7 @@
 @section('content')
     <div class="d-flex vh-100" style="background-color: #f8f9fa; overflow: hidden;">
         <!-- Desktop Sidebar -->
-        <aside class="d-none d-md-block border-end shadow-sm position-fixed top-0 start-0 h-100"
+        <aside class="d-none d-md-block border-end border-white border-opacity-10 shadow-sm position-fixed top-0 start-0 h-100"
             style="width: 280px; z-index: 1040;">
             @include('admin.partials.sidebar')
         </aside>
