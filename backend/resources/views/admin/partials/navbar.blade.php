@@ -13,6 +13,22 @@
                     Admin Dashboard
                 @elseif(request()->routeIs('admin.products*'))
                     Product Management
+                @elseif(request()->routeIs('admin.textures*'))
+                    Texture Management
+                @elseif(request()->routeIs('admin.raw-materials*'))
+                    Raw Materials
+                @elseif(request()->routeIs('admin.categories*'))
+                    Category Management
+                @elseif(request()->routeIs('admin.orders*'))
+                    Order Management
+                @elseif(request()->routeIs('admin.suppliers*'))
+                    Supplier Management
+                @elseif(request()->routeIs('admin.purchase*'))
+                    Purchase Orders
+                @elseif(request()->routeIs('admin.inventory*'))
+                    Stock Monitoring
+                @elseif(request()->routeIs('admin.users*'))
+                    User Management
                 @else
                     Admin Panel
                 @endif
@@ -132,6 +148,7 @@
 
     .navbar {
         height: 65px;
+        z-index: 1050 !important;
     }
 </style>
 

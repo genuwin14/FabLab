@@ -185,6 +185,59 @@
             @endif
         });
     </script>
+
+    <!-- Global Tooltip Initialization -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Initialize all existing tooltips
+            function initTooltips(container) {
+                var tooltipEls = (container || document).querySelectorAll('[data-bs-toggle="tooltip"]');
+                tooltipEls.forEach(function (el) {
+                    if (!bootstrap.Tooltip.getInstance(el)) {
+                        new bootstrap.Tooltip(el, {
+                            trigger: 'hover',
+                            delay: { show: 300, hide: 100 }
+                        });
+                    }
+                });
+            }
+
+            initTooltips();
+
+            // Auto-initialize tooltips on dynamically added elements
+            var observer = new MutationObserver(function (mutations) {
+                mutations.forEach(function (mutation) {
+                    mutation.addedNodes.forEach(function (node) {
+                        if (node.nodeType === 1) {
+                            initTooltips(node.parentElement);
+                        }
+                    });
+                });
+            });
+
+            observer.observe(document.body, { childList: true, subtree: true });
+        });
+    </script>
+
+    <style>
+        /* Global Tooltip Styling */
+        .tooltip {
+            --bs-tooltip-bg: #0e2e45;
+            --bs-tooltip-color: #fff;
+            --bs-tooltip-opacity: 0.95;
+            --bs-tooltip-padding-x: 0.65rem;
+            --bs-tooltip-padding-y: 0.35rem;
+            --bs-tooltip-font-size: 0.78rem;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .tooltip-inner {
+            font-weight: 500;
+            letter-spacing: 0.015em;
+            border-radius: 0.375rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+    </style>
 </body>
 
 </html>
