@@ -23,7 +23,7 @@
         <!-- Main Content -->
         <div class="flex-grow-1 d-flex flex-column" style="background-color: #f1f4f8; overflow: hidden;">
             <!-- Top Navbar -->
-            <header class="flex-shrink-0 bg-white shadow-sm" style="z-index: 1060;">
+            <header class="flex-shrink-0 bg-white shadow-sm" style="z-index: 1042;">
                 @include('admin.partials.navbar')
             </header>
 
