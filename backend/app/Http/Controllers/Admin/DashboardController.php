@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Category;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\PurchaseOrder;
@@ -12,6 +11,7 @@ use App\Models\Supplier;
 use App\Models\Texture;
 use App\Models\User;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
 {
@@ -63,65 +63,64 @@ class DashboardController extends Controller
             ->count();
 
         // ---------------- Charts ----------------
-        // Sales trend (last 6 months)
-        $salesTrend = Order::where('status', 'completed')
-            ->selectRaw('SUM(total_amount) as total, MONTHNAME(created_at) as month, MONTH(created_at) as month_num, YEAR(created_at) as year_num')
-            ->where('created_at', '>=', $now->copy()->subMonths(6))
-            ->groupBy('month', 'month_num', 'year_num')
-            ->orderBy('year_num')
-            ->orderBy('month_num')
-            ->get();
+        // Stock trend — top 5 most-active products' inventory levels over the last 30 days.
+        // Reverse-calculated from current stock + cumulative completed-order quantities.
+        $days = 30;
+        $stockTrendStart = $now->copy()->subDays($days)->startOfDay();
 
-        // Order status breakdown
-        $orderStatusBreakdown = Order::selectRaw('status, COUNT(*) as count')
-            ->groupBy('status')
-            ->get();
-
-        // Inventory by category
-        $categoryDistribution = Category::withCount('products')
-            ->get()
-            ->map(function ($cat) {
-                return [
-                    'name' => $cat->name,
-                    'count' => $cat->products_count,
-                ];
-            });
-
-        // ---------------- Inventory Health ----------------
-        $productStockValue = Product::selectRaw('SUM(stock * price) as value')->value('value') ?? 0;
-        $materialStockValue = RawMaterial::selectRaw('SUM(stock_quantity * cost_per_unit) as value')->value('value') ?? 0;
-        $textureStockValue = Texture::selectRaw('SUM(stock_quantity * cost_per_unit) as value')->value('value') ?? 0;
-
-        $inventoryHealth = [
-            'products' => [
-                'total' => $totalProducts,
-                'low_stock' => $lowStockProducts,
-                'value' => $productStockValue,
-            ],
-            'materials' => [
-                'total' => RawMaterial::count(),
-                'low_stock' => $lowStockMaterials,
-                'value' => $materialStockValue,
-            ],
-            'textures' => [
-                'total' => Texture::count(),
-                'low_stock' => $lowStockTextures,
-                'value' => $textureStockValue,
-            ],
-        ];
-
-        // ---------------- Activity Lists ----------------
-        $recentOrders = Order::with('user')
-            ->latest()
-            ->take(6)
-            ->get();
-
-        $criticalStockProducts = Product::with('category')
-            ->whereColumn('stock', '<=', 'low_stock_threshold')
-            ->orderByRaw('(stock / NULLIF(low_stock_threshold, 0)) ASC')
+        $topActiveProducts = Product::whereHas('orderItems.order', function ($q) use ($stockTrendStart) {
+            $q->where('status', 'completed')->where('updated_at', '>=', $stockTrendStart);
+        })
+            ->withSum(['orderItems as recent_sold' => function ($q) use ($stockTrendStart) {
+                $q->whereHas('order', function ($qq) use ($stockTrendStart) {
+                    $qq->where('status', 'completed')->where('updated_at', '>=', $stockTrendStart);
+                });
+            }], 'quantity')
+            ->orderByDesc('recent_sold')
             ->take(5)
             ->get();
 
+        // Single batched query for daily sales of the chosen products
+        $productIds = $topActiveProducts->pluck('product_id');
+        $salesByProduct = collect();
+        if ($productIds->isNotEmpty()) {
+            $salesByProduct = DB::table('order_items')
+                ->join('orders', 'orders.order_id', '=', 'order_items.order_id')
+                ->whereIn('order_items.product_id', $productIds)
+                ->where('orders.status', 'completed')
+                ->where('orders.updated_at', '>=', $stockTrendStart)
+                ->selectRaw('order_items.product_id, DATE(orders.updated_at) as day, SUM(order_items.quantity) as qty')
+                ->groupBy('order_items.product_id', 'day')
+                ->get()
+                ->groupBy('product_id')
+                ->map(fn ($rows) => $rows->pluck('qty', 'day'));
+        }
+
+        // Build labels (chronological) and per-product reverse-calculated stock levels
+        $stockLabels = [];
+        for ($i = $days; $i >= 0; $i--) {
+            $stockLabels[] = $now->copy()->subDays($i)->format('M j');
+        }
+
+        $stockSeries = $topActiveProducts->map(function ($product) use ($now, $days, $salesByProduct) {
+            $dailySales = $salesByProduct[$product->product_id] ?? collect();
+            $points = [];
+            $cumulativeSold = 0;
+
+            // Walk from today backward — stock at end of day i = current stock + items sold AFTER day i
+            for ($i = 0; $i <= $days; $i++) {
+                $date = $now->copy()->subDays($i);
+                $points[] = max(0, (int) ($product->stock + $cumulativeSold));
+                $cumulativeSold += (int) ($dailySales[$date->format('Y-m-d')] ?? 0);
+            }
+
+            return [
+                'name' => $product->name,
+                'data' => array_reverse($points),
+            ];
+        })->values();
+
+        // ---------------- Activity Lists ----------------
         $topProducts = Product::with('category')
             ->withSum(['orderItems as total_sold' => function ($query) {
                 $query->whereHas('order', function ($q) {
@@ -129,11 +128,6 @@ class DashboardController extends Controller
                 });
             }], 'quantity')
             ->orderByDesc('total_sold')
-            ->take(5)
-            ->get();
-
-        $recentPurchaseOrders = PurchaseOrder::with('supplier')
-            ->latest()
             ->take(5)
             ->get();
 
@@ -149,14 +143,9 @@ class DashboardController extends Controller
             'totalSuppliers',
             'pendingPOCount',
             'newCustomersThisMonth',
-            'salesTrend',
-            'orderStatusBreakdown',
-            'categoryDistribution',
-            'inventoryHealth',
-            'recentOrders',
-            'criticalStockProducts',
-            'topProducts',
-            'recentPurchaseOrders'
+            'stockLabels',
+            'stockSeries',
+            'topProducts'
         ));
     }
 }
