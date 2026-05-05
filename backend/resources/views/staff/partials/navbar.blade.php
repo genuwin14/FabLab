@@ -109,8 +109,12 @@
         backdrop-filter: blur(10px);
     }
 
+    .custom-dropdown-menu .dropdown-item {
+        transition: background-color 0.2s ease, color 0.2s ease;
+    }
+
     .dropdown-item.hover-accent:hover {
-        background-color: rgba(255, 255, 255, 0.05);
+        background-color: rgba(255, 255, 255, 0.06);
         color: #ffc508 !important;
     }
 

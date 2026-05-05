@@ -123,52 +123,89 @@
 
 <style>
     /* ── Sidebar Base ── */
-    .sidebar-inner { transition: padding 0.3s ease; }
+    .sidebar-inner {
+        transition: padding 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+        overflow: hidden;
+    }
     .sidebar-header {
         height: 65px; margin: -1rem -1rem 0 -1rem; padding: 0 1rem;
-        display: flex; align-items: center; transition: all 0.3s ease;
+        display: flex; align-items: center;
+        transition: padding 0.35s cubic-bezier(0.4, 0, 0.2, 1), justify-content 0.35s ease;
     }
-    .sidebar-header-divider { margin: 0 !important; transition: all 0.3s ease; }
+    .sidebar-header-divider { margin: 0 !important; transition: opacity 0.3s ease; }
     .sidebar-inner.sidebar-collapsed .sidebar-header { padding: 0; justify-content: center; }
     .sidebar-inner.sidebar-collapsed .sidebar-header-divider {
         display: block !important; align-self: stretch; width: auto !important; opacity: 0.25 !important;
     }
+
+    /* Labels never wrap — they slide out via max-width + opacity */
     .sidebar-inner .sidebar-label {
-        font-size: 0.85rem; white-space: nowrap; overflow: hidden;
-        transition: opacity 0.2s ease, width 0.2s ease;
+        font-size: 0.85rem;
+        white-space: nowrap;
+        overflow: hidden;
+        max-width: 200px;
+        transition: opacity 0.25s ease, max-width 0.35s cubic-bezier(0.4, 0, 0.2, 1);
     }
+
     .sidebar-inner .nav-link {
         display: flex; align-items: center; font-size: 0.85rem;
-        padding: 0.6rem 0.75rem; margin-right: 0.5rem; transition: all 0.2s ease;
+        padding: 0.6rem 0.75rem; margin-right: 0.5rem;
+        border-radius: 0.5rem;
+        transition: background-color 0.2s ease, color 0.2s ease, padding 0.35s ease;
     }
     .sidebar-inner .nav-link i {
-        flex-shrink: 0; width: 1.2em; text-align: center;
-        font-size: 1.1rem; transition: margin 0.3s ease, font-size 0.3s ease;
+        flex-shrink: 0; width: 1.2em; text-align: center; font-size: 1.1rem;
+        transition: color 0.2s ease, margin 0.35s ease;
     }
     .sidebar-brand { transition: justify-content 0.3s ease; }
     .sidebar-logo { flex-shrink: 0; transition: margin 0.3s ease; }
-    .sidebar-section-title { transition: opacity 0.2s ease, height 0.2s ease, margin 0.2s ease; overflow: hidden; }
+
+    /* Section titles never wrap to 2 lines */
+    .sidebar-section-title {
+        font-size: 0.68rem;
+        letter-spacing: 0.06em;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        margin-top: 0.5rem !important;
+        margin-bottom: 0.25rem !important;
+        transition: opacity 0.2s ease, height 0.35s ease, margin 0.35s ease, padding 0.35s ease, color 0.2s ease;
+    }
+    /* Tighter spacing between section nav lists */
+    .sidebar-inner .nav.flex-column { margin-bottom: 0.5rem !important; }
 
     /* ── Collapsed State ── */
     .sidebar-inner.sidebar-collapsed { padding: 1rem 0.5rem !important; align-items: center; }
-    .sidebar-inner.sidebar-collapsed .sidebar-label { opacity: 0; width: 0; display: none !important; }
-    .sidebar-inner.sidebar-collapsed .sidebar-section-title {
-        height: 1px; background: rgba(255, 255, 255, 0.1); margin: 1.25rem 0.25rem !important;
-        padding: 0 !important; color: transparent; overflow: hidden;
+    .sidebar-inner.sidebar-collapsed .sidebar-label {
+        opacity: 0;
+        max-width: 0;
+        margin-left: 0 !important;
     }
+    .sidebar-inner.sidebar-collapsed .sidebar-section-title {
+        height: 1px;
+        background: rgba(255, 255, 255, 0.1);
+        margin: 0.5rem 0.25rem !important;
+        padding: 0 !important;
+        color: transparent;
+    }
+    .sidebar-inner.sidebar-collapsed .nav.flex-column { margin-bottom: 0.25rem !important; }
     .sidebar-inner.sidebar-collapsed .sidebar-section-title:first-of-type { display: none !important; }
     .sidebar-inner.sidebar-collapsed .nav:first-of-type { margin-top: 0.75rem !important; }
     .sidebar-inner.sidebar-collapsed .nav-link {
-        justify-content: center; width: 42px; height: 42px; padding: 0; margin: 0 auto; border-radius: 0.5rem;
+        justify-content: center; width: 42px; height: 42px; padding: 0; margin: 0 auto;
     }
     .sidebar-inner.sidebar-collapsed .nav-link i { margin-right: 0 !important; }
     .sidebar-inner.sidebar-collapsed .sidebar-brand { justify-content: center; }
     .sidebar-inner.sidebar-collapsed .sidebar-logo { margin-right: 0 !important; }
     .sidebar-inner.sidebar-collapsed .custom-scrollbar { padding-right: 0 !important; }
 
-    /* ── Hover & Active Styles ── */
-    .nav-link.hover-accent:hover { background-color: rgba(255, 197, 8, 0.1); color: #ffc508 !important; }
+    /* ── Hover ── */
+    .nav-link.hover-accent:hover {
+        background-color: rgba(255, 255, 255, 0.06);
+        color: #ffc508 !important;
+    }
     .nav-link.hover-accent:hover i { color: #ffc508 !important; }
+
     .bg-accent { background-color: #ffc508 !important; }
     .text-primary { color: #0e2e45 !important; }
 
@@ -208,7 +245,7 @@ if (!window.staffSidebarInit) {
             const spacer = aside.parentElement.querySelector('.sidebar-spacer');
             const icon = btn.querySelector('.sidebar-collapse-icon');
 
-            aside.style.transition = spacer.style.transition = 'width 0.3s ease';
+            aside.style.transition = spacer.style.transition = 'width 0.35s cubic-bezier(0.4, 0, 0.2, 1)';
 
             function apply(collapsed, animate) {
                 if (!animate) {
@@ -230,14 +267,17 @@ if (!window.staffSidebarInit) {
 
                 if (!animate) {
                     requestAnimationFrame(() => {
-                        aside.style.transition = spacer.style.transition = 'width 0.3s ease';
+                        aside.style.transition = spacer.style.transition = 'width 0.35s cubic-bezier(0.4, 0, 0.2, 1)';
                         inner.style.transition = '';
                     });
                 }
             }
 
             if (localStorage.getItem('staffSidebarCollapsed') === 'true') apply(true, false);
-            
+
+            // Once JS has taken over, drop the no-flash preload class so future toggles animate.
+            document.documentElement.classList.remove('sidebar-preload-collapsed');
+
             btn.addEventListener('click', e => {
                 e.preventDefault();
                 apply(!inner.classList.contains('sidebar-collapsed'), true);

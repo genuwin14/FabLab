@@ -104,7 +104,58 @@
         .h-screen {
             height: 100vh;
         }
+
+        /* ── No-flash sidebar collapsed state ──
+           Pre-applied via inline script in <head> based on localStorage. */
+        html.sidebar-preload-collapsed aside:has(> .sidebar-inner) { width: 70px !important; }
+        html.sidebar-preload-collapsed .sidebar-spacer { width: 70px !important; }
+        html.sidebar-preload-collapsed .sidebar-inner {
+            padding-left: 0.5rem !important;
+            padding-right: 0.5rem !important;
+            align-items: center;
+        }
+        html.sidebar-preload-collapsed .sidebar-inner .sidebar-label {
+            opacity: 0 !important;
+            max-width: 0 !important;
+            margin-left: 0 !important;
+        }
+        html.sidebar-preload-collapsed .sidebar-inner .sidebar-section-title {
+            height: 1px !important;
+            background: rgba(255, 255, 255, 0.1);
+            margin: 0.5rem 0.25rem !important;
+            padding: 0 !important;
+            color: transparent !important;
+        }
+        html.sidebar-preload-collapsed .sidebar-inner .nav.flex-column { margin-bottom: 0.25rem !important; }
+        html.sidebar-preload-collapsed .sidebar-inner .nav-link {
+            justify-content: center;
+            width: 42px;
+            height: 42px;
+            padding: 0;
+            margin: 0 auto;
+        }
+        html.sidebar-preload-collapsed .sidebar-inner .nav-link i { margin-right: 0 !important; }
+        html.sidebar-preload-collapsed .sidebar-inner .sidebar-brand { justify-content: center; }
+        html.sidebar-preload-collapsed .sidebar-inner .sidebar-logo { margin-right: 0 !important; }
+        /* Chevron flips to point right while preloaded (until JS swaps the icon class). */
+        html.sidebar-preload-collapsed .sidebar-collapse-icon { transform: rotate(180deg); }
     </style>
+
+    <script>
+        // Read the saved sidebar state and apply a class to <html> before the page paints,
+        // so the sidebar doesn't flash expanded on every navigation.
+        (function () {
+            try {
+                var keys = ['adminSidebarCollapsed', 'staffSidebarCollapsed', 'customerSidebarCollapsed'];
+                for (var i = 0; i < keys.length; i++) {
+                    if (localStorage.getItem(keys[i]) === 'true') {
+                        document.documentElement.classList.add('sidebar-preload-collapsed');
+                        break;
+                    }
+                }
+            } catch (e) { /* localStorage unavailable */ }
+        })();
+    </script>
 </head>
 
 <body>

@@ -86,7 +86,8 @@
 <style>
     /* ── Sidebar Base ── */
     .sidebar-inner {
-        transition: padding 0.3s ease;
+        transition: padding 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+        overflow: hidden;
     }
 
     .sidebar-header {
@@ -95,13 +96,13 @@
         padding: 0 1rem;
         display: flex;
         align-items: center;
-        transition: all 0.3s ease;
+        transition: padding 0.35s cubic-bezier(0.4, 0, 0.2, 1), justify-content 0.35s ease;
     }
 
     .sidebar-header-divider {
         margin-left: 0 !important;
         margin-right: 0 !important;
-        transition: all 0.3s ease;
+        transition: opacity 0.3s ease;
     }
 
     .sidebar-inner.sidebar-collapsed .sidebar-header {
@@ -118,11 +119,13 @@
         opacity: 0.25 !important;
     }
 
+    /* Labels never wrap — they slide out via max-width + opacity */
     .sidebar-inner .sidebar-label {
         font-size: 0.85rem;
         white-space: nowrap;
         overflow: hidden;
-        transition: opacity 0.2s ease, width 0.2s ease;
+        max-width: 200px;
+        transition: opacity 0.25s ease, max-width 0.35s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
     .sidebar-inner .nav-link {
@@ -131,7 +134,8 @@
         font-size: 0.85rem;
         padding: 0.6rem 0.75rem;
         margin-right: 0.5rem;
-        transition: all 0.2s ease;
+        border-radius: 0.5rem;
+        transition: background-color 0.2s ease, color 0.2s ease, padding 0.35s ease;
     }
 
     .sidebar-inner .nav-link i {
@@ -139,7 +143,7 @@
         width: 1.2em;
         text-align: center;
         font-size: 1.1rem;
-        transition: margin 0.3s ease, font-size 0.3s ease;
+        transition: color 0.2s ease, margin 0.35s ease;
     }
 
     .sidebar-brand {
@@ -151,10 +155,20 @@
         transition: margin 0.3s ease;
     }
 
+    /* Section titles never wrap to 2 lines */
     .sidebar-section-title {
-        transition: opacity 0.2s ease, height 0.2s ease, margin 0.2s ease;
+        font-size: 0.68rem;
+        letter-spacing: 0.06em;
+        white-space: nowrap;
         overflow: hidden;
+        text-overflow: ellipsis;
+        margin-top: 0.5rem !important;
+        margin-bottom: 0.25rem !important;
+        transition: opacity 0.2s ease, height 0.35s ease, margin 0.35s ease, padding 0.35s ease, color 0.2s ease;
     }
+
+    /* Tighter spacing between section nav lists */
+    .sidebar-inner .nav.flex-column { margin-bottom: 0.5rem !important; }
 
     /* ── Collapsed State ── */
     .sidebar-inner.sidebar-collapsed {
@@ -165,18 +179,18 @@
 
     .sidebar-inner.sidebar-collapsed .sidebar-label {
         opacity: 0;
-        width: 0;
-        display: none !important;
+        max-width: 0;
+        margin-left: 0 !important;
     }
 
     .sidebar-inner.sidebar-collapsed .sidebar-section-title {
         height: 1px;
         background: rgba(255, 255, 255, 0.1);
-        margin: 1.25rem 0.25rem !important;
+        margin: 0.5rem 0.25rem !important;
         padding: 0 !important;
         color: transparent;
-        overflow: hidden;
     }
+    .sidebar-inner.sidebar-collapsed .nav.flex-column { margin-bottom: 0.25rem !important; }
 
     .sidebar-inner.sidebar-collapsed .sidebar-section-title:first-of-type {
         display: none !important;
@@ -188,7 +202,6 @@
         height: 42px;
         padding: 0;
         margin: 0 auto;
-        border-radius: 0.5rem;
     }
 
     .sidebar-inner.sidebar-collapsed .nav-link i {
@@ -208,9 +221,9 @@
         padding-right: 0 !important;
     }
 
-    /* ── Hover & Active Styles ── */
+    /* ── Hover ── */
     .nav-link.hover-accent:hover {
-        background-color: rgba(255, 197, 8, 0.1);
+        background-color: rgba(255, 255, 255, 0.06);
         color: #ffc508 !important;
     }
 
@@ -285,11 +298,11 @@
                 var spacer = aside.parentElement.querySelector('.sidebar-spacer');
                 var icon   = btn.querySelector('.sidebar-collapse-icon');
 
-                aside.style.transition = 'width 0.3s ease';
-                if (spacer) spacer.style.transition = 'width 0.3s ease';
+                aside.style.transition = 'width 0.35s cubic-bezier(0.4, 0, 0.2, 1)';
+                if (spacer) spacer.style.transition = 'width 0.35s cubic-bezier(0.4, 0, 0.2, 1)';
 
-                aside.style.transition = 'width 0.3s ease';
-                if (spacer) spacer.style.transition = 'width 0.3s ease';
+                aside.style.transition = 'width 0.35s cubic-bezier(0.4, 0, 0.2, 1)';
+                if (spacer) spacer.style.transition = 'width 0.35s cubic-bezier(0.4, 0, 0.2, 1)';
 
                 function apply(collapsed, animate) {
                     if (!animate) {
@@ -325,6 +338,9 @@
                 if (localStorage.getItem('customerSidebarCollapsed') === 'true') {
                     apply(true, false);
                 }
+
+                // Once JS has taken over, drop the no-flash preload class so future toggles animate.
+                document.documentElement.classList.remove('sidebar-preload-collapsed');
 
                 btn.addEventListener('click', function (e) {
                     e.preventDefault();

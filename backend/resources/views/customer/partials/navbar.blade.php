@@ -142,6 +142,10 @@
         border: 1px solid rgba(255, 255, 255, 0.1) !important;
     }
 
+    .custom-dropdown-menu .dropdown-item {
+        transition: background-color 0.2s ease, color 0.2s ease;
+    }
+
     .dropdown-item.hover-accent:hover {
         background-color: rgba(255, 197, 8, 0.1);
         color: #ffc508 !important;
