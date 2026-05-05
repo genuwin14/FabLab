@@ -1,29 +1,38 @@
 <!-- Delete Category Modal -->
-<div class="modal fade" id="deleteCategoryModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-0 shadow-lg rounded-4">
-            <div class="modal-body p-4 text-center">
-                <div class="mb-3">
-                    <div class="bg-danger bg-opacity-10 text-danger rounded-circle d-inline-flex align-items-center justify-content-center"
-                        style="width: 64px; height: 64px;">
-                        <i class="bi bi-exclamation-triangle-fill fs-3"></i>
-                    </div>
+<div class="modal fade category-delete-modal" id="deleteCategoryModal" tabindex="-1" aria-labelledby="deleteCategoryModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered category-delete-modal-dialog">
+        <div class="modal-content border-0 shadow-lg overflow-hidden">
+            <!-- Themed Header -->
+            <div class="category-delete-modal-header">
+                <div class="category-delete-modal-icon">
+                    <i class="bi bi-exclamation-triangle-fill"></i>
                 </div>
-                <h5 class="fw-bold mb-2">Delete Category?</h5>
-                <p class="text-muted small mb-4">
-                    Are you sure you want to delete <span id="deleteCategoryName" class="fw-bold text-dark"></span>?
-                    This action cannot be undone.
-                </p>
+                <h5 class="modal-title fw-bold mb-1 text-white" id="deleteCategoryModalLabel">Delete Category</h5>
+                <p class="text-white-50 small mb-0">This action cannot be undone</p>
+            </div>
 
-                <div class="d-flex justify-content-center gap-2">
-                    <button type="button" class="btn btn-light rounded-pill px-4"
-                        data-bs-dismiss="modal">Cancel</button>
-                    <form id="deleteCategoryForm" method="POST">
-                        @csrf
-                        @method('DELETE')
-                        <button type="submit" class="btn btn-danger rounded-pill px-4">Delete Category</button>
-                    </form>
-                </div>
+            <!-- Confirmation Body -->
+            <div class="modal-body p-4 category-delete-modal-body">
+                <p class="text-dark mb-0 text-center">
+                    Are you sure you want to delete
+                    <span id="deleteCategoryName" class="fw-bold text-dark"></span>?
+                    All related data will be permanently removed.
+                </p>
+            </div>
+
+            <!-- Footer with actions -->
+            <div class="category-delete-modal-footer">
+                <button type="button" class="btn fw-semibold rounded-pill px-4 category-delete-cancel-btn"
+                    data-bs-dismiss="modal">
+                    Cancel
+                </button>
+                <form id="deleteCategoryForm" method="POST" class="m-0">
+                    @csrf
+                    @method('DELETE')
+                    <button type="submit" class="btn fw-semibold rounded-pill px-4 category-delete-confirm-btn">
+                        <i class="bi bi-trash me-2"></i>Delete Category
+                    </button>
+                </form>
             </div>
         </div>
     </div>
