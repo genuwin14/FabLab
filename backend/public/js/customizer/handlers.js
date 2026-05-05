@@ -12,11 +12,20 @@ $(document).ready(function () {
     }
 
     // 2. Control Panel Listeners
-    $('.texture-option').on('click', function () {
+    // Initialize selected texture from the active swatch (rendered server-side).
+    const $initialActiveTexture = $('.texture-option.active').first();
+    if ($initialActiveTexture.length) {
+        currentTextureId = $initialActiveTexture.data('texture-id');
+        currentTextureImagePath = $initialActiveTexture.data('image-path');
+    }
+
+    $(document).on('click', '.texture-option', function () {
         $('.texture-option').removeClass('active');
         $(this).addClass('active');
-        const texture = $(this).data('texture');
-        updateModelMaterial(texture);
+        currentTextureId = $(this).data('texture-id');
+        currentTextureImagePath = $(this).data('image-path');
+        updateModelMaterial(currentTextureId);
+        if (typeof calculateCustomPrice === 'function') calculateCustomPrice();
     });
 
     $('.btn-size').on('click', function () {
@@ -37,10 +46,9 @@ $(document).ready(function () {
 
         if (shape === 'mug') createMugModel();
         else if (shape === 't-shirt') createTshirtModel();
-        
-        const currentTexture = $('.texture-option.active').data('texture');
-        if (currentTexture) updateModelMaterial(currentTexture);
-        
+
+        if (currentTextureId) updateModelMaterial(currentTextureId);
+
         const currentSize = $('.btn-size.active').data('size');
         if (currentSize) updateModelSize(currentSize);
     });

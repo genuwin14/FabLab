@@ -30,16 +30,9 @@ function createShortsModel() {
         model_group.add(model);
         console.log("Shorts model loaded successfully.");
 
-        // Trigger re-render of design elements
-        let activeTexture = 'blue';
-        if ($('.texture-option.active').length > 0) {
-            activeTexture = $('.texture-option.active').data('texture');
-        } else if (typeof CustomizerConfig !== 'undefined' && CustomizerConfig.activeColor) {
-            activeTexture = CustomizerConfig.activeColor;
-        }
-
+        // Trigger re-render with the currently selected texture
         if (typeof updateModelMaterial === 'function') {
-            updateModelMaterial(activeTexture);
+            updateModelMaterial(currentTextureId);
         }
 
         hideLoadingScreen();

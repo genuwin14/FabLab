@@ -4,6 +4,14 @@
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
 
+    @php
+        $texturesData = $textures->map(fn($t) => [
+            'id' => $t->texture_id,
+            'name' => $t->name,
+            'image_path' => $t->image_path,
+            'price_modifier' => (float) ($t->price_modifier ?? 0),
+        ])->values();
+    @endphp
     <script>
         /**
          * Customizer Configuration
@@ -17,6 +25,7 @@
             designId: '{{ $design->custom_design_id ?? '' }}',
             designRecipe: @json($design?->recipe ?? null),
             requiresSelection: {{ $requiresSelection ? 'true' : 'false' }},
+            textures: @json($texturesData),
             routes: {
                 save: "{{ route('customer.customize.save') }}",
                 addToCart: "{{ route('customer.cart.add') }}"

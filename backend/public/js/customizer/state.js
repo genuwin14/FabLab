@@ -10,3 +10,10 @@ let internalLight = null;
 let textElements = [];
 let shapeElements = [];
 let logoElements = [];
+
+// Currently selected texture (DB-backed)
+let currentTextureId = null;
+let currentTextureImagePath = null;
+
+// Cached THREE.Texture instances by image_path so we don't reload on every click
+const textureCache = {};

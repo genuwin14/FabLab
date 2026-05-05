@@ -5,9 +5,14 @@ function loadDesignRecipe(recipe) {
     if (!recipe) return;
 
     // 1. Update UI state for base attributes WITHOUT triggering render
-    if (recipe.color) {
+    if (recipe.texture_id) {
         $('.texture-option').removeClass('active');
-        $(`.texture-option[data-texture="${recipe.color}"]`).addClass('active');
+        const $match = $(`.texture-option[data-texture-id="${recipe.texture_id}"]`);
+        if ($match.length) {
+            $match.addClass('active');
+            currentTextureId = recipe.texture_id;
+            currentTextureImagePath = $match.data('image-path');
+        }
     }
     if (recipe.size) {
         $('.btn-size').removeClass('active');
@@ -175,8 +180,7 @@ function loadDesignRecipe(recipe) {
                     $item.data('img-obj', img);
                     $('#logoList').append($item);
                     
-                    const activeType = $('.texture-option.active').data('texture') || 'blue';
-                    updateModelMaterial(activeType);
+                    updateModelMaterial(currentTextureId);
                     calculateCustomPrice();
                 };
                 img.src = logo.src;
@@ -184,8 +188,7 @@ function loadDesignRecipe(recipe) {
         }
     }
 
-    const activeType = $('.texture-option.active').data('texture') || 'blue';
-    updateModelMaterial(activeType);
+    updateModelMaterial(currentTextureId);
     calculateCustomPrice();
 }
 
@@ -195,13 +198,12 @@ function loadDesignRecipe(recipe) {
 function serializeDesign() {
     const activeShape = $('.btn-shape.active').data('shape') || (typeof CustomizerConfig !== 'undefined' ? CustomizerConfig.initialShape : 't-shirt');
     const activeSize = $('.btn-size.active').data('size') || 'medium';
-    const activeColor = $('.texture-option.active').data('texture') || 'blue';
     const ledLighting = $('#lighting').is(':checked');
 
     return JSON.stringify({
         base_style: activeShape,
         size: activeSize,
-        color: activeColor,
+        texture_id: currentTextureId,
         features: {
             led_lighting: ledLighting
         },
@@ -231,9 +233,11 @@ function captureSnapshot() {
 function loadDesignRecipePreview(recipe) {
     if (!recipe) return;
 
-    // Set global active color for model loaders to reference
-    if (typeof CustomizerConfig !== 'undefined') {
-        CustomizerConfig.activeColor = recipe.color || 'blue';
+    // Resolve texture from recipe (preview mode skips DOM updates)
+    if (recipe.texture_id) {
+        currentTextureId = recipe.texture_id;
+        const lookup = getTextureById(recipe.texture_id);
+        if (lookup) currentTextureImagePath = lookup.image_path;
     }
 
     textElements = [];
@@ -278,12 +282,12 @@ function loadDesignRecipePreview(recipe) {
                         scale: parseFloat(logo.scale) || 1,
                         rotation: parseFloat(logo.rotation) || 0
                     });
-                    updateModelMaterial(recipe.color || 'blue');
+                    updateModelMaterial(currentTextureId);
                 };
                 img.src = logo.src;
             });
         }
     }
 
-    updateModelMaterial(recipe.color || 'blue');
+    updateModelMaterial(currentTextureId);
 }

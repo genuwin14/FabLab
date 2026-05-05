@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Customer;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Product;
+use App\Models\Texture;
 
 class CustomizeController extends Controller
 {
@@ -40,7 +41,15 @@ class CustomizeController extends Controller
             $requiresSelection = true;
         }
 
-        return view('customer.prod-customize.customize-product', compact('product', 'initialShape', 'design', 'requiresSelection'));
+        // Load textures: filtered by product if assignments exist, otherwise show all
+        if ($product) {
+            $product->load('textures');
+            $textures = $product->textures->isNotEmpty() ? $product->textures : Texture::all();
+        } else {
+            $textures = Texture::all();
+        }
+
+        return view('customer.prod-customize.customize-product', compact('product', 'initialShape', 'design', 'requiresSelection', 'textures'));
     }
 
     public function save(Request $request)

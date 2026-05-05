@@ -40,8 +40,7 @@ function syncElementsAndRender() {
         });
     });
 
-    const activeType = $('.texture-option.active').data('texture') || 'blue';
-    updateModelMaterial(activeType);
+    updateModelMaterial(currentTextureId);
     calculateCustomPrice();
 }
 
@@ -55,6 +54,14 @@ function calculateCustomPrice() {
 
     if ($('#lighting').is(':checked')) {
         extra += 500;
+    }
+
+    // Add texture price modifier if a texture is selected
+    if (currentTextureId && typeof getTextureById === 'function') {
+        const tex = getTextureById(currentTextureId);
+        if (tex && tex.price_modifier) {
+            extra += parseFloat(tex.price_modifier) || 0;
+        }
     }
 
     const total = basePrice + extra;

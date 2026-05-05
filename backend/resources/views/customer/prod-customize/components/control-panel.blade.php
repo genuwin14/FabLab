@@ -85,28 +85,31 @@
         <div class="mb-5">
             <label class="text-accent small text-uppercase fw-bold tracking-wider mb-3 d-block">2. Materials &
                 Finishes</label>
-            <div class="row g-3">
-                <div class="col-3">
-                    <div class="texture-option active" data-texture="blue" title="Blue">
-                        <div class="texture-preview" style="background-color: #0000FF;"></div>
-                    </div>
+            @if($textures->isEmpty())
+                <div class="text-white-50 small text-center py-3 border border-white-10 rounded">
+                    <i class="bi bi-info-circle me-1"></i> No textures available for this product.
                 </div>
-                <div class="col-3">
-                    <div class="texture-option" data-texture="black" title="Black">
-                        <div class="texture-preview" style="background-color: #000000;"></div>
-                    </div>
+            @else
+                <div class="row g-3">
+                    @foreach($textures as $index => $texture)
+                        <div class="col-3">
+                            <div class="texture-option {{ $index === 0 ? 'active' : '' }}"
+                                data-texture-id="{{ $texture->texture_id }}"
+                                data-image-path="{{ $texture->image_path }}"
+                                data-price-modifier="{{ $texture->price_modifier ?? 0 }}"
+                                title="{{ $texture->name }}{{ $texture->price_modifier > 0 ? ' (+₱' . number_format($texture->price_modifier, 2) . ')' : '' }}">
+                                @if($texture->image_path)
+                                    <div class="texture-preview" style="background-image: url('{{ $texture->image_path }}'); background-size: cover; background-position: center;"></div>
+                                @else
+                                    <div class="texture-preview d-flex align-items-center justify-content-center bg-secondary text-white-50">
+                                        <i class="bi bi-image"></i>
+                                    </div>
+                                @endif
+                            </div>
+                        </div>
+                    @endforeach
                 </div>
-                <div class="col-3">
-                    <div class="texture-option" data-texture="white" title="White">
-                        <div class="texture-preview" style="background-color: #FFFFFF; border: 1px solid #ccc;"></div>
-                    </div>
-                </div>
-                <div class="col-3">
-                    <div class="texture-option" data-texture="yellow" title="Dark Yellow">
-                        <div class="texture-preview" style="background-color: #FFC107;"></div>
-                    </div>
-                </div>
-            </div>
+            @endif
         </div>
 
         <!-- Step 3: Custom Text -->
