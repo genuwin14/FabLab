@@ -45,56 +45,106 @@
                             <!-- Name -->
                             <div class="mb-3 text-start">
                                 <label for="name" class="form-label small fw-bold text-white-50 ms-1">Full Name</label>
-                                <input type="text" name="name" id="name"
-                                    class="form-control border border-white border-opacity-10 text-white"
-                                    placeholder="John Doe" style="background-color: rgba(0,0,0,0.3); color: white;" required
-                                    autofocus>
+                                <div class="input-group">
+                                    <span
+                                        class="input-group-text border-white border-opacity-10 text-white-50 @error('name') border-danger text-danger @enderror"
+                                        style="background-color: rgba(0,0,0,0.3);"><i class="bi bi-person"></i></span>
+                                    <input type="text" name="name" id="name"
+                                        class="form-control border-start-0 border-white border-opacity-10 text-white @error('name') border-danger is-invalid @enderror"
+                                        placeholder="John Doe" value="{{ old('name') }}"
+                                        style="background-color: rgba(0,0,0,0.3); color: white;" required autofocus>
+                                </div>
+                                @error('name')
+                                    <div class="text-danger small mt-1 text-start">{{ $message }}</div>
+                                @enderror
                             </div>
 
                             <!-- Email -->
                             <div class="mb-3 text-start">
                                 <label for="email" class="form-label small fw-bold text-white-50 ms-1">Email Address</label>
-                                <input type="email" name="email" id="email"
-                                    class="form-control border border-white border-opacity-10 text-white"
-                                    placeholder="name@company.com" style="background-color: rgba(0,0,0,0.3); color: white;"
-                                    required>
+                                <div class="input-group">
+                                    <span
+                                        class="input-group-text border-white border-opacity-10 text-white-50 @error('email') border-danger text-danger @enderror"
+                                        style="background-color: rgba(0,0,0,0.3);"><i class="bi bi-envelope"></i></span>
+                                    <input type="email" name="email" id="email"
+                                        class="form-control border-start-0 border-white border-opacity-10 text-white @error('email') border-danger is-invalid @enderror"
+                                        placeholder="name@company.com" value="{{ old('email') }}"
+                                        style="background-color: rgba(0,0,0,0.3); color: white;" required>
+                                </div>
+                                @error('email')
+                                    <div class="text-danger small mt-1 text-start">{{ $message }}</div>
+                                @enderror
                             </div>
 
                             <!-- Phone Number -->
                             <div class="mb-3 text-start">
                                 <label for="phone" class="form-label small fw-bold text-white-50 ms-1">Phone Number</label>
-                                <input type="tel" name="phone" id="phone"
-                                    class="form-control border border-white border-opacity-10 text-white"
-                                    placeholder="+1 (555) 000-0000" style="background-color: rgba(0,0,0,0.3); color: white;"
-                                    required>
+                                <div class="input-group">
+                                    <span
+                                        class="input-group-text border-white border-opacity-10 text-white-50 @error('phone') border-danger text-danger @enderror"
+                                        style="background-color: rgba(0,0,0,0.3);"><i class="bi bi-telephone"></i></span>
+                                    <input type="tel" name="phone" id="phone"
+                                        class="form-control border-start-0 border-white border-opacity-10 text-white @error('phone') border-danger is-invalid @enderror"
+                                        placeholder="+1 (555) 000-0000" value="{{ old('phone') }}"
+                                        style="background-color: rgba(0,0,0,0.3); color: white;" required>
+                                </div>
+                                @error('phone')
+                                    <div class="text-danger small mt-1 text-start">{{ $message }}</div>
+                                @enderror
                             </div>
 
                             <!-- Password -->
                             <div class="mb-3 text-start">
                                 <label for="password" class="form-label small fw-bold text-white-50 ms-1">Password</label>
                                 <div class="input-group">
+                                    <span
+                                        class="input-group-text border-white border-opacity-10 text-white-50 @error('password') border-danger text-danger @enderror"
+                                        style="background-color: rgba(0,0,0,0.3);"><i class="bi bi-lock"></i></span>
                                     <input type="password" name="password" id="password"
-                                        class="form-control border-end-0 border border-white border-opacity-10 text-white"
+                                        class="form-control border-start-0 border-end-0 border-white border-opacity-10 text-white @error('password') border-danger is-invalid @enderror"
                                         placeholder="Create a password"
                                         style="background-color: rgba(0,0,0,0.3); color: white;" required>
-                                    <span class="input-group-text border-white border-opacity-10 text-white-50"
-                                        style="background-color: rgba(0,0,0,0.3);"><i class="bi bi-eye-slash"></i></span>
+                                    <span
+                                        class="input-group-text border-white border-opacity-10 text-white-50 password-toggle @error('password') border-danger text-danger @enderror"
+                                        id="togglePassword"
+                                        style="background-color: rgba(0,0,0,0.3); cursor: pointer;"
+                                        role="button" tabindex="0" aria-label="Show password">
+                                        <i class="bi bi-eye" id="togglePasswordIcon"></i>
+                                    </span>
                                 </div>
+                                @error('password')
+                                    <div class="text-danger small mt-1 text-start">{{ $message }}</div>
+                                @enderror
                             </div>
 
                             <!-- Confirm Password -->
                             <div class="mb-4 text-start">
                                 <label for="password_confirmation"
                                     class="form-label small fw-bold text-white-50 ms-1">Confirm Password</label>
-                                <input type="password" name="password_confirmation" id="password_confirmation"
-                                    class="form-control border border-white border-opacity-10 text-white"
-                                    placeholder="Confirm your password"
-                                    style="background-color: rgba(0,0,0,0.3); color: white;" required>
+                                <div class="input-group">
+                                    <span
+                                        class="input-group-text border-white border-opacity-10 text-white-50 @error('password_confirmation') border-danger text-danger @enderror"
+                                        style="background-color: rgba(0,0,0,0.3);"><i class="bi bi-shield-lock"></i></span>
+                                    <input type="password" name="password_confirmation" id="password_confirmation"
+                                        class="form-control border-start-0 border-end-0 border-white border-opacity-10 text-white @error('password_confirmation') border-danger is-invalid @enderror"
+                                        placeholder="Confirm your password"
+                                        style="background-color: rgba(0,0,0,0.3); color: white;" required>
+                                    <span
+                                        class="input-group-text border-white border-opacity-10 text-white-50 password-toggle @error('password_confirmation') border-danger text-danger @enderror"
+                                        id="togglePasswordConfirm"
+                                        style="background-color: rgba(0,0,0,0.3); cursor: pointer;"
+                                        role="button" tabindex="0" aria-label="Show password">
+                                        <i class="bi bi-eye" id="togglePasswordConfirmIcon"></i>
+                                    </span>
+                                </div>
+                                @error('password_confirmation')
+                                    <div class="text-danger small mt-1 text-start">{{ $message }}</div>
+                                @enderror
                             </div>
 
                             <!-- Register Button -->
-                            <button type="submit" class="btn btn-accent w-100 fw-bold py-2 mb-4 shadow-sm">
-                                Create Account
+                            <button type="submit" id="registerButton" class="btn btn-accent w-100 fw-bold py-2 mb-4 shadow-sm">
+                                <span id="registerButtonText">Create Account</span>
                             </button>
                         </form>
 
@@ -172,11 +222,30 @@
             opacity: 1;
         }
 
+        .input-group-text:not(.password-toggle) {
+            border-right: none;
+        }
+
+        .password-toggle {
+            border-left: none;
+            transition: color 0.15s ease-in-out;
+        }
+
+        .password-toggle:hover {
+            color: #ffc508 !important;
+        }
+
         .form-control:focus {
             background-color: rgba(0, 0, 0, 0.4) !important;
             border-color: #ffc508 !important;
             color: white !important;
             box-shadow: none;
+        }
+
+        /* Ensure input group text border color matches focus */
+        .form-control:focus+.input-group-text,
+        .input-group-text:has(+ .form-control:focus) {
+            border-color: #ffc508 !important;
         }
 
         .verification-option:hover {
@@ -198,34 +267,59 @@
             background-color: #e0ac00;
             color: #000;
         }
+
+        /* Keep register button bright while disabled (loading state) */
+        #registerButton:disabled,
+        #registerButton.disabled {
+            opacity: 1 !important;
+            background-color: #ffc508 !important;
+            border-color: #ffc508 !important;
+            color: #05111a !important;
+            cursor: progress;
+        }
+
+        #registerButton:disabled .spinner-border,
+        #registerButton.disabled .spinner-border {
+            color: #05111a;
+        }
     </style>
 
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             const form = document.querySelector('form[action="{{ route('register') }}"]');
             const submitBtn = form.querySelector('button[type="submit"]');
+            const registerButton = document.getElementById('registerButton');
+            const registerButtonText = document.getElementById('registerButtonText');
             let verificationMode = '';
 
-            // Password Toggle
-            const togglePassword = document.querySelector('.input-group-text');
-            const passwordInput = document.getElementById('password');
-            const eyeIcon = togglePassword.querySelector('i');
+            // Password Visibility Toggles (eye icons)
+            const setupPasswordToggle = (toggleId, iconId, inputId) => {
+                const toggle = document.getElementById(toggleId);
+                const icon = document.getElementById(iconId);
+                const input = document.getElementById(inputId);
+                if (!toggle || !icon || !input) return;
 
-            if (togglePassword && passwordInput) {
-                togglePassword.addEventListener('click', function () {
-                    if (passwordInput.type === 'password') {
-                        passwordInput.type = 'text';
-                        eyeIcon.classList.remove('bi-eye-slash');
-                        eyeIcon.classList.add('bi-eye');
-                    } else {
-                        passwordInput.type = 'password';
-                        eyeIcon.classList.remove('bi-eye');
-                        eyeIcon.classList.add('bi-eye-slash');
+                const toggleVisibility = () => {
+                    const isPassword = input.type === 'password';
+                    input.type = isPassword ? 'text' : 'password';
+                    icon.classList.toggle('bi-eye', !isPassword);
+                    icon.classList.toggle('bi-eye-slash', isPassword);
+                    toggle.setAttribute('aria-label', isPassword ? 'Hide password' : 'Show password');
+                };
+
+                toggle.addEventListener('click', toggleVisibility);
+                toggle.addEventListener('keydown', function (e) {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        toggleVisibility();
                     }
                 });
-            }
+            };
 
-            // Intercept form submission
+            setupPasswordToggle('togglePassword', 'togglePasswordIcon', 'password');
+            setupPasswordToggle('togglePasswordConfirm', 'togglePasswordConfirmIcon', 'password_confirmation');
+
+            // Intercept form submission — show verification modal first
             form.addEventListener('submit', function (e) {
                 if (!verificationMode) {
                     e.preventDefault();
@@ -236,6 +330,10 @@
                     } else {
                         form.reportValidity();
                     }
+                } else if (registerButton && registerButtonText) {
+                    // Real submit (after verification mode selected) — show loading state
+                    registerButton.disabled = true;
+                    registerButtonText.innerHTML = `<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Creating Account...`;
                 }
             });
 

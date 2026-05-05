@@ -68,32 +68,32 @@
                                         class="input-group-text border-white border-opacity-10 text-white-50 @error('password') border-danger text-danger @enderror"
                                         style="background-color: rgba(0,0,0,0.3);"><i class="bi bi-lock"></i></span>
                                     <input type="password" name="password" id="password"
-                                        class="form-control border-start-0 border-white border-opacity-10 text-white @error('password') border-danger is-invalid @enderror"
+                                        class="form-control border-start-0 border-end-0 border-white border-opacity-10 text-white @error('password') border-danger is-invalid @enderror"
                                         placeholder="Enter your password"
                                         style="background-color: rgba(0,0,0,0.3); color: white;" required>
+                                    <span
+                                        class="input-group-text border-white border-opacity-10 text-white-50 password-toggle @error('password') border-danger text-danger @enderror"
+                                        id="togglePassword"
+                                        style="background-color: rgba(0,0,0,0.3); cursor: pointer;"
+                                        role="button" tabindex="0" aria-label="Show password">
+                                        <i class="bi bi-eye" id="togglePasswordIcon"></i>
+                                    </span>
                                 </div>
                                 @error('password')
                                     <div class="text-danger small mt-1 text-start">{{ $message }}</div>
                                 @enderror
                             </div>
 
-                            <!-- Forgot Password & Show Password -->
-                            <div class="d-flex justify-content-between align-items-center mb-4">
-                                <div class="form-check">
-                                    <input class="form-check-input bg-transparent border-white border-opacity-10"
-                                        type="checkbox" id="showPassword">
-                                    <label class="form-check-label small text-white-50" for="showPassword">
-                                        Show Password
-                                    </label>
-                                </div>
+                            <!-- Forgot Password -->
+                            <div class="d-flex justify-content-end align-items-center mb-4">
                                 <a href="{{ route('password.request') }}"
                                     class="small text-accent text-decoration-none hover-text-white transition-colors">Forgot
                                     Password?</a>
                             </div>
 
                             <!-- Login Button -->
-                            <button type="submit" class="btn btn-accent w-100 fw-bold py-2 mb-4 shadow-sm">
-                                Log In
+                            <button type="submit" id="loginButton" class="btn btn-accent w-100 fw-bold py-2 mb-4 shadow-sm">
+                                <span id="loginButtonText">Log In</span>
                             </button>
                         </form>
 
@@ -171,8 +171,17 @@
             opacity: 1;
         }
 
-        .input-group-text {
+        .input-group-text:not(.password-toggle) {
             border-right: none;
+        }
+
+        .password-toggle {
+            border-left: none;
+            transition: color 0.15s ease-in-out;
+        }
+
+        .password-toggle:hover {
+            color: #ffc508 !important;
         }
 
         .form-control:focus {
@@ -196,19 +205,60 @@
         .text-accent {
             color: #ffc508 !important;
         }
+
+        /* Keep login button bright while disabled (loading state) */
+        #loginButton:disabled,
+        #loginButton.disabled {
+            opacity: 1 !important;
+            background-color: #ffc508 !important;
+            border-color: #ffc508 !important;
+            color: #05111a !important;
+            cursor: progress;
+        }
+
+        #loginButton:disabled .spinner-border,
+        #loginButton.disabled .spinner-border {
+            color: #05111a;
+        }
     </style>
 
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            // Show Password Toggle
-            const showPasswordCheckbox = document.getElementById('showPassword');
+            // Show Password Toggle (eye icon)
+            const togglePassword = document.getElementById('togglePassword');
+            const togglePasswordIcon = document.getElementById('togglePasswordIcon');
             const passwordInput = document.getElementById('password');
 
-            if (showPasswordCheckbox && passwordInput) {
-                showPasswordCheckbox.addEventListener('change', function () {
-                    passwordInput.type = this.checked ? 'text' : 'password';
+            if (togglePassword && passwordInput && togglePasswordIcon) {
+                const toggleVisibility = () => {
+                    const isPassword = passwordInput.type === 'password';
+                    passwordInput.type = isPassword ? 'text' : 'password';
+                    togglePasswordIcon.classList.toggle('bi-eye', !isPassword);
+                    togglePasswordIcon.classList.toggle('bi-eye-slash', isPassword);
+                    togglePassword.setAttribute('aria-label', isPassword ? 'Hide password' : 'Show password');
+                };
+
+                togglePassword.addEventListener('click', toggleVisibility);
+                togglePassword.addEventListener('keydown', function (e) {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        toggleVisibility();
+                    }
                 });
             }
+
+            // Login Button Loading State
+            const loginForm = document.querySelector('form[action="{{ route('login') }}"]');
+            const loginButton = document.getElementById('loginButton');
+            const loginButtonText = document.getElementById('loginButtonText');
+
+            if (loginForm && loginButton && loginButtonText) {
+                loginForm.addEventListener('submit', function () {
+                    loginButton.disabled = true;
+                    loginButtonText.innerHTML = `<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Logging in...`;
+                });
+            }
+
             @if(isset($showVerificationModal) && $showVerificationModal)
                 const modal = new bootstrap.Modal(document.getElementById('verificationModal'));
                 modal.show();
