@@ -56,4 +56,10 @@ class Product extends Model
             ->withPivot('quantity_required')
             ->withTimestamps();
     }
+
+    public function textures(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    {
+        return $this->belongsToMany(Texture::class, 'product_textures', 'product_id', 'texture_id')
+            ->withTimestamps();
+    }
 }
