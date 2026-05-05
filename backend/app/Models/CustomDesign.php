@@ -19,33 +19,31 @@ class CustomDesign extends Model
         'recipe' => 'array'
     ];
 
-    /**
-     * Get the user who created the design.
-     */
     public function user()
     {
         return $this->belongsTo(User::class);
     }
 
-    /**
-     * Get the product being customized.
-     */
     public function product()
     {
         return $this->belongsTo(Product::class, 'product_id', 'product_id');
     }
 
-    /**
-     * Get the order items that use this design.
-     */
     public function orderItems()
     {
         return $this->hasMany(OrderItem::class, 'custom_design_id', 'custom_design_id');
     }
 
     /**
-     * Calculate the price based on customization.
+     * Look up the Texture record referenced by this design's recipe (if any).
      */
+    public function texture()
+    {
+        $textureId = $this->recipe['texture_id'] ?? null;
+        if (!$textureId) return null;
+        return Texture::find($textureId);
+    }
+
     public function getCalculatedPriceAttribute()
     {
         $basePrice = $this->product->price ?? 0;
@@ -58,6 +56,11 @@ class CustomDesign extends Model
 
         if (isset($this->recipe['features']['led_lighting']) && $this->recipe['features']['led_lighting']) {
             $extra += 500;
+        }
+
+        $texture = $this->texture();
+        if ($texture && $texture->price_modifier) {
+            $extra += (float) $texture->price_modifier;
         }
 
         return $basePrice + $extra;

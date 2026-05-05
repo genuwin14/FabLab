@@ -56,7 +56,7 @@ class OrderController extends Controller
             'reason' => 'nullable|string|required_if:status,cancelled'
         ]);
 
-        $order = Order::with(['user', 'orderItems.product.rawMaterials'])->findOrFail($id);
+        $order = Order::with(['user', 'orderItems.product.rawMaterials', 'orderItems.customDesign'])->findOrFail($id);
         $oldStatus = $order->status;
 
         $order->update([
@@ -64,29 +64,39 @@ class OrderController extends Controller
             'reason' => $request->reason
         ]);
 
-        // If newly cancelled, return stock (Products AND Raw Materials)
+        // If newly cancelled, return stock (Products, Raw Materials, and Textures)
         if ($request->status === 'cancelled' && $oldStatus !== 'cancelled') {
             foreach ($order->orderItems as $item) {
                 if ($item->product) {
                     // Return Product Stock
                     $item->product->increment('stock', $item->quantity);
-                    
-                    // Return Raw Materials if it was previously approved
+
+                    // Return Raw Materials and Textures only if it was previously approved
                     if ($oldStatus === 'approved') {
                         foreach ($item->product->rawMaterials as $material) {
                             $material->increment('stock_quantity', $material->pivot->quantity_required * $item->quantity);
+                        }
+
+                        $texture = $item->customDesign?->texture();
+                        if ($texture) {
+                            $texture->increment('stock_quantity', $item->quantity);
                         }
                     }
                 }
             }
         }
 
-        // If newly approved, deduct Raw Materials
+        // If newly approved, deduct Raw Materials and Textures
         if ($request->status === 'approved' && $oldStatus !== 'approved') {
             foreach ($order->orderItems as $item) {
                 if ($item->product) {
                     foreach ($item->product->rawMaterials as $material) {
                         $material->decrement('stock_quantity', $material->pivot->quantity_required * $item->quantity);
+                    }
+
+                    $texture = $item->customDesign?->texture();
+                    if ($texture) {
+                        $texture->decrement('stock_quantity', $item->quantity);
                     }
                 }
             }
