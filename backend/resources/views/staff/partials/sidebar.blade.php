@@ -56,7 +56,8 @@
                 </a>
             </li>
             <li class="nav-item">
-                <a href="#" class="nav-link text-white hover-accent sidebar-tooltip"
+                <a href="{{ route('staff.textures.index') }}"
+                    class="nav-link sidebar-tooltip {{ request()->routeIs('staff.textures.*') ? 'active bg-accent text-primary fw-bold' : 'text-white hover-accent' }}"
                     data-sidebar-tooltip="true" title="Textures">
                     <i class="bi bi-layers me-2"></i>
                     <span class="sidebar-label">Textures</span>
