@@ -412,31 +412,6 @@
         </div>
     </div>
 
-    <!-- Logout Confirmation Modal -->
-    <div class="modal fade" id="logoutModal" tabindex="-1" aria-labelledby="logoutModalLabel" aria-hidden="true"
-        style="z-index: 9999;">
-        <div class="modal-dialog modal-dialog-centered modal-sm">
-            <div class="modal-content border-0 shadow-lg rounded-4">
-                <div class="modal-body p-4 text-center">
-                    <div class="mb-3">
-                        <i class="bi bi-exclamation-circle text-warning display-4"></i>
-                    </div>
-                    <h5 class="fw-bold mb-2 text-dark">Sign Out?</h5>
-                    <p class="text-muted small mb-4">Are you sure you want to log out of the Staff Panel?</p>
-
-                    <div class="d-flex gap-2 justify-content-center">
-                        <button type="button" class="btn btn-light px-4 rounded-pill fw-bold small"
-                            data-bs-dismiss="modal">Cancel</button>
-                        <form action="{{ route('logout') }}" method="POST">
-                            @csrf
-                            <button type="submit" class="btn btn-danger px-4 rounded-pill fw-bold small">Log Out</button>
-                        </form>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <style>
         /* Soft primary tint — works around the layout's bg-primary !important override
            that disables Bootstrap's bg-opacity-* utility. */

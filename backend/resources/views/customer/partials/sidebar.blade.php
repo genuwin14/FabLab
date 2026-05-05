@@ -72,13 +72,6 @@
                     <span class="sidebar-label">Close Menu</span>
                 </a>
             </li>
-            <li>
-                <a href="#" class="nav-link text-white hover-accent sidebar-tooltip"
-                    data-sidebar-tooltip="true" title="Settings">
-                    <i class="bi bi-gear me-2"></i>
-                    <span class="sidebar-label">Settings</span>
-                </a>
-            </li>
         </ul>
     </div>
 </div>
@@ -102,6 +95,8 @@
     .sidebar-header-divider {
         margin-left: 0 !important;
         margin-right: 0 !important;
+        border-top: 1px solid rgba(255, 255, 255, 0.06) !important;
+        opacity: 1 !important;
         transition: opacity 0.3s ease;
     }
 

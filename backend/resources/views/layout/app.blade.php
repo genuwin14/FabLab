@@ -137,8 +137,28 @@
         html.sidebar-preload-collapsed .sidebar-inner .nav-link i { margin-right: 0 !important; }
         html.sidebar-preload-collapsed .sidebar-inner .sidebar-brand { justify-content: center; }
         html.sidebar-preload-collapsed .sidebar-inner .sidebar-logo { margin-right: 0 !important; }
+        html.sidebar-preload-collapsed .sidebar-inner .sidebar-header-divider {
+            display: block !important;
+            align-self: stretch;
+            width: auto !important;
+            opacity: 0.25 !important;
+        }
         /* Chevron flips to point right while preloaded (until JS swaps the icon class). */
         html.sidebar-preload-collapsed .sidebar-collapse-icon { transform: rotate(180deg); }
+
+        /* Strip the legacy bg-white + shadow-sm from page-level <header> wrappers
+           that hold the dark navbar. The navbar paints its own dark background. */
+        header:has(> .custom-navbar) {
+            background-color: transparent !important;
+            box-shadow: none !important;
+        }
+
+        /* Strip the legacy border-end + shadow-sm on the <aside> sidebar wrapper.
+           The sidebar's dark fill provides its own visual boundary. */
+        aside:has(> .sidebar-inner) {
+            border-right: none !important;
+            box-shadow: none !important;
+        }
     </style>
 
     <script>
