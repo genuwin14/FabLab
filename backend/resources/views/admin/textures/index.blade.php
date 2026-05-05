@@ -73,12 +73,18 @@
                                                 </button>
                                                 <ul class="dropdown-menu dropdown-menu-end border-0 shadow-sm rounded-3">
                                                     <li>
-                                                        <a class="dropdown-item d-flex align-items-center gap-2" href="#" 
+                                                        <a class="dropdown-item d-flex align-items-center gap-2" href="#"
                                                            data-bs-toggle="modal" data-bs-target="#editTextureModal"
                                                            data-id="{{ $texture->texture_id }}"
                                                            data-name="{{ $texture->name }}"
                                                            data-description="{{ $texture->description }}"
-                                                           data-image="{{ $texture->image_path }}">
+                                                           data-image="{{ $texture->image_path }}"
+                                                           data-supplier_id="{{ $texture->supplier_id }}"
+                                                           data-cost="{{ $texture->cost_per_unit }}"
+                                                           data-stock="{{ $texture->stock_quantity }}"
+                                                           data-threshold="{{ $texture->low_stock_threshold }}"
+                                                           data-unit="{{ $texture->unit }}"
+                                                           data-price_modifier="{{ $texture->price_modifier }}">
                                                             <i class="bi bi-pencil text-warning"></i> Edit
                                                         </a>
                                                     </li>
@@ -95,8 +101,27 @@
                                         </div>
                                     </div>
                                     <div class="card-body p-3">
-                                        <h6 class="fw-bold text-dark mb-1">{{ $texture->name }}</h6>
-                                        <p class="text-muted small mb-0">{{ Str::limit($texture->description, 60) ?? 'No description' }}</p>
+                                        <div class="d-flex justify-content-between align-items-start mb-1">
+                                            <h6 class="fw-bold text-dark mb-0">{{ $texture->name }}</h6>
+                                            @if($texture->price_modifier > 0)
+                                                <span class="badge bg-warning bg-opacity-10 text-warning rounded-pill" style="font-size: 0.65rem;">
+                                                    +₱{{ number_format($texture->price_modifier, 2) }}
+                                                </span>
+                                            @endif
+                                        </div>
+                                        <p class="text-muted small mb-2">{{ Str::limit($texture->description, 60) ?? 'No description' }}</p>
+                                        <div class="d-flex justify-content-between align-items-center pt-2 border-top">
+                                            <div>
+                                                <div class="text-muted small" style="font-size: 0.7rem;">
+                                                    <i class="bi bi-truck me-1"></i>{{ $texture->supplier->name ?? 'No supplier' }}
+                                                </div>
+                                            </div>
+                                            <div class="text-end">
+                                                <span class="fw-bold small {{ $texture->stock_quantity <= $texture->low_stock_threshold ? 'text-danger' : 'text-success' }}">
+                                                    {{ number_format($texture->stock_quantity, 0) }} {{ $texture->unit }}
+                                                </span>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -165,7 +190,13 @@
 
                 document.getElementById('editTextureName').value = name;
                 document.getElementById('editTextureDescription').value = description;
-                
+                document.getElementById('editTextureSupplier').value = button.getAttribute('data-supplier_id') || '';
+                document.getElementById('editTextureCost').value = button.getAttribute('data-cost') || 0;
+                document.getElementById('editTextureStock').value = button.getAttribute('data-stock') || 0;
+                document.getElementById('editTextureThreshold').value = button.getAttribute('data-threshold') || 0;
+                document.getElementById('editTextureUnit').value = button.getAttribute('data-unit') || 'pcs';
+                document.getElementById('editTexturePriceModifier').value = button.getAttribute('data-price_modifier') || 0;
+
                 var preview = document.getElementById('editTexturePreview');
                 if (image) {
                     preview.src = image;

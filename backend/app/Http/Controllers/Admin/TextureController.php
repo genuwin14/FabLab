@@ -5,13 +5,15 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Texture;
+use App\Models\Supplier;
 
 class TextureController extends Controller
 {
     public function index()
     {
-        $textures = Texture::latest()->paginate(12);
-        return view('admin.textures.index', compact('textures'));
+        $textures = Texture::with('supplier')->latest()->paginate(12);
+        $suppliers = Supplier::all();
+        return view('admin.textures.index', compact('textures', 'suppliers'));
     }
 
     public function store(Request $request)
@@ -19,7 +21,13 @@ class TextureController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'image_file' => 'nullable|image|max:2048', // 2MB Max
+            'image_file' => 'nullable|image|max:2048',
+            'supplier_id' => 'nullable|exists:suppliers,supplier_id',
+            'cost_per_unit' => 'nullable|numeric|min:0',
+            'stock_quantity' => 'nullable|numeric|min:0',
+            'low_stock_threshold' => 'nullable|numeric|min:0',
+            'unit' => 'nullable|string|max:50',
+            'price_modifier' => 'nullable|numeric|min:0',
         ]);
 
         $data = $request->except('image_file');
@@ -41,6 +49,12 @@ class TextureController extends Controller
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
             'image_file' => 'nullable|image|max:2048',
+            'supplier_id' => 'nullable|exists:suppliers,supplier_id',
+            'cost_per_unit' => 'nullable|numeric|min:0',
+            'stock_quantity' => 'nullable|numeric|min:0',
+            'low_stock_threshold' => 'nullable|numeric|min:0',
+            'unit' => 'nullable|string|max:50',
+            'price_modifier' => 'nullable|numeric|min:0',
         ]);
 
         $texture = Texture::findOrFail($id);
