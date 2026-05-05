@@ -93,8 +93,7 @@
     }
 
     .sidebar-header-divider {
-        margin-left: 0 !important;
-        margin-right: 0 !important;
+        margin: 0 0 1rem !important;
         border-top: 1px solid rgba(255, 255, 255, 0.06) !important;
         opacity: 1 !important;
         transition: opacity 0.3s ease;
@@ -111,16 +110,16 @@
         width: auto !important;
         margin-left: 0 !important;
         margin-right: 0 !important;
-        opacity: 0.25 !important;
     }
 
-    /* Labels never wrap — they slide out via max-width + opacity */
+    /* Labels fade out only — max-width snaps so the icon's centered position never drifts */
     .sidebar-inner .sidebar-label {
         font-size: 0.85rem;
         white-space: nowrap;
         overflow: hidden;
         max-width: 200px;
-        transition: opacity 0.25s ease, max-width 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+        min-width: 0;
+        transition: opacity 0.25s ease;
     }
 
     .sidebar-inner .nav-link {
@@ -130,7 +129,7 @@
         padding: 0.6rem 0.75rem;
         margin-right: 0.5rem;
         border-radius: 0.5rem;
-        transition: background-color 0.2s ease, color 0.2s ease, padding 0.35s ease;
+        transition: background-color 0.2s ease, color 0.2s ease;
     }
 
     .sidebar-inner .nav-link i {
@@ -138,7 +137,7 @@
         width: 1.2em;
         text-align: center;
         font-size: 1.1rem;
-        transition: color 0.2s ease, margin 0.35s ease;
+        transition: color 0.2s ease;
     }
 
     .sidebar-brand {
@@ -166,12 +165,6 @@
     .sidebar-inner .nav.flex-column { margin-bottom: 0.5rem !important; }
 
     /* ── Collapsed State ── */
-    .sidebar-inner.sidebar-collapsed {
-        padding-left: 0.5rem !important;
-        padding-right: 0.5rem !important;
-        align-items: center;
-    }
-
     .sidebar-inner.sidebar-collapsed .sidebar-label {
         opacity: 0;
         max-width: 0;
@@ -185,12 +178,14 @@
         padding: 0 !important;
         color: transparent;
     }
-    .sidebar-inner.sidebar-collapsed .nav.flex-column { margin-bottom: 0.25rem !important; }
 
     .sidebar-inner.sidebar-collapsed .sidebar-section-title:first-of-type {
         display: none !important;
     }
 
+    .sidebar-inner.sidebar-collapsed .nav.flex-column { margin-bottom: 0.25rem !important; }
+
+    /* Center the icon and brand logo within the narrow sidebar */
     .sidebar-inner.sidebar-collapsed .nav-link {
         justify-content: center;
         width: 42px;
@@ -198,23 +193,9 @@
         padding: 0;
         margin: 0 auto;
     }
-
-    .sidebar-inner.sidebar-collapsed .nav-link i {
-        margin-right: 0 !important;
-    }
-
-    .sidebar-inner.sidebar-collapsed .sidebar-brand {
-        justify-content: center;
-        width: 100%;
-    }
-
-    .sidebar-inner.sidebar-collapsed .sidebar-logo {
-        margin-right: 0 !important;
-    }
-
-    .sidebar-inner.sidebar-collapsed .custom-scrollbar {
-        padding-right: 0 !important;
-    }
+    .sidebar-inner.sidebar-collapsed .nav-link i { margin-right: 0 !important; }
+    .sidebar-inner.sidebar-collapsed .sidebar-brand { justify-content: center; }
+    .sidebar-inner.sidebar-collapsed .sidebar-logo { margin-right: 0 !important; }
 
     /* ── Hover ── */
     .nav-link.hover-accent:hover {
@@ -235,6 +216,9 @@
     }
 
     /* ── Scrollbar ── */
+    /* Prevent horizontal scrollbar from appearing in collapsed state.
+       (overflow-y: auto implicitly sets overflow-x: auto per CSS spec, so we clamp it explicitly.) */
+    .sidebar-inner .custom-scrollbar { overflow-x: hidden; }
     .custom-scrollbar::-webkit-scrollbar {
         width: 4px;
     }
@@ -258,7 +242,7 @@
         window.sidebarScriptInit = true;
         
         document.addEventListener('DOMContentLoaded', function () {
-            var COLLAPSED_W = '70px';
+            var COLLAPSED_W = '76px';
             var EXPANDED_W  = '280px';
 
             function toggleTooltips(inner, collapsed) {
@@ -270,7 +254,8 @@
                             new bootstrap.Tooltip(el, {
                                 trigger: 'hover',
                                 placement: 'right',
-                                delay: { show: 200, hide: 0 }
+                                delay: { show: 200, hide: 0 },
+                                container: 'body'
                             });
                         }
                     } else {

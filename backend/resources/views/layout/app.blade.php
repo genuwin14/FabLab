@@ -107,8 +107,8 @@
 
         /* ── No-flash sidebar collapsed state ──
            Pre-applied via inline script in <head> based on localStorage. */
-        html.sidebar-preload-collapsed aside:has(> .sidebar-inner) { width: 70px !important; }
-        html.sidebar-preload-collapsed .sidebar-spacer { width: 70px !important; }
+        html.sidebar-preload-collapsed aside:has(> .sidebar-inner) { width: 76px !important; }
+        html.sidebar-preload-collapsed .sidebar-spacer { width: 76px !important; }
         html.sidebar-preload-collapsed .sidebar-inner {
             padding-left: 0.5rem !important;
             padding-right: 0.5rem !important;
@@ -141,7 +141,6 @@
             display: block !important;
             align-self: stretch;
             width: auto !important;
-            opacity: 0.25 !important;
         }
         /* Chevron flips to point right while preloaded (until JS swaps the icon class). */
         html.sidebar-preload-collapsed .sidebar-collapse-icon { transform: rotate(180deg); }
