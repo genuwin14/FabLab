@@ -51,6 +51,8 @@ Route::middleware(['auth:sanctum'])->group(function () {
     // Admin Routes/Product Suppliers (Phase 2)
     Route::get('/admin/products/{id}/suppliers', [\App\Http\Controllers\Admin\ProductController::class, 'assignSuppliers'])->name('admin.products.suppliers.assign');
     Route::post('/admin/products/{id}/suppliers', [\App\Http\Controllers\Admin\ProductController::class, 'storeSuppliers'])->name('admin.products.suppliers.store');
+    Route::get('/admin/products/{id}/textures', [\App\Http\Controllers\Admin\ProductController::class, 'assignTextures'])->name('admin.products.textures.assign');
+    Route::post('/admin/products/{id}/textures', [\App\Http\Controllers\Admin\ProductController::class, 'storeTextures'])->name('admin.products.textures.store');
     // Admin Routes/Categories
     Route::get('/admin/categories', [\App\Http\Controllers\Admin\CategoryController::class, 'index'])->name('admin.categories.index');
     Route::post('/admin/categories', [\App\Http\Controllers\Admin\CategoryController::class, 'store'])->name('admin.categories.store');
@@ -105,6 +107,9 @@ Route::middleware(['auth:sanctum'])->group(function () {
     // Staff Routes/Raw Materials (read + edit only)
     Route::get('/staff/raw-materials', [\App\Http\Controllers\Staff\RawMaterialController::class, 'index'])->name('staff.raw-materials.index');
     Route::put('/staff/raw-materials/{id}', [\App\Http\Controllers\Staff\RawMaterialController::class, 'update'])->name('staff.raw-materials.update');
+    // Staff Routes/Textures (read + edit only)
+    Route::get('/staff/textures', [\App\Http\Controllers\Staff\TextureController::class, 'index'])->name('staff.textures.index');
+    Route::put('/staff/textures/{id}', [\App\Http\Controllers\Staff\TextureController::class, 'update'])->name('staff.textures.update');
     // Staff Routes/Purchase Orders (full procurement workflow)
     Route::get('/staff/purchase', [\App\Http\Controllers\Staff\PurchaseOrderController::class, 'index'])->name('staff.purchase.index');
     Route::get('/staff/purchase/create', [\App\Http\Controllers\Staff\PurchaseOrderController::class, 'create'])->name('staff.purchase.create');

@@ -9,6 +9,7 @@ use App\Models\Product;
 use App\Models\Category;
 use App\Models\Supplier;
 use App\Models\RawMaterial;
+use App\Models\Texture;
 
 class ProductController extends Controller
 {
@@ -159,5 +160,30 @@ class ProductController extends Controller
 
         return redirect()->route('admin.products.index')
             ->with('success', 'Suppliers assigned successfully.');
+    }
+
+    // Phase 3: Texture Assignment Page
+    public function assignTextures($id)
+    {
+        $product = Product::with('textures')->findOrFail($id);
+        $textures = Texture::orderBy('name')->get();
+
+        return view('admin.product.assign-textures', compact('product', 'textures'));
+    }
+
+    // Phase 3: Save Texture Assignments
+    public function storeTextures(Request $request, $id)
+    {
+        $product = Product::findOrFail($id);
+
+        $request->validate([
+            'textures' => 'nullable|array',
+            'textures.*' => 'exists:textures,texture_id',
+        ]);
+
+        $product->textures()->sync($request->input('textures', []));
+
+        return redirect()->route('admin.products.index')
+            ->with('success', 'Textures assigned successfully.');
     }
 }

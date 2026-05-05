@@ -195,6 +195,11 @@
                                                             title="Manage Suppliers">
                                                             <i class="bi bi-truck text-primary"></i>
                                                         </a>
+                                                        <a href="{{ route('admin.products.textures.assign', $product->product_id) }}"
+                                                            class="btn btn-light btn-sm rounded-circle"
+                                                            title="Manage Textures">
+                                                            <i class="bi bi-layers text-info"></i>
+                                                        </a>
                                                         <button class="btn btn-light btn-sm rounded-circle"
                                                             data-bs-toggle="modal" data-bs-target="#editProductModal"
                                                             data-product="{{ json_encode($product) }}" title="Edit Product">
