@@ -9,11 +9,31 @@ use App\Models\Supplier;
 
 class RawMaterialController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $rawMaterials = RawMaterial::with('supplier')->latest()->paginate(10);
+        $perPage = (int) $request->query('per_page', 10);
+        if (!in_array($perPage, [10, 25, 50, 100])) {
+            $perPage = 10;
+        }
+
+        $search = trim((string) $request->query('search', ''));
+
+        $query = RawMaterial::with('supplier');
+
+        if ($search !== '') {
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('description', 'like', "%{$search}%")
+                  ->orWhere('unit', 'like', "%{$search}%")
+                  ->orWhereHas('supplier', function ($s) use ($search) {
+                      $s->where('name', 'like', "%{$search}%");
+                  });
+            });
+        }
+
+        $rawMaterials = $query->latest()->paginate($perPage)->withQueryString();
         $suppliers = Supplier::all();
-        return view('admin.raw-materials.index', compact('rawMaterials', 'suppliers'));
+        return view('admin.raw-materials.index', compact('rawMaterials', 'suppliers', 'perPage', 'search'));
     }
 
     public function store(Request $request)
@@ -26,9 +46,18 @@ class RawMaterialController extends Controller
             'low_stock_threshold' => 'required|numeric|min:0',
             'unit' => 'required|string|max:50',
             'description' => 'nullable|string',
+            'image_file' => 'nullable|image|max:2048',
         ]);
 
-        RawMaterial::create($request->all());
+        $data = $request->except('image_file');
+
+        if ($request->hasFile('image_file')) {
+            $image = $request->file('image_file');
+            $base64Image = base64_encode(file_get_contents($image->getPathname()));
+            $data['image_path'] = 'data:' . $image->getClientMimeType() . ';base64,' . $base64Image;
+        }
+
+        RawMaterial::create($data);
 
         return redirect()->route('admin.raw-materials.index')->with('success', 'Raw material added successfully.');
     }
@@ -43,10 +72,19 @@ class RawMaterialController extends Controller
             'low_stock_threshold' => 'required|numeric|min:0',
             'unit' => 'required|string|max:50',
             'description' => 'nullable|string',
+            'image_file' => 'nullable|image|max:2048',
         ]);
 
         $rawMaterial = RawMaterial::findOrFail($id);
-        $rawMaterial->update($request->all());
+        $data = $request->except('image_file');
+
+        if ($request->hasFile('image_file')) {
+            $image = $request->file('image_file');
+            $base64Image = base64_encode(file_get_contents($image->getPathname()));
+            $data['image_path'] = 'data:' . $image->getClientMimeType() . ';base64,' . $base64Image;
+        }
+
+        $rawMaterial->update($data);
 
         return redirect()->route('admin.raw-materials.index')->with('success', 'Raw material updated successfully.');
     }

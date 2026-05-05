@@ -13,6 +13,7 @@ class RawMaterial extends Model
 
     protected $fillable = [
         'name',
+        'image_path',
         'supplier_id',
         'cost_per_unit',
         'stock_quantity',

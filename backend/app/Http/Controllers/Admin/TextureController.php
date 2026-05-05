@@ -9,11 +9,31 @@ use App\Models\Supplier;
 
 class TextureController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $textures = Texture::with('supplier')->latest()->paginate(12);
+        $perPage = (int) $request->query('per_page', 12);
+        if (!in_array($perPage, [12, 24, 48, 96])) {
+            $perPage = 12;
+        }
+
+        $search = trim((string) $request->query('search', ''));
+
+        $query = Texture::with('supplier');
+
+        if ($search !== '') {
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('description', 'like', "%{$search}%")
+                  ->orWhere('unit', 'like', "%{$search}%")
+                  ->orWhereHas('supplier', function ($s) use ($search) {
+                      $s->where('name', 'like', "%{$search}%");
+                  });
+            });
+        }
+
+        $textures = $query->latest()->paginate($perPage)->withQueryString();
         $suppliers = Supplier::all();
-        return view('admin.textures.index', compact('textures', 'suppliers'));
+        return view('admin.textures.index', compact('textures', 'suppliers', 'perPage', 'search'));
     }
 
     public function store(Request $request)
