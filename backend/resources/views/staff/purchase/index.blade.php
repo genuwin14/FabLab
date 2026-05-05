@@ -328,7 +328,13 @@
                 const tr = document.createElement('tr');
                 tr.className = 'item-row';
 
-                const selectedId = data ? (data.type === 'product' ? `product_${data.id}` : `material_${data.id}`) : '';
+                let typePrefix = '';
+                if (data) {
+                    if (data.type === 'product') typePrefix = 'product';
+                    else if (data.type === 'material') typePrefix = 'material';
+                    else if (data.type === 'texture') typePrefix = 'texture';
+                }
+                const selectedId = data ? `${typePrefix}_${data.id}` : '';
                 const qty = data ? data.quantity : 1;
                 const cost = data ? data.cost : 0;
 
@@ -336,6 +342,7 @@
 
                 const prods = itemsForSupplier.filter(i => i.type === 'product');
                 const mats = itemsForSupplier.filter(i => i.type === 'material');
+                const texs = itemsForSupplier.filter(i => i.type === 'texture');
 
                 if (prods.length > 0) {
                     optionsHtml += '<optgroup label="Products">';
@@ -355,6 +362,15 @@
                     optionsHtml += '</optgroup>';
                 }
 
+                if (texs.length > 0) {
+                    optionsHtml += '<optgroup label="Textures">';
+                    texs.forEach(t => {
+                        const val = `texture_${t.id}`;
+                        optionsHtml += `<option value="${val}" ${selectedId == val ? 'selected' : ''}>${t.name} (${t.sku})</option>`;
+                    });
+                    optionsHtml += '</optgroup>';
+                }
+
                 if (data && !itemsForSupplier.find(i => i.type === data.type && i.id == data.id)) {
                     optionsHtml += `<option value="${selectedId}" selected>${data.name} (Override)</option>`;
                 }
@@ -366,6 +382,7 @@
                         </select>
                         <input type="hidden" name="items[${rowCount}][product_id]" class="product-id-input" value="${data && data.type === 'product' ? data.id : ''}">
                         <input type="hidden" name="items[${rowCount}][raw_material_id]" class="material-id-input" value="${data && data.type === 'material' ? data.id : ''}">
+                        <input type="hidden" name="items[${rowCount}][texture_id]" class="texture-id-input" value="${data && data.type === 'texture' ? data.id : ''}">
                     </td>
                     <td>
                         <input type="number" step="0.01" name="items[${rowCount}][quantity]" class="form-control form-control-sm border-0 bg-light shadow-sm quantity-input" value="${qty}" min="0.01" required>
@@ -402,13 +419,15 @@
                     if (itemData) {
                         costInput.value = itemData.cost;
                     }
-                    if (type === 'product') {
-                        tr.querySelector('.product-id-input').value = id;
-                        tr.querySelector('.material-id-input').value = '';
-                    } else {
-                        tr.querySelector('.product-id-input').value = '';
-                        tr.querySelector('.material-id-input').value = id;
-                    }
+                    const productInput = tr.querySelector('.product-id-input');
+                    const materialInput = tr.querySelector('.material-id-input');
+                    const textureInput = tr.querySelector('.texture-id-input');
+                    productInput.value = '';
+                    materialInput.value = '';
+                    textureInput.value = '';
+                    if (type === 'product') productInput.value = id;
+                    else if (type === 'material') materialInput.value = id;
+                    else if (type === 'texture') textureInput.value = id;
                     updateRowTotal(tr);
                     calculateGrandTotal();
                 });

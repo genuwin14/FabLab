@@ -97,6 +97,12 @@
                                                                     <div class="d-flex align-items-center gap-2">
                                                                         @if($item->type === 'Product')
                                                                             <div class="bg-light rounded-2 d-flex align-items-center justify-content-center overflow-hidden" style="width: 32px; height: 32px; flex-shrink: 0; background-image: url('{{ $item->image }}'); background-size: cover;"></div>
+                                                                        @elseif($item->type === 'Texture')
+                                                                            <div class="bg-light rounded-2 d-flex align-items-center justify-content-center overflow-hidden" style="width: 32px; height: 32px; flex-shrink: 0; background-image: url('{{ $item->image_path }}'); background-size: cover;">
+                                                                                @if(!$item->image_path)
+                                                                                    <i class="bi bi-layers text-primary"></i>
+                                                                                @endif
+                                                                            </div>
                                                                         @else
                                                                             <div class="bg-light rounded-2 d-flex align-items-center justify-content-center text-primary" style="width: 32px; height: 32px; flex-shrink: 0;">
                                                                                 <i class="bi bi-box"></i>
@@ -111,7 +117,12 @@
                                                                     </div>
                                                                 </td>
                                                                 <td>
-                                                                    <span class="badge {{ $item->type === 'Product' ? 'bg-info text-dark' : 'bg-secondary text-white' }} rounded-pill small" style="font-size: 0.7rem;">
+                                                                    @php
+                                                                        $typeBadgeClass = 'bg-secondary text-white';
+                                                                        if ($item->type === 'Product') $typeBadgeClass = 'bg-info text-dark';
+                                                                        if ($item->type === 'Texture') $typeBadgeClass = 'bg-warning text-dark';
+                                                                    @endphp
+                                                                    <span class="badge {{ $typeBadgeClass }} rounded-pill small" style="font-size: 0.7rem;">
                                                                         {{ $item->type }}
                                                                     </span>
                                                                 </td>

@@ -9,6 +9,7 @@ use App\Models\PurchaseOrderItem;
 use App\Models\Supplier;
 use App\Models\Product;
 use App\Models\RawMaterial;
+use App\Models\Texture;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 
@@ -24,6 +25,7 @@ class PurchaseOrderController extends Controller
         $suppliers = Supplier::all();
         $products = Product::all();
         $rawMaterials = RawMaterial::all();
+        $textures = Texture::all();
 
         // Handle pre-fill if coming from suggestions
         $selectedSupplierId = $request->query('supplier_id');
@@ -83,6 +85,26 @@ class PurchaseOrderController extends Controller
                     'unit' => $material->unit
                 ];
             }
+
+            // 3. Find textures with this supplier that are low stock
+            $lowStockTextures = Texture::where('supplier_id', $selectedSupplierId)
+                ->whereColumn('stock_quantity', '<=', 'low_stock_threshold')
+                ->get();
+
+            foreach ($lowStockTextures as $texture) {
+                $needed = max(0, $texture->low_stock_threshold - $texture->stock_quantity);
+                if ($needed == 0) continue;
+
+                $prefillItems[] = [
+                    'type' => 'texture',
+                    'id' => $texture->texture_id,
+                    'name' => $texture->name,
+                    'sku' => 'TEX-' . $texture->texture_id,
+                    'quantity' => $needed,
+                    'cost' => $texture->cost_per_unit,
+                    'unit' => $texture->unit
+                ];
+            }
         }
 
         $supplierItems = [];
@@ -119,16 +141,29 @@ class PurchaseOrderController extends Controller
                     'cost' => $m->cost_per_unit
                 ];
             }
+
+            $supplierTextures = Texture::where('supplier_id', $s->supplier_id)->get();
+            foreach($supplierTextures as $t) {
+                $items[] = [
+                    'type' => 'texture',
+                    'id' => $t->texture_id,
+                    'name' => $t->name,
+                    'sku' => 'TEX-' . $t->texture_id,
+                    'cost' => $t->cost_per_unit
+                ];
+            }
+
             $supplierItems[$s->supplier_id] = $items;
         }
 
         return view('admin.purchase.index', compact(
-            'purchaseOrders', 
-            'suppliers', 
-            'products', 
-            'rawMaterials', 
-            'selectedSupplierId', 
-            'prefillItems', 
+            'purchaseOrders',
+            'suppliers',
+            'products',
+            'rawMaterials',
+            'textures',
+            'selectedSupplierId',
+            'prefillItems',
             'supplierItems'
         ));
     }
@@ -146,6 +181,7 @@ class PurchaseOrderController extends Controller
             'items' => 'required|array|min:1',
             'items.*.product_id' => 'nullable|exists:products,product_id',
             'items.*.raw_material_id' => 'nullable|exists:raw_materials,raw_material_id',
+            'items.*.texture_id' => 'nullable|exists:textures,texture_id',
             'items.*.quantity' => 'required|numeric|min:0.01',
             'items.*.cost' => 'required|numeric|min:0',
         ]);
@@ -173,6 +209,7 @@ class PurchaseOrderController extends Controller
                 'purchase_order_id' => $po->purchase_order_id,
                 'product_id' => $item['product_id'] ?? null,
                 'raw_material_id' => $item['raw_material_id'] ?? null,
+                'texture_id' => $item['texture_id'] ?? null,
                 'quantity' => $item['quantity'],
                 'cost' => $item['cost'],
             ]);
@@ -183,7 +220,7 @@ class PurchaseOrderController extends Controller
 
     public function show($id)
     {
-        $purchaseOrder = PurchaseOrder::with(['supplier', 'items.product', 'items.rawMaterial', 'creator'])->findOrFail($id);
+        $purchaseOrder = PurchaseOrder::with(['supplier', 'items.product', 'items.rawMaterial', 'items.texture', 'creator'])->findOrFail($id);
         return view('admin.purchase.show', compact('purchaseOrder'));
     }
 
@@ -203,6 +240,8 @@ class PurchaseOrderController extends Controller
                     $item->product->increment('stock', $item->quantity);
                 } elseif ($item->raw_material_id) {
                     $item->rawMaterial->increment('stock_quantity', $item->quantity);
+                } elseif ($item->texture_id) {
+                    $item->texture->increment('stock_quantity', $item->quantity);
                 }
             }
         }
@@ -213,6 +252,8 @@ class PurchaseOrderController extends Controller
                     $item->product->decrement('stock', $item->quantity);
                 } elseif ($item->raw_material_id) {
                     $item->rawMaterial->decrement('stock_quantity', $item->quantity);
+                } elseif ($item->texture_id) {
+                    $item->texture->decrement('stock_quantity', $item->quantity);
                 }
             }
         }

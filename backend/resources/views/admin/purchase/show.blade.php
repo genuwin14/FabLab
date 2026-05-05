@@ -113,6 +113,9 @@
                                                             @elseif($item->raw_material_id)
                                                                 <div class="fw-bold text-dark small">{{ $item->rawMaterial->name }}</div>
                                                                 <div class="text-muted small" style="font-size: 0.7rem;">Raw Material</div>
+                                                            @elseif($item->texture_id)
+                                                                <div class="fw-bold text-dark small">{{ $item->texture->name }}</div>
+                                                                <div class="text-muted small" style="font-size: 0.7rem;">Texture</div>
                                                             @else
                                                                 <div class="text-danger small italic">Item deleted</div>
                                                             @endif
@@ -122,6 +125,8 @@
                                                                 {{ $item->product->unit }}
                                                             @elseif($item->raw_material_id)
                                                                 {{ $item->rawMaterial->unit }}
+                                                            @elseif($item->texture_id)
+                                                                {{ $item->texture->unit }}
                                                             @endif
                                                         </td>
                                                         <td class="text-center fw-bold text-dark">{{ $item->quantity }}</td>

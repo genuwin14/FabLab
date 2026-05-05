@@ -14,6 +14,7 @@ class PurchaseOrderItem extends Model
         'purchase_order_id',
         'product_id',
         'raw_material_id',
+        'texture_id',
         'quantity',
         'cost'
     ];
@@ -31,5 +32,10 @@ class PurchaseOrderItem extends Model
     public function rawMaterial()
     {
         return $this->belongsTo(RawMaterial::class, 'raw_material_id');
+    }
+
+    public function texture()
+    {
+        return $this->belongsTo(Texture::class, 'texture_id', 'texture_id');
     }
 }
