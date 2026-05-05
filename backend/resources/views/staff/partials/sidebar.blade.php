@@ -40,10 +40,19 @@
         <div class="mb-2 text-uppercase text-white-50 small fw-bold sidebar-section-title">Inventory Control</div>
         <ul class="nav nav-pills flex-column mb-3 gap-1">
             <li class="nav-item">
-                <a href="#" class="nav-link text-white hover-accent sidebar-tooltip"
+                <a href="{{ route('staff.products.index') }}"
+                    class="nav-link sidebar-tooltip {{ request()->routeIs('staff.products.*') ? 'active bg-accent text-primary fw-bold' : 'text-white hover-accent' }}"
                     data-sidebar-tooltip="true" title="Product">
                     <i class="bi bi-box-seam me-2"></i>
                     <span class="sidebar-label">Product</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{{ route('staff.raw-materials.index') }}"
+                    class="nav-link sidebar-tooltip {{ request()->routeIs('staff.raw-materials.*') ? 'active bg-accent text-primary fw-bold' : 'text-white hover-accent' }}"
+                    data-sidebar-tooltip="true" title="Raw Materials">
+                    <i class="bi bi-boxes me-2"></i>
+                    <span class="sidebar-label">Raw Materials</span>
                 </a>
             </li>
             <li class="nav-item">
@@ -54,7 +63,8 @@
                 </a>
             </li>
             <li class="nav-item">
-                <a href="#" class="nav-link text-white hover-accent sidebar-tooltip"
+                <a href="{{ route('staff.inventory.index') }}"
+                    class="nav-link sidebar-tooltip {{ request()->routeIs('staff.inventory.*') ? 'active bg-accent text-primary fw-bold' : 'text-white hover-accent' }}"
                     data-sidebar-tooltip="true" title="Inventory logs">
                     <i class="bi bi-clipboard-data me-2"></i>
                     <span class="sidebar-label">Inventory logs</span>
@@ -66,7 +76,8 @@
         <div class="mb-2 text-uppercase text-white-50 small fw-bold sidebar-section-title">Procurement</div>
         <ul class="nav nav-pills flex-column mb-3 gap-1">
             <li class="nav-item">
-                <a href="#" class="nav-link text-white hover-accent sidebar-tooltip"
+                <a href="{{ route('staff.purchase.index') }}"
+                    class="nav-link sidebar-tooltip {{ request()->routeIs('staff.purchase.*') ? 'active bg-accent text-primary fw-bold' : 'text-white hover-accent' }}"
                     data-sidebar-tooltip="true" title="Purchase Supply">
                     <i class="bi bi-bag-check me-2"></i>
                     <span class="sidebar-label">Purchase Supply</span>

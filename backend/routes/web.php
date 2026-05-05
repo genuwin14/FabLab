@@ -97,6 +97,20 @@ Route::middleware(['auth:sanctum'])->group(function () {
     // Staff Routes/Orders
     Route::get('/staff/orders', [\App\Http\Controllers\Staff\OrderController::class, 'index'])->name('staff.orders.index');
     Route::post('/staff/orders/{id}/update-status', [\App\Http\Controllers\Staff\OrderController::class, 'updateStatus'])->name('staff.orders.updateStatus');
+    // Staff Routes/Products (read + edit only)
+    Route::get('/staff/products', [\App\Http\Controllers\Staff\ProductController::class, 'index'])->name('staff.products.index');
+    Route::put('/staff/products/{id}', [\App\Http\Controllers\Staff\ProductController::class, 'update'])->name('staff.products.update');
+    // Staff Routes/Inventory (read only)
+    Route::get('/staff/inventory', [\App\Http\Controllers\Staff\InventoryController::class, 'index'])->name('staff.inventory.index');
+    // Staff Routes/Raw Materials (read + edit only)
+    Route::get('/staff/raw-materials', [\App\Http\Controllers\Staff\RawMaterialController::class, 'index'])->name('staff.raw-materials.index');
+    Route::put('/staff/raw-materials/{id}', [\App\Http\Controllers\Staff\RawMaterialController::class, 'update'])->name('staff.raw-materials.update');
+    // Staff Routes/Purchase Orders (full procurement workflow)
+    Route::get('/staff/purchase', [\App\Http\Controllers\Staff\PurchaseOrderController::class, 'index'])->name('staff.purchase.index');
+    Route::get('/staff/purchase/create', [\App\Http\Controllers\Staff\PurchaseOrderController::class, 'create'])->name('staff.purchase.create');
+    Route::post('/staff/purchase', [\App\Http\Controllers\Staff\PurchaseOrderController::class, 'store'])->name('staff.purchase.store');
+    Route::get('/staff/purchase/{id}', [\App\Http\Controllers\Staff\PurchaseOrderController::class, 'show'])->name('staff.purchase.show');
+    Route::put('/staff/purchase/{id}/status', [\App\Http\Controllers\Staff\PurchaseOrderController::class, 'updateStatus'])->name('staff.purchase.updateStatus');
     // Staff Routes/Profile
     Route::put('/staff/profile', [\App\Http\Controllers\Staff\ProfileController::class, 'update'])->name('staff.profile.update');
 
