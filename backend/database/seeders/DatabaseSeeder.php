@@ -25,6 +25,7 @@ class DatabaseSeeder extends Seeder
             BOMSeeder::class,
             ProductTextureSeeder::class,
             PurchaseOrderSeeder::class,
+            OrderSeeder::class,
         ]);
     }
 }
