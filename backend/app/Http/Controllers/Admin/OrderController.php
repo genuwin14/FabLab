@@ -11,11 +11,14 @@ class OrderController extends Controller
 {
     public function index(Request $request)
     {
+        $search = $request->input('search', '');
+        $status = $request->input('status', '');
+        $date = $request->input('date', '');
+        $perPage = (int) $request->input('per_page', 10);
+
         $query = Order::with(['user', 'orderItems'])->latest();
 
-        // Search Filter
-        if ($request->filled('search')) {
-            $search = $request->search;
+        if ($search !== '') {
             $query->where(function ($q) use ($search) {
                 $q->where('order_number', 'like', "%{$search}%")
                     ->orWhere('payment_reference', 'like', "%{$search}%")
@@ -25,14 +28,12 @@ class OrderController extends Controller
             });
         }
 
-        // Status Filter
-        if ($request->filled('status')) {
-            $query->whereIn('status', $request->status);
+        if ($status !== '') {
+            $query->where('status', $status);
         }
 
-        // Date Filter
-        if ($request->filled('date')) {
-            switch ($request->date) {
+        if ($date !== '') {
+            switch ($date) {
                 case 'today':
                     $query->whereDate('created_at', today());
                     break;
@@ -46,8 +47,14 @@ class OrderController extends Controller
             }
         }
 
-        $orders = $query->paginate(10)->withQueryString();
-        return view('admin.order.order', compact('orders'));
+        $orders = $query->paginate($perPage)->withQueryString();
+
+        $statusCounts = Order::selectRaw('status, COUNT(*) as total')
+            ->groupBy('status')
+            ->pluck('total', 'status')
+            ->toArray();
+
+        return view('admin.order.order', compact('orders', 'search', 'status', 'date', 'perPage', 'statusCounts'));
     }
     public function review(Request $request, $id)
     {

@@ -29,186 +29,197 @@
             <!-- Page Content -->
             <main class="flex-grow-1 p-4" style="overflow-y: auto;">
                 <div class="container-fluid">
-                    <!-- Page Header -->
-                    <div class="d-flex justify-content-between align-items-center mb-4">
-                        <div>
-                            <h2 class="fw-bold text-dark">Order Management</h2>
-                            <p class="text-muted small mb-0">View and manage customer orders.</p>
-                        </div>
-                        <div>
-                        </div>
-                    </div>
 
-                    <!-- Filters -->
-                    <div class="card border-0 p-2 shadow-sm rounded-2 mb-2  ">
-                        <div class="card-body p-2">
-                            <form action="{{ route('admin.orders.index') }}" method="GET" class="w-100">
-                                <div class="d-flex justify-content-between align-items-center gap-2">
-                                    <!-- Search -->
-                                    <div class="flex-grow-1">
-                                        <div class="input-group bg-light rounded-2 shadow-sm">
-                                            <span class="input-group-text bg-transparent border-0 ps-3"><i
-                                                    class="bi bi-search text-muted"></i></span>
-                                            <input type="text" name="search" value="{{ request('search') }}"
-                                                class="form-control bg-transparent border-0 shadow-none"
-                                                placeholder="Search orders by ID, Customer..." autocomplete="off">
-                                        </div>
-                                    </div>
-
-                                    <!-- Actions -->
-                                    <div class="d-flex gap-2">
-                                        <button type="button"
-                                            class="btn btn-light rounded-2 border-1 shadow-sm px-3 fw-bold small d-flex align-items-center gap-2">
-                                            <i class="bi bi-download"></i> <span class="d-none d-md-inline">Export</span>
-                                        </button>
-
-                                        <!-- Filter Dropdown -->
-                                        <div class="dropdown">
-                                            <button
-                                                class="btn btn-light rounded-2 border-0 shadow-sm px-3 fw-bold small d-flex align-items-center gap-2"
-                                                type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                                <i class="bi bi-sliders2"></i> Filters
-                                            </button>
-                                            <div class="dropdown-menu dropdown-menu-end p-3 border-0 shadow-lg rounded-4"
-                                                style="width: 300px;">
-                                                <h6 class="dropdown-header text-uppercase small fw-bold text-muted ps-0 mb-2">
-                                                    Order Status
-                                                </h6>
-                                                <div class="d-flex flex-column gap-2 mb-3">
-                                                    @foreach(['pending', 'processing', 'completed', 'cancelled'] as $status)
-                                                        <div class="form-check">
-                                                            <input class="form-check-input" type="checkbox" name="status[]"
-                                                                value="{{ $status }}" id="status{{ ucfirst($status) }}"
-                                                                {{ in_array($status, request('status', [])) ? 'checked' : '' }}
-                                                                onchange="this.form.submit()">
-                                                            <label class="form-check-label small fw-bold text-capitalize"
-                                                                for="status{{ ucfirst($status) }}">
-                                                                {{ $status }}
-                                                            </label>
-                                                        </div>
-                                                    @endforeach
+                    <!-- Status Analytics -->
+                    @php
+                        $statusMeta = [
+                            'pending'          => ['label' => 'Pending',          'icon' => 'bi-hourglass-split',   'bg' => 'rgba(255, 193, 7, 0.15)',  'color' => '#997404'],
+                            'approved'         => ['label' => 'Approved',         'icon' => 'bi-clipboard-check',   'bg' => 'rgba(13, 110, 253, 0.12)', 'color' => '#0d6efd'],
+                            'processing'       => ['label' => 'Processing',       'icon' => 'bi-arrow-repeat',      'bg' => 'rgba(13, 202, 240, 0.15)', 'color' => '#087990'],
+                            'ready_for_pickup' => ['label' => 'Ready for Pickup', 'icon' => 'bi-bag-check',         'bg' => 'rgba(255, 153, 0, 0.15)',  'color' => '#b95900'],
+                            'completed'        => ['label' => 'Completed',        'icon' => 'bi-check-circle-fill', 'bg' => 'rgba(25, 135, 84, 0.12)',  'color' => '#198754'],
+                            'cancelled'        => ['label' => 'Cancelled',        'icon' => 'bi-x-circle-fill',     'bg' => 'rgba(220, 53, 69, 0.12)',  'color' => '#dc3545'],
+                        ];
+                    @endphp
+                    <div class="row g-3 mb-4">
+                        @foreach($statusMeta as $key => $meta)
+                            @php
+                                $isActive = $status === $key;
+                                $count = $statusCounts[$key] ?? 0;
+                                $cardUrl = $isActive
+                                    ? route('admin.orders.index')
+                                    : route('admin.orders.index', ['status' => $key]);
+                            @endphp
+                            <div class="col-6 col-md-4 col-xl-2">
+                                <a href="{{ $cardUrl }}" class="text-decoration-none">
+                                    <div class="card border-0 shadow-sm rounded-4 h-100 order-stat-card {{ $isActive ? 'order-stat-card-active' : '' }}"
+                                        style="--stat-color: {{ $meta['color'] }};">
+                                        <div class="card-body p-3 position-relative">
+                                            <div class="d-flex align-items-center gap-2">
+                                                <div class="rounded-3 d-flex align-items-center justify-content-center flex-shrink-0"
+                                                    style="width: 42px; height: 42px; background-color: {{ $meta['bg'] }}; color: {{ $meta['color'] }};">
+                                                    <i class="bi {{ $meta['icon'] }}"></i>
                                                 </div>
-
-                                                <h6 class="dropdown-header text-uppercase small fw-bold text-muted ps-0 mb-2">
-                                                    Time Period
-                                                </h6>
-                                                <div class="d-flex flex-column gap-2 mb-3">
-                                                    <div class="form-check">
-                                                        <input class="form-check-input" type="radio" name="date" value="today" id="dateToday" {{ request('date') == 'today' ? 'checked' : '' }} onchange="this.form.submit()">
-                                                        <label class="form-check-label small fw-bold" for="dateToday">
-                                                            Today
-                                                        </label>
-                                                    </div>
-                                                    <div class="form-check">
-                                                        <input class="form-check-input" type="radio" name="date" value="week" id="dateThisWeek" {{ request('date') == 'week' ? 'checked' : '' }} onchange="this.form.submit()">
-                                                        <label class="form-check-label small fw-bold" for="dateThisWeek">
-                                                            This Week
-                                                        </label>
-                                                    </div>
-                                                    <div class="form-check">
-                                                        <input class="form-check-input" type="radio" name="date" value="month" id="dateThisMonth" {{ request('date') == 'month' ? 'checked' : '' }} onchange="this.form.submit()">
-                                                        <label class="form-check-label small fw-bold" for="dateThisMonth">
-                                                            This Month
-                                                        </label>
-                                                    </div>
-                                                    <!-- Clear Date Filter Option if date is selected -->
-                                                    @if(request('date'))
-                                                    <div class="form-check">
-                                                        <input class="form-check-input" type="radio" name="date" value="" id="dateAll" onchange="this.form.submit()">
-                                                        <label class="form-check-label small fw-bold text-muted" for="dateAll">
-                                                            All Time
-                                                        </label>
-                                                    </div>
-                                                    @endif
+                                                <div class="d-flex flex-column lh-1">
+                                                    <span class="text-uppercase fw-bold text-muted"
+                                                        style="font-size: 0.65rem; letter-spacing: 0.04em;">
+                                                        {{ $meta['label'] }}
+                                                    </span>
+                                                    <h5 class="fw-bold text-dark mb-0 mt-1">{{ $count }}</h5>
                                                 </div>
                                             </div>
+                                            <small class="text-muted position-absolute"
+                                                style="font-size: 0.65rem; bottom: 6px; right: 10px;">
+                                                {{ $isActive ? 'Filtered' : 'Click to filter' }}
+                                            </small>
                                         </div>
                                     </div>
+                                </a>
+                            </div>
+                        @endforeach
+                    </div>
+
+                    <!-- Filters, Search & Actions -->
+                    <div class="card border-0 shadow-sm rounded-4 mb-4">
+                        <div class="card-body p-3">
+                            <form id="orderFilterForm" method="GET" action="{{ route('admin.orders.index') }}"
+                                class="d-flex flex-nowrap align-items-center gap-2">
+                                <input type="hidden" name="per_page" value="{{ $perPage }}">
+                                <div class="input-group flex-grow-1" style="min-width: 0;">
+                                    <span class="input-group-text bg-white border-end-0 rounded-start-2 ps-3">
+                                        <i class="bi bi-search text-muted"></i>
+                                    </span>
+                                    <input type="text" name="search" value="{{ $search }}"
+                                        class="form-control border-start-0 rounded-end-2 ps-0"
+                                        placeholder="Search by Order ID, Ref No, or Customer...">
                                 </div>
+                                <select name="status" class="form-select rounded-2 flex-shrink-0 w-auto"
+                                    onchange="document.getElementById('orderFilterForm').submit()">
+                                    <option value="">All Statuses</option>
+                                    @foreach(['pending', 'approved', 'processing', 'ready_for_pickup', 'completed', 'cancelled'] as $s)
+                                        <option value="{{ $s }}" {{ $status === $s ? 'selected' : '' }}>
+                                            {{ ucwords(str_replace('_', ' ', $s)) }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                                <select name="date" class="form-select rounded-2 flex-shrink-0 w-auto"
+                                    onchange="document.getElementById('orderFilterForm').submit()">
+                                    <option value="">All Time</option>
+                                    <option value="today" {{ $date === 'today' ? 'selected' : '' }}>Today</option>
+                                    <option value="week" {{ $date === 'week' ? 'selected' : '' }}>This Week</option>
+                                    <option value="month" {{ $date === 'month' ? 'selected' : '' }}>This Month</option>
+                                </select>
+                                <a href="{{ route('admin.orders.index') }}"
+                                    class="btn btn-light rounded-2 flex-shrink-0" data-bs-toggle="tooltip"
+                                    title="Reset filters">
+                                    <i class="bi bi-arrow-clockwise text-primary"></i>
+                                </a>
+                                <button type="button"
+                                    class="btn btn-primary d-flex align-items-center gap-2 rounded-2 px-3 flex-shrink-0">
+                                    <i class="bi bi-download small"></i>
+                                    <span class="small fw-bold">Export</span>
+                                </button>
                             </form>
                         </div>
                     </div>
 
                     <!-- Orders Table -->
-                    <div class="card border-0 shadow-sm rounded-2 overflow-hidden">
-                        <div class="card-body p-2">
+                    <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+                        <div class="card-body p-0">
                             <div class="table-responsive">
                                 <table class="table table-hover align-middle mb-0">
-                                    <thead class="bg-light">
-                                        <tr>
-                                            <th scope="col"
-                                                class="py-3 ps-4 border-0 rounded-start text-uppercase small text-muted fw-bold">
+                                    <thead>
+                                        <tr class="bg-primary bg-opacity-10">
+                                            <th class="ps-4 py-3 text-primary small text-uppercase fw-bold border-0">
                                                 Order ID</th>
-                                            <th scope="col" class="py-3 border-0 text-uppercase small text-muted fw-bold">
-                                                Ref No</th>
-                                            <th scope="col" class="py-3 border-0 text-uppercase small text-muted fw-bold">
-                                                Customer</th>
-                                            <th scope="col" class="py-3 border-0 text-uppercase small text-muted fw-bold">
-                                                Date</th>
-                                            <th scope="col" class="py-3 border-0 text-uppercase small text-muted fw-bold">
-                                                Items</th>
-                                            <th scope="col" class="py-3 border-0 text-uppercase small text-muted fw-bold">
-                                                Total</th>
-                                            <th scope="col"
-                                                class="py-3 pe-4 border-0 text-uppercase small text-muted fw-bold">
-                                                Status</th>
-                                            <th scope="col"
-                                                class="py-3 pe-4 border-0 rounded-end text-uppercase small text-muted fw-bold text-end">
-                                                Action</th>
+                                            <th class="py-3 text-primary small text-uppercase fw-bold border-0">Ref No
+                                            </th>
+                                            <th class="py-3 text-primary small text-uppercase fw-bold border-0">Customer
+                                            </th>
+                                            <th class="py-3 text-primary small text-uppercase fw-bold border-0">Date</th>
+                                            <th class="py-3 text-primary small text-uppercase fw-bold border-0">Items</th>
+                                            <th class="py-3 text-primary small text-uppercase fw-bold border-0">Total</th>
+                                            <th class="py-3 text-primary small text-uppercase fw-bold border-0">Status</th>
+                                            <th
+                                                class="text-end pe-4 py-3 text-primary small text-uppercase fw-bold border-0">
+                                                Actions</th>
                                         </tr>
                                     </thead>
-                                    <tbody>
+                                    <tbody class="border-top-0">
                                         @forelse($orders as $order)
                                             <tr>
-                                                <td class="ps-4 fw-bold">#{{ $order->order_number }}</td>
-                                                <td class="small fw-bold text-muted">REF:
-                                                    {{ $order->payment_reference ?? 'N/A' }}
+                                                <td class="ps-4 py-3 fw-bold text-dark">#{{ $order->order_number }}</td>
+                                                <td>
+                                                    @if($order->payment_reference)
+                                                        <span class="font-monospace small text-muted">
+                                                            {{ $order->payment_reference }}
+                                                        </span>
+                                                    @else
+                                                        <span class="text-muted small">—</span>
+                                                    @endif
                                                 </td>
                                                 <td>
-                                                    <div class="d-flex align-items-center">
-                                                        <div class="avatar-sm bg-primary bg-opacity-10 rounded-circle fw-bold text-white d-flex align-items-center justify-content-center me-2"
-                                                            style="width: 32px; height: 32px;">
-                                                            {{ substr($order->user->fullname ?? 'G', 0, 2) }}
+                                                    <div class="d-flex align-items-center gap-2">
+                                                        <div class="rounded-circle fw-bold d-flex align-items-center justify-content-center"
+                                                            style="width: 36px; height: 36px; background-color: #0e2e45; color: #ffc508; font-size: 0.78rem; letter-spacing: 0.02em;">
+                                                            {{ strtoupper(substr($order->user->fullname ?? 'G', 0, 2)) }}
                                                         </div>
-                                                        <span>{{ $order->user->fullname ?? 'Guest' }}</span>
+                                                        <div>
+                                                            <div class="fw-bold text-dark small mb-0">
+                                                                {{ $order->user->fullname ?? 'Guest' }}
+                                                            </div>
+                                                            <small class="text-muted">{{ $order->user->email ?? '' }}</small>
+                                                        </div>
                                                     </div>
                                                 </td>
-                                                <td>{{ $order->created_at->format('M d, Y') }}</td>
-                                                <td>{{ $order->orderItems->count() }}</td>
-                                                <td class="fw-bold">₱{{ number_format($order->total_amount, 2) }}</td>
+                                                <td class="text-muted small">{{ $order->created_at->format('M d, Y') }}</td>
+                                                <td class="fw-bold text-dark">{{ $order->orderItems->count() }}</td>
+                                                <td class="fw-bold text-primary">
+                                                    ₱{{ number_format($order->total_amount, 2) }}
+                                                </td>
                                                 <td>
                                                     @php
-                                                        $statusClass = match ($order->status) {
-                                                            'completed' => 'bg-success text-success',
-                                                            'processing' => 'bg-info text-info',
-                                                            'cancelled' => 'bg-danger text-danger',
-                                                            default => 'bg-warning text-dark bg-opacity-25 text-opacity-75',
+                                                        [$statusBg, $statusColor, $statusIcon] = match ($order->status) {
+                                                            'completed' => ['rgba(25, 135, 84, 0.12)', '#198754', 'bi-check-circle-fill'],
+                                                            'approved' => ['rgba(13, 110, 253, 0.12)', '#0d6efd', 'bi-clipboard-check'],
+                                                            'processing' => ['rgba(13, 202, 240, 0.15)', '#087990', 'bi-arrow-repeat'],
+                                                            'ready_for_pickup' => ['rgba(255, 193, 7, 0.18)', '#997404', 'bi-bag-check'],
+                                                            'cancelled' => ['rgba(220, 53, 69, 0.12)', '#dc3545', 'bi-x-circle-fill'],
+                                                            default => ['rgba(255, 193, 7, 0.18)', '#997404', 'bi-hourglass-split'],
                                                         };
-
-                                                        // Adjust opacity for success/info/danger if needed to match the design
-                                                        if ($order->status == 'completed' || $order->status == 'processing' || $order->status == 'cancelled') {
-                                                            $statusClass .= ' bg-opacity-10';
-                                                        }
                                                     @endphp
                                                     <span
-                                                        class="badge {{ $statusClass }} px-3 py-2 rounded-pill text-capitalize">{{ $order->status }}</span>
+                                                        class="d-inline-flex align-items-center gap-1 px-2 py-1 rounded-pill small fw-semibold"
+                                                        style="background-color: {{ $statusBg }}; color: {{ $statusColor }};">
+                                                        <i class="bi {{ $statusIcon }}" style="font-size: 0.75rem;"></i>
+                                                        {{ ucwords(str_replace('_', ' ', $order->status)) }}
+                                                    </span>
                                                 </td>
-                                                <td class="pe-4 text-end">
+                                                <td class="text-end pe-4">
+                                                    @php
+                                                        $orderItemsJson = json_encode($order->orderItems()->with('product')->get());
+                                                        $orderJson = json_encode($order);
+                                                    @endphp
                                                     @if($order->status == 'pending')
-                                                        <button class="btn btn-primary btn-sm rounded-pill px-3 fw-bold shadow-sm btn-review-order" 
+                                                        <button class="btn btn-primary btn-sm rounded-pill px-3 fw-bold shadow-sm btn-review-order"
                                                             data-bs-toggle="modal" data-bs-target="#reviewOrderModal"
-                                                            data-order="{{ json_encode($order) }}"
-                                                            data-items="{{ json_encode($order->orderItems()->with('product')->get()) }}">
-                                                            Review
+                                                            data-order="{{ $orderJson }}"
+                                                            data-items="{{ $orderItemsJson }}">
+                                                            <i class="bi bi-clipboard-check me-1"></i>Review
                                                         </button>
                                                     @else
-                                                        <span class="text-muted small">-</span>
+                                                        <button class="btn btn-light btn-sm rounded-pill px-3 fw-bold shadow-sm border"
+                                                            data-bs-toggle="modal" data-bs-target="#viewOrderModal"
+                                                            data-order="{{ $orderJson }}"
+                                                            data-items="{{ $orderItemsJson }}">
+                                                            <i class="bi bi-eye me-1 text-primary"></i>View
+                                                        </button>
                                                     @endif
                                                 </td>
                                             </tr>
                                         @empty
                                             <tr>
-                                                <td colspan="7" class="text-center py-5 text-muted">
+                                                <td colspan="8" class="text-center py-5 text-muted">
                                                     <i class="bi bi-inbox display-6 d-block mb-3 opacity-50"></i>
                                                     No orders found.
                                                 </td>
@@ -217,44 +228,27 @@
                                     </tbody>
                                 </table>
                             </div>
-                        </div>
-                        <div class="card-footer bg-transparent border-0 py-4 px-4">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <div class="text-muted small">
-                                    Showing <span class="fw-bold text-dark">{{ $orders->firstItem() ?? 0 }}</span> to <span
-                                        class="fw-bold text-dark">{{ $orders->lastItem() ?? 0 }}</span> of <span
-                                        class="fw-bold text-dark">{{ $orders->total() }}</span>
-                                    results
-                                </div>
-                                <nav aria-label="Page navigation">
-                                    <ul class="pagination pagination-sm mb-0 gap-1">
-                                        {{-- Previous Page Link --}}
-                                        <li class="page-item {{ $orders->onFirstPage() ? 'disabled' : '' }}">
-                                            <a class="page-link border-0 bg-transparent text-muted"
-                                                href="{{ $orders->previousPageUrl() }}" tabindex="-1"
-                                                aria-disabled="{{ $orders->onFirstPage() ? 'true' : 'false' }}">
-                                                <i class="bi bi-chevron-left"></i>
-                                            </a>
-                                        </li>
 
-                                        {{-- Pagination Elements --}}
-                                        @foreach (range(1, $orders->lastPage()) as $i)
-                                            @if($i >= $orders->currentPage() - 2 && $i <= $orders->currentPage() + 2)
-                                                <li class="page-item {{ $i == $orders->currentPage() ? 'active' : '' }}">
-                                                    <a class="page-link border-0 rounded-pill fw-bold shadow-sm {{ $i == $orders->currentPage() ? 'bg-primary text-white' : 'bg-transparent text-muted' }}"
-                                                        href="{{ $orders->url($i) }}">{{ $i }}</a>
-                                                </li>
-                                            @endif
+                            <!-- Pagination -->
+                            <div
+                                class="d-flex flex-wrap justify-content-between align-items-center gap-2 p-3 border-top">
+                                <div class="d-flex align-items-center gap-2">
+                                    <label for="perPageSelect" class="text-muted small mb-0">Rows per page:</label>
+                                    <select id="perPageSelect" class="form-select form-select-sm rounded-pill w-auto"
+                                        onchange="(function(v){const u=new URL(window.location.href);u.searchParams.set('per_page',v);u.searchParams.delete('page');window.location.href=u.toString();})(this.value)">
+                                        @foreach([10, 25, 50, 100] as $size)
+                                            <option value="{{ $size }}" {{ $perPage == $size ? 'selected' : '' }}>
+                                                {{ $size }}
+                                            </option>
                                         @endforeach
-
-                                        {{-- Next Page Link --}}
-                                        <li class="page-item {{ $orders->hasMorePages() ? '' : 'disabled' }}">
-                                            <a class="page-link border-0 bg-transparent text-muted"
-                                                href="{{ $orders->nextPageUrl() }}">
-                                                <i class="bi bi-chevron-right"></i>
-                                            </a>
-                                        </li>
-                                    </ul>
+                                    </select>
+                                    <span class="text-muted small">
+                                        Showing {{ $orders->firstItem() ?? 0 }} to {{ $orders->lastItem() ?? 0 }} of
+                                        {{ $orders->total() }} entries
+                                    </span>
+                                </div>
+                                <nav>
+                                    {{ $orders->links() }}
                                 </nav>
                             </div>
                         </div>
@@ -264,8 +258,152 @@
             </main>
         </div>
     </div>
+
     @include('auth.modal-logout')
     @include('admin.order.components.review-modal')
+    @include('admin.order.components.view-modal')
+
+    <style>
+        /* ============================================
+           Order Status Stat Cards
+           ============================================ */
+        .order-stat-card {
+            transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+            border: 1px solid transparent;
+            cursor: pointer;
+        }
+        .order-stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.08) !important;
+            border-color: var(--stat-color);
+        }
+        .order-stat-card-active {
+            border-color: var(--stat-color) !important;
+            box-shadow: 0 0 0 2px var(--stat-color) inset, 0 0.25rem 0.75rem rgba(0, 0, 0, 0.06) !important;
+        }
+        .order-stat-card-active h3 { color: var(--stat-color) !important; }
+
+        /* ============================================
+           Order Review Modal Theme (mirrors product modal)
+           ============================================ */
+        .order-modal .modal-content { border-radius: 18px; }
+
+        .order-modal-header {
+            background: linear-gradient(135deg, #05111a 0%, #0e2e45 100%);
+            padding: 18px 24px;
+            position: relative;
+        }
+        .order-modal-header::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255, 197, 8, 0.3), transparent);
+        }
+        .order-eyebrow {
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: rgba(255, 197, 8, 0.85);
+        }
+        .order-eyebrow-divider { color: rgba(255, 255, 255, 0.2); font-weight: 300; }
+
+        .order-close-btn {
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            color: rgba(255, 255, 255, 0.85);
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.85rem;
+            transition: all 0.2s ease;
+        }
+        .order-close-btn:hover {
+            background: rgba(255, 197, 8, 0.12);
+            color: #ffc508;
+            border-color: rgba(255, 197, 8, 0.3);
+        }
+
+        .order-section-title {
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: #6c757d;
+            padding-bottom: 10px;
+            margin-bottom: 14px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+        }
+
+        .order-field-input {
+            background-color: #f8f9fa !important;
+            border: 1px solid transparent !important;
+            border-radius: 10px !important;
+            transition: all 0.2s ease;
+            padding: 0.6rem 0.85rem;
+        }
+        .order-field-input:focus {
+            background-color: #fff !important;
+            border-color: #ffc508 !important;
+            box-shadow: 0 0 0 3px rgba(255, 197, 8, 0.12) !important;
+        }
+
+        .order-modal-footer {
+            background-color: #fff;
+            padding: 16px 24px;
+            border-top: 1px solid rgba(0, 0, 0, 0.05);
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .order-btn-cancel {
+            background-color: #f1f4f8;
+            border: 1px solid #e9ecef;
+            color: #6c757d;
+            font-weight: 600;
+        }
+        .order-btn-cancel:hover {
+            background-color: #e9ecef;
+            color: #0e2e45;
+        }
+        .order-btn-save {
+            background-color: #0e2e45;
+            border: 1px solid #0e2e45;
+            color: #fff;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+        .order-btn-save:hover {
+            background-color: #ffc508;
+            border-color: #ffc508;
+            color: #0e2e45;
+        }
+
+        /* Reason quick-pick chips */
+        .order-reason-chip {
+            background-color: #f1f4f8;
+            border: 1px solid #e9ecef;
+            color: #6c757d;
+            font-size: 0.7rem;
+            padding: 0.2rem 0.6rem;
+            border-radius: 999px;
+            font-weight: 600;
+            transition: all 0.15s ease;
+        }
+        .order-reason-chip:hover {
+            background-color: #0e2e45;
+            border-color: #0e2e45;
+            color: #ffc508;
+        }
+    </style>
 
     <script>
         document.addEventListener('DOMContentLoaded', function () {
@@ -275,55 +413,46 @@
                     const button = event.relatedTarget;
                     const order = JSON.parse(button.getAttribute('data-order'));
                     const items = JSON.parse(button.getAttribute('data-items'));
-                    
-                    // Set Form Action
+
                     const form = document.getElementById('reviewOrderForm');
                     form.action = `/admin/orders/${order.order_id}/review`;
 
-                    // Populate Info
-                    document.getElementById('reviewOrderNumber').textContent = order.order_number;
-                    document.getElementById('reviewCustomerName').textContent = order.user ? order.user.name : 'Guest';
+                    document.getElementById('reviewOrderNumber').textContent = '#' + order.order_number;
+                    document.getElementById('reviewCustomerName').textContent = order.user ? (order.user.fullname || order.user.name || 'Guest') : 'Guest';
 
-                    // Populate Items
                     const tbody = document.getElementById('reviewItemsBody');
                     tbody.innerHTML = '';
-                    
-                    let allAvailable = true;
 
                     items.forEach(item => {
-                        const product = item.product;
-                        const stock = product ? product.stock : 0;
+                        const product = item.product || {};
+                        const stock = product.stock ?? 0;
                         const isAvailable = stock >= item.quantity;
-                        
-                        if (!isAvailable) allAvailable = false;
+                        const imgSrc = product.image ? product.image : '/img/FABLAB-LOGO.png';
 
                         const row = `
                             <tr>
-                                <td>
+                                <td class="ps-3 py-2">
                                     <div class="d-flex align-items-center">
-                                        <div class="rounded border p-1 me-2" style="width: 40px; height: 40px;">
-                                            <img src="${product.image ? product.image : '/img/FABLAB-LOGO.png'}" class="w-100 h-100 object-fit-cover" alt="">
+                                        <div class="rounded border bg-white p-1 me-2" style="width: 40px; height: 40px;">
+                                            <img src="${imgSrc}" class="w-100 h-100 object-fit-cover rounded" alt="">
                                         </div>
                                         <div>
-                                            <div class="fw-bold text-dark small">${product.name}</div>
-                                            <div class="text-muted" style="font-size: 0.75rem;">SKU: ${product.sku}</div>
+                                            <div class="fw-bold text-dark small">${product.name ?? '-'}</div>
+                                            <div class="text-muted font-monospace" style="font-size: 0.7rem;">SKU: ${product.sku ?? '-'}</div>
                                         </div>
                                     </div>
                                 </td>
                                 <td class="text-center fw-bold text-dark">${item.quantity}</td>
                                 <td class="text-center fw-bold ${stock < item.quantity ? 'text-danger' : 'text-success'}">${stock}</td>
-                                <td class="text-end">
-                                    ${isAvailable 
-                                        ? '<span class="badge bg-success bg-opacity-10 text-success rounded-pill">Available</span>' 
-                                        : '<span class="badge bg-danger bg-opacity-10 text-danger rounded-pill">Insufficient</span>'}
+                                <td class="text-end pe-3">
+                                    ${isAvailable
+                                        ? '<span class="d-inline-flex align-items-center gap-1 px-2 py-1 rounded-pill small fw-semibold" style="background-color: rgba(25,135,84,0.12); color: #198754;"><i class="bi bi-check-circle-fill" style="font-size:.7rem;"></i>Available</span>'
+                                        : '<span class="d-inline-flex align-items-center gap-1 px-2 py-1 rounded-pill small fw-semibold" style="background-color: rgba(220,53,69,0.12); color: #dc3545;"><i class="bi bi-x-circle-fill" style="font-size:.7rem;"></i>Insufficient</span>'}
                                 </td>
                             </tr>
                         `;
                         tbody.innerHTML += row;
                     });
-
-                    // Toggle Buttons based on availability (Optional: Admin can decided regardless, but visually we can warn)
-                    // Currently we allow admin to decide.
                 });
             }
         });

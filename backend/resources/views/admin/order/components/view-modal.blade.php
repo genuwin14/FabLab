@@ -1,0 +1,171 @@
+<div class="modal fade order-modal" id="viewOrderModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content border-0 shadow-lg overflow-hidden">
+            <!-- Themed Dark Header -->
+            <div class="order-modal-header">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="order-eyebrow">Admin</span>
+                        <span class="order-eyebrow-divider">/</span>
+                        <h5 class="modal-title fw-bold mb-0 text-white">
+                            Order Details
+                            <span id="viewOrderNumber" class="ms-1" style="color: #ffc508;"></span>
+                        </h5>
+                    </div>
+                    <button type="button" class="order-close-btn" data-bs-dismiss="modal" aria-label="Close">
+                        <i class="bi bi-x-lg"></i>
+                    </button>
+                </div>
+                <div class="d-flex align-items-center gap-3 mt-2 small">
+                    <span class="text-white-50">Customer:
+                        <span id="viewCustomerName" class="text-white fw-bold"></span>
+                    </span>
+                    <span id="viewStatusPill"></span>
+                </div>
+            </div>
+
+            <div class="modal-body p-4 bg-white">
+                <!-- Meta Grid -->
+                <div class="row g-3 mb-4">
+                    <div class="col-md-4">
+                        <div class="text-uppercase fw-bold text-muted"
+                            style="font-size: 0.65rem; letter-spacing: 0.05em;">Order Date</div>
+                        <div class="fw-semibold text-dark small mt-1" id="viewOrderDate">—</div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="text-uppercase fw-bold text-muted"
+                            style="font-size: 0.65rem; letter-spacing: 0.05em;">Payment Reference</div>
+                        <div class="fw-semibold text-dark small mt-1 font-monospace" id="viewPaymentRef">—</div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="text-uppercase fw-bold text-muted"
+                            style="font-size: 0.65rem; letter-spacing: 0.05em;">Total Amount</div>
+                        <div class="fw-bold text-primary mt-1" id="viewTotal">₱0.00</div>
+                    </div>
+                </div>
+
+                <!-- Items -->
+                <h6 class="order-section-title">
+                    <i class="bi bi-box-seam me-2"></i>Order Items
+                </h6>
+                <div class="table-responsive border rounded-3 mb-3 overflow-hidden">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead>
+                            <tr class="bg-primary bg-opacity-10">
+                                <th class="ps-3 py-2 text-primary small text-uppercase fw-bold border-0">Product</th>
+                                <th class="text-center py-2 text-primary small text-uppercase fw-bold border-0">Qty</th>
+                                <th class="text-end py-2 text-primary small text-uppercase fw-bold border-0">Unit Price
+                                </th>
+                                <th class="text-end pe-3 py-2 text-primary small text-uppercase fw-bold border-0">
+                                    Subtotal</th>
+                            </tr>
+                        </thead>
+                        <tbody id="viewItemsBody" class="border-top-0">
+                            <!-- Populated by JS -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Cancellation Reason (only when cancelled) -->
+                <div id="viewReasonSection" class="d-none">
+                    <h6 class="order-section-title">
+                        <i class="bi bi-exclamation-triangle me-2 text-danger"></i>Cancellation Reason
+                    </h6>
+                    <div class="alert alert-danger border-0 rounded-3 mb-0 small" id="viewReasonText"></div>
+                </div>
+            </div>
+
+            <div class="order-modal-footer">
+                <button type="button" class="btn order-btn-cancel rounded-pill px-4" data-bs-dismiss="modal">
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    (function () {
+        const STATUS_META = {
+            'pending':          { label: 'Pending',          icon: 'bi-hourglass-split',   bg: 'rgba(255, 193, 7, 0.18)',  color: '#997404' },
+            'approved':         { label: 'Approved',         icon: 'bi-clipboard-check',   bg: 'rgba(13, 110, 253, 0.12)', color: '#0d6efd' },
+            'processing':       { label: 'Processing',       icon: 'bi-arrow-repeat',      bg: 'rgba(13, 202, 240, 0.15)', color: '#087990' },
+            'ready_for_pickup': { label: 'Ready for Pickup', icon: 'bi-bag-check',         bg: 'rgba(255, 153, 0, 0.15)',  color: '#b95900' },
+            'completed':        { label: 'Completed',        icon: 'bi-check-circle-fill', bg: 'rgba(25, 135, 84, 0.12)',  color: '#198754' },
+            'cancelled':        { label: 'Cancelled',        icon: 'bi-x-circle-fill',     bg: 'rgba(220, 53, 69, 0.12)',  color: '#dc3545' },
+        };
+
+        function formatCurrency(value) {
+            return '₱' + Number(value || 0).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
+
+        function formatDate(iso) {
+            if (!iso) return '—';
+            const d = new Date(iso);
+            return d.toLocaleString('en-PH', { year: 'numeric', month: 'short', day: '2-digit', hour: '2-digit', minute: '2-digit' });
+        }
+
+        function buildStatusPill(status) {
+            const meta = STATUS_META[status] || STATUS_META['pending'];
+            return `<span class="d-inline-flex align-items-center gap-1 px-2 py-1 rounded-pill fw-semibold"
+                        style="background-color: ${meta.bg}; color: ${meta.color}; font-size: 0.7rem;">
+                        <i class="bi ${meta.icon}" style="font-size: 0.7rem;"></i>${meta.label}
+                    </span>`;
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            const viewModal = document.getElementById('viewOrderModal');
+            if (!viewModal) return;
+
+            viewModal.addEventListener('show.bs.modal', function (event) {
+                const button = event.relatedTarget;
+                const order = JSON.parse(button.getAttribute('data-order'));
+                const items = JSON.parse(button.getAttribute('data-items'));
+
+                document.getElementById('viewOrderNumber').textContent = '#' + order.order_number;
+                document.getElementById('viewCustomerName').textContent =
+                    order.user ? (order.user.fullname || order.user.name || 'Guest') : 'Guest';
+                document.getElementById('viewStatusPill').innerHTML = buildStatusPill(order.status);
+                document.getElementById('viewOrderDate').textContent = formatDate(order.created_at);
+                document.getElementById('viewPaymentRef').textContent = order.payment_reference || '—';
+                document.getElementById('viewTotal').textContent = formatCurrency(order.total_amount);
+
+                const tbody = document.getElementById('viewItemsBody');
+                tbody.innerHTML = '';
+                items.forEach(item => {
+                    const product = item.product || {};
+                    const subtotal = (Number(item.price) || 0) * (Number(item.quantity) || 0);
+                    const imgSrc = product.image ? product.image : '/img/FABLAB-LOGO.png';
+                    tbody.innerHTML += `
+                        <tr>
+                            <td class="ps-3 py-2">
+                                <div class="d-flex align-items-center">
+                                    <div class="rounded border bg-white p-1 me-2" style="width: 40px; height: 40px;">
+                                        <img src="${imgSrc}" class="w-100 h-100 object-fit-cover rounded" alt="">
+                                    </div>
+                                    <div>
+                                        <div class="fw-bold text-dark small">${product.name ?? '-'}</div>
+                                        <div class="text-muted font-monospace" style="font-size: 0.7rem;">SKU: ${product.sku ?? '-'}</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="text-center fw-bold text-dark">${item.quantity}</td>
+                            <td class="text-end text-muted small">${formatCurrency(item.price)}</td>
+                            <td class="text-end pe-3 fw-bold text-dark">${formatCurrency(subtotal)}</td>
+                        </tr>
+                    `;
+                });
+
+                const reasonSection = document.getElementById('viewReasonSection');
+                const reasonText = document.getElementById('viewReasonText');
+                if (order.status === 'cancelled' && order.reason) {
+                    reasonSection.classList.remove('d-none');
+                    reasonText.textContent = order.reason;
+                } else {
+                    reasonSection.classList.add('d-none');
+                    reasonText.textContent = '';
+                }
+            });
+        });
+    })();
+</script>
