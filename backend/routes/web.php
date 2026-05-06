@@ -76,6 +76,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
     // Admin Routes/Inventory
     Route::get('/admin/inventory', [\App\Http\Controllers\Admin\InventoryController::class, 'index'])->name('admin.inventory.index');
+    Route::post('/admin/inventory/assign-supplier', [\App\Http\Controllers\Admin\InventoryController::class, 'assignSupplier'])->name('admin.inventory.assignSupplier');
 
     // Admin Routes/Purchase Orders
     Route::get('/admin/purchase', [\App\Http\Controllers\Admin\PurchaseOrderController::class, 'index'])->name('admin.purchase.index');
