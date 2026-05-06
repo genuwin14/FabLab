@@ -8,13 +8,26 @@ use Illuminate\Http\Request;
 
 class UserController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $admins = User::where('role', 'admin')->get();
-        $staffs = User::where('role', 'staff')->get();
-        $customers = User::where('role', 'customer')->get();
+        $search = $request->input('search', '');
 
-        return view('admin.users.users', compact('admins', 'staffs', 'customers'));
+        $applyFilters = function ($query) use ($search) {
+            if ($search !== '') {
+                $query->where(function ($q) use ($search) {
+                    $q->where('fullname', 'like', "%{$search}%")
+                        ->orWhere('email', 'like', "%{$search}%")
+                        ->orWhere('contact_number', 'like', "%{$search}%");
+                });
+            }
+            return $query;
+        };
+
+        $admins = $applyFilters(User::where('role', 'admin'))->latest()->get();
+        $staffs = $applyFilters(User::where('role', 'staff'))->latest()->get();
+        $customers = $applyFilters(User::where('role', 'customer'))->latest()->get();
+
+        return view('admin.users.users', compact('admins', 'staffs', 'customers', 'search'));
     }
 
     public function updateStatus(Request $request, $id)
