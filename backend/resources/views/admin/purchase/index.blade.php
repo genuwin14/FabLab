@@ -11,6 +11,14 @@
         <!-- Spacer for fixed sidebar -->
         <div class="d-none d-md-block sidebar-spacer flex-shrink-0" style="width: 280px;"></div>
 
+        <!-- Mobile Sidebar (Offcanvas) -->
+        <div class="offcanvas offcanvas-start border-0" tabindex="-1" id="adminSidebarOffcanvas"
+            aria-labelledby="adminSidebarOffcanvasLabel" style="width: 280px; background-color: #0e2e45;">
+            <div class="offcanvas-body p-0 overflow-hidden">
+                @include('admin.partials.sidebar')
+            </div>
+        </div>
+
         <!-- Main Content -->
         <div class="flex-grow-1 d-flex flex-column" style="background-color: #f1f4f8; overflow: hidden;">
             <!-- Top Navbar -->
@@ -22,46 +30,96 @@
             <main class="flex-grow-1 p-4" style="overflow-y: auto;">
                 <div class="container-fluid">
 
-                    <!-- Page Header -->
-                    <div class="d-flex justify-content-between align-items-center mb-4">
-                        <div>
-                            <h4 class="fw-bold text-primary mb-1">Purchase Orders</h4>
-                            <p class="text-muted small mb-0">Manage supplier orders and restocking.</p>
-                        </div>
-                        <div class="d-flex gap-2">
-                            <button type="button" class="btn btn-primary rounded-pill px-4 shadow-sm" data-bs-toggle="modal" data-bs-target="#createPOModal">
-                                <i class="bi bi-plus-lg me-2"></i>Create New Order
-                            </button>
-                        </div>
+                    <!-- Status Analytics -->
+                    @php
+                        $statusMeta = [
+                            'draft'     => ['label' => 'Draft',     'icon' => 'bi-pencil-square',    'bg' => 'rgba(108, 117, 125, 0.15)', 'color' => '#5a6268'],
+                            'sent'      => ['label' => 'Sent',      'icon' => 'bi-send-fill',        'bg' => 'rgba(13, 110, 253, 0.12)',  'color' => '#0d6efd'],
+                            'confirmed' => ['label' => 'Confirmed', 'icon' => 'bi-check2-circle',    'bg' => 'rgba(13, 202, 240, 0.15)',  'color' => '#087990'],
+                            'delivered' => ['label' => 'Delivered', 'icon' => 'bi-truck',            'bg' => 'rgba(25, 135, 84, 0.12)',   'color' => '#198754'],
+                            'cancelled' => ['label' => 'Cancelled', 'icon' => 'bi-x-circle-fill',    'bg' => 'rgba(220, 53, 69, 0.12)',   'color' => '#dc3545'],
+                        ];
+                    @endphp
+                    <div class="row g-3 mb-4">
+                        @foreach($statusMeta as $key => $meta)
+                            @php
+                                $isActive = $status === $key;
+                                $count = $statusCounts[$key] ?? 0;
+                                $cardUrl = $isActive
+                                    ? route('admin.purchase.index')
+                                    : route('admin.purchase.index', ['status' => $key]);
+                            @endphp
+                            <div class="col-6 col-md-4 col-xl">
+                                <a href="{{ $cardUrl }}" class="text-decoration-none">
+                                    <div class="card border-0 shadow-sm rounded-4 h-100 purchase-stat-card {{ $isActive ? 'purchase-stat-card-active' : '' }}"
+                                        style="--stat-color: {{ $meta['color'] }};">
+                                        <div class="card-body p-3 position-relative">
+                                            <div class="d-flex align-items-center gap-2">
+                                                <div class="rounded-3 d-flex align-items-center justify-content-center flex-shrink-0"
+                                                    style="width: 42px; height: 42px; background-color: {{ $meta['bg'] }}; color: {{ $meta['color'] }};">
+                                                    <i class="bi {{ $meta['icon'] }}"></i>
+                                                </div>
+                                                <div class="d-flex flex-column lh-1">
+                                                    <span class="text-uppercase fw-bold text-muted"
+                                                        style="font-size: 0.65rem; letter-spacing: 0.04em;">
+                                                        {{ $meta['label'] }}
+                                                    </span>
+                                                    <h5 class="fw-bold text-dark mb-0 mt-1">{{ $count }}</h5>
+                                                </div>
+                                            </div>
+                                            <small class="text-muted position-absolute"
+                                                style="font-size: 0.65rem; bottom: 6px; right: 10px;">
+                                                {{ $isActive ? 'Filtered' : 'Click to filter' }}
+                                            </small>
+                                        </div>
+                                    </div>
+                                </a>
+                            </div>
+                        @endforeach
                     </div>
 
-                    <!-- Statistics Cards -->
-                    <div class="row g-3 mb-4">
-                        <div class="col-md-3">
-                            <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
-                                <div class="card-body p-4 d-flex align-items-center">
-                                    <div class="rounded-3 bg-primary bg-opacity-10 p-3 me-3 text-primary">
-                                        <i class="bi bi-cart-check fs-4"></i>
-                                    </div>
-                                    <div>
-                                        <h6 class="text-muted small text-uppercase mb-1">Total POs</h6>
-                                        <h4 class="fw-bold mb-0">{{ $purchaseOrders->total() }}</h4>
-                                    </div>
+                    <!-- Filters, Search & Actions -->
+                    <div class="card border-0 shadow-sm rounded-4 mb-4">
+                        <div class="card-body p-3">
+                            <form id="purchaseFilterForm" method="GET" action="{{ route('admin.purchase.index') }}"
+                                class="d-flex flex-nowrap align-items-center gap-2">
+                                <input type="hidden" name="per_page" value="{{ $perPage }}">
+                                <div class="input-group flex-grow-1" style="min-width: 0;">
+                                    <span class="input-group-text bg-white border-end-0 rounded-start-2 ps-3">
+                                        <i class="bi bi-search text-muted"></i>
+                                    </span>
+                                    <input type="text" name="search" value="{{ $search }}"
+                                        class="form-control border-start-0 rounded-end-2 ps-0"
+                                        placeholder="Search by PO Number or Supplier...">
                                 </div>
-                            </div>
-                        </div>
-                        <div class="col-md-3">
-                            <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
-                                <div class="card-body p-4 d-flex align-items-center">
-                                    <div class="rounded-3 bg-warning bg-opacity-10 p-3 me-3 text-warning">
-                                        <i class="bi bi-clock-history fs-4"></i>
-                                    </div>
-                                    <div>
-                                        <h6 class="text-muted small text-uppercase mb-1">Pending</h6>
-                                        <h4 class="fw-bold mb-0">{{ $purchaseOrders->where('status', 'draft')->count() }}</h4>
-                                    </div>
-                                </div>
-                            </div>
+                                <select name="status" class="form-select rounded-2 flex-shrink-0 w-auto"
+                                    onchange="document.getElementById('purchaseFilterForm').submit()">
+                                    <option value="">All Statuses</option>
+                                    @foreach(array_keys($statusMeta) as $s)
+                                        <option value="{{ $s }}" {{ $status === $s ? 'selected' : '' }}>
+                                            {{ $statusMeta[$s]['label'] }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                                <select name="date" class="form-select rounded-2 flex-shrink-0 w-auto"
+                                    onchange="document.getElementById('purchaseFilterForm').submit()">
+                                    <option value="">All Time</option>
+                                    <option value="today" {{ $date === 'today' ? 'selected' : '' }}>Today</option>
+                                    <option value="week" {{ $date === 'week' ? 'selected' : '' }}>This Week</option>
+                                    <option value="month" {{ $date === 'month' ? 'selected' : '' }}>This Month</option>
+                                </select>
+                                <a href="{{ route('admin.purchase.index') }}"
+                                    class="btn btn-light rounded-2 flex-shrink-0" data-bs-toggle="tooltip"
+                                    title="Reset filters">
+                                    <i class="bi bi-arrow-clockwise text-primary"></i>
+                                </a>
+                                <button type="button"
+                                    class="btn btn-primary d-flex align-items-center gap-2 rounded-2 px-3 flex-shrink-0"
+                                    data-bs-toggle="modal" data-bs-target="#createPOModal">
+                                    <i class="bi bi-plus-lg small"></i>
+                                    <span class="small fw-bold">Create PO</span>
+                                </button>
+                            </form>
                         </div>
                     </div>
 
@@ -70,58 +128,60 @@
                         <div class="card-body p-0">
                             <div class="table-responsive">
                                 <table class="table table-hover align-middle mb-0">
-                                    <thead class="bg-light bg-opacity-50">
-                                        <tr>
-                                            <th class="ps-4 border-0 small text-uppercase text-muted">PO Number</th>
-                                            <th class="border-0 small text-uppercase text-muted">Supplier</th>
-                                            <th class="border-0 small text-uppercase text-muted">Date</th>
-                                            <th class="border-0 small text-uppercase text-muted">Status</th>
-                                            <th class="border-0 small text-uppercase text-muted text-end">Total Cost</th>
-                                            <th class="border-0 small text-uppercase text-muted text-end pe-4">Actions</th>
+                                    <thead>
+                                        <tr class="bg-primary bg-opacity-10">
+                                            <th class="ps-4 py-3 text-primary small text-uppercase fw-bold border-0">
+                                                PO Number</th>
+                                            <th class="py-3 text-primary small text-uppercase fw-bold border-0">
+                                                Supplier</th>
+                                            <th class="py-3 text-primary small text-uppercase fw-bold border-0">Date</th>
+                                            <th class="py-3 text-primary small text-uppercase fw-bold border-0">Status</th>
+                                            <th class="py-3 text-primary small text-uppercase fw-bold border-0 text-end">
+                                                Total Cost</th>
+                                            <th
+                                                class="py-3 pe-4 text-primary small text-uppercase fw-bold border-0 text-end">
+                                                Actions</th>
                                         </tr>
                                     </thead>
-                                    <tbody>
+                                    <tbody class="border-top-0">
                                         @forelse($purchaseOrders as $po)
                                             <tr>
                                                 <td class="ps-4 py-3">
                                                     <span class="font-monospace fw-bold text-primary">{{ $po->po_number }}</span>
                                                 </td>
                                                 <td>
-                                                    <div class="fw-bold text-dark">{{ $po->supplier->name }}</div>
-                                                    <div class="text-muted small" style="font-size: 0.75rem;">
-                                                        {{ $po->items->count() }} Items
+                                                    <div class="fw-bold text-dark">{{ $po->supplier->name ?? '—' }}</div>
+                                                    <div class="text-muted" style="font-size: 0.75rem;">
+                                                        {{ $po->items->count() }} {{ Str::plural('Item', $po->items->count()) }}
                                                     </div>
                                                 </td>
                                                 <td class="small text-muted">{{ $po->created_at->format('M d, Y') }}</td>
                                                 <td>
                                                     @php
-                                                        $statusClass = 'bg-secondary text-secondary';
-                                                        if ($po->status === 'draft') $statusClass = 'bg-secondary text-secondary';
-                                                        if ($po->status === 'sent') $statusClass = 'bg-primary text-white';
-                                                        if ($po->status === 'confirmed') $statusClass = 'bg-info text-info';
-                                                        if ($po->status === 'delivered') $statusClass = 'bg-success text-success';
-                                                        if ($po->status === 'cancelled') $statusClass = 'bg-danger text-danger';
+                                                        $meta = $statusMeta[$po->status] ?? $statusMeta['draft'];
                                                     @endphp
-                                                    <span class="badge {{ $statusClass }} bg-opacity-10 rounded-pill px-3 py-2 text-uppercase" style="font-size: 0.65rem; letter-spacing: 0.5px;">
-                                                        {{ ucfirst($po->status) }}
+                                                    <span
+                                                        class="d-inline-flex align-items-center gap-1 px-2 py-1 rounded-pill small fw-semibold text-uppercase"
+                                                        style="background-color: {{ $meta['bg'] }}; color: {{ $meta['color'] }}; font-size: 0.7rem; letter-spacing: 0.04em;">
+                                                        <i class="bi {{ $meta['icon'] }}" style="font-size: 0.75rem;"></i>
+                                                        {{ $meta['label'] }}
                                                     </span>
                                                 </td>
-                                                <td class="text-end fw-bold text-dark">₱{{ number_format($po->total_cost, 2) }}</td>
+                                                <td class="text-end fw-bold text-primary">
+                                                    ₱{{ number_format($po->total_cost, 2) }}
+                                                </td>
                                                 <td class="text-end pe-4">
                                                     <a href="{{ route('admin.purchase.show', $po->purchase_order_id) }}"
-                                                        class="btn btn-light btn-sm rounded-pill px-3 border shadow-sm text-primary hover-accent">
-                                                        <i class="bi bi-eye me-1"></i> View
+                                                        class="btn btn-light btn-sm rounded-pill px-3 fw-bold shadow-sm border">
+                                                        <i class="bi bi-eye me-1 text-primary"></i>View
                                                     </a>
                                                 </td>
                                             </tr>
                                         @empty
                                             <tr>
                                                 <td colspan="6" class="text-center py-5 text-muted">
-                                                    <div class="py-4">
-                                                        <i class="bi bi-inbox fs-1 opacity-25 d-block mb-3"></i>
-                                                        <h5 class="fw-light">No purchase orders found</h5>
-                                                        <p class="small">Create a new order to get started.</p>
-                                                    </div>
+                                                    <i class="bi bi-cart-x display-6 d-block mb-3 opacity-50"></i>
+                                                    No purchase orders found.
                                                 </td>
                                             </tr>
                                         @endforelse
@@ -130,10 +190,23 @@
                             </div>
 
                             <!-- Pagination -->
-                            <div class="d-flex justify-content-between align-items-center p-4 border-top bg-light bg-opacity-25">
-                                <span class="text-muted small">
-                                    Showing <span class="fw-bold text-dark">{{ $purchaseOrders->firstItem() }}</span> to <span class="fw-bold text-dark">{{ $purchaseOrders->lastItem() }}</span> of <span class="fw-bold text-dark">{{ $purchaseOrders->total() }}</span> entries
-                                </span>
+                            <div
+                                class="d-flex flex-wrap justify-content-between align-items-center gap-2 p-3 border-top">
+                                <div class="d-flex align-items-center gap-2">
+                                    <label for="perPageSelect" class="text-muted small mb-0">Rows per page:</label>
+                                    <select id="perPageSelect" class="form-select form-select-sm rounded-pill w-auto"
+                                        onchange="(function(v){const u=new URL(window.location.href);u.searchParams.set('per_page',v);u.searchParams.delete('page');window.location.href=u.toString();})(this.value)">
+                                        @foreach([10, 25, 50, 100] as $size)
+                                            <option value="{{ $size }}" {{ $perPage == $size ? 'selected' : '' }}>
+                                                {{ $size }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                    <span class="text-muted small">
+                                        Showing {{ $purchaseOrders->firstItem() ?? 0 }} to
+                                        {{ $purchaseOrders->lastItem() ?? 0 }} of {{ $purchaseOrders->total() }} entries
+                                    </span>
+                                </div>
                                 <nav>
                                     {{ $purchaseOrders->links() }}
                                 </nav>
@@ -146,47 +219,77 @@
     </div>
 
     <!-- Create Purchase Order Modal -->
-    <div class="modal fade" id="createPOModal" tabindex="-1" aria-labelledby="createPOModalLabel" aria-hidden="true">
+    <div class="modal fade purchase-modal" id="createPOModal" tabindex="-1" aria-labelledby="createPOModalLabel"
+        aria-hidden="true">
         <div class="modal-dialog modal-xl modal-dialog-centered">
-            <div class="modal-content border-0 shadow-lg rounded-4">
-                <div class="modal-header border-0 px-4 pt-4 pb-0">
-                    <h5 class="modal-title fw-bold text-primary" id="createPOModalLabel">Create Purchase Order</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            <div class="modal-content border-0 shadow-lg overflow-hidden">
+                <!-- Themed Dark Header -->
+                <div class="purchase-modal-header">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="purchase-eyebrow">Admin</span>
+                            <span class="purchase-eyebrow-divider">/</span>
+                            <h5 class="modal-title fw-bold mb-0 text-white" id="createPOModalLabel">
+                                Create Purchase Order
+                            </h5>
+                        </div>
+                        <button type="button" class="purchase-close-btn" data-bs-dismiss="modal" aria-label="Close">
+                            <i class="bi bi-x-lg"></i>
+                        </button>
+                    </div>
                 </div>
-                <div class="modal-body p-4">
-                    <form action="{{ route('admin.purchase.store') }}" method="POST" id="poForm">
-                        @csrf
+
+                <form action="{{ route('admin.purchase.store') }}" method="POST" id="poForm" class="m-0">
+                    @csrf
+
+                    <div class="modal-body p-4 bg-white">
                         <div class="row g-4">
                             <!-- PO Settings -->
                             <div class="col-lg-4">
-                                <div class="bg-light rounded-4 p-4 h-100">
-                                    <h6 class="fw-bold text-dark mb-4">Order Details</h6>
-                                    
-                                    <div class="mb-4">
-                                        <label class="form-label small fw-bold text-muted text-uppercase">Supplier <span class="text-danger">*</span></label>
-                                        <select name="supplier_id" id="supplierSelect" class="form-select rounded-3 border-0 shadow-sm px-3 py-2" required {{ $selectedSupplierId ? 'readonly style="pointer-events: none;"' : '' }}>
-                                            <option value="" disabled {{ !$selectedSupplierId ? 'selected' : '' }}>Select Supplier</option>
+                                <div class="purchase-side-panel rounded-4 p-4 h-100">
+                                    <h6 class="purchase-section-title">
+                                        <i class="bi bi-clipboard-data me-2"></i>Order Details
+                                    </h6>
+
+                                    <div class="mb-3">
+                                        <label class="form-label small fw-bold text-muted text-uppercase">
+                                            Supplier <span class="text-danger">*</span>
+                                        </label>
+                                        <select name="supplier_id" id="supplierSelect"
+                                            class="form-select purchase-field-input" required
+                                            {{ $selectedSupplierId ? 'readonly style="pointer-events: none;"' : '' }}>
+                                            <option value="" disabled {{ !$selectedSupplierId ? 'selected' : '' }}>
+                                                Select Supplier
+                                            </option>
                                             @foreach($suppliers as $supplier)
-                                                <option value="{{ $supplier->supplier_id }}" {{ $selectedSupplierId == $supplier->supplier_id ? 'selected' : '' }}>
+                                                <option value="{{ $supplier->supplier_id }}"
+                                                    {{ $selectedSupplierId == $supplier->supplier_id ? 'selected' : '' }}>
                                                     {{ $supplier->name }}
                                                 </option>
                                             @endforeach
                                         </select>
                                         @if($selectedSupplierId)
                                             <input type="hidden" name="supplier_id" value="{{ $selectedSupplierId }}">
-                                            <div class="form-text text-primary mt-2 small"><i class="bi bi-lock-fill me-1"></i> Supplier locked from suggestions</div>
+                                            <div class="form-text text-primary mt-2 small">
+                                                <i class="bi bi-lock-fill me-1"></i>Supplier locked from suggestions
+                                            </div>
                                         @endif
                                     </div>
 
-                                    <div class="mb-4">
-                                        <label class="form-label small fw-bold text-muted text-uppercase">Expected Delivery</label>
-                                        <input type="date" name="expected_delivery_date" class="form-control rounded-3 border-0 shadow-sm px-3 py-2">
+                                    <div class="mb-3">
+                                        <label class="form-label small fw-bold text-muted text-uppercase">
+                                            Expected Delivery
+                                        </label>
+                                        <input type="date" name="expected_delivery_date"
+                                            class="form-control purchase-field-input">
                                     </div>
 
-                                    <div class="alert alert-primary border-0 bg-primary bg-opacity-10 d-flex align-items-start gap-3 p-3 rounded-4">
-                                        <i class="bi bi-info-circle-fill text-primary fs-5 mt-1"></i>
-                                        <div class="small text-primary">
-                                            This PO will be saved as <strong>Draft</strong>. You can review and send it later.
+                                    <div class="alert border-0 d-flex align-items-start gap-2 p-3 rounded-3 mb-0"
+                                        style="background-color: rgba(13, 110, 253, 0.08); color: #0d6efd;">
+                                        <i class="bi bi-info-circle-fill mt-1"></i>
+                                        <div class="small">
+                                            This PO will be saved as <strong>Draft</strong>. You can review and send it
+                                            later.
                                         </div>
                                     </div>
                                 </div>
@@ -194,75 +297,201 @@
 
                             <!-- Order Items -->
                             <div class="col-lg-8">
-                                <div class="card border-0 shadow-sm rounded-4 h-100">
-                                    <div class="card-header bg-white border-0 pt-4 px-4 d-flex justify-content-between align-items-center">
-                                        <h6 class="fw-bold text-dark mb-0">Order Items</h6>
-                                        <button type="button" class="btn btn-outline-primary btn-sm rounded-pill px-3" id="addItemBtn">
-                                            <i class="bi bi-plus-lg me-1"></i> Add Item
+                                <div class="card border shadow-none rounded-4 h-100">
+                                    <div
+                                        class="card-header bg-white border-0 pt-3 px-3 d-flex justify-content-between align-items-center">
+                                        <h6 class="fw-bold text-dark mb-0 small text-uppercase">
+                                            <i class="bi bi-box-seam me-2 text-primary"></i>Order Items
+                                        </h6>
+                                        <button type="button" class="btn btn-sm rounded-pill px-3 purchase-btn-save"
+                                            id="addItemBtn">
+                                            <i class="bi bi-plus-lg me-1"></i>Add Item
                                         </button>
                                     </div>
                                     <div class="card-body p-0">
-                                        <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+                                        <div class="table-responsive" style="max-height: 380px; overflow-y: auto;">
                                             <table class="table table-hover align-middle mb-0" id="itemsTable">
-                                                <thead class="bg-light sticky-top" style="z-index: 1;">
-                                                    <tr>
-                                                        <th class="ps-4 border-0 small text-uppercase text-muted py-3" style="width: 40%">Product</th>
-                                                        <th class="border-0 small text-uppercase text-muted py-3" style="width: 15%">Qty</th>
-                                                        <th class="border-0 small text-uppercase text-muted py-3" style="width: 20%">Cost (₱)</th>
-                                                        <th class="border-0 small text-uppercase text-muted text-end py-3" style="width: 20%">Total</th>
+                                                <thead class="sticky-top" style="z-index: 1;">
+                                                    <tr class="bg-primary bg-opacity-10">
+                                                        <th class="ps-3 py-2 text-primary small text-uppercase fw-bold border-0"
+                                                            style="width: 40%">Product</th>
+                                                        <th class="py-2 text-primary small text-uppercase fw-bold border-0"
+                                                            style="width: 15%">Qty</th>
+                                                        <th class="py-2 text-primary small text-uppercase fw-bold border-0"
+                                                            style="width: 20%">Cost (₱)</th>
+                                                        <th class="py-2 text-primary small text-uppercase fw-bold border-0 text-end"
+                                                            style="width: 20%">Total</th>
                                                         <th class="border-0" style="width: 5%"></th>
                                                     </tr>
                                                 </thead>
-                                                <tbody id="itemsBody">
+                                                <tbody id="itemsBody" class="border-top-0">
                                                     <!-- Items will be injected here -->
                                                 </tbody>
                                             </table>
                                         </div>
 
-                                        <div id="emptyState" class="text-center p-5 text-muted {{ !empty($prefillItems) ? 'd-none' : '' }}">
+                                        <div id="emptyState"
+                                            class="text-center p-5 text-muted {{ !empty($prefillItems) ? 'd-none' : '' }}">
                                             <div class="mb-3">
                                                 <i class="bi bi-basket3 fs-1 opacity-25"></i>
                                             </div>
-                                            <p class="mb-0 small">No items added yet. Select a supplier and add products.</p>
+                                            <p class="mb-0 small">No items added yet. Select a supplier and add products.
+                                            </p>
                                         </div>
 
-                                        <div class="p-4 border-top bg-light bg-opacity-50">
+                                        <div class="p-3 border-top"
+                                            style="background-color: rgba(13, 110, 253, 0.05);">
                                             <div class="d-flex justify-content-between align-items-center">
                                                 <span class="fw-bold text-muted text-uppercase small">Grand Total</span>
-                                                <h4 class="fw-bold text-primary mb-0">₱<span id="grandTotal">0.00</span></h4>
+                                                <h4 class="fw-bold text-primary mb-0">
+                                                    ₱<span id="grandTotal">0.00</span>
+                                                </h4>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
+                    </div>
 
-                        <div class="d-flex justify-content-end mt-4 gap-2">
-                            <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
-                            <button type="submit" class="btn btn-primary rounded-pill px-4 shadow-sm" id="saveBtn">
-                                <i class="bi bi-check-lg me-2"></i> Create Purchase Order
-                            </button>
-                        </div>
-                    </form>
-                </div>
+                    <div class="purchase-modal-footer">
+                        <button type="button" class="btn purchase-btn-cancel rounded-pill px-4" data-bs-dismiss="modal">
+                            Cancel
+                        </button>
+                        <button type="submit" class="btn purchase-btn-save rounded-pill px-4" id="saveBtn">
+                            <i class="bi bi-check-lg me-1"></i>Create Purchase Order
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
 
     <style>
-        .hover-accent:hover {
-            background-color: #e9ecef !important;
-            border-color: #dee2e6 !important;
+        /* ============================================
+           Purchase Status Stat Cards
+           ============================================ */
+        .purchase-stat-card {
+            transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+            border: 1px solid transparent;
+            cursor: pointer;
         }
-        .form-select, .form-control {
-            transition: all 0.2s ease-in-out;
+        .purchase-stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.08) !important;
+            border-color: var(--stat-color);
         }
-        .form-select:focus, .form-control:focus {
-            box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.1) !important;
-            border-color: rgba(13, 110, 253, 0.2) !important;
+        .purchase-stat-card-active {
+            border-color: var(--stat-color) !important;
+            box-shadow: 0 0 0 2px var(--stat-color) inset, 0 0.25rem 0.75rem rgba(0, 0, 0, 0.06) !important;
         }
-        .modal-xl {
-            max-width: 1140px;
+        .purchase-stat-card-active h5 { color: var(--stat-color) !important; }
+
+        /* ============================================
+           Purchase Modal Theme (mirrors product modal)
+           ============================================ */
+        .purchase-modal .modal-content { border-radius: 18px; }
+
+        .purchase-modal-header {
+            background: linear-gradient(135deg, #05111a 0%, #0e2e45 100%);
+            padding: 18px 24px;
+            position: relative;
+        }
+        .purchase-modal-header::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255, 197, 8, 0.3), transparent);
+        }
+        .purchase-eyebrow {
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: rgba(255, 197, 8, 0.85);
+        }
+        .purchase-eyebrow-divider { color: rgba(255, 255, 255, 0.2); font-weight: 300; }
+
+        .purchase-close-btn {
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            color: rgba(255, 255, 255, 0.85);
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.85rem;
+            transition: all 0.2s ease;
+        }
+        .purchase-close-btn:hover {
+            background: rgba(255, 197, 8, 0.12);
+            color: #ffc508;
+            border-color: rgba(255, 197, 8, 0.3);
+        }
+
+        .purchase-side-panel {
+            background-color: #f8f9fa;
+            border: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .purchase-section-title {
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: #6c757d;
+            padding-bottom: 10px;
+            margin-bottom: 14px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+        }
+
+        .purchase-field-input {
+            background-color: #fff !important;
+            border: 1px solid transparent !important;
+            border-radius: 10px !important;
+            transition: all 0.2s ease;
+            padding: 0.6rem 0.85rem;
+        }
+        .purchase-field-input:focus {
+            background-color: #fff !important;
+            border-color: #ffc508 !important;
+            box-shadow: 0 0 0 3px rgba(255, 197, 8, 0.12) !important;
+        }
+
+        .purchase-modal-footer {
+            background-color: #fff;
+            padding: 16px 24px;
+            border-top: 1px solid rgba(0, 0, 0, 0.05);
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+        .purchase-btn-cancel {
+            background-color: #f1f4f8;
+            border: 1px solid #e9ecef;
+            color: #6c757d;
+            font-weight: 600;
+        }
+        .purchase-btn-cancel:hover {
+            background-color: #e9ecef;
+            color: #0e2e45;
+        }
+        .purchase-btn-save {
+            background-color: #0e2e45;
+            border: 1px solid #0e2e45;
+            color: #fff;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+        .purchase-btn-save:hover {
+            background-color: #ffc508;
+            border-color: #ffc508;
+            color: #0e2e45;
         }
     </style>
 
@@ -282,7 +511,7 @@
             if (prefillData && prefillData.length > 0) {
                 const modal = new bootstrap.Modal(createModal);
                 modal.show();
-                
+
                 if (emptyState) emptyState.classList.add('d-none');
                 prefillData.forEach(item => {
                     addRow(item);
@@ -290,14 +519,12 @@
             }
 
             // Handle Supplier Change
-            supplierSelect.addEventListener('change', function() {
+            supplierSelect.addEventListener('change', function () {
                 if (itemsBody.children.length > 0) {
                     if (confirm('Changing the supplier will clear all current items. Proceed?')) {
                         itemsBody.innerHTML = '';
                         calculateGrandTotal();
                         if (emptyState) emptyState.classList.remove('d-none');
-                    } else {
-                        // This is tricky without storing old value.
                     }
                 }
             });
@@ -372,7 +599,7 @@
                 }
 
                 tr.innerHTML = `
-                    <td class="ps-4">
+                    <td class="ps-3">
                         <select class="form-select form-select-sm border-0 bg-light shadow-sm item-select" required>
                             ${optionsHtml}
                         </select>
@@ -408,7 +635,7 @@
                 const costInput = tr.querySelector('.cost-input');
                 const removeBtn = tr.querySelector('.remove-row');
 
-                itemSelect.addEventListener('change', function() {
+                itemSelect.addEventListener('change', function () {
                     const val = this.value;
                     const [type, id] = val.split('_');
                     const itemData = itemsForSupplier.find(i => i.type === type && i.id == id);
@@ -457,4 +684,4 @@
             }
         });
     </script>
-@endsection
+@endsection

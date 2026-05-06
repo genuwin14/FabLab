@@ -17,9 +17,47 @@ class PurchaseOrderController extends Controller
 {
     public function index(Request $request)
     {
-        $purchaseOrders = PurchaseOrder::with(['supplier', 'creator'])
-            ->latest()
-            ->paginate(15);
+        $search = $request->input('search', '');
+        $status = $request->input('status', '');
+        $date = $request->input('date', '');
+        $perPage = (int) $request->input('per_page', 10);
+
+        $query = PurchaseOrder::with(['supplier', 'creator'])->latest();
+
+        if ($search !== '') {
+            $query->where(function ($q) use ($search) {
+                $q->where('po_number', 'like', "%{$search}%")
+                    ->orWhereHas('supplier', function ($s) use ($search) {
+                        $s->where('name', 'like', "%{$search}%");
+                    });
+            });
+        }
+
+        if ($status !== '') {
+            $query->where('status', $status);
+        }
+
+        if ($date !== '') {
+            switch ($date) {
+                case 'today':
+                    $query->whereDate('created_at', today());
+                    break;
+                case 'week':
+                    $query->whereBetween('created_at', [now()->startOfWeek(), now()->endOfWeek()]);
+                    break;
+                case 'month':
+                    $query->whereMonth('created_at', now()->month)
+                        ->whereYear('created_at', now()->year);
+                    break;
+            }
+        }
+
+        $purchaseOrders = $query->paginate($perPage)->withQueryString();
+
+        $statusCounts = PurchaseOrder::selectRaw('status, COUNT(*) as total')
+            ->groupBy('status')
+            ->pluck('total', 'status')
+            ->toArray();
 
         // Data for Create Modal
         $suppliers = Supplier::all();
@@ -164,7 +202,12 @@ class PurchaseOrderController extends Controller
             'textures',
             'selectedSupplierId',
             'prefillItems',
-            'supplierItems'
+            'supplierItems',
+            'search',
+            'status',
+            'date',
+            'perPage',
+            'statusCounts'
         ));
     }
 

@@ -9,10 +9,25 @@ use App\Models\Supplier;
 
 class SupplierController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $suppliers = Supplier::latest()->get();
-        return view('admin.suppliers.suppliers', compact('suppliers'));
+        $search = $request->input('search', '');
+        $perPage = (int) $request->input('per_page', 10);
+
+        $query = Supplier::latest();
+
+        if ($search !== '') {
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                    ->orWhere('contact_person', 'like', "%{$search}%")
+                    ->orWhere('email', 'like', "%{$search}%")
+                    ->orWhere('phone', 'like', "%{$search}%");
+            });
+        }
+
+        $suppliers = $query->paginate($perPage)->withQueryString();
+
+        return view('admin.suppliers.suppliers', compact('suppliers', 'search', 'perPage'));
     }
 
     public function store(Request $request)
