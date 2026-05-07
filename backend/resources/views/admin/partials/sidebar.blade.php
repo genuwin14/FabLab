@@ -1,4 +1,4 @@
-<div class="d-flex flex-column p-3 text-white h-100 sidebar-inner" style="background-color: #05111a;">
+<div class="d-flex flex-column p-3 pb-1 text-white h-100 sidebar-inner" style="background-color: #05111a;">
     <!-- Fixed Header -->
     <div class="flex-shrink-0 sidebar-header d-flex align-items-center">
         <a href="{{ route('admin.dashboard') }}" class="d-flex align-items-center text-white text-decoration-none sidebar-brand">
@@ -133,7 +133,7 @@
     <!-- Fixed Footer -->
     <div class="flex-shrink-0 mt-2">
         <hr class="opacity-25 mt-0 mb-2">
-        <ul class="nav nav-pills flex-column gap-1">
+        <ul class="nav nav-pills flex-column gap-1 mb-0">
             <!-- Collapse Toggle -->
             <li class="sidebar-collapse-item">
                 <a href="javascript:void(0)" class="nav-link text-white hover-accent sidebar-collapse-btn sidebar-tooltip"
