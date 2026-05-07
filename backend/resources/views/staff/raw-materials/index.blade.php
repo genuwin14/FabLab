@@ -27,16 +27,8 @@
             </header>
 
             <!-- Page Content -->
-            <main class="flex-grow-1 p-4" style="overflow-y: auto;">
+            <main class="flex-grow-1 p-4" style="overflow-y: auto; overflow-x: hidden;">
                 <div class="container-fluid">
-
-                    <!-- Page Header -->
-                    <div class="d-flex justify-content-between align-items-center mb-4">
-                        <div>
-                            <h4 class="fw-bold text-primary mb-1">Raw Materials</h4>
-                            <p class="text-muted small mb-0">View stock components and update material quantities.</p>
-                        </div>
-                    </div>
 
                     <!-- Flash Messages -->
                     @if(session('success'))
@@ -46,22 +38,43 @@
                         </div>
                     @endif
 
+                    <!-- Search & Actions -->
+                    <div class="card border-0 shadow-sm rounded-4 mb-4">
+                        <div class="card-body p-3">
+                            <form id="rawMaterialFilterForm" method="GET" action="{{ route('staff.raw-materials.index') }}"
+                                class="d-flex flex-nowrap align-items-center gap-2">
+                                <input type="hidden" name="per_page" value="{{ $perPage }}">
+                                <div class="input-group flex-grow-1" style="min-width: 0;">
+                                    <span class="input-group-text bg-white border-end-0 rounded-start-2 ps-3">
+                                        <i class="bi bi-search text-muted"></i>
+                                    </span>
+                                    <input type="text" name="search" value="{{ $search }}"
+                                        class="form-control border-start-0 rounded-end-2 ps-0"
+                                        placeholder="Search by name, supplier, or unit...">
+                                </div>
+                                <a href="{{ route('staff.raw-materials.index') }}"
+                                    class="btn btn-light rounded-2 flex-shrink-0" data-bs-toggle="tooltip" title="Reset filters">
+                                    <i class="bi bi-arrow-clockwise text-primary"></i>
+                                </a>
+                            </form>
+                        </div>
+                    </div>
+
                     <!-- Raw Materials Table -->
-                    <div class="card border-0 shadow-sm rounded-4">
+                    <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
                         <div class="card-body p-0">
                             <div class="table-responsive">
                                 <table class="table table-hover align-middle mb-0">
-                                    <thead class="bg-light bg-opacity-50">
-                                        <tr>
-                                            <th class="ps-4 text-muted small text-uppercase border-0 rounded-start-2">
+                                    <thead>
+                                        <tr class="bg-primary bg-opacity-10">
+                                            <th class="ps-4 py-3 text-primary small text-uppercase fw-bold border-0">
                                                 Material Name</th>
-                                            <th class="text-muted small text-uppercase border-0">Supplier</th>
-                                            <th class="text-muted small text-uppercase border-0">Cost</th>
-                                            <th class="text-muted small text-uppercase border-0">Stock</th>
-                                            <th class="text-muted small text-uppercase border-0">Threshold</th>
-                                            <th class="text-muted small text-uppercase border-0">Unit</th>
-                                            <th
-                                                class="text-end pe-4 text-muted small text-uppercase border-0 rounded-end-2">
+                                            <th class="py-3 text-primary small text-uppercase fw-bold border-0">Supplier</th>
+                                            <th class="py-3 text-primary small text-uppercase fw-bold border-0">Cost</th>
+                                            <th class="py-3 text-primary small text-uppercase fw-bold border-0">Stock</th>
+                                            <th class="py-3 text-primary small text-uppercase fw-bold border-0">Threshold</th>
+                                            <th class="py-3 text-primary small text-uppercase fw-bold border-0">Unit</th>
+                                            <th class="text-end pe-4 py-3 text-primary small text-uppercase fw-bold border-0">
                                                 Actions</th>
                                         </tr>
                                     </thead>
@@ -70,10 +83,16 @@
                                             <tr>
                                                 <td class="ps-4 py-3">
                                                     <div class="d-flex align-items-center gap-3">
-                                                        <div class="bg-primary bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center text-primary fw-bold"
-                                                            style="width: 40px; height: 40px;">
-                                                            <i class="bi bi-box"></i>
-                                                        </div>
+                                                        @if($material->image_path)
+                                                            <img src="{{ $material->image_path }}" alt="{{ $material->name }}"
+                                                                class="rounded-3 object-fit-cover border"
+                                                                style="width: 48px; height: 48px;">
+                                                        @else
+                                                            <div class="rounded-3 d-flex align-items-center justify-content-center bg-light text-muted border"
+                                                                style="width: 48px; height: 48px;">
+                                                                <i class="bi bi-box"></i>
+                                                            </div>
+                                                        @endif
                                                         <div>
                                                             <h6 class="fw-bold text-dark mb-0">{{ $material->name }}</h6>
                                                             @if($material->description)
@@ -96,7 +115,7 @@
                                                 <td class="text-muted small">{{ number_format($material->low_stock_threshold, 2) }}</td>
                                                 <td class="text-muted small text-uppercase">{{ $material->unit }}</td>
                                                 <td class="text-end pe-4">
-                                                    <button class="btn btn-light btn-sm rounded-circle me-1"
+                                                    <button class="btn btn-light btn-sm rounded-circle"
                                                         data-bs-toggle="modal" data-bs-target="#editRawMaterialModal"
                                                         data-id="{{ $material->raw_material_id }}"
                                                         data-name="{{ $material->name }}"
@@ -125,10 +144,19 @@
                             </div>
 
                             <!-- Pagination -->
-                            <div class="d-flex justify-content-between align-items-center p-3 border-top">
-                                <span class="text-muted small">
-                                    Showing {{ $rawMaterials->firstItem() }} to {{ $rawMaterials->lastItem() }} of {{ $rawMaterials->total() }} entries
-                                </span>
+                            <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 p-3 border-top">
+                                <div class="d-flex align-items-center gap-2">
+                                    <label for="perPageSelect" class="text-muted small mb-0">Rows per page:</label>
+                                    <select id="perPageSelect" class="form-select form-select-sm rounded-pill w-auto"
+                                        onchange="(function(v){const u=new URL(window.location.href);u.searchParams.set('per_page',v);u.searchParams.delete('page');window.location.href=u.toString();})(this.value)">
+                                        @foreach([10, 25, 50, 100] as $size)
+                                            <option value="{{ $size }}" {{ $perPage == $size ? 'selected' : '' }}>{{ $size }}</option>
+                                        @endforeach
+                                    </select>
+                                    <span class="text-muted small">
+                                        Showing {{ $rawMaterials->firstItem() ?? 0 }} to {{ $rawMaterials->lastItem() ?? 0 }} of {{ $rawMaterials->total() }} entries
+                                    </span>
+                                </div>
                                 <nav>
                                     {{ $rawMaterials->links() }}
                                 </nav>
@@ -143,6 +171,119 @@
 
     <!-- Edit Raw Material Modal -->
     @include('staff.raw-materials.components.modal-edit')
+
+    <style>
+        /* ============================================
+           Shared Material Modal Theme (Edit)
+           ============================================ */
+        .material-modal .modal-content { border-radius: 18px; }
+
+        .material-modal-header {
+            background: linear-gradient(135deg, #05111a 0%, #0e2e45 100%);
+            padding: 18px 24px;
+            position: relative;
+        }
+        .material-modal-header::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255, 197, 8, 0.3), transparent);
+        }
+        .material-eyebrow {
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: rgba(255, 197, 8, 0.85);
+        }
+        .material-eyebrow-divider { color: rgba(255, 255, 255, 0.2); font-weight: 300; }
+
+        .material-close-btn {
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            color: rgba(255, 255, 255, 0.85);
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.85rem;
+            transition: all 0.2s ease;
+        }
+        .material-close-btn:hover {
+            background: rgba(255, 197, 8, 0.12);
+            color: #ffc508;
+            border-color: rgba(255, 197, 8, 0.3);
+        }
+
+        .material-section-title {
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: #6c757d;
+            padding-bottom: 10px;
+            margin-bottom: 14px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+        }
+
+        .material-field-input {
+            background-color: #f8f9fa !important;
+            border: 1px solid transparent !important;
+            border-radius: 10px !important;
+            transition: all 0.2s ease;
+            padding: 0.6rem 0.85rem;
+        }
+        .material-field-input:focus {
+            background-color: #fff !important;
+            border-color: #ffc508 !important;
+            box-shadow: 0 0 0 3px rgba(255, 197, 8, 0.12) !important;
+        }
+        .material-input-addon {
+            background-color: #f8f9fa;
+            border: 1px solid transparent;
+            border-radius: 10px 0 0 10px;
+            color: #6c757d;
+        }
+        .material-modal .input-group > .material-field-input {
+            border-radius: 0 10px 10px 0 !important;
+        }
+
+        .material-modal-footer {
+            background-color: #fff;
+            padding: 16px 24px;
+            border-top: 1px solid rgba(0, 0, 0, 0.05);
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+        .material-btn-cancel {
+            background-color: #f1f4f8;
+            border: 1px solid #e9ecef;
+            color: #6c757d;
+            font-weight: 600;
+        }
+        .material-btn-cancel:hover {
+            background-color: #e9ecef;
+            color: #0e2e45;
+        }
+        .material-btn-save {
+            background-color: #0e2e45;
+            border: 1px solid #0e2e45;
+            color: #fff;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+        .material-btn-save:hover {
+            background-color: #ffc508;
+            border-color: #ffc508;
+            color: #0e2e45;
+        }
+    </style>
 
     <script>
         document.addEventListener('DOMContentLoaded', function () {
