@@ -10,11 +10,47 @@ use App\Models\Category;
 
 class ProductController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $products = Product::with(['category', 'suppliers', 'rawMaterials'])->latest()->paginate(10);
+        $perPage = (int) $request->query('per_page', 10);
+        if (!in_array($perPage, [10, 25, 50, 100])) {
+            $perPage = 10;
+        }
+
+        $search = trim((string) $request->query('search', ''));
+        $categoryId = $request->query('category_id');
+        $stockStatus = $request->query('stock_status');
+
+        $query = Product::with(['category', 'suppliers', 'rawMaterials']);
+
+        if ($search !== '') {
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('sku', 'like', "%{$search}%")
+                  ->orWhere('brand', 'like', "%{$search}%");
+            });
+        }
+
+        if (!empty($categoryId)) {
+            $query->where('category_id', $categoryId);
+        }
+
+        if ($stockStatus === 'in_stock') {
+            $query->whereColumn('stock', '>', 'low_stock_threshold');
+        } elseif ($stockStatus === 'low_stock') {
+            $query->where('stock', '>', 0)
+                  ->whereColumn('stock', '<=', 'low_stock_threshold');
+        } elseif ($stockStatus === 'out_of_stock') {
+            $query->where('stock', '<=', 0);
+        }
+
+        $products = $query->latest()->paginate($perPage)->withQueryString();
         $categories = Category::all();
-        return view('staff.product.products', compact('products', 'categories'));
+
+        return view('staff.product.products', compact(
+            'products', 'categories',
+            'perPage', 'search', 'categoryId', 'stockStatus'
+        ));
     }
 
     public function update(Request $request, $id)

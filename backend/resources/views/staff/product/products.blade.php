@@ -27,77 +27,67 @@
             </header>
 
             <!-- Page Content -->
-            <main class="flex-grow-1 p-4" style="overflow-y: auto;">
+            <main class="flex-grow-1 p-4" style="overflow-y: auto; overflow-x: hidden;">
                 <div class="container-fluid">
 
-                    <!-- Page Header -->
-                    <div class="d-flex justify-content-between align-items-center mb-4">
-                        <div>
-                            <h4 class="fw-bold text-primary mb-1">Products</h4>
-                            <p class="text-muted small mb-0">View product catalog and update stock or details.</p>
-                        </div>
-                        <div class="d-flex gap-2">
-                            <button class="btn btn-outline-secondary d-flex align-items-center gap-2 rounded-pill px-3">
-                                <i class="bi bi-download small"></i>
-                                <span class="small fw-bold">Export</span>
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Filters & Search -->
+                    <!-- Filters, Search & Actions -->
                     <div class="card border-0 shadow-sm rounded-4 mb-4">
                         <div class="card-body p-3">
-                            <div class="row g-3 align-items-center">
-                                <div class="col-md-4">
-                                    <div class="input-group">
-                                        <span class="input-group-text bg-white border-end-0 rounded-start-pill ps-3">
-                                            <i class="bi bi-search text-muted"></i>
-                                        </span>
-                                        <input type="text" class="form-control border-start-0 rounded-end-pill ps-0"
-                                            placeholder="Search products...">
-                                    </div>
+                            <form id="productFilterForm" method="GET" action="{{ route('staff.products.index') }}"
+                                class="d-flex flex-nowrap align-items-center gap-2">
+                                <input type="hidden" name="per_page" value="{{ $perPage }}">
+                                <div class="input-group flex-grow-1" style="min-width: 0;">
+                                    <span class="input-group-text bg-white border-end-0 rounded-start-2 ps-3">
+                                        <i class="bi bi-search text-muted"></i>
+                                    </span>
+                                    <input type="text" name="search" value="{{ $search }}"
+                                        class="form-control border-start-0 rounded-end-2 ps-0"
+                                        placeholder="Search by name, SKU, or brand...">
                                 </div>
-                                <div class="col-md-3">
-                                    <select class="form-select rounded-pill">
-                                        <option value="">All Categories</option>
-                                        @foreach($categories as $category)
-                                            <option value="{{ $category->category_id }}">{{ $category->name }}</option>
-                                        @endforeach
-                                    </select>
-                                </div>
-                                <div class="col-md-3">
-                                    <select class="form-select rounded-pill">
-                                        <option selected>Stock Status</option>
-                                        <option value="in_stock">In Stock</option>
-                                        <option value="low_stock">Low Stock</option>
-                                        <option value="out_of_stock">Out of Stock</option>
-                                    </select>
-                                </div>
-                                <div class="col-md-2 text-end">
-                                    <button class="btn btn-light rounded-circle" data-bs-toggle="tooltip" title="Refresh">
-                                        <i class="bi bi-arrow-clockwise text-primary"></i>
-                                    </button>
-                                </div>
-                            </div>
+                                <select name="category_id" class="form-select rounded-2 flex-shrink-0 w-auto"
+                                    onchange="document.getElementById('productFilterForm').submit()">
+                                    <option value="">All Categories</option>
+                                    @foreach($categories as $category)
+                                        <option value="{{ $category->category_id }}"
+                                            {{ (string) $categoryId === (string) $category->category_id ? 'selected' : '' }}>
+                                            {{ $category->name }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                                <select name="stock_status" class="form-select rounded-2 flex-shrink-0 w-auto"
+                                    onchange="document.getElementById('productFilterForm').submit()">
+                                    <option value="">Stock Status</option>
+                                    <option value="in_stock" {{ $stockStatus === 'in_stock' ? 'selected' : '' }}>In Stock</option>
+                                    <option value="low_stock" {{ $stockStatus === 'low_stock' ? 'selected' : '' }}>Low Stock</option>
+                                    <option value="out_of_stock" {{ $stockStatus === 'out_of_stock' ? 'selected' : '' }}>Out of Stock</option>
+                                </select>
+                                <a href="{{ route('staff.products.index') }}"
+                                    class="btn btn-light rounded-2 flex-shrink-0" data-bs-toggle="tooltip" title="Reset filters">
+                                    <i class="bi bi-arrow-clockwise text-primary"></i>
+                                </a>
+                                <button type="button" class="btn btn-primary d-flex align-items-center gap-2 rounded-2 px-3 flex-shrink-0">
+                                    <i class="bi bi-download small"></i>
+                                    <span class="small fw-bold">Export</span>
+                                </button>
+                            </form>
                         </div>
                     </div>
 
                     <!-- Products Table -->
-                    <div class="card border-0 shadow-sm rounded-4">
+                    <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
                         <div class="card-body p-0">
                             <div class="table-responsive">
                                 <table class="table table-hover align-middle mb-0">
-                                    <thead class="bg-light bg-opacity-50">
-                                        <tr>
-                                            <th class="ps-4 text-muted small text-uppercase border-0 rounded-start-2">
+                                    <thead>
+                                        <tr class="bg-primary bg-opacity-10">
+                                            <th class="ps-4 py-3 text-primary small text-uppercase fw-bold border-0">
                                                 Product Info</th>
-                                            <th class="text-muted small text-uppercase border-0">SKU</th>
-                                            <th class="text-muted small text-uppercase border-0">Category</th>
-                                            <th class="text-muted small text-uppercase border-0">Price (unit)</th>
-                                            <th class="text-muted small text-uppercase border-0">Stock</th>
-                                            <th class="text-muted small text-uppercase border-0">Status</th>
-                                            <th
-                                                class="text-end pe-4 text-muted small text-uppercase border-0 rounded-end-2">
+                                            <th class="py-3 text-primary small text-uppercase fw-bold border-0">SKU</th>
+                                            <th class="py-3 text-primary small text-uppercase fw-bold border-0">Category</th>
+                                            <th class="py-3 text-primary small text-uppercase fw-bold border-0">Price (unit)</th>
+                                            <th class="py-3 text-primary small text-uppercase fw-bold border-0">Stock</th>
+                                            <th class="py-3 text-primary small text-uppercase fw-bold border-0">Status</th>
+                                            <th class="text-end pe-4 py-3 text-primary small text-uppercase fw-bold border-0">
                                                 Actions</th>
                                         </tr>
                                     </thead>
@@ -201,10 +191,19 @@
                             </div>
 
                             <!-- Pagination -->
-                            <div class="d-flex justify-content-between align-items-center p-3 border-top">
-                                <span class="text-muted small">
-                                    Showing {{ $products->firstItem() }} to {{ $products->lastItem() }} of {{ $products->total() }} entries
-                                </span>
+                            <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 p-3 border-top">
+                                <div class="d-flex align-items-center gap-2">
+                                    <label for="perPageSelect" class="text-muted small mb-0">Rows per page:</label>
+                                    <select id="perPageSelect" class="form-select form-select-sm rounded-pill w-auto"
+                                        onchange="(function(v){const u=new URL(window.location.href);u.searchParams.set('per_page',v);u.searchParams.delete('page');window.location.href=u.toString();})(this.value)">
+                                        @foreach([10, 25, 50, 100] as $size)
+                                            <option value="{{ $size }}" {{ $perPage == $size ? 'selected' : '' }}>{{ $size }}</option>
+                                        @endforeach
+                                    </select>
+                                    <span class="text-muted small">
+                                        Showing {{ $products->firstItem() ?? 0 }} to {{ $products->lastItem() ?? 0 }} of {{ $products->total() }} entries
+                                    </span>
+                                </div>
                                 <nav>
                                     {{ $products->links() }}
                                 </nav>
@@ -219,6 +218,164 @@
 
     <!-- Edit Product Modal -->
     @include('staff.product.components.modal-edit-product')
+
+    <style>
+        /* ============================================
+           Shared Product Modal Theme (Edit)
+           ============================================ */
+        .product-modal .modal-content { border-radius: 18px; }
+
+        .product-modal-header {
+            background: linear-gradient(135deg, #05111a 0%, #0e2e45 100%);
+            padding: 18px 24px;
+            position: relative;
+        }
+        .product-modal-header::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255, 197, 8, 0.3), transparent);
+        }
+        .product-eyebrow {
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: rgba(255, 197, 8, 0.85);
+        }
+        .product-eyebrow-divider { color: rgba(255, 255, 255, 0.2); font-weight: 300; }
+
+        .product-close-btn {
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            color: rgba(255, 255, 255, 0.85);
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.85rem;
+            transition: all 0.2s ease;
+        }
+        .product-close-btn:hover {
+            background: rgba(255, 197, 8, 0.12);
+            color: #ffc508;
+            border-color: rgba(255, 197, 8, 0.3);
+        }
+
+        /* Side panel */
+        .product-side-panel {
+            background-color: #f8f9fa;
+            border-right: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .product-photo-edit {
+            position: absolute;
+            bottom: 8px;
+            right: 8px;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background-color: #0e2e45;
+            color: #ffc508;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid #fff;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        }
+        .product-photo-edit:hover {
+            background-color: #ffc508;
+            color: #0e2e45;
+        }
+
+        /* Section titles */
+        .product-section-title {
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: #6c757d;
+            padding-bottom: 10px;
+            margin-bottom: 14px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+        }
+
+        /* Form inputs */
+        .product-field-input {
+            background-color: #f8f9fa !important;
+            border: 1px solid transparent !important;
+            border-radius: 10px !important;
+            transition: all 0.2s ease;
+            padding: 0.6rem 0.85rem;
+        }
+        .product-field-input:focus {
+            background-color: #fff !important;
+            border-color: #ffc508 !important;
+            box-shadow: 0 0 0 3px rgba(255, 197, 8, 0.12) !important;
+        }
+        .product-input-addon {
+            background-color: #f8f9fa;
+            border: 1px solid transparent;
+            border-radius: 10px 0 0 10px;
+            color: #6c757d;
+        }
+        .product-modal .input-group > .product-field-input {
+            border-radius: 0 10px 10px 0 !important;
+        }
+        .product-modal .input-group > .product-field-input:first-child {
+            border-radius: 10px 0 0 10px !important;
+        }
+
+        /* Customizable / setting card */
+        .product-secured-card {
+            padding: 12px 14px;
+            border-radius: 12px;
+            background-color: #fff;
+            border: 1px solid rgba(0, 0, 0, 0.05);
+        }
+        .product-modal .form-check-input:checked {
+            background-color: #0e2e45;
+            border-color: #0e2e45;
+        }
+
+        /* Footer */
+        .product-modal-footer {
+            background-color: #fff;
+            padding: 16px 24px;
+            border-top: 1px solid rgba(0, 0, 0, 0.05);
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+        .product-btn-cancel {
+            background-color: #f1f4f8;
+            border: 1px solid #e9ecef;
+            color: #6c757d;
+            font-weight: 600;
+        }
+        .product-btn-cancel:hover {
+            background-color: #e9ecef;
+            color: #0e2e45;
+        }
+        .product-btn-save {
+            background-color: #0e2e45;
+            border: 1px solid #0e2e45;
+            color: #fff;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+        .product-btn-save:hover {
+            background-color: #ffc508;
+            border-color: #ffc508;
+            color: #0e2e45;
+        }
+    </style>
 
     <script>
         function previewImage(input, previewId, placeholderId) {
