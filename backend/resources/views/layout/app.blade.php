@@ -145,6 +145,19 @@
         /* Chevron flips to point right while preloaded (until JS swaps the icon class). */
         html.sidebar-preload-collapsed .sidebar-collapse-icon { transform: rotate(180deg); }
 
+        /* ── Suppress sidebar collapse/expand transitions on page load ──
+           Until JS adds `.sidebar-armed` to <html>, every transitionable property
+           on the sidebar tree is disabled. This prevents the "close → open"
+           animation that fires on every navigation when a CSS rule (e.g. padding,
+           opacity) changes during the JS handover. */
+        html:not(.sidebar-armed) aside:has(> .sidebar-inner),
+        html:not(.sidebar-armed) aside:has(> .sidebar-inner) *,
+        html:not(.sidebar-armed) .sidebar-spacer,
+        html:not(.sidebar-armed) .sidebar-inner,
+        html:not(.sidebar-armed) .sidebar-inner * {
+            transition: none !important;
+        }
+
         /* Strip the legacy bg-white + shadow-sm from page-level <header> wrappers
            that hold the dark navbar. The navbar paints its own dark background. */
         header:has(> .custom-navbar) {
@@ -174,6 +187,17 @@
                 }
             } catch (e) { /* localStorage unavailable */ }
         })();
+
+        // Arm sidebar transitions only AFTER the JS sidebar handover and a paint,
+        // so refresh/navigation never replays the collapse/expand animation.
+        // Toggle clicks happen well after this, so they still animate normally.
+        document.addEventListener('DOMContentLoaded', function () {
+            requestAnimationFrame(function () {
+                requestAnimationFrame(function () {
+                    document.documentElement.classList.add('sidebar-armed');
+                });
+            });
+        });
     </script>
 </head>
 

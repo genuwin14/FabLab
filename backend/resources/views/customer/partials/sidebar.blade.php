@@ -165,6 +165,13 @@
     .sidebar-inner .nav.flex-column { margin-bottom: 0.5rem !important; }
 
     /* ── Collapsed State ── */
+    /* Match the no-flash preload CSS in layout/app.blade.php so JS handover
+       doesn't animate padding from 0.5rem back to the default 1rem. */
+    .sidebar-inner.sidebar-collapsed {
+        padding-left: 0.5rem !important;
+        padding-right: 0.5rem !important;
+        align-items: center;
+    }
     .sidebar-inner.sidebar-collapsed .sidebar-label {
         opacity: 0;
         max-width: 0;
