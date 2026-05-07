@@ -29,180 +29,124 @@
             </header>
 
             <!-- Page Content -->
-            <main class="flex-grow-1 p-4" style="overflow-y: auto;">
+            <main class="flex-grow-1 p-4" style="overflow-y: auto; overflow-x: hidden;">
                 <div class="container-fluid">
 
-                    @php
-                        $hour = (int) now()->format('H');
-                        $greeting = $hour < 12 ? 'Good morning' : ($hour < 18 ? 'Good afternoon' : 'Good evening');
-                    @endphp
-
-                    <!-- Welcome Banner -->
-                    <div class="row mb-4">
-                        <div class="col-12">
-                            <div class="p-4 p-md-5 rounded-4 text-white position-relative overflow-hidden"
-                                style="background: linear-gradient(135deg, #0e2e45 0%, #1a4b6e 100%);">
-                                <div class="position-relative z-1">
-                                    <p class="mb-1 opacity-75 small">{{ $greeting }}, {{ now()->format('l, F j') }}</p>
-                                    <h2 class="fw-bold mb-2">Hello, {{ Auth::user()->fullname }}!</h2>
-                                    <p class="opacity-75 mb-3">
-                                        @if($pendingCount + $totalStockAlerts === 0)
-                                            All caught up — no pending orders or stock alerts right now.
-                                        @else
-                                            You have
-                                            @if($pendingCount > 0)
-                                                <span class="fw-bold text-warning">{{ $pendingCount }} pending order{{ $pendingCount === 1 ? '' : 's' }}</span>
-                                            @endif
-                                            @if($pendingCount > 0 && $totalStockAlerts > 0) and @endif
-                                            @if($totalStockAlerts > 0)
-                                                <span class="fw-bold text-danger">{{ $totalStockAlerts }} stock alert{{ $totalStockAlerts === 1 ? '' : 's' }}</span>
-                                            @endif
-                                            to review.
-                                        @endif
-                                    </p>
-                                    <div class="d-flex flex-wrap gap-2">
-                                        <a href="{{ route('staff.orders.index') }}"
-                                            class="btn btn-warning fw-bold text-dark px-4 rounded-pill">
-                                            <i class="bi bi-cart4 me-2"></i>Review Orders
-                                        </a>
-                                        <a href="{{ route('staff.inventory.index') }}"
-                                            class="btn btn-outline-light fw-bold px-4 rounded-pill">
-                                            <i class="bi bi-clipboard-data me-2"></i>Stock Logs
-                                        </a>
-                                    </div>
-                                </div>
-                                <!-- Decor -->
-                                <div class="position-absolute top-0 end-0 opacity-10 d-none d-md-block">
-                                    <i class="bi bi-clipboard-check"
-                                        style="font-size: 15rem; transform: rotate(-15deg) translate(20px, -20px);"></i>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Order Pipeline KPIs -->
-                    <div class="row g-4 mb-4">
-                        <div class="col-md-6 col-xl-3">
+                    <!-- Combined Stat Row (always 8 in 1 row) -->
+                    <div class="row row-cols-8 g-2 mb-4">
+                        <div class="col">
                             <a href="{{ route('staff.orders.index') }}" class="text-decoration-none">
-                                <div class="card border-0 shadow-sm h-100 rounded-4 stat-card">
-                                    <div class="card-body p-4 d-flex align-items-center gap-3">
-                                        <div class="rounded-3 bg-warning bg-opacity-10 p-3 text-warning">
-                                            <i class="bi bi-clock-history fs-3"></i>
+                                <div class="card border-0 shadow-sm h-100 rounded-4 mini-stat">
+                                    <div class="card-body p-2 d-flex align-items-center gap-2">
+                                        <div class="rounded-3 bg-warning bg-opacity-10 text-warning d-inline-flex p-2 flex-shrink-0">
+                                            <i class="bi bi-clock-history fs-6"></i>
                                         </div>
-                                        <div>
-                                            <h6 class="text-muted small fw-bold text-uppercase mb-1">To Review</h6>
-                                            <h3 class="fw-bold mb-0 text-dark">{{ $pendingCount }}</h3>
-                                            <small class="text-muted">pending orders</small>
+                                        <div class="overflow-hidden">
+                                            <div class="text-muted fw-bold text-uppercase text-truncate" style="font-size: 0.6rem;">To Review</div>
+                                            <div class="fw-bold fs-6 mb-0 text-dark">{{ $pendingCount }}</div>
                                         </div>
                                     </div>
                                 </div>
                             </a>
                         </div>
-                        <div class="col-md-6 col-xl-3">
+                        <div class="col">
                             <a href="{{ route('staff.orders.index') }}" class="text-decoration-none">
-                                <div class="card border-0 shadow-sm h-100 rounded-4 stat-card">
-                                    <div class="card-body p-4 d-flex align-items-center gap-3">
-                                        <div class="rounded-3 bg-primary-soft p-3 text-primary">
-                                            <i class="bi bi-gear-wide-connected fs-3"></i>
+                                <div class="card border-0 shadow-sm h-100 rounded-4 mini-stat">
+                                    <div class="card-body p-2 d-flex align-items-center gap-2">
+                                        <div class="rounded-3 bg-primary-soft text-primary d-inline-flex p-2 flex-shrink-0">
+                                            <i class="bi bi-gear-wide-connected fs-6"></i>
                                         </div>
-                                        <div>
-                                            <h6 class="text-muted small fw-bold text-uppercase mb-1">Processing</h6>
-                                            <h3 class="fw-bold mb-0 text-dark">{{ $processingCount }}</h3>
-                                            <small class="text-muted">in progress</small>
+                                        <div class="overflow-hidden">
+                                            <div class="text-muted fw-bold text-uppercase text-truncate" style="font-size: 0.6rem;">Processing</div>
+                                            <div class="fw-bold fs-6 mb-0 text-dark">{{ $processingCount }}</div>
                                         </div>
                                     </div>
                                 </div>
                             </a>
                         </div>
-                        <div class="col-md-6 col-xl-3">
+                        <div class="col">
                             <a href="{{ route('staff.orders.index') }}" class="text-decoration-none">
-                                <div class="card border-0 shadow-sm h-100 rounded-4 stat-card">
-                                    <div class="card-body p-4 d-flex align-items-center gap-3">
-                                        <div class="rounded-3 bg-info bg-opacity-10 p-3 text-info">
-                                            <i class="bi bi-bag-check fs-3"></i>
+                                <div class="card border-0 shadow-sm h-100 rounded-4 mini-stat">
+                                    <div class="card-body p-2 d-flex align-items-center gap-2">
+                                        <div class="rounded-3 bg-info bg-opacity-10 text-info d-inline-flex p-2 flex-shrink-0">
+                                            <i class="bi bi-bag-check fs-6"></i>
                                         </div>
-                                        <div>
-                                            <h6 class="text-muted small fw-bold text-uppercase mb-1">Ready for Pickup</h6>
-                                            <h3 class="fw-bold mb-0 text-dark">{{ $readyCount }}</h3>
-                                            <small class="text-muted">awaiting customer</small>
+                                        <div class="overflow-hidden">
+                                            <div class="text-muted fw-bold text-uppercase text-truncate" style="font-size: 0.6rem;">Ready</div>
+                                            <div class="fw-bold fs-6 mb-0 text-dark">{{ $readyCount }}</div>
                                         </div>
                                     </div>
                                 </div>
                             </a>
                         </div>
-                        <div class="col-md-6 col-xl-3">
-                            <div class="card border-0 shadow-sm h-100 rounded-4 stat-card">
-                                <div class="card-body p-4 d-flex align-items-center gap-3">
-                                    <div class="rounded-3 bg-success bg-opacity-10 p-3 text-success">
-                                        <i class="bi bi-check-circle fs-3"></i>
+                        <div class="col">
+                            <div class="card border-0 shadow-sm h-100 rounded-4 mini-stat">
+                                <div class="card-body p-2 d-flex align-items-center gap-2">
+                                    <div class="rounded-3 bg-success bg-opacity-10 text-success d-inline-flex p-2 flex-shrink-0">
+                                        <i class="bi bi-check-circle fs-6"></i>
                                     </div>
-                                    <div>
-                                        <h6 class="text-muted small fw-bold text-uppercase mb-1">Completed Today</h6>
-                                        <h3 class="fw-bold mb-0 text-dark">{{ $completedTodayCount }}</h3>
-                                        <small class="text-muted">{{ now()->format('M j') }}</small>
+                                    <div class="overflow-hidden">
+                                        <div class="text-muted fw-bold text-uppercase text-truncate" style="font-size: 0.6rem;">Completed</div>
+                                        <div class="fw-bold fs-6 mb-0 text-dark">{{ $completedTodayCount }}</div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
-
-                    <!-- Stock Alert Mini Cards -->
-                    <div class="row g-3 mb-4">
-                        <div class="col-6 col-md-3">
+                        <div class="col">
                             <a href="{{ route('staff.products.index') }}" class="text-decoration-none">
-                                <div class="card border-0 shadow-sm rounded-4 h-100 mini-stat">
-                                    <div class="card-body p-3 d-flex align-items-center">
-                                        <div class="rounded-3 {{ $lowStockProducts > 0 ? 'bg-danger bg-opacity-10 text-danger' : 'bg-success bg-opacity-10 text-success' }} p-2 me-3">
-                                            <i class="bi bi-box-seam fs-5"></i>
+                                <div class="card border-0 shadow-sm h-100 rounded-4 mini-stat">
+                                    <div class="card-body p-2 d-flex align-items-center gap-2">
+                                        <div class="rounded-3 {{ $lowStockProducts > 0 ? 'bg-danger bg-opacity-10 text-danger' : 'bg-success bg-opacity-10 text-success' }} d-inline-flex p-2 flex-shrink-0">
+                                            <i class="bi bi-box-seam fs-6"></i>
                                         </div>
-                                        <div>
-                                            <div class="text-muted small fw-bold text-uppercase" style="font-size: 0.65rem;">Products Low</div>
-                                            <div class="fw-bold fs-5 mb-0 text-dark">{{ $lowStockProducts }}</div>
+                                        <div class="overflow-hidden">
+                                            <div class="text-muted fw-bold text-uppercase text-truncate" style="font-size: 0.6rem;">Products Low</div>
+                                            <div class="fw-bold fs-6 mb-0 text-dark">{{ $lowStockProducts }}</div>
                                         </div>
                                     </div>
                                 </div>
                             </a>
                         </div>
-                        <div class="col-6 col-md-3">
+                        <div class="col">
                             <a href="{{ route('staff.raw-materials.index') }}" class="text-decoration-none">
-                                <div class="card border-0 shadow-sm rounded-4 h-100 mini-stat">
-                                    <div class="card-body p-3 d-flex align-items-center">
-                                        <div class="rounded-3 {{ $lowStockMaterials > 0 ? 'bg-danger bg-opacity-10 text-danger' : 'bg-success bg-opacity-10 text-success' }} p-2 me-3">
-                                            <i class="bi bi-boxes fs-5"></i>
+                                <div class="card border-0 shadow-sm h-100 rounded-4 mini-stat">
+                                    <div class="card-body p-2 d-flex align-items-center gap-2">
+                                        <div class="rounded-3 {{ $lowStockMaterials > 0 ? 'bg-danger bg-opacity-10 text-danger' : 'bg-success bg-opacity-10 text-success' }} d-inline-flex p-2 flex-shrink-0">
+                                            <i class="bi bi-boxes fs-6"></i>
                                         </div>
-                                        <div>
-                                            <div class="text-muted small fw-bold text-uppercase" style="font-size: 0.65rem;">Materials Low</div>
-                                            <div class="fw-bold fs-5 mb-0 text-dark">{{ $lowStockMaterials }}</div>
+                                        <div class="overflow-hidden">
+                                            <div class="text-muted fw-bold text-uppercase text-truncate" style="font-size: 0.6rem;">Materials Low</div>
+                                            <div class="fw-bold fs-6 mb-0 text-dark">{{ $lowStockMaterials }}</div>
                                         </div>
                                     </div>
                                 </div>
                             </a>
                         </div>
-                        <div class="col-6 col-md-3">
+                        <div class="col">
                             <a href="{{ route('staff.textures.index') }}" class="text-decoration-none">
-                                <div class="card border-0 shadow-sm rounded-4 h-100 mini-stat">
-                                    <div class="card-body p-3 d-flex align-items-center">
-                                        <div class="rounded-3 {{ $lowStockTextures > 0 ? 'bg-danger bg-opacity-10 text-danger' : 'bg-success bg-opacity-10 text-success' }} p-2 me-3">
-                                            <i class="bi bi-layers fs-5"></i>
+                                <div class="card border-0 shadow-sm h-100 rounded-4 mini-stat">
+                                    <div class="card-body p-2 d-flex align-items-center gap-2">
+                                        <div class="rounded-3 {{ $lowStockTextures > 0 ? 'bg-danger bg-opacity-10 text-danger' : 'bg-success bg-opacity-10 text-success' }} d-inline-flex p-2 flex-shrink-0">
+                                            <i class="bi bi-layers fs-6"></i>
                                         </div>
-                                        <div>
-                                            <div class="text-muted small fw-bold text-uppercase" style="font-size: 0.65rem;">Textures Low</div>
-                                            <div class="fw-bold fs-5 mb-0 text-dark">{{ $lowStockTextures }}</div>
+                                        <div class="overflow-hidden">
+                                            <div class="text-muted fw-bold text-uppercase text-truncate" style="font-size: 0.6rem;">Textures Low</div>
+                                            <div class="fw-bold fs-6 mb-0 text-dark">{{ $lowStockTextures }}</div>
                                         </div>
                                     </div>
                                 </div>
                             </a>
                         </div>
-                        <div class="col-6 col-md-3">
+                        <div class="col">
                             <a href="{{ route('staff.purchase.index') }}" class="text-decoration-none">
-                                <div class="card border-0 shadow-sm rounded-4 h-100 mini-stat">
-                                    <div class="card-body p-3 d-flex align-items-center">
-                                        <div class="rounded-3 bg-info bg-opacity-10 p-2 text-info me-3">
-                                            <i class="bi bi-truck fs-5"></i>
+                                <div class="card border-0 shadow-sm h-100 rounded-4 mini-stat">
+                                    <div class="card-body p-2 d-flex align-items-center gap-2">
+                                        <div class="rounded-3 bg-info bg-opacity-10 text-info d-inline-flex p-2 flex-shrink-0">
+                                            <i class="bi bi-truck fs-6"></i>
                                         </div>
-                                        <div>
-                                            <div class="text-muted small fw-bold text-uppercase" style="font-size: 0.65rem;">Incoming POs</div>
-                                            <div class="fw-bold fs-5 mb-0 text-dark">{{ $incomingPOCount }}</div>
+                                        <div class="overflow-hidden">
+                                            <div class="text-muted fw-bold text-uppercase text-truncate" style="font-size: 0.6rem;">Incoming POs</div>
+                                            <div class="fw-bold fs-6 mb-0 text-dark">{{ $incomingPOCount }}</div>
                                         </div>
                                     </div>
                                 </div>
@@ -213,7 +157,7 @@
                     <!-- Charts Row -->
                     <div class="row g-4 mb-4">
                         <div class="col-lg-8">
-                            <div class="card border-0 shadow-sm rounded-4 h-100">
+                            <div class="card border-0 shadow-sm rounded-4 h-100 overflow-hidden">
                                 <div class="card-header bg-white border-0 p-4 pb-0 d-flex justify-content-between align-items-center">
                                     <div>
                                         <h5 class="fw-bold mb-0">Order Activity</h5>
@@ -229,7 +173,7 @@
                             </div>
                         </div>
                         <div class="col-lg-4">
-                            <div class="card border-0 shadow-sm rounded-4 h-100">
+                            <div class="card border-0 shadow-sm rounded-4 h-100 overflow-hidden">
                                 <div class="card-header bg-white border-0 p-4 pb-0">
                                     <h5 class="fw-bold mb-0">Active Pipeline</h5>
                                     <p class="text-muted small mb-0">Orders in progress</p>
@@ -244,7 +188,7 @@
                     <!-- Order Queue & Critical Stock -->
                     <div class="row g-4 mb-4">
                         <div class="col-lg-7">
-                            <div class="card border-0 shadow-sm rounded-4 h-100">
+                            <div class="card border-0 shadow-sm rounded-4 h-100 overflow-hidden">
                                 <div class="card-header bg-white border-0 p-4 pb-0 d-flex justify-content-between align-items-center">
                                     <div>
                                         <h5 class="fw-bold mb-0">Order Queue</h5>
@@ -304,7 +248,7 @@
                             </div>
                         </div>
                         <div class="col-lg-5">
-                            <div class="card border-0 shadow-sm rounded-4 h-100">
+                            <div class="card border-0 shadow-sm rounded-4 h-100 overflow-hidden">
                                 <div class="card-header bg-white border-0 p-4 pb-0 d-flex justify-content-between align-items-center">
                                     <div>
                                         <h5 class="fw-bold mb-0">Critical Stock</h5>
@@ -342,66 +286,6 @@
                                             <p class="text-muted small mb-0 mt-2">All products in healthy stock.</p>
                                         </div>
                                     @endforelse
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Incoming Purchase Orders -->
-                    <div class="row g-4">
-                        <div class="col-12">
-                            <div class="card border-0 shadow-sm rounded-4">
-                                <div class="card-header bg-white border-0 p-4 pb-0 d-flex justify-content-between align-items-center">
-                                    <div>
-                                        <h5 class="fw-bold mb-0">Incoming Deliveries</h5>
-                                        <p class="text-muted small mb-0">Purchase orders awaiting receipt</p>
-                                    </div>
-                                    <a href="{{ route('staff.purchase.index') }}" class="btn btn-light btn-sm rounded-pill px-3 border small text-primary">All Purchase Orders</a>
-                                </div>
-                                <div class="card-body p-4">
-                                    <div class="row g-3">
-                                        @forelse($incomingPurchaseOrders as $po)
-                                            <div class="col-md-6 col-xl-4">
-                                                <a href="{{ route('staff.purchase.show', $po->purchase_order_id) }}" class="text-decoration-none">
-                                                    <div class="p-3 rounded-3 border hover-bg-light transition-all h-100">
-                                                        <div class="d-flex justify-content-between align-items-start mb-2">
-                                                            <div>
-                                                                <div class="font-monospace fw-bold text-primary small">{{ $po->po_number }}</div>
-                                                                <div class="text-muted small">{{ $po->supplier->name ?? 'N/A' }}</div>
-                                                            </div>
-                                                            @php
-                                                                $poColor = $po->status === 'confirmed' ? 'primary' : 'info';
-                                                            @endphp
-                                                            <span class="badge bg-{{ $poColor }} bg-opacity-10 text-{{ $poColor }} rounded-pill px-2 py-1 text-uppercase" style="font-size: 0.6rem;">
-                                                                {{ ucfirst($po->status) }}
-                                                            </span>
-                                                        </div>
-                                                        <div class="d-flex justify-content-between align-items-end">
-                                                            <div>
-                                                                <div class="text-muted small" style="font-size: 0.7rem;">Expected</div>
-                                                                <div class="fw-bold text-dark small">
-                                                                    @if($po->expected_delivery_date)
-                                                                        {{ \Carbon\Carbon::parse($po->expected_delivery_date)->format('M j, Y') }}
-                                                                    @else
-                                                                        <span class="text-muted">Not set</span>
-                                                                    @endif
-                                                                </div>
-                                                            </div>
-                                                            <div class="text-end">
-                                                                <div class="text-muted small" style="font-size: 0.7rem;">Total</div>
-                                                                <div class="fw-bold text-dark small">₱{{ number_format($po->total_cost ?? 0, 2) }}</div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </a>
-                                            </div>
-                                        @empty
-                                            <div class="col-12 text-center py-4">
-                                                <i class="bi bi-inbox text-muted fs-1"></i>
-                                                <p class="text-muted small mb-0 mt-2">No incoming deliveries.</p>
-                                            </div>
-                                        @endforelse
-                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -449,17 +333,19 @@
                     data: @json($dailyOrders->pluck('count'))
                 }],
                 chart: {
-                    type: 'bar',
+                    type: 'line',
                     height: 300,
                     toolbar: { show: false },
                     fontFamily: 'Inter, sans-serif'
                 },
-                plotOptions: {
-                    bar: {
-                        borderRadius: 6,
-                        columnWidth: '50%',
-                        distributed: false
-                    }
+                stroke: {
+                    curve: 'smooth',
+                    width: 3
+                },
+                markers: {
+                    size: 5,
+                    strokeWidth: 2,
+                    hover: { size: 7 }
                 },
                 dataLabels: { enabled: false },
                 xaxis: {

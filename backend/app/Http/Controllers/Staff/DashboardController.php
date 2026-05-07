@@ -29,7 +29,6 @@ class DashboardController extends Controller
         $lowStockProducts = Product::whereColumn('stock', '<=', 'low_stock_threshold')->count();
         $lowStockMaterials = RawMaterial::whereColumn('stock_quantity', '<=', 'low_stock_threshold')->count();
         $lowStockTextures = Texture::whereColumn('stock_quantity', '<=', 'low_stock_threshold')->count();
-        $totalStockAlerts = $lowStockProducts + $lowStockMaterials + $lowStockTextures;
 
         $incomingPOCount = PurchaseOrder::whereIn('status', ['sent', 'confirmed'])->count();
 
@@ -67,13 +66,6 @@ class DashboardController extends Controller
             ->take(5)
             ->get();
 
-        // Incoming purchase orders (sent or confirmed, soonest ETA first)
-        $incomingPurchaseOrders = PurchaseOrder::with('supplier')
-            ->whereIn('status', ['sent', 'confirmed'])
-            ->orderBy('expected_delivery_date')
-            ->take(5)
-            ->get();
-
         return view('staff.dashboard.dashboard', compact(
             'pendingCount',
             'processingCount',
@@ -82,13 +74,11 @@ class DashboardController extends Controller
             'lowStockProducts',
             'lowStockMaterials',
             'lowStockTextures',
-            'totalStockAlerts',
             'incomingPOCount',
             'orderStatusBreakdown',
             'dailyOrders',
             'orderQueue',
-            'criticalStockProducts',
-            'incomingPurchaseOrders'
+            'criticalStockProducts'
         ));
     }
 }
