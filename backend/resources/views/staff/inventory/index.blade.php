@@ -27,19 +27,53 @@
             </header>
 
             <!-- Page Content -->
-            <main class="flex-grow-1 p-4" style="overflow-y: auto;">
+            <main class="flex-grow-1 p-4" style="overflow-y: auto; overflow-x: hidden;">
                 <div class="container-fluid">
 
-                    <!-- Page Header -->
-                    <div class="d-flex justify-content-between align-items-center mb-4">
-                        <div>
-                            <h4 class="fw-bold text-primary mb-1">Inventory Monitoring</h4>
-                            <p class="text-muted small mb-0">Track stock levels and reorder suggestions.</p>
+                    <!-- Flash Messages -->
+                    @if(session('success'))
+                        <div class="alert alert-success alert-dismissible fade show rounded-4 border-0 shadow-sm mb-4" role="alert">
+                            {{ session('success') }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                         </div>
-                        <div class="d-flex gap-2">
-                             <a href="{{ route('staff.purchase.index') }}" class="btn btn-outline-primary rounded-pill px-3">
-                                <i class="bi bi-receipt me-2"></i>View Purchase Orders
-                            </a>
+                    @endif
+
+                    <!-- Filters, Search & Actions -->
+                    <div class="card border-0 shadow-sm rounded-4 mb-4">
+                        <div class="card-body p-3">
+                            <form id="inventoryFilterForm" method="GET" action="{{ route('staff.inventory.index') }}"
+                                class="d-flex flex-nowrap align-items-center gap-2">
+                                <div class="input-group flex-grow-1" style="min-width: 0;">
+                                    <span class="input-group-text bg-white border-end-0 rounded-start-2 ps-3">
+                                        <i class="bi bi-search text-muted"></i>
+                                    </span>
+                                    <input type="text" name="search" value="{{ $search ?? '' }}"
+                                        class="form-control border-start-0 rounded-end-2 ps-0"
+                                        placeholder="Search by item name or SKU...">
+                                </div>
+                                <select name="type" class="form-select rounded-2 flex-shrink-0 w-auto"
+                                    onchange="document.getElementById('inventoryFilterForm').submit()">
+                                    <option value="">All Types</option>
+                                    <option value="Product" {{ ($type ?? '') === 'Product' ? 'selected' : '' }}>Products</option>
+                                    <option value="Raw Material" {{ ($type ?? '') === 'Raw Material' ? 'selected' : '' }}>Raw Materials</option>
+                                    <option value="Texture" {{ ($type ?? '') === 'Texture' ? 'selected' : '' }}>Textures</option>
+                                </select>
+                                <select name="stock_status" class="form-select rounded-2 flex-shrink-0 w-auto"
+                                    onchange="document.getElementById('inventoryFilterForm').submit()">
+                                    <option value="">Stock Status</option>
+                                    <option value="low_stock" {{ ($stockStatus ?? '') === 'low_stock' ? 'selected' : '' }}>Low Stock</option>
+                                    <option value="out_of_stock" {{ ($stockStatus ?? '') === 'out_of_stock' ? 'selected' : '' }}>Out of Stock</option>
+                                </select>
+                                <a href="{{ route('staff.inventory.index') }}"
+                                    class="btn btn-light rounded-2 flex-shrink-0" data-bs-toggle="tooltip" title="Reset filters">
+                                    <i class="bi bi-arrow-clockwise text-primary"></i>
+                                </a>
+                                <a href="{{ route('staff.purchase.index') }}"
+                                    class="btn btn-primary d-flex align-items-center gap-2 rounded-2 px-3 flex-shrink-0">
+                                    <i class="bi bi-receipt small"></i>
+                                    <span class="small fw-bold">View Purchase Orders</span>
+                                </a>
+                            </form>
                         </div>
                     </div>
 
@@ -64,16 +98,16 @@
                         <div class="row g-4">
                             @foreach($groupedSuggestions as $supplierId => $items)
                                 <div class="col-xl-6">
-                                    <div class="card border-0 shadow-sm rounded-4 h-100">
+                                    <div class="card border-0 shadow-sm rounded-4 overflow-hidden h-100">
                                         <div class="card-header bg-white border-bottom-0 pt-4 px-4 d-flex justify-content-between align-items-center">
                                             <div class="d-flex align-items-center gap-3">
-                                                <div class="bg-primary bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center" style="width: 48px; height: 48px;">
+                                                <div class="bg-light rounded-circle d-flex align-items-center justify-content-center border" style="width: 48px; height: 48px;">
                                                     <i class="bi bi-truck text-primary fs-4"></i>
                                                 </div>
                                                 <div>
                                                     @if($supplierId === 'no_supplier')
                                                         <h6 class="fw-bold text-dark mb-0">No Default Supplier</h6>
-                                                        <small class="text-danger">Assign suppliers to automate ordering</small>
+                                                        <small class="text-danger">Ask admin to assign suppliers</small>
                                                     @else
                                                         <h6 class="fw-bold text-dark mb-0">{{ $suppliers[$supplierId]->name ?? 'Unknown Supplier' }}</h6>
                                                         <small class="text-muted">{{ $items->count() }} items to reorder</small>
@@ -103,17 +137,26 @@
                                                             <tr>
                                                                 <td class="ps-4 py-3">
                                                                     <div class="d-flex align-items-center gap-2">
-                                                                        @if($item->type === 'Product')
-                                                                            <div class="bg-light rounded-2 d-flex align-items-center justify-content-center overflow-hidden" style="width: 32px; height: 32px; flex-shrink: 0; background-image: url('{{ $item->image }}'); background-size: cover;"></div>
-                                                                        @elseif($item->type === 'Texture')
-                                                                            <div class="bg-light rounded-2 d-flex align-items-center justify-content-center overflow-hidden" style="width: 32px; height: 32px; flex-shrink: 0; background-image: url('{{ $item->image_path }}'); background-size: cover;">
-                                                                                @if(!$item->image_path)
-                                                                                    <i class="bi bi-layers text-primary"></i>
-                                                                                @endif
-                                                                            </div>
+                                                                        @php
+                                                                            if ($item->type === 'Product') {
+                                                                                $thumb = $item->image ?? null;
+                                                                                $fallbackIcon = 'bi-image';
+                                                                            } elseif ($item->type === 'Texture') {
+                                                                                $thumb = $item->image_path ?? null;
+                                                                                $fallbackIcon = 'bi-layers';
+                                                                            } else {
+                                                                                $thumb = $item->image_path ?? null;
+                                                                                $fallbackIcon = 'bi-box';
+                                                                            }
+                                                                        @endphp
+                                                                        @if($thumb)
+                                                                            <img src="{{ $thumb }}" alt="{{ $item->name }}"
+                                                                                class="rounded-2 object-fit-cover border"
+                                                                                style="width: 36px; height: 36px; flex-shrink: 0;">
                                                                         @else
-                                                                            <div class="bg-light rounded-2 d-flex align-items-center justify-content-center text-primary" style="width: 32px; height: 32px; flex-shrink: 0;">
-                                                                                <i class="bi bi-box"></i>
+                                                                            <div class="bg-light rounded-2 d-flex align-items-center justify-content-center text-primary border"
+                                                                                style="width: 36px; height: 36px; flex-shrink: 0;">
+                                                                                <i class="bi {{ $fallbackIcon }}"></i>
                                                                             </div>
                                                                         @endif
                                                                         <div>
@@ -151,7 +194,7 @@
                                         </div>
                                         @if($supplierId === 'no_supplier')
                                             <div class="card-footer bg-white border-top-0 p-3 text-center">
-                                                <small class="text-muted">Check <a href="{{ route('staff.products.index') }}">Products</a> or <a href="{{ route('staff.raw-materials.index') }}">Raw Materials</a> to fix this.</small>
+                                                <small class="text-muted">Ask the admin to assign default suppliers in <a href="{{ route('staff.products.index') }}">Products</a> or <a href="{{ route('staff.raw-materials.index') }}">Raw Materials</a> to enable automated reordering.</small>
                                             </div>
                                         @endif
                                     </div>

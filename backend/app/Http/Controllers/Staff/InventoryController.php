@@ -11,8 +11,12 @@ use App\Models\Texture;
 
 class InventoryController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
+        $search = trim((string) $request->query('search', ''));
+        $type = $request->query('type', '');
+        $stockStatus = $request->query('stock_status', '');
+
         $lowStockProducts = Product::whereColumn('stock', '<=', 'low_stock_threshold')
             ->with([
                 'suppliers' => function ($query) {
@@ -52,6 +56,25 @@ class InventoryController extends Controller
 
         $allLowStockItems = $lowStockProducts->concat($lowStockMaterials)->concat($lowStockTextures);
 
+        if ($type !== '') {
+            $allLowStockItems = $allLowStockItems->where('type', $type)->values();
+        }
+
+        if ($stockStatus === 'out_of_stock') {
+            $allLowStockItems = $allLowStockItems->filter(fn($item) => (float) $item->display_stock == 0)->values();
+        } elseif ($stockStatus === 'low_stock') {
+            $allLowStockItems = $allLowStockItems->filter(fn($item) => (float) $item->display_stock > 0)->values();
+        }
+
+        if ($search !== '') {
+            $needle = mb_strtolower($search);
+            $allLowStockItems = $allLowStockItems->filter(function ($item) use ($needle) {
+                $name = mb_strtolower((string) ($item->name ?? ''));
+                $sku = mb_strtolower((string) ($item->sku ?? ''));
+                return str_contains($name, $needle) || str_contains($sku, $needle);
+            })->values();
+        }
+
         $groupedSuggestions = $allLowStockItems->groupBy(function ($item) {
             if ($item->type === 'Product') {
                 $supplier = $item->suppliers->first();
@@ -70,7 +93,10 @@ class InventoryController extends Controller
             'lowStockTextures',
             'allLowStockItems',
             'groupedSuggestions',
-            'suppliers'
+            'suppliers',
+            'search',
+            'type',
+            'stockStatus'
         ));
     }
 }
