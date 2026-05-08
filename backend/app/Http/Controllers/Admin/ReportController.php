@@ -17,7 +17,7 @@ class ReportController extends Controller
 {
     public function index()
     {
-        return view('admin.reports.index');
+        return redirect()->route('admin.reports.materials');
     }
 
     public function materials(Request $request)

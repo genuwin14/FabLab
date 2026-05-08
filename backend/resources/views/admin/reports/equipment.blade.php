@@ -22,15 +22,7 @@
 
             <main class="flex-grow-1 p-4" style="overflow-y: auto;">
                 <div class="container-fluid">
-                    <div class="d-flex align-items-center mb-3">
-                        <a href="{{ route('admin.reports.index') }}" class="btn btn-light btn-sm rounded-pill me-2">
-                            <i class="bi bi-arrow-left"></i>
-                        </a>
-                        <div>
-                            <h4 class="fw-bold text-dark mb-0">Inventory of Machinery & Equipment</h4>
-                            <p class="text-muted small mb-0">As of {{ $asOfDate->format('F j, Y') }}</p>
-                        </div>
-                    </div>
+                    @include('admin.reports.components.tabs')
 
                     <div class="card border-0 shadow-sm rounded-4 mb-4">
                         <div class="card-body p-3">
