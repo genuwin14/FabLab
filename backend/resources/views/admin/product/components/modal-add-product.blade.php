@@ -109,6 +109,15 @@
                                         <option value="broken">Broken / Defective</option>
                                     </select>
                                 </div>
+                                <div class="col-12">
+                                    <label class="form-label small fw-bold text-muted text-uppercase">Department</label>
+                                    <select name="department" class="form-select product-field-input">
+                                        <option value="">— Uncategorized —</option>
+                                        @foreach(\App\Enums\Department::cases() as $dept)
+                                            <option value="{{ $dept->value }}">{{ $dept->value }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
                             </div>
 
                             <h6 class="product-section-title">
@@ -146,6 +155,33 @@
                                     <label class="form-label small fw-bold text-muted text-uppercase">Low Stock Alert</label>
                                     <input type="number" name="low_stock_threshold"
                                         class="form-control product-field-input" placeholder="e.g. 20">
+                                </div>
+                            </div>
+
+                            <h6 class="product-section-title mt-4">
+                                <i class="bi bi-bar-chart-fill me-2"></i>Report Tracking
+                            </h6>
+
+                            <div class="row g-3">
+                                <div class="col-md-3">
+                                    <label class="form-label small fw-bold text-muted text-uppercase">On Display</label>
+                                    <input type="number" min="0" name="units_on_display"
+                                        class="form-control product-field-input" value="0">
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label small fw-bold text-muted text-uppercase">Sponsored</label>
+                                    <input type="number" min="0" name="units_sponsored"
+                                        class="form-control product-field-input" value="0">
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label small fw-bold text-muted text-uppercase">Damaged</label>
+                                    <input type="number" min="0" name="units_damaged"
+                                        class="form-control product-field-input" value="0">
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label small fw-bold text-muted text-uppercase">Consumed</label>
+                                    <input type="number" min="0" name="units_consumed"
+                                        class="form-control product-field-input" value="0">
                                 </div>
                             </div>
                         </div>

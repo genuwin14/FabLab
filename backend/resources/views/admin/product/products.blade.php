@@ -582,9 +582,14 @@
                 document.getElementById('editUnit').value = product.unit;
                 document.getElementById('editStock').value = product.stock;
                 document.getElementById('editLowStock').value = product.low_stock_threshold;
+                document.getElementById('editUnitsOnDisplay').value = product.units_on_display ?? 0;
+                document.getElementById('editUnitsSponsored').value = product.units_sponsored ?? 0;
+                document.getElementById('editUnitsDamaged').value = product.units_damaged ?? 0;
+                document.getElementById('editUnitsConsumed').value = product.units_consumed ?? 0;
                 document.getElementById('editDescription').value = product.description;
                 document.getElementById('editIsCustomizable').checked = product.is_customizable == 1;
                 document.getElementById('editStatus').value = product.status || "active";
+                document.getElementById('editDepartment').value = product.department || '';
 
                 // Populate BOM
                 const bomBody = document.getElementById('bomItemsBody');

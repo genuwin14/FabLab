@@ -86,17 +86,6 @@
             </li>
         </ul>
 
-        <!-- Administration Section -->
-        <div class="mb-2 text-uppercase text-white-50 small fw-bold sidebar-section-title">Administration</div>
-        <ul class="nav nav-pills flex-column mb-3 gap-1">
-            <li class="nav-item">
-                <a href="#" class="nav-link text-white hover-accent sidebar-tooltip"
-                    data-sidebar-tooltip="true" title="Reports">
-                    <i class="bi bi-bar-chart-fill me-2"></i>
-                    <span class="sidebar-label">Reports</span>
-                </a>
-            </li>
-        </ul>
     </div>
 
     <!-- Fixed Footer -->

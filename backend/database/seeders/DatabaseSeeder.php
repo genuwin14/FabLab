@@ -22,6 +22,7 @@ class DatabaseSeeder extends Seeder
             ProductSeeder::class,
             RawMaterialSeeder::class,
             TextureSeeder::class,
+            EquipmentSeeder::class,
             BOMSeeder::class,
             ProductTextureSeeder::class,
             PurchaseOrderSeeder::class,

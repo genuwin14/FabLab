@@ -130,6 +130,11 @@
                                                         data-threshold="{{ $material->low_stock_threshold }}"
                                                         data-unit="{{ $material->unit }}"
                                                         data-description="{{ $material->description }}"
+                                                        data-units_on_display="{{ $material->units_on_display }}"
+                                                        data-units_sponsored="{{ $material->units_sponsored }}"
+                                                        data-units_damaged="{{ $material->units_damaged }}"
+                                                        data-units_consumed="{{ $material->units_consumed }}"
+                                                        data-department="{{ $material->department }}"
                                                         data-image="{{ $material->image_path }}" title="Edit">
                                                         <i class="bi bi-pencil text-warning"></i>
                                                     </button>
@@ -400,6 +405,11 @@
                 document.getElementById('editMaterialThreshold').value = threshold;
                 document.getElementById('editMaterialUnit').value = unit;
                 document.getElementById('editMaterialDescription').value = description;
+                document.getElementById('editMaterialDepartment').value = button.getAttribute('data-department') || '';
+                document.getElementById('editMaterialDisplay').value = button.getAttribute('data-units_on_display') || 0;
+                document.getElementById('editMaterialSponsored').value = button.getAttribute('data-units_sponsored') || 0;
+                document.getElementById('editMaterialDamaged').value = button.getAttribute('data-units_damaged') || 0;
+                document.getElementById('editMaterialConsumed').value = button.getAttribute('data-units_consumed') || 0;
 
                 var image = button.getAttribute('data-image');
                 var preview = document.getElementById('editMaterialPreview');

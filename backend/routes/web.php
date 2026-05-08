@@ -78,6 +78,21 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/admin/inventory', [\App\Http\Controllers\Admin\InventoryController::class, 'index'])->name('admin.inventory.index');
     Route::post('/admin/inventory/assign-supplier', [\App\Http\Controllers\Admin\InventoryController::class, 'assignSupplier'])->name('admin.inventory.assignSupplier');
 
+    // Admin Routes/Equipment
+    Route::get('/admin/equipment', [\App\Http\Controllers\Admin\EquipmentController::class, 'index'])->name('admin.equipment.index');
+    Route::post('/admin/equipment', [\App\Http\Controllers\Admin\EquipmentController::class, 'store'])->name('admin.equipment.store');
+    Route::put('/admin/equipment/{id}', [\App\Http\Controllers\Admin\EquipmentController::class, 'update'])->name('admin.equipment.update');
+    Route::delete('/admin/equipment/{id}', [\App\Http\Controllers\Admin\EquipmentController::class, 'destroy'])->name('admin.equipment.destroy');
+
+    // Admin Routes/Reports
+    Route::get('/admin/reports', [\App\Http\Controllers\Admin\ReportController::class, 'index'])->name('admin.reports.index');
+    Route::get('/admin/reports/materials', [\App\Http\Controllers\Admin\ReportController::class, 'materials'])->name('admin.reports.materials');
+    Route::get('/admin/reports/materials/pdf', [\App\Http\Controllers\Admin\ReportController::class, 'exportMaterialsPdf'])->name('admin.reports.materials.pdf');
+    Route::get('/admin/reports/materials/docx', [\App\Http\Controllers\Admin\ReportController::class, 'exportMaterialsDocx'])->name('admin.reports.materials.docx');
+    Route::get('/admin/reports/equipment', [\App\Http\Controllers\Admin\ReportController::class, 'equipment'])->name('admin.reports.equipment');
+    Route::get('/admin/reports/equipment/pdf', [\App\Http\Controllers\Admin\ReportController::class, 'exportEquipmentPdf'])->name('admin.reports.equipment.pdf');
+    Route::get('/admin/reports/equipment/docx', [\App\Http\Controllers\Admin\ReportController::class, 'exportEquipmentDocx'])->name('admin.reports.equipment.docx');
+
     // Admin Routes/Purchase Orders
     Route::get('/admin/purchase', [\App\Http\Controllers\Admin\PurchaseOrderController::class, 'index'])->name('admin.purchase.index');
     Route::get('/admin/purchase/create', [\App\Http\Controllers\Admin\PurchaseOrderController::class, 'create'])->name('admin.purchase.create');

@@ -43,6 +43,15 @@
                                 </select>
                             </div>
                             <div class="col-12">
+                                <label class="form-label small fw-bold text-muted text-uppercase">Department</label>
+                                <select id="editTextureDepartment" name="department" class="form-select texture-field-input">
+                                    <option value="">— Uncategorized —</option>
+                                    @foreach(\App\Enums\Department::cases() as $dept)
+                                        <option value="{{ $dept->value }}">{{ $dept->value }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="col-12">
                                 <label class="form-label small fw-bold text-muted text-uppercase">Description</label>
                                 <textarea id="editTextureDescription" name="description"
                                     class="form-control texture-field-input" rows="2"></textarea>
@@ -93,6 +102,33 @@
                             <div class="col-md-4">
                                 <label class="form-label small fw-bold text-muted text-uppercase">Unit</label>
                                 <input type="text" id="editTextureUnit" name="unit"
+                                    class="form-control texture-field-input">
+                            </div>
+                        </div>
+
+                        <h6 class="texture-section-title mt-4">
+                            <i class="bi bi-bar-chart-fill me-2"></i>Report Tracking
+                        </h6>
+
+                        <div class="row g-3">
+                            <div class="col-md-3">
+                                <label class="form-label small fw-bold text-muted text-uppercase">On Display</label>
+                                <input type="number" step="0.01" min="0" id="editTextureDisplay" name="units_on_display"
+                                    class="form-control texture-field-input">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label small fw-bold text-muted text-uppercase">Sponsored</label>
+                                <input type="number" step="0.01" min="0" id="editTextureSponsored" name="units_sponsored"
+                                    class="form-control texture-field-input">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label small fw-bold text-muted text-uppercase">Damaged</label>
+                                <input type="number" step="0.01" min="0" id="editTextureDamaged" name="units_damaged"
+                                    class="form-control texture-field-input">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label small fw-bold text-muted text-uppercase">Consumed</label>
+                                <input type="number" step="0.01" min="0" id="editTextureConsumed" name="units_consumed"
                                     class="form-control texture-field-input">
                             </div>
                         </div>

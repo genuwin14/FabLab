@@ -48,6 +48,11 @@ class TextureController extends Controller
             'low_stock_threshold' => 'nullable|numeric|min:0',
             'unit' => 'nullable|string|max:50',
             'price_modifier' => 'nullable|numeric|min:0',
+            'units_on_display' => 'nullable|numeric|min:0',
+            'units_sponsored' => 'nullable|numeric|min:0',
+            'units_damaged' => 'nullable|numeric|min:0',
+            'units_consumed' => 'nullable|numeric|min:0',
+            'department' => 'nullable|in:' . implode(',', \App\Enums\Department::values()),
         ]);
 
         $data = $request->except('image_file');
@@ -75,6 +80,11 @@ class TextureController extends Controller
             'low_stock_threshold' => 'nullable|numeric|min:0',
             'unit' => 'nullable|string|max:50',
             'price_modifier' => 'nullable|numeric|min:0',
+            'units_on_display' => 'nullable|numeric|min:0',
+            'units_sponsored' => 'nullable|numeric|min:0',
+            'units_damaged' => 'nullable|numeric|min:0',
+            'units_consumed' => 'nullable|numeric|min:0',
+            'department' => 'nullable|in:' . implode(',', \App\Enums\Department::values()),
         ]);
 
         $texture = Texture::findOrFail($id);

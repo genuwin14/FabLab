@@ -17,9 +17,14 @@ class RawMaterial extends Model
         'supplier_id',
         'cost_per_unit',
         'stock_quantity',
+        'units_on_display',
+        'units_sponsored',
+        'units_damaged',
+        'units_consumed',
         'low_stock_threshold',
         'unit',
-        'description'
+        'description',
+        'department',
     ];
 
     public function supplier(): BelongsTo

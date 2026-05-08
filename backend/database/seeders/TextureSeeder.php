@@ -23,9 +23,14 @@ class TextureSeeder extends Seeder
                 'supplier_id' => $ecoMaterials?->supplier_id,
                 'cost_per_unit' => 120.00,
                 'stock_quantity' => 80,
+                'units_on_display' => 2,
+                'units_sponsored' => 0,
+                'units_damaged' => 1,
+                'units_consumed' => 17,
                 'low_stock_threshold' => 15,
                 'unit' => 'm',
                 'price_modifier' => 50.00,
+                'department' => \App\Enums\Department::DigitalCustomizationCenter->value,
             ],
             [
                 'name' => 'Natural Oak Grain',
@@ -33,9 +38,14 @@ class TextureSeeder extends Seeder
                 'supplier_id' => $ecoMaterials?->supplier_id,
                 'cost_per_unit' => 95.00,
                 'stock_quantity' => 60,
+                'units_on_display' => 1,
+                'units_sponsored' => 0,
+                'units_damaged' => 0,
+                'units_consumed' => 9,
                 'low_stock_threshold' => 10,
                 'unit' => 'm',
                 'price_modifier' => 0,
+                'department' => \App\Enums\Department::DigitalCustomizationCenter->value,
             ],
             // Low stock — should appear in inventory alerts
             [
@@ -44,9 +54,14 @@ class TextureSeeder extends Seeder
                 'supplier_id' => $ecoMaterials?->supplier_id,
                 'cost_per_unit' => 130.00,
                 'stock_quantity' => 8,
+                'units_on_display' => 0,
+                'units_sponsored' => 0,
+                'units_damaged' => 2,
+                'units_consumed' => 0,
                 'low_stock_threshold' => 12,
                 'unit' => 'm',
                 'price_modifier' => 75.00,
+                'department' => \App\Enums\Department::DigitalCustomizationCenter->value,
             ],
             // Healthy fabric
             [
@@ -55,9 +70,14 @@ class TextureSeeder extends Seeder
                 'supplier_id' => $genMerch?->supplier_id,
                 'cost_per_unit' => 65.00,
                 'stock_quantity' => 120,
+                'units_on_display' => 0,
+                'units_sponsored' => 0,
+                'units_damaged' => 0,
+                'units_consumed' => 0,
                 'low_stock_threshold' => 25,
                 'unit' => 'm',
                 'price_modifier' => 0,
+                // No department — demonstrates "Uncategorized" section in report.
             ],
             // Premium / very low stock
             [
@@ -66,9 +86,14 @@ class TextureSeeder extends Seeder
                 'supplier_id' => $techSupply?->supplier_id,
                 'cost_per_unit' => 220.00,
                 'stock_quantity' => 4,
+                'units_on_display' => 1,
+                'units_sponsored' => 0,
+                'units_damaged' => 0,
+                'units_consumed' => 0,
                 'low_stock_threshold' => 10,
                 'unit' => 'pcs',
                 'price_modifier' => 100.00,
+                'department' => \App\Enums\Department::DigitalCustomizationCenter->value,
             ],
         ];
 

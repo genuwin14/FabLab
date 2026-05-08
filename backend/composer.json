@@ -12,6 +12,7 @@
         "laravel/sanctum": "^4.0",
         "laravel/socialite": "^5.24",
         "laravel/tinker": "^2.10.1",
+        "phpoffice/phpword": "^1.4",
         "picqer/php-barcode-generator": "^3.2"
     },
     "require-dev": {

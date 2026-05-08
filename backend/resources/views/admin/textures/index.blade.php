@@ -96,7 +96,12 @@
                                                            data-stock="{{ $texture->stock_quantity }}"
                                                            data-threshold="{{ $texture->low_stock_threshold }}"
                                                            data-unit="{{ $texture->unit }}"
-                                                           data-price_modifier="{{ $texture->price_modifier }}">
+                                                           data-price_modifier="{{ $texture->price_modifier }}"
+                                                           data-units_on_display="{{ $texture->units_on_display }}"
+                                                           data-units_sponsored="{{ $texture->units_sponsored }}"
+                                                           data-units_damaged="{{ $texture->units_damaged }}"
+                                                           data-units_consumed="{{ $texture->units_consumed }}"
+                                                           data-department="{{ $texture->department }}">
                                                             <i class="bi bi-pencil text-warning"></i> Edit
                                                         </a>
                                                     </li>
@@ -448,6 +453,11 @@
                 document.getElementById('editTextureThreshold').value = button.getAttribute('data-threshold') || 0;
                 document.getElementById('editTextureUnit').value = button.getAttribute('data-unit') || 'pcs';
                 document.getElementById('editTexturePriceModifier').value = button.getAttribute('data-price_modifier') || 0;
+                document.getElementById('editTextureDepartment').value = button.getAttribute('data-department') || '';
+                document.getElementById('editTextureDisplay').value = button.getAttribute('data-units_on_display') || 0;
+                document.getElementById('editTextureSponsored').value = button.getAttribute('data-units_sponsored') || 0;
+                document.getElementById('editTextureDamaged').value = button.getAttribute('data-units_damaged') || 0;
+                document.getElementById('editTextureConsumed').value = button.getAttribute('data-units_consumed') || 0;
 
                 var preview = document.getElementById('editTexturePreview');
                 if (image) {

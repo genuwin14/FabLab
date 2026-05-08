@@ -66,6 +66,14 @@
                     <span class="sidebar-label">Stock Monitoring</span>
                 </a>
             </li>
+            <li class="nav-item">
+                <a href="{{ route('admin.equipment.index') }}"
+                    class="nav-link sidebar-tooltip {{ request()->routeIs('admin.equipment.*') ? 'active bg-accent text-primary fw-bold' : 'text-white hover-accent' }}"
+                    data-sidebar-tooltip="true" title="Equipment">
+                    <i class="bi bi-tools me-2"></i>
+                    <span class="sidebar-label">Equipment</span>
+                </a>
+            </li>
         </ul>
 
         <!-- Sales & Orders Section -->
@@ -121,7 +129,8 @@
                 </a>
             </li>
             <li class="nav-item">
-                <a href="#" class="nav-link text-white hover-accent sidebar-tooltip"
+                <a href="{{ route('admin.reports.index') }}"
+                    class="nav-link sidebar-tooltip {{ request()->routeIs('admin.reports.*') ? 'active bg-accent text-primary fw-bold' : 'text-white hover-accent' }}"
                     data-sidebar-tooltip="true" title="Reports">
                     <i class="bi bi-bar-chart-fill me-2"></i>
                     <span class="sidebar-label">Reports</span>

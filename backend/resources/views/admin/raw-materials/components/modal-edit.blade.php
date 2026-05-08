@@ -42,6 +42,15 @@
                                 </select>
                             </div>
                             <div class="col-12">
+                                <label class="form-label small fw-bold text-muted text-uppercase">Department</label>
+                                <select id="editMaterialDepartment" name="department" class="form-select material-field-input">
+                                    <option value="">— Uncategorized —</option>
+                                    @foreach(\App\Enums\Department::cases() as $dept)
+                                        <option value="{{ $dept->value }}">{{ $dept->value }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="col-12">
                                 <label class="form-label small fw-bold text-muted text-uppercase">Description</label>
                                 <textarea id="editMaterialDescription" name="description"
                                     class="form-control material-field-input" rows="3"></textarea>
@@ -84,6 +93,33 @@
                                 <label class="form-label small fw-bold text-muted text-uppercase">Low Stock Threshold</label>
                                 <input type="number" step="0.01" id="editMaterialThreshold" name="low_stock_threshold"
                                     class="form-control material-field-input" required>
+                            </div>
+                        </div>
+
+                        <h6 class="material-section-title mt-4">
+                            <i class="bi bi-bar-chart-fill me-2"></i>Report Tracking
+                        </h6>
+
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label small fw-bold text-muted text-uppercase">Units on Display</label>
+                                <input type="number" step="0.01" id="editMaterialDisplay" name="units_on_display"
+                                    class="form-control material-field-input">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small fw-bold text-muted text-uppercase">Sponsored Units</label>
+                                <input type="number" step="0.01" id="editMaterialSponsored" name="units_sponsored"
+                                    class="form-control material-field-input">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small fw-bold text-muted text-uppercase">Damaged Units</label>
+                                <input type="number" step="0.01" id="editMaterialDamaged" name="units_damaged"
+                                    class="form-control material-field-input">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small fw-bold text-muted text-uppercase">Consumed Units</label>
+                                <input type="number" step="0.01" id="editMaterialConsumed" name="units_consumed"
+                                    class="form-control material-field-input">
                             </div>
                         </div>
                     </div>
