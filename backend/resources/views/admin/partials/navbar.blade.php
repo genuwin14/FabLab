@@ -30,6 +30,10 @@
                         Purchase Orders
                     @elseif(request()->routeIs('admin.inventory*'))
                         Stock Monitoring
+                    @elseif(request()->routeIs('admin.equipment*'))
+                        Machinery & Equipment
+                    @elseif(request()->routeIs('admin.reports*'))
+                        Reports
                     @elseif(request()->routeIs('admin.users*'))
                         User Management
                     @else
