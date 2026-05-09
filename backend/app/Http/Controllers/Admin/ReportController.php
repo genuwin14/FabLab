@@ -56,12 +56,30 @@ class ReportController extends Controller
             'sections' => $sections,
             'group' => $group,
             'asOfDate' => now(),
-        ])->setPaper('a4', 'landscape');
+        ])->setPaper('a4', 'portrait')
+          ->setOption('isPhpEnabled', true);
 
         $deptSlug = $request->query('department') ? '-' . str()->slug($request->query('department')) : '';
         $filename = 'inventory-materials' . $deptSlug . '-' . now()->format('Y-m-d') . '.pdf';
 
         return $pdf->download($filename);
+    }
+
+    public function previewMaterials(Request $request)
+    {
+        [$sections, $group] = $this->buildMaterialsSections($request);
+
+        $pdf = Pdf::loadView('admin.reports.pdf.materials', [
+            'sections' => $sections,
+            'group' => $group,
+            'asOfDate' => now(),
+        ])->setPaper('a4', 'portrait')
+          ->setOption('isPhpEnabled', true);
+
+        $deptSlug = $request->query('department') ? '-' . str()->slug($request->query('department')) : '';
+        $filename = 'inventory-materials' . $deptSlug . '-preview.pdf';
+
+        return $pdf->stream($filename);
     }
 
     public function exportMaterialsDocx(Request $request)
@@ -85,11 +103,28 @@ class ReportController extends Controller
             'rows' => $rows,
             'status' => $status,
             'asOfDate' => now(),
-        ])->setPaper('a4', 'landscape');
+        ])->setPaper('a4', 'portrait')
+          ->setOption('isPhpEnabled', true);
 
         $filename = 'inventory-equipment-' . now()->format('Y-m-d') . '.pdf';
 
         return $pdf->download($filename);
+    }
+
+    public function previewEquipment(Request $request)
+    {
+        [$rows, $status] = $this->buildEquipmentRows($request);
+
+        $pdf = Pdf::loadView('admin.reports.pdf.equipment', [
+            'rows' => $rows,
+            'status' => $status,
+            'asOfDate' => now(),
+        ])->setPaper('a4', 'portrait')
+          ->setOption('isPhpEnabled', true);
+
+        $filename = 'inventory-equipment-preview.pdf';
+
+        return $pdf->stream($filename);
     }
 
     public function exportEquipmentDocx(Request $request)

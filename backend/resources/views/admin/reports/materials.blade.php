@@ -70,7 +70,8 @@
                                     data-export-trigger
                                     data-format="PDF"
                                     data-scope-kind="All Material Sections"
-                                    data-scope="Inventory Materials Report (All Departments)">
+                                    data-scope="Inventory Materials Report (All Departments)"
+                                    data-preview-url="{{ route('admin.reports.materials.preview', request()->query()) }}">
                                     <i class="bi bi-file-pdf"></i>
                                     <span class="small fw-bold">Export PDF</span>
                                 </a>
@@ -79,7 +80,8 @@
                                     data-export-trigger
                                     data-format="Word"
                                     data-scope-kind="All Material Sections"
-                                    data-scope="Inventory Materials Report (All Departments)">
+                                    data-scope="Inventory Materials Report (All Departments)"
+                                    data-preview-url="{{ route('admin.reports.materials.preview', request()->query()) }}">
                                     <i class="bi bi-file-word"></i>
                                     <span class="small fw-bold">Export Word</span>
                                 </a>
@@ -124,7 +126,8 @@
                                             data-export-trigger
                                             data-format="PDF"
                                             data-scope-kind="Single Section"
-                                            data-scope="{{ $deptName }} — Materials Report">
+                                            data-scope="{{ $deptName }} — Materials Report"
+                                            data-preview-url="{{ route('admin.reports.materials.preview', $sectionParams) }}">
                                             <i class="bi bi-file-pdf"></i>
                                             <span class="small fw-bold">PDF</span>
                                         </a>
@@ -134,7 +137,8 @@
                                             data-export-trigger
                                             data-format="Word"
                                             data-scope-kind="Single Section"
-                                            data-scope="{{ $deptName }} — Materials Report">
+                                            data-scope="{{ $deptName }} — Materials Report"
+                                            data-preview-url="{{ route('admin.reports.materials.preview', $sectionParams) }}">
                                             <i class="bi bi-file-word"></i>
                                             <span class="small fw-bold">Word</span>
                                         </a>
@@ -143,49 +147,34 @@
                             </div>
                             <div class="card-body p-0">
                                 <div class="table-responsive">
-                                    <table class="table table-hover align-middle mb-0">
+                                    <table class="table table-hover align-middle mb-0 text-center">
                                         <thead>
-                                            <tr class="bg-primary bg-opacity-10">
-                                                <th class="ps-4 py-3 text-primary small text-uppercase fw-bold border-0">Type</th>
-                                                <th class="py-3 text-primary small text-uppercase fw-bold border-0">Item</th>
-                                                <th class="py-3 text-primary small text-uppercase fw-bold border-0">Unit</th>
-                                                <th class="py-3 text-primary small text-uppercase fw-bold border-0 text-end">On Display</th>
-                                                <th class="py-3 text-primary small text-uppercase fw-bold border-0 text-end">Sponsored</th>
-                                                <th class="py-3 text-primary small text-uppercase fw-bold border-0 text-end">Damaged</th>
-                                                <th class="py-3 text-primary small text-uppercase fw-bold border-0 text-end">Consumed</th>
-                                                <th class="pe-4 py-3 text-primary small text-uppercase fw-bold border-0 text-end">Available</th>
+                                            <tr>
+                                                <th class="ps-4 py-3 small fw-bold border-0" style="width: 22%;">Item</th>
+                                                <th class="py-3 small fw-bold border-0" style="width: 8%;">Unit</th>
+                                                <th class="py-3 small fw-bold border-0" style="width: 16%;">No. of Units on Display</th>
+                                                <th class="py-3 small fw-bold border-0" style="width: 12%;">No. of Sponsored Units</th>
+                                                <th class="py-3 small fw-bold border-0" style="width: 11%;">No. of Damaged Units</th>
+                                                <th class="py-3 small fw-bold border-0" style="width: 12%;">No. of Units Consumed</th>
+                                                <th class="pe-4 py-3 small fw-bold border-0" style="width: 19%;">Available Units for Production</th>
                                             </tr>
                                         </thead>
                                         <tbody class="border-top-0">
                                             @forelse($rows as $row)
                                                 <tr>
-                                                    <td class="ps-4 py-3">
-                                                        @php
-                                                            $typeColor = match($row['type']) {
-                                                                'Product' => '#0d6efd',
-                                                                'Raw Material' => '#fd7e14',
-                                                                'Texture' => '#6f42c1',
-                                                                default => '#6c757d',
-                                                            };
-                                                        @endphp
-                                                        <span class="badge rounded-pill px-3"
-                                                            style="background-color: {{ $typeColor }}1f; color: {{ $typeColor }};">
-                                                            {{ $row['type'] }}
-                                                        </span>
-                                                    </td>
-                                                    <td class="fw-semibold text-dark">{{ $row['name'] }}</td>
+                                                    <td class="ps-4 py-3 fw-semibold text-dark">{{ $row['name'] }}</td>
                                                     <td class="text-muted small text-uppercase">{{ $row['unit'] }}</td>
-                                                    <td class="text-end">{{ $row['on_display'] > 0 ? number_format($row['on_display']) : '—' }}</td>
-                                                    <td class="text-end">{{ $row['sponsored'] > 0 ? number_format($row['sponsored']) : '—' }}</td>
-                                                    <td class="text-end">{{ $row['damaged'] > 0 ? number_format($row['damaged']) : '—' }}</td>
-                                                    <td class="text-end">{{ $row['consumed'] > 0 ? number_format($row['consumed']) : '—' }}</td>
-                                                    <td class="pe-4 text-end fw-bold {{ $row['available'] <= 0 ? 'text-danger' : 'text-success' }}">
+                                                    <td>{{ $row['on_display'] > 0 ? number_format($row['on_display']) : '—' }}</td>
+                                                    <td>{{ $row['sponsored'] > 0 ? number_format($row['sponsored']) : '—' }}</td>
+                                                    <td>{{ $row['damaged'] > 0 ? number_format($row['damaged']) : '—' }}</td>
+                                                    <td>{{ $row['consumed'] > 0 ? number_format($row['consumed']) : '—' }}</td>
+                                                    <td class="pe-4 fw-bold {{ $row['available'] <= 0 ? 'text-danger' : 'text-success' }}">
                                                         {{ $row['available'] > 0 ? number_format($row['available']) : '—' }}
                                                     </td>
                                                 </tr>
                                             @empty
                                                 <tr class="empty-row">
-                                                    <td colspan="8" class="text-center py-4 text-muted small fst-italic">
+                                                    <td colspan="7" class="text-center py-4 text-muted small fst-italic">
                                                         No items assigned to this section.
                                                     </td>
                                                 </tr>

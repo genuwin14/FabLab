@@ -71,7 +71,7 @@
                     class="nav-link sidebar-tooltip {{ request()->routeIs('admin.equipment.*') ? 'active bg-accent text-primary fw-bold' : 'text-white hover-accent' }}"
                     data-sidebar-tooltip="true" title="Equipment">
                     <i class="bi bi-tools me-2"></i>
-                    <span class="sidebar-label">Equipment</span>
+                    <span class="sidebar-label">Machinery & Equipment</span>
                 </a>
             </li>
         </ul>

@@ -71,7 +71,8 @@
                                     data-export-trigger
                                     data-format="PDF"
                                     data-scope-kind="Equipment Report"
-                                    data-scope="Machinery & Equipment Report">
+                                    data-scope="Machinery & Equipment Report"
+                                    data-preview-url="{{ route('admin.reports.equipment.preview', request()->query()) }}">
                                     <i class="bi bi-file-pdf"></i>
                                     <span class="small fw-bold">Export PDF</span>
                                 </a>
@@ -80,7 +81,8 @@
                                     data-export-trigger
                                     data-format="Word"
                                     data-scope-kind="Equipment Report"
-                                    data-scope="Machinery & Equipment Report">
+                                    data-scope="Machinery & Equipment Report"
+                                    data-preview-url="{{ route('admin.reports.equipment.preview', request()->query()) }}">
                                     <i class="bi bi-file-word"></i>
                                     <span class="small fw-bold">Export Word</span>
                                 </a>
@@ -100,15 +102,15 @@
                     <div class="card border-0 shadow-sm rounded-4 overflow-hidden paginated-section" data-page-size="10">
                         <div class="card-body p-0">
                             <div class="table-responsive">
-                                <table class="table table-hover align-middle mb-0">
+                                <table class="table table-hover align-middle mb-0 text-center">
                                     <thead>
-                                        <tr class="bg-primary bg-opacity-10">
-                                            <th class="ps-4 py-3 text-primary small text-uppercase fw-bold border-0">Equipment</th>
-                                            <th class="py-3 text-primary small text-uppercase fw-bold border-0">Brand</th>
-                                            <th class="py-3 text-primary small text-uppercase fw-bold border-0">Property No.</th>
-                                            <th class="py-3 text-primary small text-uppercase fw-bold border-0">Date Acquired</th>
-                                            <th class="py-3 text-primary small text-uppercase fw-bold border-0 text-end">Cost</th>
-                                            <th class="pe-4 py-3 text-primary small text-uppercase fw-bold border-0">Status</th>
+                                        <tr>
+                                            <th class="ps-4 py-3 small fw-bold border-0">Equipment</th>
+                                            <th class="py-3 small fw-bold border-0">Brand</th>
+                                            <th class="py-3 small fw-bold border-0">Property No.</th>
+                                            <th class="py-3 small fw-bold border-0">Date Acquired</th>
+                                            <th class="py-3 small fw-bold border-0">Cost</th>
+                                            <th class="pe-4 py-3 small fw-bold border-0">Status</th>
                                         </tr>
                                     </thead>
                                     <tbody class="border-top-0">
@@ -118,7 +120,7 @@
                                                 <td class="text-muted small">{{ $row['brand'] ?: '—' }}</td>
                                                 <td class="font-monospace small">{{ $row['property_no'] ?: '—' }}</td>
                                                 <td class="text-muted small">{{ $row['date_acquired'] ? $row['date_acquired']->format('M j, Y') : '—' }}</td>
-                                                <td class="text-end fw-bold text-dark">₱{{ number_format($row['cost'], 2) }}</td>
+                                                <td class="fw-bold text-dark">₱{{ number_format($row['cost'], 2) }}</td>
                                                 <td class="pe-4">
                                                     @php
                                                         $statusColors = [

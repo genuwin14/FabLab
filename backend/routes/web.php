@@ -87,9 +87,11 @@ Route::middleware(['auth:sanctum'])->group(function () {
     // Admin Routes/Reports
     Route::get('/admin/reports', [\App\Http\Controllers\Admin\ReportController::class, 'index'])->name('admin.reports.index');
     Route::get('/admin/reports/materials', [\App\Http\Controllers\Admin\ReportController::class, 'materials'])->name('admin.reports.materials');
+    Route::get('/admin/reports/materials/preview', [\App\Http\Controllers\Admin\ReportController::class, 'previewMaterials'])->name('admin.reports.materials.preview');
     Route::get('/admin/reports/materials/pdf', [\App\Http\Controllers\Admin\ReportController::class, 'exportMaterialsPdf'])->name('admin.reports.materials.pdf');
     Route::get('/admin/reports/materials/docx', [\App\Http\Controllers\Admin\ReportController::class, 'exportMaterialsDocx'])->name('admin.reports.materials.docx');
     Route::get('/admin/reports/equipment', [\App\Http\Controllers\Admin\ReportController::class, 'equipment'])->name('admin.reports.equipment');
+    Route::get('/admin/reports/equipment/preview', [\App\Http\Controllers\Admin\ReportController::class, 'previewEquipment'])->name('admin.reports.equipment.preview');
     Route::get('/admin/reports/equipment/pdf', [\App\Http\Controllers\Admin\ReportController::class, 'exportEquipmentPdf'])->name('admin.reports.equipment.pdf');
     Route::get('/admin/reports/equipment/docx', [\App\Http\Controllers\Admin\ReportController::class, 'exportEquipmentDocx'])->name('admin.reports.equipment.docx');
 
