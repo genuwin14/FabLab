@@ -54,7 +54,7 @@
                     <i class="bi bi-bag-check me-2"></i>
                     <span class="sidebar-label">My Orders</span>
                     @if(isset($inProgressCount) && $inProgressCount > 0)
-                        <span class="badge bg-warning text-dark rounded-pill float-end smaller sidebar-label">{{ $inProgressCount }}</span>
+                        <span class="badge bg-warning text-dark rounded-pill smaller sidebar-badge ms-auto">{{ $inProgressCount }}</span>
                     @endif
                 </a>
             </li>
@@ -176,6 +176,29 @@
         opacity: 0;
         max-width: 0;
         margin-left: 0 !important;
+    }
+
+    /* Badge sits flush right when expanded; in collapsed state it overlays
+       the icon as a notification dot in the top-right corner. */
+    .sidebar-inner .sidebar-badge {
+        transition: opacity 0.25s ease;
+    }
+
+    .sidebar-inner.sidebar-collapsed .nav-link {
+        position: relative;
+    }
+
+    .sidebar-inner.sidebar-collapsed .sidebar-badge {
+        position: absolute;
+        top: 2px;
+        right: 2px;
+        margin: 0 !important;
+        font-size: 0.6rem;
+        padding: 0.15em 0.4em;
+        line-height: 1;
+        min-width: 1rem;
+        text-align: center;
+        box-shadow: 0 0 0 2px #05111a;
     }
 
     .sidebar-inner.sidebar-collapsed .sidebar-section-title {
