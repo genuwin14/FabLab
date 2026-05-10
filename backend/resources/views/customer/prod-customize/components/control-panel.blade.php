@@ -92,7 +92,7 @@
             @else
                 <div class="row g-3">
                     @foreach($textures as $index => $texture)
-                        <div class="col-3">
+                        <div class="col-3 text-center">
                             <div class="texture-option {{ $index === 0 ? 'active' : '' }}"
                                 data-texture-id="{{ $texture->texture_id }}"
                                 data-image-path="{{ $texture->image_path }}"
@@ -106,6 +106,10 @@
                                     </div>
                                 @endif
                             </div>
+                            <div class="texture-price tiny fw-bold mt-1 text-truncate"
+                                style="color: {{ $texture->price_modifier > 0 ? '#ffc508' : 'rgba(255,255,255,0.5)' }};">
+                                {{ $texture->price_modifier > 0 ? '+₱' . number_format($texture->price_modifier, 2) : 'Free' }}
+                            </div>
                         </div>
                     @endforeach
                 </div>
@@ -115,7 +119,9 @@
         <!-- Step 3: Custom Text -->
         <div class="mb-5">
             <div class="d-flex justify-content-between align-items-center mb-3">
-                <label class="text-accent small text-uppercase fw-bold tracking-wider mb-0">3. Custom Text</label>
+                <label class="text-accent small text-uppercase fw-bold tracking-wider mb-0">3. Custom Text
+                    <span class="ms-1 fw-normal" style="font-size: 0.65rem; text-transform: none; color: rgba(255,255,255,0.6);">+₱50 each</span>
+                </label>
                 <button type="button" id="addTextBtn"
                     class="btn btn-tiny btn-outline-accent rounded-pill px-2 py-1 small" style="font-size: 0.65rem;">
                     <i class="bi bi-plus-lg"></i> Add Text
@@ -129,7 +135,9 @@
         <!-- Step 4: Custom Shapes -->
         <div class="mb-5">
             <div class="d-flex justify-content-between align-items-center mb-3">
-                <label class="text-accent small text-uppercase fw-bold tracking-wider mb-0">4. Custom Shapes</label>
+                <label class="text-accent small text-uppercase fw-bold tracking-wider mb-0">4. Custom Shapes
+                    <span class="ms-1 fw-normal" style="font-size: 0.65rem; text-transform: none; color: rgba(255,255,255,0.6);">+₱30 each</span>
+                </label>
                 <button type="button" id="addShapeBtn"
                     class="btn btn-tiny btn-outline-accent rounded-pill px-2 py-1 small" style="font-size: 0.65rem;">
                     <i class="bi bi-plus-lg"></i> Add Shape
@@ -143,7 +151,9 @@
         <!-- Step 5: Custom Logos / Images -->
         <div class="mb-5">
             <div class="d-flex justify-content-between align-items-center mb-3">
-                <label class="text-accent small text-uppercase fw-bold tracking-wider mb-0">5. Custom Logos</label>
+                <label class="text-accent small text-uppercase fw-bold tracking-wider mb-0">5. Custom Logos
+                    <span class="ms-1 fw-normal" style="font-size: 0.65rem; text-transform: none; color: rgba(255,255,255,0.6);">+₱150 each</span>
+                </label>
                 <div>
                     <input type="file" id="logoInput" class="d-none" accept="image/*,.svg">
                     <button type="button" onclick="document.getElementById('logoInput').click()"
@@ -165,7 +175,9 @@
 
             <div class="feature-item">
                 <div class="form-check form-switch custom-switch p-0 d-flex justify-content-between align-items-center">
-                    <label class="form-check-label text-white small" for="lighting">Internal LED Lighting</label>
+                    <label class="form-check-label text-white small" for="lighting">Internal LED Lighting
+                        <span class="ms-1 fw-bold" style="font-size: 0.7rem; color: #ffc508;">+₱500</span>
+                    </label>
                     <input class="form-check-input" type="checkbox" id="lighting">
                 </div>
             </div>
