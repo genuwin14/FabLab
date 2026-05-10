@@ -7,6 +7,16 @@
             'staff'    => ['bg' => '#0d6efd', 'color' => '#ffffff'],
             'customer' => ['bg' => '#198754', 'color' => '#ffffff'],
         ];
+        $roleBadges = [
+            'admin'    => ['bg' => 'rgba(14,46,69,0.12)',   'color' => '#0e2e45', 'icon' => 'bi-shield-lock',   'label' => 'Administrator'],
+            'staff'    => ['bg' => 'rgba(13,110,253,0.12)', 'color' => '#0d6efd', 'icon' => 'bi-person-badge',  'label' => 'Staff'],
+            'customer' => ['bg' => 'rgba(25,135,84,0.12)',  'color' => '#198754', 'icon' => 'bi-person',        'label' => 'Customer'],
+        ];
+        $roleActionLabels = [
+            'admin'    => 'Administrator',
+            'staff'    => 'Staff Member',
+            'customer' => 'Customer',
+        ];
     @endphp
 
     <div class="d-flex vh-100" style="background-color: #f8f9fa; overflow: hidden;">
@@ -65,356 +75,115 @@
                         </div>
                     </div>
 
-                    <!-- User Tabs and Tables -->
+                    <!-- Users Table -->
                     <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
-                        <div class="card-header bg-white border-0 pt-3 px-4 pb-0">
-                            <ul class="nav nav-tabs nav-tabs-bordered border-bottom-0 card-header-tabs gap-3" id="usersTab"
-                                role="tablist">
-                                <li class="nav-item" role="presentation">
-                                    <button class="nav-link active d-flex align-items-center gap-2 px-3 pb-3 border-0"
-                                        id="admin-tab" data-bs-toggle="tab" data-bs-target="#admin-tab-pane"
-                                        type="button" role="tab" aria-controls="admin-tab-pane" aria-selected="true">
-                                        <i class="bi bi-shield-lock"></i>Administrators
-                                        <span class="badge ms-2 rounded-pill">{{ count($admins) }}</span>
-                                    </button>
-                                </li>
-                                <li class="nav-item" role="presentation">
-                                    <button class="nav-link d-flex align-items-center gap-2 px-3 pb-3 border-0"
-                                        id="staff-tab" data-bs-toggle="tab" data-bs-target="#staff-tab-pane"
-                                        type="button" role="tab" aria-controls="staff-tab-pane" aria-selected="false">
-                                        <i class="bi bi-person-badge"></i>Staff
-                                        <span class="badge ms-2 rounded-pill">{{ count($staffs) }}</span>
-                                    </button>
-                                </li>
-                                <li class="nav-item" role="presentation">
-                                    <button class="nav-link d-flex align-items-center gap-2 px-3 pb-3 border-0"
-                                        id="customer-tab" data-bs-toggle="tab" data-bs-target="#customer-tab-pane"
-                                        type="button" role="tab" aria-controls="customer-tab-pane" aria-selected="false">
-                                        <i class="bi bi-people"></i>Customers
-                                        <span class="badge ms-2 rounded-pill">{{ count($customers) }}</span>
-                                    </button>
-                                </li>
-                            </ul>
-                        </div>
                         <div class="card-body p-0">
-                            <div class="tab-content" id="usersTabContent">
-
-                                {{-- ============== ADMIN TAB ============== --}}
-                                <div class="tab-pane fade show active" id="admin-tab-pane" role="tabpanel"
-                                    aria-labelledby="admin-tab" tabindex="0">
-                                    <div class="table-responsive">
-                                        <table class="table table-hover align-middle mb-0">
-                                            <thead>
-                                                <tr class="bg-primary bg-opacity-10">
-                                                    <th class="ps-4 py-3 text-primary small text-uppercase fw-bold border-0">
-                                                        Name</th>
-                                                    <th class="py-3 text-primary small text-uppercase fw-bold border-0">
-                                                        Email</th>
-                                                    <th class="py-3 text-primary small text-uppercase fw-bold border-0">
-                                                        Contact</th>
-                                                    <th class="py-3 text-primary small text-uppercase fw-bold border-0">
-                                                        Joined</th>
-                                                    <th class="py-3 text-primary small text-uppercase fw-bold border-0">
-                                                        Password</th>
-                                                    <th
-                                                        class="text-end pe-4 py-3 text-primary small text-uppercase fw-bold border-0">
-                                                        Action</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody class="border-top-0">
-                                                @forelse($admins as $admin)
-                                                    <tr>
-                                                        <td class="ps-4 py-3">
-                                                            <div class="d-flex align-items-center gap-3">
-                                                                <div class="rounded-circle d-flex align-items-center justify-content-center fw-bold flex-shrink-0"
-                                                                    style="width: 40px; height: 40px; background-color: {{ $roleAvatars['admin']['bg'] }}; color: {{ $roleAvatars['admin']['color'] }};">
-                                                                    {{ strtoupper(substr($admin->fullname, 0, 1)) }}
-                                                                </div>
-                                                                <div>
-                                                                    <h6 class="fw-bold text-dark mb-0">
-                                                                        {{ $admin->fullname }}
-                                                                    </h6>
-                                                                    <small class="text-muted">
-                                                                        <i class="bi bi-geo-alt-fill me-1"
-                                                                            style="font-size: 0.7rem;"></i>{{ Str::limit($admin->address ?? 'No address', 30) }}
-                                                                    </small>
-                                                                </div>
-                                                            </div>
-                                                        </td>
-                                                        <td class="text-muted small">{{ $admin->email }}</td>
-                                                        <td class="text-muted font-monospace small">
-                                                            {{ $admin->contact_number ?: '—' }}
-                                                        </td>
-                                                        <td class="text-muted small">
-                                                            {{ $admin->created_at->format('M d, Y') }}
-                                                        </td>
-                                                        <td>
-                                                            @if($admin->password)
-                                                                <span class="d-inline-flex align-items-center gap-1 px-2 py-1 rounded-pill small fw-semibold"
-                                                                    style="background-color: rgba(25,135,84,0.12); color: #198754;">
-                                                                    <i class="bi bi-shield-check" style="font-size: 0.7rem;"></i>Verified
-                                                                </span>
-                                                            @else
-                                                                <span class="d-inline-flex align-items-center gap-1 px-2 py-1 rounded-pill small fw-semibold"
-                                                                    style="background-color: rgba(108,117,125,0.15); color: #5a6268;">
-                                                                    <i class="bi bi-shield-exclamation" style="font-size: 0.7rem;"></i>Not Set
-                                                                </span>
-                                                            @endif
-                                                        </td>
-                                                        <td class="text-end pe-4">
-                                                            @if($admin->status === 'active')
-                                                                <button type="button"
-                                                                    class="btn btn-outline-danger btn-sm rounded-pill px-3 fw-bold"
-                                                                    data-bs-toggle="modal" data-bs-target="#statusModal"
-                                                                    data-user-id="{{ $admin->id }}"
-                                                                    data-user-name="{{ $admin->fullname }}"
-                                                                    data-role="Administrator" data-status="disabled"
-                                                                    data-route="{{ route('admin.users.updateStatus', $admin->id) }}">
-                                                                    <i class="bi bi-slash-circle me-1"></i>Disable
-                                                                </button>
-                                                            @else
-                                                                <button type="button"
-                                                                    class="btn btn-outline-success btn-sm rounded-pill px-3 fw-bold"
-                                                                    data-bs-toggle="modal" data-bs-target="#statusModal"
-                                                                    data-user-id="{{ $admin->id }}"
-                                                                    data-user-name="{{ $admin->fullname }}"
-                                                                    data-role="Administrator" data-status="active"
-                                                                    data-route="{{ route('admin.users.updateStatus', $admin->id) }}">
-                                                                    <i class="bi bi-check-circle me-1"></i>Enable
-                                                                </button>
-                                                            @endif
-                                                        </td>
-                                                    </tr>
-                                                @empty
-                                                    <tr>
-                                                        <td colspan="6" class="text-center py-5 text-muted">
-                                                            <i class="bi bi-shield-lock display-6 d-block mb-3 opacity-50"></i>
-                                                            No administrators found.
-                                                        </td>
-                                                    </tr>
-                                                @endforelse
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </div>
-
-                                {{-- ============== STAFF TAB ============== --}}
-                                <div class="tab-pane fade" id="staff-tab-pane" role="tabpanel"
-                                    aria-labelledby="staff-tab" tabindex="0">
-                                    <div class="table-responsive">
-                                        <table class="table table-hover align-middle mb-0">
-                                            <thead>
-                                                <tr class="bg-primary bg-opacity-10">
-                                                    <th class="ps-4 py-3 text-primary small text-uppercase fw-bold border-0">
-                                                        Name</th>
-                                                    <th class="py-3 text-primary small text-uppercase fw-bold border-0">
-                                                        Email</th>
-                                                    <th class="py-3 text-primary small text-uppercase fw-bold border-0">
-                                                        Contact</th>
-                                                    <th class="py-3 text-primary small text-uppercase fw-bold border-0">
-                                                        Joined</th>
-                                                    <th class="py-3 text-primary small text-uppercase fw-bold border-0">
-                                                        Password</th>
-                                                    <th
-                                                        class="text-end pe-4 py-3 text-primary small text-uppercase fw-bold border-0">
-                                                        Action</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody class="border-top-0">
-                                                @forelse($staffs as $staff)
-                                                    <tr>
-                                                        <td class="ps-4 py-3">
-                                                            <div class="d-flex align-items-center gap-3">
-                                                                <div class="rounded-circle d-flex align-items-center justify-content-center fw-bold flex-shrink-0"
-                                                                    style="width: 40px; height: 40px; background-color: {{ $roleAvatars['staff']['bg'] }}; color: {{ $roleAvatars['staff']['color'] }};">
-                                                                    {{ strtoupper(substr($staff->fullname, 0, 1)) }}
-                                                                </div>
-                                                                <div>
-                                                                    <h6 class="fw-bold text-dark mb-0">
-                                                                        {{ $staff->fullname }}
-                                                                    </h6>
-                                                                    <small class="text-muted">
-                                                                        <i class="bi bi-geo-alt-fill me-1"
-                                                                            style="font-size: 0.7rem;"></i>{{ Str::limit($staff->address ?? 'No address', 30) }}
-                                                                    </small>
-                                                                </div>
-                                                            </div>
-                                                        </td>
-                                                        <td class="text-muted small">{{ $staff->email }}</td>
-                                                        <td class="text-muted font-monospace small">
-                                                            {{ $staff->contact_number ?: '—' }}
-                                                        </td>
-                                                        <td class="text-muted small">
-                                                            {{ $staff->created_at->format('M d, Y') }}
-                                                        </td>
-                                                        <td>
-                                                            @if($staff->password)
-                                                                <span class="d-inline-flex align-items-center gap-1 px-2 py-1 rounded-pill small fw-semibold"
-                                                                    style="background-color: rgba(25,135,84,0.12); color: #198754;">
-                                                                    <i class="bi bi-shield-check" style="font-size: 0.7rem;"></i>Verified
-                                                                </span>
-                                                            @else
-                                                                <span class="d-inline-flex align-items-center gap-1 px-2 py-1 rounded-pill small fw-semibold"
-                                                                    style="background-color: rgba(108,117,125,0.15); color: #5a6268;">
-                                                                    <i class="bi bi-shield-exclamation" style="font-size: 0.7rem;"></i>Not Set
-                                                                </span>
-                                                            @endif
-                                                        </td>
-                                                        <td class="text-end pe-4">
-                                                            @if($staff->status === 'active')
-                                                                <button type="button"
-                                                                    class="btn btn-outline-danger btn-sm rounded-pill px-3 fw-bold"
-                                                                    data-bs-toggle="modal" data-bs-target="#statusModal"
-                                                                    data-user-id="{{ $staff->id }}"
-                                                                    data-user-name="{{ $staff->fullname }}"
-                                                                    data-role="Staff Member" data-status="disabled"
-                                                                    data-route="{{ route('admin.users.updateStatus', $staff->id) }}">
-                                                                    <i class="bi bi-slash-circle me-1"></i>Disable
-                                                                </button>
-                                                            @else
-                                                                <button type="button"
-                                                                    class="btn btn-outline-success btn-sm rounded-pill px-3 fw-bold"
-                                                                    data-bs-toggle="modal" data-bs-target="#statusModal"
-                                                                    data-user-id="{{ $staff->id }}"
-                                                                    data-user-name="{{ $staff->fullname }}"
-                                                                    data-role="Staff Member" data-status="active"
-                                                                    data-route="{{ route('admin.users.updateStatus', $staff->id) }}">
-                                                                    <i class="bi bi-check-circle me-1"></i>Enable
-                                                                </button>
-                                                            @endif
-                                                        </td>
-                                                    </tr>
-                                                @empty
-                                                    <tr>
-                                                        <td colspan="6" class="text-center py-5 text-muted">
-                                                            <i class="bi bi-person-badge display-6 d-block mb-3 opacity-50"></i>
-                                                            No staff found.
-                                                        </td>
-                                                    </tr>
-                                                @endforelse
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </div>
-
-                                {{-- ============== CUSTOMER TAB ============== --}}
-                                <div class="tab-pane fade" id="customer-tab-pane" role="tabpanel"
-                                    aria-labelledby="customer-tab" tabindex="0">
-                                    <div class="table-responsive">
-                                        <table class="table table-hover align-middle mb-0">
-                                            <thead>
-                                                <tr class="bg-primary bg-opacity-10">
-                                                    <th class="ps-4 py-3 text-primary small text-uppercase fw-bold border-0">
-                                                        Customer</th>
-                                                    <th class="py-3 text-primary small text-uppercase fw-bold border-0">
-                                                        Academic Info</th>
-                                                    <th class="py-3 text-primary small text-uppercase fw-bold border-0">
-                                                        Gender</th>
-                                                    <th class="py-3 text-primary small text-uppercase fw-bold border-0">
-                                                        Contact Details</th>
-                                                    <th class="py-3 text-primary small text-uppercase fw-bold border-0">
-                                                        Password</th>
-                                                    <th
-                                                        class="text-end pe-4 py-3 text-primary small text-uppercase fw-bold border-0">
-                                                        Action</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody class="border-top-0">
-                                                @forelse($customers as $customer)
-                                                    <tr>
-                                                        <td class="ps-4 py-3">
-                                                            <div class="d-flex align-items-center gap-3">
-                                                                <div class="rounded-circle d-flex align-items-center justify-content-center fw-bold flex-shrink-0"
-                                                                    style="width: 40px; height: 40px; background-color: {{ $roleAvatars['customer']['bg'] }}; color: {{ $roleAvatars['customer']['color'] }};">
-                                                                    {{ strtoupper(substr($customer->fullname, 0, 1)) }}
-                                                                </div>
-                                                                <div>
-                                                                    <h6 class="fw-bold text-dark mb-0">
-                                                                        {{ $customer->fullname }}
-                                                                    </h6>
-                                                                    <small class="text-muted">
-                                                                        <i class="bi bi-geo-alt-fill me-1"
-                                                                            style="font-size: 0.7rem;"></i>{{ Str::limit($customer->address ?? 'No address', 30) }}
-                                                                    </small>
-                                                                </div>
-                                                            </div>
-                                                        </td>
-                                                        <td class="small">
-                                                            <div class="d-flex flex-column">
-                                                                <span class="fw-bold text-dark">
-                                                                    {{ $customer->degree ?: '—' }}
-                                                                </span>
-                                                                <span class="text-muted">
-                                                                    {{ $customer->year ?? '' }}
-                                                                    {{ $customer->section ? '- ' . $customer->section : '' }}
-                                                                </span>
-                                                            </div>
-                                                        </td>
-                                                        <td class="text-muted small">{{ $customer->gender ?: '—' }}</td>
-                                                        <td class="small">
-                                                            <div class="d-flex flex-column gap-1">
-                                                                <div class="d-flex align-items-center gap-2 text-muted">
-                                                                    <i class="bi bi-telephone" style="font-size: 0.75rem;"></i>
-                                                                    <span class="font-monospace">
-                                                                        {{ $customer->contact_number ?: '—' }}
-                                                                    </span>
-                                                                </div>
-                                                                <div class="d-flex align-items-center gap-2 text-muted">
-                                                                    <i class="bi bi-envelope" style="font-size: 0.75rem;"></i>
-                                                                    <span>{{ $customer->email }}</span>
-                                                                </div>
-                                                            </div>
-                                                        </td>
-                                                        <td>
-                                                            @if($customer->password)
-                                                                <span class="d-inline-flex align-items-center gap-1 px-2 py-1 rounded-pill small fw-semibold"
-                                                                    style="background-color: rgba(25,135,84,0.12); color: #198754;">
-                                                                    <i class="bi bi-shield-check" style="font-size: 0.7rem;"></i>Verified
-                                                                </span>
-                                                            @else
-                                                                <span class="d-inline-flex align-items-center gap-1 px-2 py-1 rounded-pill small fw-semibold"
-                                                                    style="background-color: rgba(108,117,125,0.15); color: #5a6268;">
-                                                                    <i class="bi bi-shield-exclamation" style="font-size: 0.7rem;"></i>Not Set
-                                                                </span>
-                                                            @endif
-                                                        </td>
-                                                        <td class="text-end pe-4">
-                                                            @if($customer->status === 'active')
-                                                                <button type="button"
-                                                                    class="btn btn-outline-danger btn-sm rounded-pill px-3 fw-bold"
-                                                                    data-bs-toggle="modal" data-bs-target="#statusModal"
-                                                                    data-user-id="{{ $customer->id }}"
-                                                                    data-user-name="{{ $customer->fullname }}"
-                                                                    data-role="Customer" data-status="disabled"
-                                                                    data-route="{{ route('admin.users.updateStatus', $customer->id) }}">
-                                                                    <i class="bi bi-slash-circle me-1"></i>Disable
-                                                                </button>
-                                                            @else
-                                                                <button type="button"
-                                                                    class="btn btn-outline-success btn-sm rounded-pill px-3 fw-bold"
-                                                                    data-bs-toggle="modal" data-bs-target="#statusModal"
-                                                                    data-user-id="{{ $customer->id }}"
-                                                                    data-user-name="{{ $customer->fullname }}"
-                                                                    data-role="Customer" data-status="active"
-                                                                    data-route="{{ route('admin.users.updateStatus', $customer->id) }}">
-                                                                    <i class="bi bi-check-circle me-1"></i>Enable
-                                                                </button>
-                                                            @endif
-                                                        </td>
-                                                    </tr>
-                                                @empty
-                                                    <tr>
-                                                        <td colspan="6" class="text-center py-5 text-muted">
-                                                            <i class="bi bi-people display-6 d-block mb-3 opacity-50"></i>
-                                                            No customers found.
-                                                        </td>
-                                                    </tr>
-                                                @endforelse
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </div>
-
+                            <div class="table-responsive">
+                                <table class="table table-hover align-middle mb-0">
+                                    <thead>
+                                        <tr class="bg-primary bg-opacity-10">
+                                            <th class="ps-4 py-3 text-primary small text-uppercase fw-bold border-0">
+                                                Name</th>
+                                            <th class="py-3 text-primary small text-uppercase fw-bold border-0">
+                                                Role</th>
+                                            <th class="py-3 text-primary small text-uppercase fw-bold border-0">
+                                                Email</th>
+                                            <th class="py-3 text-primary small text-uppercase fw-bold border-0">
+                                                Contact</th>
+                                            <th class="py-3 text-primary small text-uppercase fw-bold border-0">
+                                                Joined</th>
+                                            <th class="py-3 text-primary small text-uppercase fw-bold border-0">
+                                                Password</th>
+                                            <th
+                                                class="text-end pe-4 py-3 text-primary small text-uppercase fw-bold border-0">
+                                                Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="border-top-0">
+                                        @forelse($users as $user)
+                                            @php
+                                                $avatar = $roleAvatars[$user->role] ?? $roleAvatars['customer'];
+                                                $badge  = $roleBadges[$user->role] ?? $roleBadges['customer'];
+                                                $actionRole = $roleActionLabels[$user->role] ?? ucfirst($user->role);
+                                            @endphp
+                                            <tr>
+                                                <td class="ps-4 py-3">
+                                                    <div class="d-flex align-items-center gap-3">
+                                                        <div class="rounded-circle d-flex align-items-center justify-content-center fw-bold flex-shrink-0"
+                                                            style="width: 40px; height: 40px; background-color: {{ $avatar['bg'] }}; color: {{ $avatar['color'] }};">
+                                                            {{ strtoupper(substr($user->fullname, 0, 1)) }}
+                                                        </div>
+                                                        <div>
+                                                            <h6 class="fw-bold text-dark mb-0">
+                                                                {{ $user->fullname }}
+                                                            </h6>
+                                                            <small class="text-muted">
+                                                                <i class="bi bi-geo-alt-fill me-1"
+                                                                    style="font-size: 0.7rem;"></i>{{ Str::limit($user->address ?? 'No address', 30) }}
+                                                            </small>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <span class="d-inline-flex align-items-center gap-1 px-2 py-1 rounded-pill small fw-semibold"
+                                                        style="background-color: {{ $badge['bg'] }}; color: {{ $badge['color'] }};">
+                                                        <i class="bi {{ $badge['icon'] }}" style="font-size: 0.7rem;"></i>{{ $badge['label'] }}
+                                                    </span>
+                                                </td>
+                                                <td class="text-muted small">{{ $user->email }}</td>
+                                                <td class="text-muted font-monospace small">
+                                                    {{ $user->contact_number ?: '—' }}
+                                                </td>
+                                                <td class="text-muted small">
+                                                    {{ $user->created_at->format('M d, Y') }}
+                                                </td>
+                                                <td>
+                                                    @if($user->password)
+                                                        <span class="d-inline-flex align-items-center gap-1 px-2 py-1 rounded-pill small fw-semibold"
+                                                            style="background-color: rgba(25,135,84,0.12); color: #198754;">
+                                                            <i class="bi bi-shield-check" style="font-size: 0.7rem;"></i>Verified
+                                                        </span>
+                                                    @else
+                                                        <span class="d-inline-flex align-items-center gap-1 px-2 py-1 rounded-pill small fw-semibold"
+                                                            style="background-color: rgba(108,117,125,0.15); color: #5a6268;">
+                                                            <i class="bi bi-shield-exclamation" style="font-size: 0.7rem;"></i>Not Set
+                                                        </span>
+                                                    @endif
+                                                </td>
+                                                <td class="text-end pe-4">
+                                                    @if($user->status === 'active')
+                                                        <button type="button"
+                                                            class="btn btn-outline-danger btn-sm rounded-pill px-3 fw-bold"
+                                                            data-bs-toggle="modal" data-bs-target="#statusModal"
+                                                            data-user-id="{{ $user->id }}"
+                                                            data-user-name="{{ $user->fullname }}"
+                                                            data-role="{{ $actionRole }}" data-status="disabled"
+                                                            data-route="{{ route('admin.users.updateStatus', $user->id) }}">
+                                                            <i class="bi bi-slash-circle me-1"></i>Disable
+                                                        </button>
+                                                    @else
+                                                        <button type="button"
+                                                            class="btn btn-outline-success btn-sm rounded-pill px-3 fw-bold"
+                                                            data-bs-toggle="modal" data-bs-target="#statusModal"
+                                                            data-user-id="{{ $user->id }}"
+                                                            data-user-name="{{ $user->fullname }}"
+                                                            data-role="{{ $actionRole }}" data-status="active"
+                                                            data-route="{{ route('admin.users.updateStatus', $user->id) }}">
+                                                            <i class="bi bi-check-circle me-1"></i>Enable
+                                                        </button>
+                                                    @endif
+                                                </td>
+                                            </tr>
+                                        @empty
+                                            <tr>
+                                                <td colspan="7" class="text-center py-5 text-muted">
+                                                    <i class="bi bi-people display-6 d-block mb-3 opacity-50"></i>
+                                                    No users found.
+                                                </td>
+                                            </tr>
+                                        @endforelse
+                                    </tbody>
+                                </table>
                             </div>
                         </div>
                     </div>
@@ -428,38 +197,6 @@
     @include('admin.users.components.modal-status')
 
     <style>
-        /* Tab styling */
-        .nav-tabs .nav-link {
-            color: #6c757d;
-            font-weight: 500;
-            transition: all 0.2s ease-in-out;
-            border-bottom: 3px solid transparent !important;
-        }
-        .nav-tabs .nav-link:hover {
-            color: var(--bs-primary);
-            background-color: transparent;
-            border-color: rgba(var(--bs-primary-rgb), 0.3) !important;
-        }
-        .nav-tabs .nav-link.active {
-            color: var(--bs-primary) !important;
-            font-weight: 700 !important;
-            background-color: transparent !important;
-            border-bottom: 3px solid var(--bs-primary) !important;
-        }
-        .nav-tabs .nav-link .badge {
-            background-color: #e9ecef;
-            color: #6c757d;
-            transition: all 0.2s ease-in-out;
-        }
-        .nav-tabs .nav-link:hover .badge {
-            color: var(--bs-primary);
-            background-color: rgba(var(--bs-primary-rgb), 0.1);
-        }
-        .nav-tabs .nav-link.active .badge {
-            background-color: rgba(var(--bs-primary-rgb), 0.1) !important;
-            color: var(--bs-primary) !important;
-        }
-
         /* ============================================
            User Status Modal Theme (mirrors product delete)
            ============================================ */

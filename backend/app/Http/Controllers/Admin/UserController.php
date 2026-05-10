@@ -23,11 +23,9 @@ class UserController extends Controller
             return $query;
         };
 
-        $admins = $applyFilters(User::where('role', 'admin'))->latest()->get();
-        $staffs = $applyFilters(User::where('role', 'staff'))->latest()->get();
-        $customers = $applyFilters(User::where('role', 'customer'))->latest()->get();
+        $users = $applyFilters(User::whereIn('role', ['admin', 'staff', 'customer']))->latest()->get();
 
-        return view('admin.users.users', compact('admins', 'staffs', 'customers', 'search'));
+        return view('admin.users.users', compact('users', 'search'));
     }
 
     public function updateStatus(Request $request, $id)
