@@ -69,6 +69,89 @@
             font-size: 0.95rem;
             flex-shrink: 0;
         }
+
+        /* ============================================
+           Order Details Drawer (admin theme)
+           ============================================ */
+        .customer-order-details-drawer { background-color: #fff; }
+
+        .customer-order-details-header {
+            background: linear-gradient(135deg, #05111a 0%, #0e2e45 100%);
+            padding: 22px 22px 18px;
+            position: relative;
+        }
+        .customer-order-details-header::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255, 197, 8, 0.3), transparent);
+        }
+
+        .customer-order-details-eyebrow {
+            font-size: 0.65rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: rgba(255, 197, 8, 0.85);
+        }
+
+        .customer-order-details-close {
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            color: rgba(255, 255, 255, 0.85);
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.85rem;
+            transition: all 0.2s ease;
+            flex-shrink: 0;
+        }
+        .customer-order-details-close:hover {
+            background: rgba(255, 197, 8, 0.12);
+            color: #ffc508;
+            border-color: rgba(255, 197, 8, 0.3);
+        }
+
+        .customer-order-details-body { background-color: #fff; }
+
+        .customer-order-details-summary {
+            background-color: #f8f9fa;
+            border: 1px solid rgba(0, 0, 0, 0.04);
+            border-radius: 12px;
+            padding: 14px 16px;
+        }
+
+        .customer-order-details-section-title {
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: #6c757d;
+            padding-bottom: 10px;
+            margin-bottom: 12px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+        }
+
+        .customer-order-details-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 8px 10px;
+            border: 1px solid rgba(0, 0, 0, 0.06);
+            border-radius: 12px;
+            background-color: #fff;
+            transition: border-color 0.15s ease, box-shadow 0.15s ease;
+        }
+        .customer-order-details-item:hover {
+            border-color: rgba(14, 46, 69, 0.18);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+        }
     </style>
 
     <div class="d-flex vh-100" style="background-color: #f8f9fa; overflow: hidden;">
@@ -426,89 +509,7 @@
 
     {{-- Order Details Right Drawer (one per order) --}}
     @if($orders->count() > 0)
-        @foreach($orders as $order)
-            @php
-                $statusColors = [
-                    'pending' => 'bg-warning text-dark',
-                    'processing' => 'bg-info text-white',
-                    'ready_for_pickup' => 'bg-primary text-white',
-                    'completed' => 'bg-success text-white',
-                    'cancelled' => 'bg-danger text-white',
-                ];
-                $statusLabel = ucwords(str_replace('_', ' ', $order->status));
-                $badgeClass = $statusColors[$order->status] ?? 'bg-secondary text-white';
-            @endphp
-            <div class="offcanvas offcanvas-end" tabindex="-1" id="orderDetails-{{ $order->order_id }}"
-                aria-labelledby="orderDetailsLabel-{{ $order->order_id }}" style="width: 420px; max-width: 100%;">
-                <div class="offcanvas-header border-bottom">
-                    <div>
-                        <div class="text-muted small text-uppercase fw-bold">Order
-                            #{{ $order->order_number }}</div>
-                        <h5 class="fw-bold mb-0 mt-1" id="orderDetailsLabel-{{ $order->order_id }}">
-                            Order Details
-                        </h5>
-                    </div>
-                    <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
-                </div>
-                <div class="offcanvas-body p-3">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <span class="badge {{ $badgeClass }} rounded-pill px-3 py-2">{{ $statusLabel }}</span>
-                        <span class="text-muted small">
-                            <i class="bi bi-calendar3 me-1"></i> {{ $order->created_at->format('M d, Y') }}
-                        </span>
-                    </div>
-
-                    <div class="bg-light rounded-3 p-3 mb-3">
-                        <div class="d-flex justify-content-between align-items-center mb-2">
-                            <span class="text-muted small">Total Amount</span>
-                            <span
-                                class="fw-bold text-primary fs-5">₱{{ number_format($order->total_amount, 2) }}</span>
-                        </div>
-                        <div class="d-flex justify-content-between align-items-center">
-                            <span class="text-muted small">Items</span>
-                            <span class="fw-medium">{{ $order->orderItems->sum('quantity') }} items</span>
-                        </div>
-                    </div>
-
-                    <h6 class="fw-bold mb-3 text-muted small text-uppercase">Items</h6>
-                    <div class="d-flex flex-column gap-2">
-                        @foreach($order->orderItems as $item)
-                            <div class="d-flex align-items-center gap-3 p-2 border rounded-3 bg-white">
-                                <div class="rounded-2 overflow-hidden border bg-white flex-shrink-0"
-                                    style="width: 48px; height: 48px;">
-                                    <img src="{{ ($item->customDesign && $item->customDesign->snapshot) ? $item->customDesign->snapshot : ($item->product->image ?: asset('img/FABLAB-LOGO.png')) }}"
-                                        class="w-100 h-100 object-fit-cover" alt="">
-                                </div>
-                                <div class="flex-grow-1 min-w-0">
-                                    <div class="fw-bold text-dark text-truncate">
-                                        {{ $item->product->name }}
-                                        @if($item->custom_design_id)
-                                            <span
-                                                class="badge bg-soft-primary text-primary tiny rounded-pill border border-primary-subtle ms-1">Custom</span>
-                                        @endif
-                                    </div>
-                                    <div class="text-muted small">
-                                        ₱{{ number_format($item->price ?? 0, 2) }}
-                                    </div>
-                                </div>
-                                <span class="fw-bold text-dark flex-shrink-0">x{{ $item->quantity }}</span>
-                            </div>
-                        @endforeach
-                    </div>
-
-                    @if($order->status == 'cancelled' && $order->reason)
-                        <div class="alert alert-danger d-flex align-items-start mt-3 p-2 small border-0 bg-danger bg-opacity-10 text-danger rounded-3"
-                            role="alert">
-                            <i class="bi bi-x-circle-fill me-2 mt-1"></i>
-                            <div class="lh-sm">
-                                <span class="fw-bold">Order Cancelled</span><br>
-                                Reason: {{ $order->reason }}
-                            </div>
-                        </div>
-                    @endif
-                </div>
-            </div>
-        @endforeach
+        @each('customer.order.components.details-drawer', $orders, 'order')
     @endif
 
     @include('customer.order.components.cancel-modal')
