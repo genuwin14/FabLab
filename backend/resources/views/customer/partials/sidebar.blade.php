@@ -59,6 +59,68 @@
                 </a>
             </li>
         </ul>
+
+        <!-- Order Status / CTA Card -->
+        <div class="sidebar-cta mt-1 mb-3">
+            @if($latestActiveOrder)
+                @php
+                    $statusLabel = match($latestActiveOrder->status) {
+                        'pending' => 'Awaiting confirmation',
+                        'processing' => 'In production',
+                        default => ucfirst($latestActiveOrder->status),
+                    };
+                    $items = $latestActiveOrder->orderItems;
+                    $firstItem = $items->first();
+                    $totalQty = (int) $items->sum('quantity');
+                    $extraTypes = max(0, $items->count() - 1);
+                    $thumb = null;
+                    $primaryName = '#' . $latestActiveOrder->order_number;
+                    if ($firstItem) {
+                        $thumb = ($firstItem->customDesign && $firstItem->customDesign->snapshot)
+                            ? $firstItem->customDesign->snapshot
+                            : ($firstItem->product->image ?? null);
+                        $primaryName = optional($firstItem->product)->name ?? $primaryName;
+                    }
+                @endphp
+                <a href="{{ route('customer.orders.index') }}" class="sidebar-cta-card sidebar-cta-active"
+                   title="Order #{{ $latestActiveOrder->order_number }}">
+                    <div class="d-flex align-items-center mb-2">
+                        <span class="sidebar-cta-pulse me-2"></span>
+                        <span class="sidebar-cta-label">{{ $statusLabel }}</span>
+                    </div>
+                    <div class="d-flex align-items-center gap-2 sidebar-cta-summary">
+                        @if($thumb)
+                            <img src="{{ $thumb }}" alt="" class="sidebar-cta-thumb">
+                        @else
+                            <div class="sidebar-cta-thumb sidebar-cta-thumb-fallback">
+                                <i class="bi bi-bag-check"></i>
+                            </div>
+                        @endif
+                        <div class="flex-grow-1 min-w-0">
+                            <div class="sidebar-cta-item-name">
+                                {{ $primaryName }}@if($extraTypes > 0)<span class="sidebar-cta-more"> +{{ $extraTypes }}</span>@endif
+                            </div>
+                            <div class="sidebar-cta-item-meta">
+                                {{ $totalQty }} {{ $totalQty === 1 ? 'item' : 'items' }} · ₱{{ number_format((float) $latestActiveOrder->total_amount, 0) }}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="sidebar-cta-action mt-2">
+                        <span>View order</span>
+                        <i class="bi bi-arrow-right-short"></i>
+                    </div>
+                </a>
+            @else
+                <a href="{{ route('customer.customize.index') }}" class="sidebar-cta-card sidebar-cta-empty">
+                    <div class="sidebar-cta-icon mb-1"><i class="bi bi-stars"></i></div>
+                    <div class="sidebar-cta-title">Bring your idea to life</div>
+                    <div class="sidebar-cta-action mt-2">
+                        <span>Start designing</span>
+                        <i class="bi bi-arrow-right-short"></i>
+                    </div>
+                </a>
+            @endif
+        </div>
     </div>
 
     <!-- Fixed Footer -->
@@ -264,6 +326,140 @@
 
     .custom-scrollbar::-webkit-scrollbar-thumb:hover {
         background: rgba(255, 255, 255, 0.2);
+    }
+
+    /* ── Sidebar CTA Card ── */
+    .sidebar-cta-card {
+        display: block;
+        padding: 0.75rem;
+        border-radius: 0.625rem;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        background: linear-gradient(135deg, rgba(255, 197, 8, 0.08) 0%, rgba(255, 255, 255, 0.02) 100%);
+        color: #fff;
+        text-decoration: none;
+        transition: border-color 0.2s ease, background 0.2s ease, transform 0.15s ease;
+    }
+
+    .sidebar-cta-card:hover {
+        border-color: rgba(255, 197, 8, 0.45);
+        background: linear-gradient(135deg, rgba(255, 197, 8, 0.16) 0%, rgba(255, 255, 255, 0.04) 100%);
+        color: #fff;
+        transform: translateY(-1px);
+    }
+
+    .sidebar-cta-pulse {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background-color: #ffc508;
+        display: inline-block;
+        flex-shrink: 0;
+        animation: sidebar-cta-pulse 2s infinite;
+    }
+
+    @keyframes sidebar-cta-pulse {
+        0%   { box-shadow: 0 0 0 0 rgba(255, 197, 8, 0.55); }
+        70%  { box-shadow: 0 0 0 8px rgba(255, 197, 8, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(255, 197, 8, 0); }
+    }
+
+    .sidebar-cta-label {
+        font-size: 0.68rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: #ffc508;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .sidebar-cta-thumb {
+        width: 36px;
+        height: 36px;
+        border-radius: 0.375rem;
+        object-fit: cover;
+        background-color: #fff;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        flex-shrink: 0;
+    }
+
+    .sidebar-cta-thumb-fallback {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(255, 197, 8, 0.12);
+        border-color: rgba(255, 197, 8, 0.25);
+        color: #ffc508;
+        font-size: 1rem;
+    }
+
+    .sidebar-cta-item-name {
+        font-size: 0.82rem;
+        font-weight: 600;
+        color: #fff;
+        line-height: 1.2;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .sidebar-cta-more {
+        font-size: 0.7rem;
+        font-weight: 600;
+        color: #ffc508;
+    }
+
+    .sidebar-cta-item-meta {
+        font-size: 0.7rem;
+        color: rgba(255, 255, 255, 0.55);
+        margin-top: 2px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .sidebar-cta-icon {
+        font-size: 1.25rem;
+        color: #ffc508;
+        line-height: 1;
+    }
+
+    .sidebar-cta-title {
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: #fff;
+        line-height: 1.3;
+    }
+
+    .sidebar-cta-action {
+        display: flex;
+        align-items: center;
+        font-size: 0.7rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: rgba(255, 255, 255, 0.55);
+        transition: color 0.2s ease;
+    }
+
+    .sidebar-cta-action i {
+        font-size: 1rem;
+        margin-left: 0.15rem;
+        transition: transform 0.2s ease;
+    }
+
+    .sidebar-cta-card:hover .sidebar-cta-action {
+        color: #ffc508;
+    }
+
+    .sidebar-cta-card:hover .sidebar-cta-action i {
+        transform: translateX(2px);
+    }
+
+    /* Hide CTA card when sidebar is collapsed (76px is too narrow) */
+    .sidebar-inner.sidebar-collapsed .sidebar-cta {
+        display: none;
     }
 </style>
 

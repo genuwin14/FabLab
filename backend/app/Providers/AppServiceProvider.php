@@ -23,12 +23,23 @@ class AppServiceProvider extends ServiceProvider
 
         \Illuminate\Support\Facades\View::composer('customer.partials.sidebar', function ($view) {
             $count = 0;
+            $latestActiveOrder = null;
             if (\Illuminate\Support\Facades\Auth::check()) {
-                $count = \App\Models\Order::where('user_id', \Illuminate\Support\Facades\Auth::id())
-                    ->whereIn('status', ['pending', 'processing'])
+                $userId = \Illuminate\Support\Facades\Auth::id();
+                $activeStatuses = ['pending', 'processing'];
+
+                $count = \App\Models\Order::where('user_id', $userId)
+                    ->whereIn('status', $activeStatuses)
                     ->count();
+
+                $latestActiveOrder = \App\Models\Order::with(['orderItems.product', 'orderItems.customDesign'])
+                    ->where('user_id', $userId)
+                    ->whereIn('status', $activeStatuses)
+                    ->latest('created_at')
+                    ->first();
             }
             $view->with('inProgressCount', $count);
+            $view->with('latestActiveOrder', $latestActiveOrder);
         });
     }
 }
