@@ -32,6 +32,10 @@
                         Stock Monitoring
                     @elseif(request()->routeIs('admin.equipment*'))
                         Machinery & Equipment
+                    @elseif(request()->routeIs('admin.reports.materials'))
+                        Reports <span class="page-title-sub">/ Materials</span>
+                    @elseif(request()->routeIs('admin.reports.equipment'))
+                        Reports <span class="page-title-sub">/ Machinery & Equipment</span>
                     @elseif(request()->routeIs('admin.reports*'))
                         Reports
                     @elseif(request()->routeIs('admin.users*'))
@@ -363,6 +367,12 @@
     .user-dropdown-menu .dropdown-divider {
         border-color: rgba(255, 255, 255, 0.08);
         margin: 6px 0;
+    }
+
+    /* Sub-segment in the page title (e.g. "Reports / Materials") */
+    .page-title .page-title-sub {
+        color: rgba(255, 255, 255, 0.45);
+        font-weight: 400;
     }
 </style>
 

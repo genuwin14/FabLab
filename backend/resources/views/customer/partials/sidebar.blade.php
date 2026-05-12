@@ -307,6 +307,13 @@
         color: #0e2e45 !important;
     }
 
+    /* Active nav item: soft gold wash + gold text instead of a solid gold block */
+    .sidebar-inner .nav-link.active {
+        background-color: rgba(255, 197, 8, 0.16) !important;
+        color: #ffc508 !important;
+    }
+    .sidebar-inner .nav-link.active i { color: #ffc508 !important; }
+
     /* ── Scrollbar ── */
     /* Prevent horizontal scrollbar from appearing in collapsed state.
        (overflow-y: auto implicitly sets overflow-x: auto per CSS spec, so we clamp it explicitly.) */

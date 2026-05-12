@@ -129,12 +129,34 @@
                 </a>
             </li>
             <li class="nav-item">
-                <a href="{{ route('admin.reports.index') }}"
-                    class="nav-link sidebar-tooltip {{ request()->routeIs('admin.reports.*') ? 'active bg-accent text-primary fw-bold' : 'text-white hover-accent' }}"
+                <a href="#reportsSubmenu" data-bs-toggle="collapse" role="button"
+                    aria-expanded="{{ request()->routeIs('admin.reports.*') ? 'true' : 'false' }}"
+                    class="nav-link sidebar-tooltip sidebar-has-submenu {{ request()->routeIs('admin.reports.*') ? 'text-accent' : 'text-white hover-accent' }}"
                     data-sidebar-tooltip="true" title="Reports">
                     <i class="bi bi-bar-chart-fill me-2"></i>
                     <span class="sidebar-label">Reports</span>
+                    <i class="bi bi-chevron-down sidebar-caret sidebar-label ms-auto small"></i>
                 </a>
+                <div class="collapse sidebar-submenu {{ request()->routeIs('admin.reports.*') ? 'show' : '' }}" id="reportsSubmenu">
+                    <ul class="nav nav-pills flex-column gap-1 mt-1">
+                        <li class="nav-item">
+                            <a href="{{ route('admin.reports.materials') }}"
+                                class="nav-link sidebar-tooltip sidebar-submenu-link {{ request()->routeIs('admin.reports.materials') ? 'active bg-accent text-primary fw-bold' : 'text-white hover-accent' }}"
+                                data-sidebar-tooltip="true" title="Materials">
+                                <i class="bi bi-clipboard-data me-2"></i>
+                                <span class="sidebar-label">Materials</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{{ route('admin.reports.equipment') }}"
+                                class="nav-link sidebar-tooltip sidebar-submenu-link {{ request()->routeIs('admin.reports.equipment') ? 'active bg-accent text-primary fw-bold' : 'text-white hover-accent' }}"
+                                data-sidebar-tooltip="true" title="Machinery & Equipment">
+                                <i class="bi bi-tools me-2"></i>
+                                <span class="sidebar-label">Machinery & Equipment</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
             </li>
         </ul>
     </div>
@@ -257,6 +279,80 @@
 
     .bg-accent { background-color: #ffc508 !important; }
     .text-primary { color: #0e2e45 !important; }
+    .text-accent { color: #ffc508 !important; }
+    .text-accent i { color: #ffc508 !important; }
+
+    /* Active nav item: soft gold wash + gold text instead of a solid gold block */
+    .sidebar-inner .nav-link.active {
+        background-color: rgba(255, 197, 8, 0.16) !important;
+        color: #ffc508 !important;
+    }
+    .sidebar-inner .nav-link.active i { color: #ffc508 !important; }
+
+    /* ── Submenu (collapsible nav group) ── */
+    .sidebar-has-submenu .sidebar-caret { transition: transform 0.25s ease; }
+    .sidebar-has-submenu[aria-expanded="true"] .sidebar-caret { transform: rotate(180deg); }
+    .sidebar-submenu .nav { margin-bottom: 0 !important; }
+    .sidebar-submenu-link {
+        padding-left: 2.1rem !important;
+        font-size: 0.82rem !important;
+    }
+    .sidebar-submenu-link i { font-size: 1rem !important; }
+
+    /* ── Collapsed sidebar: submenu becomes a hover fly-out next to the icon ── */
+    .sidebar-inner.sidebar-collapsed .sidebar-caret { display: none !important; }
+    .sidebar-inner.sidebar-collapsed .nav-item { position: relative; }
+    .sidebar-inner.sidebar-collapsed .sidebar-submenu {
+        display: block !important;          /* override Bootstrap .collapse */
+        height: auto !important;
+        /* position:fixed escapes the sidebar's overflow clipping; JS sets the coords */
+        position: fixed;
+        top: var(--flyout-top, 70px);
+        left: var(--flyout-left, 84px);
+        min-width: 215px;
+        background-color: #05111a;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 0.65rem;
+        padding: 0.4rem;
+        box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.45);
+        opacity: 0;
+        visibility: hidden;
+        transform: translateX(-6px);
+        transition: opacity 0.18s ease, transform 0.18s ease, visibility 0s linear 0.18s;
+        z-index: 1050;
+    }
+    /* Invisible bridge across the gap so hover doesn't drop */
+    .sidebar-inner.sidebar-collapsed .sidebar-submenu::before {
+        content: "";
+        position: absolute;
+        left: -0.7rem;
+        top: 0;
+        width: 0.7rem;
+        height: 100%;
+    }
+    .sidebar-inner.sidebar-collapsed .nav-item:hover > .sidebar-submenu {
+        opacity: 1;
+        visibility: visible;
+        transform: translateX(0);
+        transition: opacity 0.18s ease, transform 0.18s ease;
+    }
+    .sidebar-inner.sidebar-collapsed .sidebar-submenu .nav {
+        margin-bottom: 0 !important;
+        gap: 0.15rem !important;
+    }
+    .sidebar-inner.sidebar-collapsed .sidebar-submenu .nav-link {
+        justify-content: flex-start !important;
+        width: auto !important;
+        height: auto !important;
+        padding: 0.5rem 0.7rem !important;
+        margin: 0 !important;
+    }
+    .sidebar-inner.sidebar-collapsed .sidebar-submenu .nav-link i { margin-right: 0.5rem !important; }
+    .sidebar-inner.sidebar-collapsed .sidebar-submenu .sidebar-label {
+        opacity: 1 !important;
+        max-width: 200px !important;
+        margin-left: 0 !important;
+    }
 
     /* ── Scrollbar ── */
     /* Prevent horizontal scrollbar from appearing in collapsed state.
@@ -276,7 +372,9 @@ if (!window.adminSidebarInit) {
         const EXPANDED_W = '280px';
 
         function toggleTooltips(inner, collapsed) {
-            inner.querySelectorAll('.sidebar-tooltip').forEach(el => {
+            // Items tied to a fly-out submenu (the group toggle and its links) don't need a
+            // tooltip — the fly-out itself shows the labels.
+            inner.querySelectorAll('.sidebar-tooltip:not(.sidebar-has-submenu):not(.sidebar-submenu-link)').forEach(el => {
                 const instance = bootstrap.Tooltip.getInstance(el);
                 if (collapsed) {
                     if (!instance) new bootstrap.Tooltip(el, { trigger: 'hover', placement: 'right', delay: {show:200, hide:0}, container: 'body' });
@@ -331,6 +429,36 @@ if (!window.adminSidebarInit) {
             btn.addEventListener('click', e => {
                 e.preventDefault();
                 apply(!inner.classList.contains('sidebar-collapsed'), true);
+            });
+        });
+
+        // ── Hover-to-open for collapsible submenu groups (e.g. Reports) ──
+        document.querySelectorAll('.sidebar-has-submenu').forEach(toggle => {
+            const li = toggle.closest('.nav-item');
+            const target = document.querySelector(toggle.getAttribute('href'));
+            const inner = toggle.closest('.sidebar-inner');
+            if (!li || !target || !window.bootstrap) return;
+            let hideTimer;
+
+            li.addEventListener('mouseenter', () => {
+                if (inner && inner.classList.contains('sidebar-collapsed')) {
+                    // Position the fly-out next to the icon (fixed coords, viewport-relative).
+                    const r = toggle.getBoundingClientRect();
+                    target.style.setProperty('--flyout-top', Math.max(8, r.top) + 'px');
+                    target.style.setProperty('--flyout-left', (r.right + 10) + 'px');
+                    return;
+                }
+                clearTimeout(hideTimer);
+                bootstrap.Collapse.getOrCreateInstance(target, { toggle: false }).show();
+            });
+            li.addEventListener('mouseleave', () => {
+                if (inner && inner.classList.contains('sidebar-collapsed')) return;
+                clearTimeout(hideTimer);
+                hideTimer = setTimeout(() => {
+                    // Keep it open when one of its links is the active page.
+                    if (target.querySelector('.nav-link.active')) return;
+                    bootstrap.Collapse.getOrCreateInstance(target, { toggle: false }).hide();
+                }, 220);
             });
         });
     });

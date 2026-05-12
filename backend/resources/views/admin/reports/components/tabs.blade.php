@@ -146,53 +146,16 @@
         </div>
     @endif
 
-    <ul class="nav nav-tabs report-tabs border-0 mb-0" role="tablist">
-        <li class="nav-item" role="presentation">
-            <a class="nav-link {{ request()->routeIs('admin.reports.materials') ? 'active' : '' }}"
-               href="{{ route('admin.reports.materials') }}">
-                <i class="bi bi-clipboard-data me-1"></i>
-                <span>Materials</span>
-            </a>
-        </li>
-        <li class="nav-item" role="presentation">
-            <a class="nav-link {{ request()->routeIs('admin.reports.equipment') ? 'active' : '' }}"
-               href="{{ route('admin.reports.equipment') }}">
-                <i class="bi bi-tools me-1"></i>
-                <span>Machinery & Equipment</span>
-            </a>
-        </li>
-    </ul>
+    <div class="d-flex align-items-center gap-2">
+        <span class="badge rounded-pill px-3 py-2 d-inline-flex align-items-center gap-1"
+              style="background-color: rgba(255, 197, 8, 0.12); color: #0e2e45; font-size: 0.85rem; font-weight: 600;">
+            <i class="bi {{ request()->routeIs('admin.reports.materials') ? 'bi-clipboard-data' : 'bi-tools' }}"></i>
+            {{ request()->routeIs('admin.reports.materials') ? 'Materials' : 'Machinery & Equipment' }}
+        </span>
+    </div>
 </div>
 
 <style>
-    .report-tabs { border-bottom: none !important; }
-    .report-tabs .nav-link {
-        color: #6c757d;
-        font-weight: 600;
-        font-size: 0.9rem;
-        padding: 0.55rem 1.1rem;
-        border: 1px solid transparent;
-        border-bottom: 3px solid transparent;
-        border-radius: 0;
-        background: transparent;
-        transition: color 0.15s ease, border-color 0.15s ease, background-color 0.15s ease;
-    }
-    .report-tabs .nav-link:hover {
-        color: #0e2e45;
-        border-bottom-color: rgba(255, 197, 8, 0.4);
-    }
-    .report-tabs .nav-link.active {
-        color: #0e2e45;
-        background-color: rgba(255, 197, 8, 0.06);
-        border-top-color: transparent;
-        border-left: 1px solid rgba(255, 197, 8, 0.55);
-        border-right: 1px solid rgba(255, 197, 8, 0.55);
-        border-bottom-color: #ffc508;
-    }
-    .report-tabs .nav-link.active:hover {
-        background-color: rgba(255, 197, 8, 0.1);
-    }
-
     .report-summary-divider {
         width: 1px;
         background-color: rgba(0, 0, 0, 0.1);
