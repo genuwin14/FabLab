@@ -34,6 +34,14 @@
                     <span class="sidebar-label">Orders</span>
                 </a>
             </li>
+            <li class="nav-item">
+                <a href="{{ route('staff.sales.index') }}"
+                    class="nav-link sidebar-tooltip {{ request()->routeIs('staff.sales.*') ? 'active bg-accent text-primary fw-bold' : 'text-white hover-accent' }}"
+                    data-sidebar-tooltip="true" title="Sales">
+                    <i class="bi bi-cash-coin me-2"></i>
+                    <span class="sidebar-label">Sales</span>
+                </a>
+            </li>
         </ul>
 
         <!-- Inventory Control Section -->

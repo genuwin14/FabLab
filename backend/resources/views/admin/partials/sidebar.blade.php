@@ -88,10 +88,11 @@
                 </a>
             </li>
             <li class="nav-item">
-                <a href="#" class="nav-link text-white hover-accent sidebar-tooltip"
-                    data-sidebar-tooltip="true" title="Customized Orders">
-                    <i class="bi bi-palette me-2"></i>
-                    <span class="sidebar-label">Customized Orders</span>
+                <a href="{{ route('admin.sales.index') }}"
+                    class="nav-link sidebar-tooltip {{ request()->routeIs('admin.sales.*') ? 'active bg-accent text-primary fw-bold' : 'text-white hover-accent' }}"
+                    data-sidebar-tooltip="true" title="Sales">
+                    <i class="bi bi-cash-coin me-2"></i>
+                    <span class="sidebar-label">Sales</span>
                 </a>
             </li>
         </ul>

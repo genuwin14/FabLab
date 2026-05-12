@@ -105,6 +105,8 @@ Route::middleware(['auth:sanctum'])->group(function () {
     // Admin Routes/Orders
     Route::get('/admin/orders', [\App\Http\Controllers\Admin\OrderController::class, 'index'])->name('admin.orders.index');
     Route::post('/admin/orders/{id}/review', [\App\Http\Controllers\Admin\OrderController::class, 'review'])->name('admin.orders.review');
+    // Admin Routes/Sales
+    Route::get('/admin/sales', [\App\Http\Controllers\Admin\SalesController::class, 'index'])->name('admin.sales.index');
     // Admin Routes/Profile
     Route::put('/admin/profile', [\App\Http\Controllers\Admin\ProfileController::class, 'update'])->name('admin.profile.update');
     // Admin Routes/Users
@@ -117,6 +119,8 @@ Route::middleware(['auth:sanctum'])->group(function () {
     // Staff Routes/Orders
     Route::get('/staff/orders', [\App\Http\Controllers\Staff\OrderController::class, 'index'])->name('staff.orders.index');
     Route::post('/staff/orders/{id}/update-status', [\App\Http\Controllers\Staff\OrderController::class, 'updateStatus'])->name('staff.orders.updateStatus');
+    // Staff Routes/Sales
+    Route::get('/staff/sales', [\App\Http\Controllers\Staff\SalesController::class, 'index'])->name('staff.sales.index');
     // Staff Routes/Products (read + edit only)
     Route::get('/staff/products', [\App\Http\Controllers\Staff\ProductController::class, 'index'])->name('staff.products.index');
     Route::put('/staff/products/{id}', [\App\Http\Controllers\Staff\ProductController::class, 'update'])->name('staff.products.update');

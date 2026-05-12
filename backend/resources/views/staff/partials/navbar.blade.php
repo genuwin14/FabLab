@@ -16,6 +16,8 @@
                         Dashboard
                     @elseif(request()->routeIs('staff.orders*'))
                         Orders
+                    @elseif(request()->routeIs('staff.sales*'))
+                        Sales
                     @elseif(request()->routeIs('staff.products*'))
                         Products
                     @elseif(request()->routeIs('staff.raw-materials*'))
