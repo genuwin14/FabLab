@@ -147,8 +147,18 @@
                                     </thead>
                                     <tbody class="border-top-0">
                                         @forelse($orders as $order)
+                                            @php
+                                                $customCount = $order->orderItems->whereNotNull('custom_design_id')->count();
+                                            @endphp
                                             <tr>
-                                                <td class="ps-4 py-3 fw-bold text-dark">#{{ $order->order_number }}</td>
+                                                <td class="ps-4 py-3 fw-bold text-dark">
+                                                    #{{ $order->order_number }}
+                                                    @if($customCount > 0)
+                                                        <span class="ms-1 text-primary" title="Contains Customized Items">
+                                                            <i class="bi bi-palette-fill" style="font-size: 0.75rem;"></i>
+                                                        </span>
+                                                    @endif
+                                                </td>
                                                 <td>
                                                     @if($order->payment_reference)
                                                         <span class="font-monospace small text-muted">
@@ -197,7 +207,7 @@
                                                 </td>
                                                 <td class="text-end pe-4">
                                                     @php
-                                                        $orderItemsJson = json_encode($order->orderItems()->with('product')->get());
+                                                        $orderItemsJson = json_encode($order->orderItems()->with(['product', 'customDesign'])->get());
                                                         $orderJson = json_encode($order);
                                                     @endphp
                                                     @if($order->status == 'pending')
@@ -427,7 +437,12 @@
                         const product = item.product || {};
                         const stock = product.stock ?? 0;
                         const isAvailable = stock >= item.quantity;
-                        const imgSrc = product.image ? product.image : '/img/FABLAB-LOGO.png';
+                        const design = item.custom_design || item.customDesign;
+                        const isCustom = !!(item.custom_design_id && design);
+                        const imgSrc = (isCustom && design.snapshot) ? design.snapshot : (product.image ? product.image : '/img/FABLAB-LOGO.png');
+                        const customBadge = isCustom
+                            ? '<span class="badge ms-1" style="background-color: rgba(255, 197, 8, 0.18); color: #997404; font-size: 0.55rem; vertical-align: middle;">TAILORED</span>'
+                            : '<span class="badge ms-1" style="background-color: rgba(108, 117, 125, 0.12); color: #6c757d; font-size: 0.55rem; vertical-align: middle;">STANDARD</span>';
 
                         const row = `
                             <tr>
@@ -437,7 +452,7 @@
                                             <img src="${imgSrc}" class="w-100 h-100 object-fit-cover rounded" alt="">
                                         </div>
                                         <div>
-                                            <div class="fw-bold text-dark small">${product.name ?? '-'}</div>
+                                            <div class="fw-bold text-dark small">${product.name ?? '-'}${customBadge}</div>
                                             <div class="text-muted font-monospace" style="font-size: 0.7rem;">SKU: ${product.sku ?? '-'}</div>
                                         </div>
                                     </div>
@@ -457,4 +472,93 @@
             }
         });
     </script>
+
+    @push('scripts')
+        <!-- Three.js Libraries -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+
+        <!-- Customizer Core Logic (Excluding UI Handlers) -->
+        <script src="{{ asset('js/customizer/state.js') }}"></script>
+        <script src="{{ asset('js/customizer/core.js') }}"></script>
+        <script src="{{ asset('js/customizer/models/mug.js') }}"></script>
+        <script src="{{ asset('js/customizer/models/t-shirt.js') }}"></script>
+        <script src="{{ asset('js/customizer/models/shorts.js') }}"></script>
+        <script src="{{ asset('js/customizer/models/umbrella.js') }}"></script>
+        <script src="{{ asset('js/customizer/rendering.js') }}"></script>
+        <script src="{{ asset('js/customizer/persistence.js') }}"></script>
+
+        <script>
+            // Design Inspection popout — opened from the "View Order" modal's customized items
+            $(document).on('click', '.btn-popout-design', function () {
+                const design = $(this).data('design');
+                if (!design) return;
+
+                $('#detailPopupImage').attr('src', design.snapshot || '').removeClass('d-none');
+                $('#preview-loader').removeClass('d-none').html(
+                    '<div class="spinner-border text-warning mb-2" role="status"></div>' +
+                    '<div class="fw-bold text-uppercase opacity-75" style="font-size: 0.7rem; letter-spacing: 0.06em;">Initializing 3D Scene...</div>'
+                );
+
+                let recipe = design.recipe;
+                if (typeof recipe === 'string') {
+                    try { recipe = JSON.parse(recipe); } catch (e) { recipe = {}; }
+                }
+                recipe = recipe || {};
+                $('#detailPopupRecipe').text(JSON.stringify(recipe, null, 4));
+
+                const modal = new bootstrap.Modal(document.getElementById('designDetailPopup'));
+                modal.show();
+
+                setTimeout(() => {
+                    try {
+                        const container = document.getElementById('admin-three-container');
+                        if (container.querySelector('canvas')) {
+                            container.querySelector('canvas').remove();
+                            if (typeof renderer !== 'undefined' && renderer) {
+                                renderer.dispose();
+                                renderer = null;
+                            }
+                        }
+
+                        const itemName = (design.product_name || '').toLowerCase();
+                        let baseShape = 't-shirt';
+                        if (itemName.includes('mug')) baseShape = 'mug';
+                        else if (itemName.includes('umbrella')) baseShape = 'umbrella';
+                        else if (itemName.includes('shorts')) baseShape = 'shorts';
+                        else if (recipe.base_style) baseShape = recipe.base_style;
+
+                        window.CustomizerConfig = {
+                            initialShape: baseShape,
+                            activeColor: recipe.color || 'blue'
+                        };
+
+                        init('admin-three-container');
+
+                        setTimeout(() => {
+                            loadDesignRecipePreview(recipe);
+                            $('#preview-loader').addClass('d-none');
+                            $('#detailPopupImage').addClass('d-none');
+                        }, 800);
+                    } catch (err) {
+                        console.error('3D Preview failed to initialize:', err);
+                        $('#preview-loader').html('<div class="text-danger small">3D engine failed to start. Showing snapshot instead.</div>');
+                        $('#detailPopupImage').removeClass('d-none');
+                    }
+                }, 500);
+            });
+
+            $('#designDetailPopup').on('hidden.bs.modal', function () {
+                const container = document.getElementById('admin-three-container');
+                if (container && container.querySelector('canvas')) {
+                    container.querySelector('canvas').remove();
+                }
+                if (typeof renderer !== 'undefined' && renderer) {
+                    renderer.dispose();
+                    renderer = null;
+                }
+            });
+        </script>
+    @endpush
 @endsection
