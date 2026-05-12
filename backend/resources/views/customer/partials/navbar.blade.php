@@ -111,12 +111,6 @@
                         </a>
                     </li>
                     <li>
-                        <a class="dropdown-item d-flex align-items-center gap-2" href="{{ route('customer.orders.index') }}">
-                            <i class="bi bi-bag-check"></i>
-                            <span>My Orders</span>
-                        </a>
-                    </li>
-                    <li>
                         <a class="dropdown-item d-flex align-items-center gap-2" href="#">
                             <i class="bi bi-gear"></i>
                             <span>Settings</span>
