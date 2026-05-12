@@ -21,6 +21,8 @@ class AppServiceProvider extends ServiceProvider
     {
         \Illuminate\Pagination\Paginator::useBootstrapFive();
 
+        \App\Models\Product::observe(\App\Observers\ProductObserver::class);
+
         \Illuminate\Support\Facades\View::composer('customer.partials.sidebar', function ($view) {
             $count = 0;
             $latestActiveOrder = null;

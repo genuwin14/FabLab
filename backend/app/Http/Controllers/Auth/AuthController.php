@@ -95,6 +95,8 @@ class AuthController extends Controller
                 'phone_verification_code' => $otp,
                 'phone_verified' => false,
             ]);
+
+            \App\Support\Notifier::staffAndAdmins(new \App\Notifications\NewCustomerRegistered($user));
         }
 
         Auth::login($user);
@@ -202,6 +204,8 @@ class AuthController extends Controller
                 'contact_number' => '',
                 'photo' => $googleUser->getAvatar(), // Store URL directly
             ]);
+
+            \App\Support\Notifier::staffAndAdmins(new \App\Notifications\NewCustomerRegistered($user));
 
             Auth::login($user);
             return $this->authenticated(request(), $user);

@@ -42,6 +42,8 @@
                         Reports
                     @elseif(request()->routeIs('admin.users*'))
                         User Management
+                    @elseif(request()->routeIs('notifications.index'))
+                        Notifications
                     @else
                         Admin Panel
                     @endif
@@ -57,37 +59,8 @@
                 <span id="live-clock" class="text-white-50 small fw-medium"></span>
             </div>
 
-            <!-- Inbox -->
-            <button type="button" class="navbar-action-btn position-relative" data-bs-toggle="tooltip"
-                data-bs-placement="bottom" title="Inbox">
-                <i class="bi bi-inbox"></i>
-                <span class="action-badge action-badge-dot bg-info"></span>
-            </button>
-
             <!-- Notifications Dropdown -->
-            <div class="dropdown">
-                <button type="button" class="navbar-action-btn position-relative" data-bs-toggle="dropdown"
-                    aria-expanded="false">
-                    <i class="bi bi-bell"></i>
-                    <span class="action-badge action-badge-dot bg-danger"></span>
-                </button>
-                <ul class="dropdown-menu dropdown-menu-end notification-dropdown shadow-lg border-0 mt-2">
-                    <li class="dropdown-header-bar d-flex justify-content-between align-items-center">
-                        <span>Notifications</span>
-                        <a href="#" class="text-white-50 small text-decoration-none">Mark all read</a>
-                    </li>
-                    <li class="notification-empty-state">
-                        <div class="d-flex flex-column align-items-center text-center py-4 px-3">
-                            <div class="notification-empty-icon mb-2">
-                                <i class="bi bi-bell-slash"></i>
-                            </div>
-                            <p class="text-white-50 small mb-0">You're all caught up!</p>
-                            <small class="text-white-50 opacity-75" style="font-size: 0.7rem;">No new notifications.</small>
-                        </div>
-                    </li>
-                    <li><a href="#" class="dropdown-footer-link">View all activity</a></li>
-                </ul>
-            </div>
+            @include('partials.notification-bell')
 
             <!-- User Dropdown -->
             <div class="dropdown ms-1">
@@ -123,6 +96,16 @@
                             data-bs-target="#profileModal">
                             <i class="bi bi-person-circle"></i>
                             <span>My Profile</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item d-flex align-items-center gap-2" href="{{ route('notifications.index') }}">
+                            <i class="bi bi-bell"></i>
+                            <span>Notifications</span>
+                            @php $ddUnread = auth()->check() ? auth()->user()->unreadNotifications()->count() : 0; @endphp
+                            @if($ddUnread > 0)
+                                <span class="badge bg-danger rounded-pill ms-auto">{{ $ddUnread > 99 ? '99+' : $ddUnread }}</span>
+                            @endif
                         </a>
                     </li>
                     <li>

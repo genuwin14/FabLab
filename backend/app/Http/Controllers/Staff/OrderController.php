@@ -63,7 +63,8 @@ class OrderController extends Controller
             'payment_reference' => 'required_if:status,processing|nullable|string'
         ]);
 
-        $order = Order::findOrFail($id);
+        $order = Order::with('user')->findOrFail($id);
+        $oldStatus = $order->status;
 
         $order->status = $request->status;
 
@@ -72,6 +73,10 @@ class OrderController extends Controller
         }
 
         $order->save();
+
+        if ($oldStatus !== $order->status && $order->user) {
+            $order->user->notify(new \App\Notifications\OrderStatusChanged($order, $oldStatus, $order->status));
+        }
 
         return redirect()->back()->with('success', 'Order status updated successfully.');
     }

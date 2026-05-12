@@ -79,7 +79,9 @@ class CustomizeController extends Controller
         );
 
         $message = 'Design saved to your personal collection!';
-        if (!$design->wasRecentlyCreated) {
+        if ($design->wasRecentlyCreated) {
+            \App\Support\Notifier::staffAndAdmins(new \App\Notifications\CustomDesignSubmitted($design));
+        } else {
             $message = $design->wasChanged() ? 'Design changes updated successfully!' : 'Design is already up to date in your collection!';
         }
 

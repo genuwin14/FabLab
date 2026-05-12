@@ -97,6 +97,7 @@ class CartController extends Controller
         if ($recipe) {
             if ($design->wasRecentlyCreated) {
                 $message = 'Design saved and added to cart!';
+                \App\Support\Notifier::staffAndAdmins(new \App\Notifications\CustomDesignSubmitted($design));
             } elseif ($design->wasChanged()) {
                 $message = 'Design updated and added to cart!';
             } else {
@@ -238,6 +239,10 @@ class CartController extends Controller
             }
 
             \Illuminate\Support\Facades\DB::commit();
+
+            // Notify staff & admins about the new order
+            $order->loadMissing('user');
+            \App\Support\Notifier::staffAndAdmins(new \App\Notifications\NewOrderPlaced($order));
 
             // Remove only checked out items from cart
             foreach ($selectedItems as $id) {

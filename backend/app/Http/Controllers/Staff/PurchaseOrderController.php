@@ -268,7 +268,7 @@ class PurchaseOrderController extends Controller
             'status' => 'required|in:draft,sent,confirmed,delivered,cancelled'
         ]);
 
-        $po = PurchaseOrder::with('items')->findOrFail($id);
+        $po = PurchaseOrder::with(['items', 'supplier'])->findOrFail($id);
         $oldStatus = $po->status;
         $newStatus = $request->status;
 
@@ -297,6 +297,10 @@ class PurchaseOrderController extends Controller
         }
 
         $po->update(['status' => $newStatus]);
+
+        if ($oldStatus !== $newStatus) {
+            \App\Support\Notifier::staffAndAdmins(new \App\Notifications\PurchaseOrderStatusChanged($po, $oldStatus, $newStatus));
+        }
 
         return back()->with('success', "Order status updated to " . ucfirst($newStatus));
     }
