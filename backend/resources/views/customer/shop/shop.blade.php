@@ -280,7 +280,11 @@
                     success: function(response) {
                         if (response.success) {
                             showToast(response.message, 'success');
-                            $('.cart-badge').text(response.cart_count);
+                            if (typeof window.updateCartBadge === 'function') {
+                                window.updateCartBadge(response.cart_count);
+                            } else {
+                                $('.cart-badge').text(response.cart_count).show();
+                            }
                         }
                     },
                     error: function(xhr) {

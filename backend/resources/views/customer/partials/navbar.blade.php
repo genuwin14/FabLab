@@ -46,9 +46,7 @@
                 data-bs-toggle="tooltip" data-bs-placement="bottom" title="Shopping Cart">
                 <i class="bi bi-cart3"></i>
                 @php $cartCount = collect(session('cart', []))->sum('quantity'); @endphp
-                @if($cartCount > 0)
-                    <span class="action-badge cart-badge bg-accent text-primary">{{ $cartCount }}</span>
-                @endif
+                <span class="action-badge cart-badge bg-accent text-primary" style="{{ $cartCount > 0 ? '' : 'display: none;' }}">{{ $cartCount }}</span>
             </a>
 
             <!-- Notifications Dropdown -->
