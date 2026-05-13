@@ -119,6 +119,9 @@ Route::middleware(['auth:sanctum'])->group(function () {
     // Admin Routes/Users
     Route::get('/admin/users', [\App\Http\Controllers\Admin\UserController::class, 'index'])->name('admin.users.index');
     Route::post('/admin/users/{id}/status', [\App\Http\Controllers\Admin\UserController::class, 'updateStatus'])->name('admin.users.updateStatus');
+    // Admin Routes/Settings
+    Route::get('/admin/settings', [\App\Http\Controllers\Admin\SettingsController::class, 'index'])->name('admin.settings.index');
+    Route::put('/admin/settings', [\App\Http\Controllers\Admin\SettingsController::class, 'update'])->name('admin.settings.update');
 
 
     // Staff Routes/Dashboard
@@ -147,6 +150,9 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::put('/staff/purchase/{id}/status', [\App\Http\Controllers\Staff\PurchaseOrderController::class, 'updateStatus'])->name('staff.purchase.updateStatus');
     // Staff Routes/Profile
     Route::put('/staff/profile', [\App\Http\Controllers\Staff\ProfileController::class, 'update'])->name('staff.profile.update');
+    // Staff Routes/Settings
+    Route::get('/staff/settings', [\App\Http\Controllers\Staff\SettingsController::class, 'index'])->name('staff.settings.index');
+    Route::put('/staff/settings', [\App\Http\Controllers\Staff\SettingsController::class, 'update'])->name('staff.settings.update');
 
 
     // Customer Routes/Shop
@@ -171,5 +177,9 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
     // Customer Routes/Profile
     Route::put('/customer/profile', [\App\Http\Controllers\Customer\ProfileController::class, 'update'])->name('customer.profile.update');
+
+    // Customer Routes/Settings
+    Route::get('/customer/settings', [\App\Http\Controllers\Customer\SettingsController::class, 'index'])->name('customer.settings.index');
+    Route::put('/customer/settings', [\App\Http\Controllers\Customer\SettingsController::class, 'update'])->name('customer.settings.update');
 
 });

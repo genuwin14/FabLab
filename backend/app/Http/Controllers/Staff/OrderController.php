@@ -74,7 +74,7 @@ class OrderController extends Controller
 
         $order->save();
 
-        if ($oldStatus !== $order->status && $order->user) {
+        if ($oldStatus !== $order->status && $order->user && $order->user->notifications_enabled) {
             $order->user->notify(new \App\Notifications\OrderStatusChanged($order, $oldStatus, $order->status));
         }
 

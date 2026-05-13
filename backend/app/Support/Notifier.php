@@ -15,6 +15,7 @@ class Notifier
         User::query()
             ->whereIn('role', ['staff', 'admin'])
             ->where('status', 'active')
+            ->where('notifications_enabled', true)
             ->get()
             ->each
             ->notify($notification);

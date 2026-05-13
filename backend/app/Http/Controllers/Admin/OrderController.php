@@ -116,7 +116,7 @@ class OrderController extends Controller
         }
 
         // Notify the customer that their order status changed
-        if ($oldStatus !== $request->status && $order->user) {
+        if ($oldStatus !== $request->status && $order->user && $order->user->notifications_enabled) {
             $order->user->notify(new \App\Notifications\OrderStatusChanged($order, $oldStatus, $request->status));
         }
 

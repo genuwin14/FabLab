@@ -101,7 +101,7 @@
                         </a>
                     </li>
                     <li>
-                        <a class="dropdown-item d-flex align-items-center gap-2" href="#">
+                        <a class="dropdown-item d-flex align-items-center gap-2" href="{{ route('customer.settings.index') }}">
                             <i class="bi bi-gear"></i>
                             <span>Settings</span>
                         </a>

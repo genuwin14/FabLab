@@ -30,6 +30,8 @@
                         Purchase Orders
                     @elseif(request()->routeIs('notifications.index'))
                         Notifications
+                    @elseif(request()->routeIs('staff.settings*'))
+                        Settings
                     @else
                         Staff Panel
                     @endif
@@ -95,7 +97,7 @@
                         </a>
                     </li>
                     <li>
-                        <a class="dropdown-item d-flex align-items-center gap-2" href="#">
+                        <a class="dropdown-item d-flex align-items-center gap-2" href="{{ route('staff.settings.index') }}">
                             <i class="bi bi-gear"></i>
                             <span>Settings</span>
                         </a>
