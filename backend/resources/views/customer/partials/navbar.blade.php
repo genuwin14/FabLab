@@ -104,12 +104,6 @@
                             <span>Settings</span>
                         </a>
                     </li>
-                    <li>
-                        <a class="dropdown-item d-flex align-items-center gap-2" href="#">
-                            <i class="bi bi-question-circle"></i>
-                            <span>Help & Support</span>
-                        </a>
-                    </li>
                     <li><hr class="dropdown-divider"></li>
                     <li>
                         <button type="button"
