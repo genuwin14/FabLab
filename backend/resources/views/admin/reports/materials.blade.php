@@ -20,7 +20,7 @@
                 @include('admin.partials.navbar')
             </header>
 
-            <main class="flex-grow-1 p-4" style="overflow-y: auto;">
+            <main class="flex-grow-1 p-3 p-md-4" style="overflow-y: auto;">
                 <div class="container-fluid">
                     @include('admin.reports.components.tabs')
 
@@ -28,7 +28,7 @@
                     <div class="card border-0 shadow-sm rounded-4 mb-4">
                         <div class="card-body p-3">
                             <form id="materialsFilterForm" method="GET" action="{{ route('admin.reports.materials') }}"
-                                class="d-flex flex-nowrap align-items-center gap-2">
+                                class="d-flex flex-wrap flex-md-nowrap align-items-center gap-2 reports-filter-form">
                                 <div class="input-group flex-grow-1" style="min-width: 0;">
                                     <span class="input-group-text bg-white border-end-0 rounded-start-2 ps-3">
                                         <i class="bi bi-search text-muted"></i>
@@ -64,27 +64,6 @@
                                     class="btn btn-light rounded-2 flex-shrink-0" data-bs-toggle="tooltip" title="Reset filters">
                                     <i class="bi bi-arrow-clockwise text-primary"></i>
                                 </a>
-
-                                <a href="{{ route('admin.reports.materials.pdf', request()->query()) }}"
-                                    class="btn btn-danger d-flex align-items-center gap-2 rounded-2 px-3 flex-shrink-0"
-                                    data-export-trigger
-                                    data-format="PDF"
-                                    data-scope-kind="All Material Sections"
-                                    data-scope="Inventory Materials Report (All Departments)"
-                                    data-preview-url="{{ route('admin.reports.materials.preview', request()->query()) }}">
-                                    <i class="bi bi-file-pdf"></i>
-                                    <span class="small fw-bold">Export PDF</span>
-                                </a>
-                                <a href="{{ route('admin.reports.materials.docx', request()->query()) }}"
-                                    class="btn btn-primary d-flex align-items-center gap-2 rounded-2 px-3 flex-shrink-0"
-                                    data-export-trigger
-                                    data-format="Word"
-                                    data-scope-kind="All Material Sections"
-                                    data-scope="Inventory Materials Report (All Departments)"
-                                    data-preview-url="{{ route('admin.reports.materials.preview', request()->query()) }}">
-                                    <i class="bi bi-file-word"></i>
-                                    <span class="small fw-bold">Export Word</span>
-                                </a>
                             </form>
 
                             @if($dateFrom || $dateTo)
@@ -98,7 +77,21 @@
                         </div>
                     </div>
 
+                    @php
+                        $deptTabKeys = [
+                            'Digital Customization Center' => 'digital-customization-center',
+                            'Book Production'              => 'book-production',
+                            'Woodworks'                    => 'woodworks',
+                            'Uncategorized'                => 'uncategorized',
+                        ];
+                    @endphp
+                    <div class="tab-content" id="materialsSectionTabsContent">
                     @foreach($sections as $deptName => $rows)
+                        @php $tabKey = $deptTabKeys[$deptName] ?? \Illuminate\Support\Str::slug($deptName); @endphp
+                        <div class="tab-pane fade {{ $loop->first ? 'show active' : '' }}"
+                            id="pane-{{ $tabKey }}"
+                            role="tabpanel"
+                            aria-labelledby="tab-{{ $tabKey }}">
                         <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4 paginated-section"
                             data-page-size="10">
                             <div class="card-header bg-white border-0 py-3 px-4">
@@ -121,8 +114,9 @@
                                             $sectionParams = array_merge(request()->query(), ['department' => $deptName]);
                                         @endphp
                                         <a href="{{ route('admin.reports.materials.pdf', $sectionParams) }}"
-                                            class="btn btn-sm btn-outline-danger d-flex align-items-center gap-2 rounded-2 px-3"
-                                            title="Export this section to PDF"
+                                            class="btn btn-danger d-flex align-items-center gap-2 rounded-2 px-3"
+                                            data-bs-toggle="tooltip" data-bs-placement="bottom"
+                                            title="Generate a PDF report for {{ $deptName }} only"
                                             data-export-trigger
                                             data-format="PDF"
                                             data-scope-kind="Single Section"
@@ -132,15 +126,16 @@
                                             <span class="small fw-bold">PDF</span>
                                         </a>
                                         <a href="{{ route('admin.reports.materials.docx', $sectionParams) }}"
-                                            class="btn btn-sm btn-outline-primary d-flex align-items-center gap-2 rounded-2 px-3"
-                                            title="Export this section to Word"
+                                            class="btn btn-primary d-flex align-items-center gap-2 rounded-2 px-3"
+                                            data-bs-toggle="tooltip" data-bs-placement="bottom"
+                                            title="Generate a Word document for {{ $deptName }} only"
                                             data-export-trigger
                                             data-format="Word"
                                             data-scope-kind="Single Section"
                                             data-scope="{{ $deptName }} — Materials Report"
                                             data-preview-url="{{ route('admin.reports.materials.preview', $sectionParams) }}">
                                             <i class="bi bi-file-word"></i>
-                                            <span class="small fw-bold">Word</span>
+                                            <span class="small fw-bold">WORD</span>
                                         </a>
                                     </div>
                                 </div>
@@ -201,7 +196,9 @@
                                 @endif
                             </div>
                         </div>
+                        </div>
                     @endforeach
+                    </div>
 
                     <p class="text-muted small mb-0 fst-italic">
                         Note: A dash (—) indicates the item is out of stock or no data is available.

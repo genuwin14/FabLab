@@ -20,7 +20,7 @@
                 @include('admin.partials.navbar')
             </header>
 
-            <main class="flex-grow-1 p-4" style="overflow-y: auto;">
+            <main class="flex-grow-1 p-3 p-md-4" style="overflow-y: auto;">
                 <div class="container-fluid">
                     @include('admin.reports.components.tabs')
 
@@ -28,7 +28,7 @@
                     <div class="card border-0 shadow-sm rounded-4 mb-4">
                         <div class="card-body p-3">
                             <form id="equipmentFilterForm" method="GET" action="{{ route('admin.reports.equipment') }}"
-                                class="d-flex flex-nowrap align-items-center gap-2">
+                                class="d-flex flex-wrap flex-md-nowrap align-items-center gap-2 reports-filter-form">
                                 <div class="input-group flex-grow-1" style="min-width: 0;">
                                     <span class="input-group-text bg-white border-end-0 rounded-start-2 ps-3">
                                         <i class="bi bi-search text-muted"></i>
@@ -68,6 +68,8 @@
 
                                 <a href="{{ route('admin.reports.equipment.pdf', request()->query()) }}"
                                     class="btn btn-danger d-flex align-items-center gap-2 rounded-2 px-3 flex-shrink-0"
+                                    data-bs-toggle="tooltip" data-bs-placement="bottom"
+                                    title="Generate a PDF report of all machinery & equipment matching the current filters"
                                     data-export-trigger
                                     data-format="PDF"
                                     data-scope-kind="Equipment Report"
@@ -78,6 +80,8 @@
                                 </a>
                                 <a href="{{ route('admin.reports.equipment.docx', request()->query()) }}"
                                     class="btn btn-primary d-flex align-items-center gap-2 rounded-2 px-3 flex-shrink-0"
+                                    data-bs-toggle="tooltip" data-bs-placement="bottom"
+                                    title="Generate a Word document of all machinery & equipment matching the current filters"
                                     data-export-trigger
                                     data-format="Word"
                                     data-scope-kind="Equipment Report"

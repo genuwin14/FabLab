@@ -155,6 +155,64 @@
     </div>
 </div>
 
+@if($isMaterialsPage)
+    @php
+        $materialsTabs = [
+            ['key' => 'digital-customization-center', 'label' => 'PEDS Digital Customization Center', 'icon' => 'bi-pc-display'],
+            ['key' => 'book-production',              'label' => 'PEDS Book Production',              'icon' => 'bi-book'],
+            ['key' => 'woodworks',                    'label' => 'PEDS Woodworks',                    'icon' => 'bi-tree'],
+            ['key' => 'uncategorized',                'label' => 'Uncategorized',                     'icon' => 'bi-question-circle'],
+        ];
+    @endphp
+    <div class="d-flex align-items-end justify-content-between flex-wrap gap-3 mb-3 report-section-tabs-row">
+        <ul class="nav nav-tabs report-section-tabs mb-0 flex-grow-1" id="materialsSectionTabs" role="tablist">
+            @foreach($materialsTabs as $i => $tab)
+                <li class="nav-item" role="presentation">
+                    <button type="button"
+                        class="nav-link {{ $i === 0 ? 'active' : '' }} d-flex align-items-center gap-2"
+                        id="tab-{{ $tab['key'] }}"
+                        data-bs-toggle="tab"
+                        data-bs-target="#pane-{{ $tab['key'] }}"
+                        role="tab"
+                        aria-controls="pane-{{ $tab['key'] }}"
+                        aria-selected="{{ $i === 0 ? 'true' : 'false' }}">
+                        <i class="bi {{ $tab['icon'] }}"></i>
+                        <span>{{ $tab['label'] }}</span>
+                    </button>
+                </li>
+            @endforeach
+        </ul>
+
+        <div class="d-flex align-items-stretch gap-2 flex-shrink-0 report-section-tabs-actions mb-2">
+            <span class="report-section-tabs-divider"></span>
+            <a href="{{ route('admin.reports.materials.pdf', request()->query()) }}"
+                class="btn btn-danger d-flex align-items-center gap-2 rounded-2 px-3"
+                data-bs-toggle="tooltip" data-bs-placement="bottom"
+                title="Generate a PDF report of all four department sections combined"
+                data-export-trigger
+                data-format="PDF"
+                data-scope-kind="All Material Sections"
+                data-scope="Inventory Materials Report (All Departments)"
+                data-preview-url="{{ route('admin.reports.materials.preview', request()->query()) }}">
+                <i class="bi bi-file-pdf"></i>
+                <span class="small fw-bold">Export All Sections (PDF)</span>
+            </a>
+            <a href="{{ route('admin.reports.materials.docx', request()->query()) }}"
+                class="btn btn-primary d-flex align-items-center gap-2 rounded-2 px-3"
+                data-bs-toggle="tooltip" data-bs-placement="bottom"
+                title="Generate a Word document of all four department sections combined"
+                data-export-trigger
+                data-format="Word"
+                data-scope-kind="All Material Sections"
+                data-scope="Inventory Materials Report (All Departments)"
+                data-preview-url="{{ route('admin.reports.materials.preview', request()->query()) }}">
+                <i class="bi bi-file-word"></i>
+                <span class="small fw-bold">Export All Sections (Word)</span>
+            </a>
+        </div>
+    </div>
+@endif
+
 <style>
     .report-summary-divider {
         width: 1px;
@@ -178,5 +236,124 @@
         align-items: center;
         justify-content: center;
         font-size: 1rem;
+    }
+
+    .report-section-tabs {
+        border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+        gap: 0.25rem;
+        flex-wrap: wrap;
+    }
+    .report-section-tabs .nav-link {
+        border: 0;
+        border-radius: 10px 10px 0 0;
+        color: #6c757d;
+        font-weight: 600;
+        font-size: 0.82rem;
+        padding: 0.55rem 1rem;
+        background: transparent;
+        transition: color 0.15s ease, background 0.15s ease, border-color 0.15s ease;
+    }
+    .report-section-tabs .nav-link:hover {
+        color: #0e2e45;
+        background: rgba(255, 197, 8, 0.08);
+    }
+    .report-section-tabs .nav-link.active {
+        color: #0e2e45;
+        background: #fff;
+        border-bottom: 3px solid #ffc508;
+        box-shadow: 0 -1px 0 rgba(0, 0, 0, 0.04) inset;
+    }
+    .report-section-tabs .nav-link i { font-size: 0.95rem; }
+
+    .report-section-tabs-divider {
+        width: 1px;
+        background-color: rgba(0, 0, 0, 0.12);
+        align-self: stretch;
+        margin: 0 0.25rem;
+        flex-shrink: 0;
+    }
+
+    /* ── Mobile (< md / 768px) ─────────────────────────────── */
+    @media (max-width: 767.98px) {
+        /* Header: tighter spacing + smaller title */
+        .container-fluid > .border-bottom h4 { font-size: 1.05rem; }
+        .container-fluid > .border-bottom p { font-size: 0.72rem; }
+
+        /* Hide vertical divider between title and summary cards on mobile */
+        .report-summary-divider { display: none; }
+
+        /* Summary cards: tighter padding, smaller numbers */
+        .report-summary-card .card-body { padding: 0.5rem !important; gap: 0.4rem !important; }
+        .report-summary-icon { width: 30px; height: 30px; font-size: 0.85rem; }
+        .report-summary-card h5 { font-size: 0.95rem; }
+        .report-summary-card p { font-size: 0.58rem !important; }
+
+        /* Materials tab nav: horizontal scroll, compact labels */
+        .report-section-tabs {
+            flex-wrap: nowrap !important;
+            overflow-x: auto;
+            overflow-y: hidden;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: thin;
+        }
+        .report-section-tabs::-webkit-scrollbar { height: 4px; }
+        .report-section-tabs::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.15); border-radius: 999px; }
+        .report-section-tabs .nav-item { flex-shrink: 0; }
+        .report-section-tabs .nav-link {
+            font-size: 0.72rem;
+            padding: 0.45rem 0.7rem;
+            white-space: nowrap;
+        }
+        .report-section-tabs .nav-link i { font-size: 0.85rem; }
+
+        /* Tabs row: stack tabs above export buttons, full-width buttons */
+        .report-section-tabs-row { flex-direction: column; align-items: stretch !important; }
+        .report-section-tabs-actions {
+            width: 100%;
+            margin-bottom: 0 !important;
+            margin-top: 0.25rem;
+        }
+        .report-section-tabs-actions .btn { flex: 1 1 0; justify-content: center; padding: 0.45rem 0.5rem; }
+        .report-section-tabs-actions .btn .small { font-size: 0.7rem; }
+        .report-section-tabs-divider { display: none; }
+
+        /* Filter form: stack each control onto its own row */
+        .reports-filter-form > * { width: 100%; flex: 1 1 100% !important; }
+        .reports-filter-form .btn-light {
+            width: auto;
+            flex: 0 0 auto !important;
+            align-self: flex-start;
+        }
+        .reports-filter-form .input-group,
+        .reports-filter-form .form-select { font-size: 0.85rem; }
+
+        /* Tables: tighter padding + smaller text */
+        .table-responsive table th,
+        .table-responsive table td { padding-top: 0.55rem; padding-bottom: 0.55rem; font-size: 0.78rem; }
+        .table-responsive table th.ps-4,
+        .table-responsive table td.ps-4 { padding-left: 0.85rem !important; }
+        .table-responsive table th.pe-4,
+        .table-responsive table td.pe-4 { padding-right: 0.85rem !important; }
+
+        /* Per-section card header on materials page */
+        .paginated-section .card-header h6 { font-size: 0.78rem; }
+        .paginated-section .card-header .btn { padding: 0.35rem 0.65rem; }
+        .paginated-section .card-header .btn .small { font-size: 0.7rem; }
+
+        /* Pagination footer */
+        .pagination-footer .entries-info { font-size: 0.72rem; }
+        .pagination-footer label { font-size: 0.72rem; }
+    }
+
+    /* ── Extra-small (< sm / 576px) ────────────────────────── */
+    @media (max-width: 575.98px) {
+        /* Title + badge wrap onto separate rows cleanly */
+        .container-fluid > .border-bottom { gap: 0.5rem !important; }
+
+        /* Summary cards keep 2-up but slightly looser */
+        .report-summary-card p { font-size: 0.55rem !important; letter-spacing: 0.02em !important; }
+
+        /* Per-section card header: stack title and buttons */
+        .paginated-section .card-header > .d-flex { gap: 0.5rem !important; }
     }
 </style>
