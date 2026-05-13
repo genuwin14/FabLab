@@ -169,6 +169,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     // Customer Routes/Orders
     Route::get('/customer/orders', [\App\Http\Controllers\Customer\OrderController::class, 'index'])->name('customer.orders.index');
     Route::post('/customer/orders/{id}/cancel', [\App\Http\Controllers\Customer\OrderController::class, 'cancel'])->name('customer.orders.cancel');
+    Route::get('/customer/orders/{id}/receipt', [\App\Http\Controllers\Customer\OrderController::class, 'receipt'])->name('customer.orders.receipt');
     // Customer Routes/Customize
     Route::get('/customer/customize', [\App\Http\Controllers\Customer\CustomizeController::class, 'index'])->name('customer.customize.index');
     Route::post('/customer/customize/save', [\App\Http\Controllers\Customer\CustomizeController::class, 'save'])->name('customer.customize.save');

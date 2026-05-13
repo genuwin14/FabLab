@@ -404,11 +404,13 @@
                                                             data-url="{{ route('customer.orders.cancel', $order->order_id) }}">
                                                             Cancel
                                                         </button>
-                                                    @elseif($order->status == 'processing')
-                                                        <span
-                                                            class="badge bg-light text-muted border rounded-pill d-flex align-items-center justify-content-center flex-grow-1">
-                                                            <i class="bi bi-lock-fill me-1"></i> Approved
-                                                        </span>
+                                                    @elseif(in_array($order->status, ['approved', 'processing', 'ready_for_pickup', 'completed']))
+                                                        <a href="{{ route('customer.orders.receipt', $order->order_id) }}"
+                                                            target="_blank"
+                                                            class="btn btn-sm rounded-pill flex-grow-1 d-flex align-items-center justify-content-center fw-bold"
+                                                            style="background-color: #0e2e45; color: #ffffff;">
+                                                            <i class="bi bi-receipt me-1"></i> View Receipt
+                                                        </a>
                                                     @endif
                                                 </div>
                                             </div>

@@ -47,4 +47,23 @@ class OrderController extends Controller
 
         return redirect()->back()->with('error', 'Order cannot be cancelled.');
     }
+
+    /**
+     * Stream the transaction-slip PDF for an approved order owned by the user.
+     */
+    public function receipt($id)
+    {
+        $order = Order::where('order_id', $id)
+            ->where('user_id', Auth::id())
+            ->with(['orderItems.product', 'user'])
+            ->firstOrFail();
+
+        if (!in_array($order->status, ['approved', 'processing', 'ready_for_pickup', 'completed'])) {
+            abort(404);
+        }
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('emails.orders.transaction-slip', ['order' => $order]);
+
+        return $pdf->stream('Transaction-Slip-' . $order->order_number . '.pdf');
+    }
 }
