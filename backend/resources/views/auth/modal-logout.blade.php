@@ -59,6 +59,31 @@
         white-space: nowrap;
     }
 
+    /* Mobile: stack buttons full-width so they never overflow */
+    @media (max-width: 400px) {
+        .logout-modal-footer {
+            flex-direction: column-reverse;
+            gap: 8px !important;
+        }
+
+        .logout-modal-footer .btn,
+        .logout-modal-footer .logout-form {
+            width: 100%;
+        }
+
+        .logout-modal-footer .logout-form .btn {
+            width: 100%;
+        }
+
+        .logout-modal-header {
+            padding: 22px 18px 16px !important;
+        }
+
+        .logout-modal-body {
+            padding: 1rem !important;
+        }
+    }
+
     /* Dark themed header matching sidebar/navbar */
     .logout-modal-header {
         background: linear-gradient(135deg, #05111a 0%, #0e2e45 100%);
