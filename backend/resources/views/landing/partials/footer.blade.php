@@ -102,12 +102,10 @@
 
             <!-- Links Column 1 -->
             <div class="col-6 col-lg-2">
-                <h6 class="fw-bold mb-4 text-white uppercase tracking-wider small">Product</h6>
+                <h6 class="fw-bold mb-4 text-white uppercase tracking-wider small">Pages</h6>
                 <ul class="list-unstyled d-flex flex-column gap-3">
-                    <li><a href="#" class="footer-link">Features</a></li>
-                    <li><a href="#" class="footer-link">Pricing</a></li>
-                    <li><a href="#" class="footer-link">API Access</a></li>
-                    <li><a href="#" class="footer-link">Integrations</a></li>
+                    <li><a href="#home" class="footer-link">Home</a></li>
+                    <li><a href="#product" class="footer-link">Product</a></li>
                 </ul>
             </div>
 
@@ -115,10 +113,8 @@
             <div class="col-6 col-lg-2">
                 <h6 class="fw-bold mb-4 text-white uppercase tracking-wider small">Company</h6>
                 <ul class="list-unstyled d-flex flex-column gap-3">
-                    <li><a href="#" class="footer-link">About Us</a></li>
-                    <li><a href="#" class="footer-link">Careers</a></li>
-                    <li><a href="#" class="footer-link">Blog</a></li>
-                    <li><a href="#" class="footer-link">Partners</a></li>
+                    <li><a href="#about" class="footer-link">About</a></li>
+                    <li><a href="#contact" class="footer-link">Contact</a></li>
                 </ul>
             </div>
 
@@ -134,21 +130,11 @@
                         <button class="btn btn-accent fw-bold" type="button">Subscribe</button>
                     </div>
                 </form>
-                <p class="text-white-50x small" style="font-size: 0.75rem; opacity: 0.4;">
-                    We care about your data. Read our <a href="#" class="text-white text-decoration-underline">Privacy
-                        Policy</a>.
-                </p>
             </div>
         </div>
 
-        <div
-            class="border-top border-white border-opacity-10 pt-4 d-flex flex-column flex-md-row justify-content-between align-items-center gap-3">
+        <div class="border-top border-white border-opacity-10 pt-4 text-center">
             <p class="text-white-50 small mb-0">© 2026 FABLAB Inventory System. All rights reserved.</p>
-            <div class="d-flex gap-4">
-                <a href="#" class="text-white-50 small text-decoration-none hover:text-white transition-all">Terms</a>
-                <a href="#" class="text-white-50 small text-decoration-none hover:text-white transition-all">Privacy</a>
-                <a href="#" class="text-white-50 small text-decoration-none hover:text-white transition-all">Cookies</a>
-            </div>
         </div>
     </div>
 </footer>

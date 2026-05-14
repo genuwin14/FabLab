@@ -36,6 +36,32 @@
     }
 
     /* ========================================
+       Thin scrollbar (landing page)
+       ======================================== */
+    html {
+        scrollbar-width: thin;
+        scrollbar-color: #1a2a38 #05111a;
+    }
+
+    ::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+    }
+
+    ::-webkit-scrollbar-track {
+        background: #05111a;
+    }
+
+    ::-webkit-scrollbar-thumb {
+        background: #1a2a38;
+        border-radius: 3px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+        background: #25394d;
+    }
+
+    /* ========================================
        Side gutters: keep navbar pill & section
        content from sitting flush against screen
        edges on tablet/mobile.
