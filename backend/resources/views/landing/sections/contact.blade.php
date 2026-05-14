@@ -62,9 +62,8 @@
     <div class="container py-5 position-relative z-1">
         <div class="row justify-content-center">
             <div class="col-lg-8 text-center mb-5">
-                <span
-                    class="badge bg-opacity-10 bg-white text-white border border-white border-opacity-10 px-3 py-2 rounded-pill mb-3 uppercase tracking-wider">
-                    Contact Us
+                <span class="badge bg-opacity-10 bg-white text-white border border-white border-opacity-10 px-3 py-2 rounded-pill mb-3 uppercase tracking-wider">
+                    <i class="bi text-accent bi-telephone-fill me-2"></i> Contact Us
                 </span>
                 <h2 class="display-4 fw-bold mt-2 text-white mb-3">Get in <span class="text-gradient-gold">Touch</span>
                 </h2>

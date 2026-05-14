@@ -47,8 +47,7 @@
     <div class="container py-5 position-relative z-1">
         <div class="row align-items-center mb-5">
             <div class="col-lg-6 mb-5 mb-lg-0">
-                <span
-                    class="badge bg-white bg-opacity-10 backdrop-blur text-white px-3 py-2 rounded-pill border border-white border-opacity-25 animate-fade-up">
+                <span class="badge bg-white bg-opacity-10 backdrop-blur text-white px-3 py-2 rounded-pill border border-white border-opacity-25 animate-fade-up">
                     <i class="bi text-accent bi-layers-fill me-2"></i> Product Modules
                 </span>
 
@@ -122,7 +121,7 @@
                                 <span class="d-inline-block rounded-circle bg-warning p-1"></span>
                                 <span class="d-inline-block rounded-circle bg-success p-1"></span>
                             </div>
-                            <div class="text-white-50 small font-monospace">inventory_dashboard.exe</div>
+                            <div class="text-dark-50 small font-monospace">inventory_dashboard.exe</div>
                         </div>
 
                         <div class="card-body p-0">

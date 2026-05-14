@@ -68,9 +68,8 @@
     <div class="container py-5 position-relative z-1">
         <div class="row justify-content-center text-center mb-5">
             <div class="col-lg-8">
-                <span
-                    class="badge bg-white bg-opacity-5 text-white border border-white border-opacity-10 px-3 py-2 rounded-pill mb-3 uppercase tracking-wider">
-                    About Us
+                <span class="badge bg-opacity-10 bg-white text-white border border-white border-opacity-10 px-3 py-2 rounded-pill mb-3 uppercase tracking-wider">
+                    <i class="bi text-accent bi-info-circle-fill me-2"></i> About Us
                 </span>
                 <h2 class="display-4 fw-bold mt-2 text-white mb-3">Why Choose <span class="text-white">FAB</span><span
                         class="text-gradient-gold">LAB</span>?</h2>
