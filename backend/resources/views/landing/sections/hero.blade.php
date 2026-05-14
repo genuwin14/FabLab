@@ -94,6 +94,11 @@
         transform: translateY(-3px) scale(1.02);
     }
 
+    /* Hero logo sizing */
+    .hero-logo-img {
+        max-height: 550px;
+    }
+
     /* Floating Animation for Hero Image */
     .floating-animate {
         animation: float 6s ease-in-out infinite;
@@ -207,8 +212,8 @@
 
                 <div class="position-relative d-inline-block floating-animate">
                     <img src="{{ asset('FABLAB-LOGO.png') }}" alt="FabLab Logo"
-                        class="img-fluid position-relative drop-shadow-2xl"
-                        style="max-height: 550px; width: auto; filter: drop-shadow(0 20px 40px rgba(0,0,0,0.5));">
+                        class="img-fluid position-relative drop-shadow-2xl hero-logo-img"
+                        style="width: auto; filter: drop-shadow(0 20px 40px rgba(0,0,0,0.5));">
 
                     <!-- Floating Badge Example -->
                     <div class="position-absolute bottom-0 end-0 bg-white bg-opacity-10 backdrop-blur border border-white border-opacity-25 rounded-4 p-3 mb-4 me-4 text-start animate-fade-up delay-300"
