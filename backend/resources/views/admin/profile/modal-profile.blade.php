@@ -352,6 +352,29 @@
         border-color: #ffc508;
         color: #0e2e45;
     }
+
+    /* ── Mobile ( < lg / 992px ) — ResponsiveMobileNote.md §6 ──
+       The two columns already stack via col-md-*; here we tighten
+       spacing/type so the modal isn't cramped on a phone. */
+    @media (max-width: 991.98px) {
+        .profile-modal .modal-dialog { margin: 0.5rem; }
+        .profile-modal .modal-title { font-size: 1rem; }
+        .profile-modal-header { padding: 14px 16px; }
+        .profile-modal-footer { padding: 12px 16px; }
+        .profile-modal .profile-side-panel { padding: 1.25rem !important; }
+        .profile-modal .col-md-8.p-4 { padding: 1.25rem !important; }
+        .profile-modal .row.g-3 { --bs-gutter-y: 0.5rem; }
+        .profile-modal .form-control,
+        .profile-modal .profile-field label,
+        .profile-modal .btn,
+        .profile-modal small,
+        .profile-modal .small { font-size: 0.85rem; }
+        .profile-avatar-frame { width: 104px; height: 104px; }
+    }
+    @media (max-width: 575.98px) {
+        .profile-modal-footer { flex-direction: column; }
+        .profile-modal-footer .btn { width: 100%; }
+    }
 </style>
 
 <script>

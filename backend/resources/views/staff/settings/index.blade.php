@@ -25,7 +25,7 @@
                 @include('staff.partials.navbar')
             </header>
 
-            <main class="flex-grow-1 p-4" style="overflow-y: auto;">
+            <main class="flex-grow-1 p-3 p-md-4" style="overflow-y: auto;">
                 <div class="container-fluid" style="max-width: 880px;">
                     <div class="mb-4">
                         <h4 class="fw-bold text-dark mb-1">Settings</h4>
@@ -37,7 +37,7 @@
                         @method('PUT')
 
                         <div class="card border-0 shadow-sm settings-card">
-                            <div class="card-header bg-white border-0 pt-4 pb-2 px-4">
+                            <div class="card-header bg-white border-0 pt-3 pt-md-4 pb-2 px-3 px-md-4">
                                 <div class="d-flex align-items-center gap-2">
                                     <span class="settings-section-icon"><i class="bi bi-bell-fill"></i></span>
                                     <div>
@@ -46,7 +46,7 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="card-body px-4 pb-4">
+                            <div class="card-body px-3 px-md-4 pb-3 pb-md-4">
                                 <div class="setting-row d-flex justify-content-between align-items-center gap-3 py-3 border-top">
                                     <div class="flex-grow-1">
                                         <div class="fw-semibold text-dark">Enable notifications</div>
@@ -104,6 +104,14 @@
         .settings-switch:focus {
             border-color: rgba(14, 46, 69, 0.4);
             box-shadow: 0 0 0 0.2rem rgba(255, 197, 8, 0.25);
+        }
+
+        /* ── Mobile ( < sm ) — ResponsiveMobileNote.md §2 ── */
+        @media (max-width: 575.98px) {
+            .container-fluid h4 { font-size: 1.15rem; }
+            .setting-row { gap: 0.75rem !important; }
+            .settings-form .d-flex.justify-content-end { justify-content: stretch !important; }
+            .settings-form .d-flex.justify-content-end .btn { width: 100%; }
         }
     </style>
 @endsection

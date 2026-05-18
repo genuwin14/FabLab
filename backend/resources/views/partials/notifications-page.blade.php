@@ -20,7 +20,7 @@
     $grouped = $notifications->getCollection()->groupBy(fn ($n) => $bucketFor($n->created_at));
 @endphp
 
-<div class="container-fluid">
+<div class="container-fluid notif-page">
     <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
         <div>
             <h5 class="fw-bold mb-0 text-primary">Notifications</h5>
@@ -208,6 +208,24 @@
         background-color: #b02a37;
         border-color: #b02a37;
         color: #fff;
+    }
+
+    /* ── Mobile ( < sm ) — ResponsiveMobileNote.md §2 + §6 ── */
+    @media (max-width: 575.98px) {
+        /* List rows: tighter padding so more room for the message text. */
+        .notif-page .list-group-item { padding: 0.75rem 0.85rem; gap: 0.65rem !important; }
+        .notif-page .list-group-item .fw-semibold { font-size: 0.9rem; }
+
+        /* Delete-confirm modal: smaller type/spacing, stacked buttons. */
+        .notification-delete-modal-dialog { margin: 0.5rem; }
+        .notification-delete-modal .modal-title { font-size: 1rem; }
+        .notification-delete-modal-header { padding: 22px 18px 16px; }
+        .notification-delete-modal-body { padding: 1rem !important; font-size: 0.9rem; }
+        .notification-delete-modal-footer {
+            padding: 12px 16px 18px;
+            flex-direction: column;
+        }
+        .notification-delete-modal-footer .btn { width: 100%; }
     }
 </style>
 

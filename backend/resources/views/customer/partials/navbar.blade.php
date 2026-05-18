@@ -7,8 +7,8 @@
         </button>
 
         <!-- Page Title -->
-        <div class="me-auto overflow-hidden text-nowrap">
-            <div class="d-flex align-items-center gap-2">
+        <div class="navbar-title-wrap me-auto">
+            <div class="d-flex align-items-center gap-2 navbar-title-inner">
                 <span class="page-eyebrow d-none d-md-inline">Shop</span>
                 <span class="page-eyebrow-divider d-none d-md-inline">/</span>
                 <h6 class="page-title fw-bold mb-0 text-white text-truncate">
@@ -34,7 +34,7 @@
         </div>
 
         <!-- Right Side -->
-        <div class="d-flex align-items-center gap-2">
+        <div class="d-flex align-items-center gap-2 flex-shrink-0">
             <!-- Clock (Desktop Only) -->
             <div class="d-none d-lg-flex align-items-center clock-wrapper">
                 <i class="bi bi-clock me-2 text-white-50 small"></i>
@@ -157,7 +157,28 @@
         color: rgba(255, 197, 8, 0.85);
     }
     .page-eyebrow-divider { color: rgba(255, 255, 255, 0.2); font-weight: 300; }
-    .page-title { font-size: 0.95rem; letter-spacing: 0.01em; }
+
+    /* Long titles ellipsize instead of shoving the navbar controls
+       off-screen. min-width:0 lets these flex items shrink below their
+       content width so .text-truncate's ellipsis actually engages. */
+    .navbar-title-wrap { min-width: 0; overflow: hidden; }
+    .navbar-title-inner { min-width: 0; }
+    .page-title {
+        font-size: 0.95rem;
+        letter-spacing: 0.01em;
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    /* Fixed-height bar stays a single row at every width. */
+    .custom-navbar > .container-fluid { flex-wrap: nowrap; }
+
+    @media (max-width: 575.98px) {
+        .page-title { font-size: 0.85rem; }
+        .page-title .page-title-sub { display: none; }
+    }
 
     .clock-wrapper {
         padding-right: 0.85rem;
@@ -245,6 +266,19 @@
         min-width: 280px;
     }
     .notification-dropdown { min-width: 340px; }
+
+    /* Mobile: a right-anchored 340px menu overflows narrow phones and
+       triggers page-wide horizontal scroll. Drop the fixed min-width
+       and cap to the viewport so the menu always stays on screen. */
+    @media (max-width: 575.98px) {
+        .notification-dropdown,
+        .user-dropdown-menu {
+            min-width: 0;
+            width: calc(100vw - 1.25rem);
+            max-width: 360px;
+        }
+        .notification-list { max-height: 60vh; }
+    }
 
     .dropdown-header-bar {
         padding: 12px 16px;

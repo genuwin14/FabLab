@@ -25,7 +25,7 @@
                 @include('admin.partials.navbar')
             </header>
 
-            <main class="flex-grow-1 p-4" style="overflow-y: auto;">
+            <main class="flex-grow-1 p-3 p-md-4" style="overflow-y: auto;">
                 @include('partials.notifications-page')
             </main>
         </div>
