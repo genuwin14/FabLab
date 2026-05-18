@@ -156,6 +156,16 @@
         border-color: #ffc508;
         color: #0e2e45;
     }
+
+    /* ── Mobile ( < lg / 992px ) — see ResponsiveMobileNote.md §6 ── */
+    @media (max-width: 991.98px) {
+        .report-preview-modal-dialog { margin: 0.5rem; }
+        .report-preview-modal .modal-content { height: min(92vh, 850px); }
+        .report-preview-modal-header { padding: 14px 16px; }
+        .report-preview-modal-header .modal-title { font-size: 1rem; }
+        .report-preview-modal-footer { padding: 12px 16px; }
+        .report-preview-modal-footer .btn { font-size: 0.85rem; padding-left: 1rem; padding-right: 1rem; }
+    }
 </style>
 
 <script>

@@ -45,38 +45,54 @@
             </header>
 
             <!-- Page Content -->
-            <main class="flex-grow-1 p-4" style="overflow-y: auto;">
+            <main class="flex-grow-1 p-3 p-md-4" style="overflow-y: auto;">
                 <div class="container-fluid">
 
                     <!-- Filters & Search -->
                     <div class="card border-0 shadow-sm rounded-4 mb-4">
                         <div class="card-body p-3">
                             <form id="userFilterForm" method="GET" action="{{ route('admin.users.index') }}"
-                                class="d-flex flex-nowrap align-items-center gap-2">
-                                <div class="input-group flex-grow-1" style="min-width: 0;">
-                                    <span class="input-group-text bg-white border-end-0 rounded-start-2 ps-3">
-                                        <i class="bi bi-search text-muted"></i>
-                                    </span>
-                                    <input type="text" name="search" value="{{ $search }}"
-                                        class="form-control border-start-0 rounded-end-2 ps-0"
-                                        placeholder="Search by name, email, or contact number...">
+                                class="row g-2 align-items-center">
+
+                                <!-- Search: inline on desktop; icon-triggered dropdown on mobile. -->
+                                <div class="col-auto col-lg dropdown search-dd">
+                                    <button type="button"
+                                        class="btn btn-light rounded-2 d-lg-none search-toggle"
+                                        data-bs-toggle="dropdown" data-bs-auto-close="outside"
+                                        aria-expanded="false" title="Search">
+                                        <i class="bi bi-search text-primary"></i>
+                                    </button>
+                                    <div class="dropdown-menu search-menu border-0 shadow p-2 p-lg-0">
+                                        <div class="input-group">
+                                            <span class="input-group-text bg-white border-end-0 rounded-start-2 ps-3">
+                                                <i class="bi bi-search text-muted"></i>
+                                            </span>
+                                            <input type="text" name="search" value="{{ $search }}"
+                                                class="form-control border-start-0 rounded-end-2 ps-0"
+                                                placeholder="Search by name, email, or contact number...">
+                                        </div>
+                                    </div>
                                 </div>
-                                <a href="{{ route('admin.users.index') }}"
-                                    class="btn btn-light rounded-2 flex-shrink-0" data-bs-toggle="tooltip"
-                                    title="Reset filters">
-                                    <i class="bi bi-arrow-clockwise text-primary"></i>
-                                </a>
-                                <button type="submit"
-                                    class="btn btn-primary d-flex align-items-center gap-2 rounded-2 px-3 flex-shrink-0">
-                                    <i class="bi bi-search small"></i>
-                                    <span class="small fw-bold">Search</span>
-                                </button>
+
+                                <div class="col-auto d-flex gap-2">
+                                    <a href="{{ route('admin.users.index') }}"
+                                        class="btn btn-light rounded-2 flex-shrink-0" data-bs-toggle="tooltip"
+                                        title="Reset filters">
+                                        <i class="bi bi-arrow-clockwise text-primary"></i>
+                                    </a>
+                                    <button type="submit"
+                                        class="btn btn-primary d-flex align-items-center justify-content-center gap-2 rounded-2 px-3"
+                                        title="Search">
+                                        <i class="bi bi-search small"></i>
+                                        <span class="small fw-bold d-none d-lg-inline">Search</span>
+                                    </button>
+                                </div>
                             </form>
                         </div>
                     </div>
 
                     <!-- Users Table -->
-                    <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+                    <div class="card border-0 shadow-sm rounded-4 overflow-hidden data-table-card">
                         <div class="card-body p-0">
                             <div class="table-responsive">
                                 <table class="table table-hover align-middle mb-0">
@@ -282,6 +298,67 @@
             background-color: #146c43;
             border-color: #146c43;
             color: #fff;
+        }
+
+        /* ============================================
+           Mobile responsiveness ( < lg / 992px )
+           See ResponsiveMobileNote.md
+           ============================================ */
+        @media (min-width: 992px) {
+            .search-dd .dropdown-menu.search-menu {
+                position: static !important;
+                display: block !important;
+                float: none;
+                width: 100%;
+                margin: 0;
+                padding: 0 !important;
+                border: 0 !important;
+                box-shadow: none !important;
+                background: transparent;
+            }
+        }
+        @media (max-width: 991.98px) {
+            .search-dd .dropdown-menu.search-menu {
+                width: min(82vw, 360px);
+            }
+
+            /* Edge-to-edge scrollable table (no pagination on this page). */
+            .data-table-card {
+                margin-left: -0.75rem;
+                margin-right: -0.75rem;
+                border-radius: 0 !important;
+            }
+            .data-table-card .table {
+                min-width: 900px;
+            }
+            .data-table-card .table th,
+            .data-table-card .table td {
+                white-space: nowrap;
+            }
+            .data-table-card .table th:first-child,
+            .data-table-card .table td:first-child {
+                min-width: 220px;
+            }
+
+            /* Smaller modal type + spacing on phones. */
+            .modal-title { font-size: 1rem; }
+            .modal-body { font-size: 0.85rem; }
+            .modal .form-label,
+            .modal .form-control,
+            .modal .form-select,
+            .modal .input-group-text,
+            .modal .btn,
+            .modal small,
+            .modal .small { font-size: 0.8rem; }
+            .user-status-modal .modal-dialog {
+                margin: 0.5rem;
+            }
+            .user-status-modal-header {
+                padding: 20px 16px 16px;
+            }
+            .user-status-modal-footer {
+                padding: 12px 16px 16px;
+            }
         }
     </style>
 @endsection

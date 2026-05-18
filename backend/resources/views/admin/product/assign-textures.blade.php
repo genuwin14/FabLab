@@ -27,7 +27,7 @@
             </header>
 
             <!-- Page Content -->
-            <main class="flex-grow-1 p-4" style="overflow-y: auto;">
+            <main class="flex-grow-1 p-3 p-md-4" style="overflow-y: auto;">
                 <div class="container-fluid">
 
                     <!-- Page Header -->
@@ -38,7 +38,7 @@
 
                     <!-- Product Info Card -->
                     <div class="card border-0 shadow-sm rounded-4 mb-4">
-                        <div class="card-body p-4">
+                        <div class="card-body p-3 p-md-4">
                             <div class="row align-items-center">
                                 <div class="col-auto">
                                     <div class="bg-light rounded-3 d-flex align-items-center justify-content-center overflow-hidden"
@@ -50,7 +50,7 @@
                                 </div>
                                 <div class="col">
                                     <h5 class="fw-bold mb-1">{{ $product->name }}</h5>
-                                    <div class="d-flex gap-3 text-muted small">
+                                    <div class="d-flex flex-wrap gap-2 gap-md-3 text-muted small">
                                         <span><i class="bi bi-upc-scan me-1"></i> {{ $product->sku }}</span>
                                         <span><i class="bi bi-tag me-1"></i> {{ $product->category->name ?? 'N/A' }}</span>
                                         <span><i class="bi bi-currency-peso me-1"></i> ₱{{ number_format($product->price, 2) }}</span>
@@ -68,7 +68,7 @@
                         @csrf
 
                         <div class="card border-0 shadow-sm rounded-4 mb-4">
-                            <div class="card-header bg-white border-bottom-0 pt-4 px-4 d-flex justify-content-between align-items-center">
+                            <div class="card-header bg-white border-bottom-0 pt-3 pt-md-4 px-3 px-md-4 d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-2">
                                 <div>
                                     <h6 class="fw-bold text-dark mb-0">
                                         <i class="bi bi-layers text-primary me-2"></i>
@@ -76,7 +76,7 @@
                                     </h6>
                                     <p class="text-muted small mb-0 mt-1">Click a texture card to toggle its assignment to this product.</p>
                                 </div>
-                                <div class="d-flex gap-2">
+                                <div class="d-flex gap-2 flex-shrink-0">
                                     <button type="button" id="selectAllBtn" class="btn btn-sm btn-outline-primary rounded-pill px-3">
                                         <i class="bi bi-check2-all me-1"></i> Select All
                                     </button>
@@ -85,7 +85,7 @@
                                     </button>
                                 </div>
                             </div>
-                            <div class="card-body p-4">
+                            <div class="card-body p-3 p-md-4">
                                 @if($textures->isEmpty())
                                     <div class="alert alert-warning">
                                         <i class="bi bi-exclamation-triangle me-2"></i>
@@ -145,7 +145,7 @@
                         </div>
 
                         <!-- Action Buttons -->
-                        <div class="d-flex justify-content-between">
+                        <div class="d-flex flex-wrap gap-2 justify-content-between">
                             <a href="{{ route('admin.products.index') }}" class="btn btn-light rounded-pill px-4">
                                 <i class="bi bi-arrow-left me-2"></i>Back to Products
                             </a>

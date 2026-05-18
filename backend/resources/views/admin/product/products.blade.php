@@ -28,59 +28,93 @@
             </header>
 
             <!-- Page Content -->
-            <main class="flex-grow-1 p-4" style="overflow-y: auto;">
+            <main class="flex-grow-1 p-3 p-md-4" style="overflow-y: auto;">
                 <div class="container-fluid">
 
                     <!-- Filters, Search & Actions -->
                     <div class="card border-0 shadow-sm rounded-4 mb-4">
                         <div class="card-body p-3">
                             <form id="productFilterForm" method="GET" action="{{ route('admin.products.index') }}"
-                                class="d-flex flex-nowrap align-items-center gap-2">
+                                class="row g-2 align-items-center">
                                 <input type="hidden" name="per_page" value="{{ $perPage }}">
-                                <div class="input-group flex-grow-1" style="min-width: 0;">
-                                    <span class="input-group-text bg-white border-end-0 rounded-start-2 ps-3">
-                                        <i class="bi bi-search text-muted"></i>
-                                    </span>
-                                    <input type="text" name="search" value="{{ $search }}"
-                                        class="form-control border-start-0 rounded-end-2 ps-0"
-                                        placeholder="Search by name, SKU, or brand...">
+
+                                <!-- Search: plain inline input on desktop; on mobile it
+                                     collapses behind the search icon and opens as a dropdown. -->
+                                <div class="col-auto col-lg dropdown search-dd">
+                                    <button type="button"
+                                        class="btn btn-light rounded-2 d-lg-none search-toggle"
+                                        data-bs-toggle="dropdown" data-bs-auto-close="outside"
+                                        aria-expanded="false" title="Search">
+                                        <i class="bi bi-search text-primary"></i>
+                                    </button>
+                                    <div class="dropdown-menu search-menu border-0 shadow p-2 p-lg-0">
+                                        <div class="input-group">
+                                            <span class="input-group-text bg-white border-end-0 rounded-start-2 ps-3">
+                                                <i class="bi bi-search text-muted"></i>
+                                            </span>
+                                            <input type="text" name="search" value="{{ $search }}"
+                                                class="form-control border-start-0 rounded-end-2 ps-0"
+                                                placeholder="Search by name, SKU, or brand...">
+                                        </div>
+                                    </div>
                                 </div>
-                                <select name="category_id" class="form-select rounded-2 flex-shrink-0 w-auto"
-                                    onchange="document.getElementById('productFilterForm').submit()">
-                                    <option value="">All Categories</option>
-                                    @foreach($categories as $category)
-                                        <option value="{{ $category->category_id }}"
-                                            {{ (string) $categoryId === (string) $category->category_id ? 'selected' : '' }}>
-                                            {{ $category->name }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                                <select name="stock_status" class="form-select rounded-2 flex-shrink-0 w-auto"
-                                    onchange="document.getElementById('productFilterForm').submit()">
-                                    <option value="">Stock Status</option>
-                                    <option value="in_stock" {{ $stockStatus === 'in_stock' ? 'selected' : '' }}>In Stock</option>
-                                    <option value="low_stock" {{ $stockStatus === 'low_stock' ? 'selected' : '' }}>Low Stock</option>
-                                    <option value="out_of_stock" {{ $stockStatus === 'out_of_stock' ? 'selected' : '' }}>Out of Stock</option>
-                                </select>
-                                <a href="{{ route('admin.products.index') }}"
-                                    class="btn btn-light rounded-2 flex-shrink-0" data-bs-toggle="tooltip" title="Reset filters">
-                                    <i class="bi bi-arrow-clockwise text-primary"></i>
-                                </a>
-                                <button type="button" class="btn btn-primary d-flex align-items-center gap-2 rounded-2 px-3 flex-shrink-0">
-                                    <i class="bi bi-download small"></i>
-                                    <span class="small fw-bold">Export</span>
-                                </button>
-                                <button type="button" class="btn btn-primary d-flex align-items-center gap-2 rounded-2 px-3 flex-shrink-0"
-                                    data-bs-toggle="modal" data-bs-target="#addProductModal">
-                                    <i class="bi bi-plus-lg small"></i>
-                                    <span class="small fw-bold">Add Product</span>
-                                </button>
+
+                                <!-- Category + Stock filters: inline selects on desktop;
+                                     on mobile they collapse behind one filter icon. -->
+                                <div class="col-auto dropdown filter-dd">
+                                    <button type="button"
+                                        class="btn btn-light rounded-2 d-lg-none filter-toggle"
+                                        data-bs-toggle="dropdown" data-bs-auto-close="outside"
+                                        aria-expanded="false" title="Filters">
+                                        <i class="bi bi-funnel text-primary"></i>
+                                    </button>
+                                    <div class="dropdown-menu filter-menu border-0 shadow p-2 p-lg-0">
+                                        <div class="d-flex flex-column flex-lg-row gap-2">
+                                            <select name="category_id" class="form-select rounded-2 w-100"
+                                                onchange="document.getElementById('productFilterForm').submit()">
+                                                <option value="">All Categories</option>
+                                                @foreach($categories as $category)
+                                                    <option value="{{ $category->category_id }}"
+                                                        {{ (string) $categoryId === (string) $category->category_id ? 'selected' : '' }}>
+                                                        {{ $category->name }}
+                                                    </option>
+                                                @endforeach
+                                            </select>
+                                            <select name="stock_status" class="form-select rounded-2 w-100"
+                                                onchange="document.getElementById('productFilterForm').submit()">
+                                                <option value="">Stock Status</option>
+                                                <option value="in_stock" {{ $stockStatus === 'in_stock' ? 'selected' : '' }}>In Stock</option>
+                                                <option value="low_stock" {{ $stockStatus === 'low_stock' ? 'selected' : '' }}>Low Stock</option>
+                                                <option value="out_of_stock" {{ $stockStatus === 'out_of_stock' ? 'selected' : '' }}>Out of Stock</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-auto d-flex gap-2">
+                                    <a href="{{ route('admin.products.index') }}"
+                                        class="btn btn-light rounded-2 flex-shrink-0" data-bs-toggle="tooltip" title="Reset filters">
+                                        <i class="bi bi-arrow-clockwise text-primary"></i>
+                                    </a>
+                                    <button type="button"
+                                        class="btn btn-primary d-flex align-items-center justify-content-center gap-2 rounded-2 px-3"
+                                        title="Export">
+                                        <i class="bi bi-download small"></i>
+                                        <span class="small fw-bold d-none d-lg-inline">Export</span>
+                                    </button>
+                                    <button type="button"
+                                        class="btn btn-primary d-flex align-items-center justify-content-center gap-2 rounded-2 px-3"
+                                        data-bs-toggle="modal" data-bs-target="#addProductModal" title="Add Product">
+                                        <i class="bi bi-plus-lg small"></i>
+                                        <span class="small fw-bold d-none d-lg-inline">Add Product</span>
+                                    </button>
+                                </div>
                             </form>
                         </div>
                     </div>
 
                     <!-- Products Table -->
-                    <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+                    <div class="card border-0 shadow-sm rounded-4 overflow-hidden products-table-card">
                         <div class="card-body p-0">
                             <div class="table-responsive">
                                 <table class="table table-hover align-middle mb-0">
@@ -210,25 +244,26 @@
                                         @endforelse
                                     </tbody>
                                 </table>
-                            </div>
 
-                            <!-- Pagination -->
-                            <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 p-3 border-top">
-                                <div class="d-flex align-items-center gap-2">
-                                    <label for="perPageSelect" class="text-muted small mb-0">Rows per page:</label>
-                                    <select id="perPageSelect" class="form-select form-select-sm rounded-pill w-auto"
-                                        onchange="(function(v){const u=new URL(window.location.href);u.searchParams.set('per_page',v);u.searchParams.delete('page');window.location.href=u.toString();})(this.value)">
-                                        @foreach([10, 25, 50, 100] as $size)
-                                            <option value="{{ $size }}" {{ $perPage == $size ? 'selected' : '' }}>{{ $size }}</option>
-                                        @endforeach
-                                    </select>
-                                    <span class="text-muted small">
-                                        Showing {{ $products->firstItem() ?? 0 }} to {{ $products->lastItem() ?? 0 }} of {{ $products->total() }} entries
-                                    </span>
+                                <!-- Pagination sits INSIDE .table-responsive, so it
+                                     rides the table's single horizontal scrollbar. -->
+                                <div class="pagination-bar border-top d-flex justify-content-between align-items-center gap-2 p-3">
+                                    <div class="d-flex align-items-center gap-2 flex-shrink-0">
+                                        <label for="perPageSelect" class="text-muted small mb-0">Rows per page:</label>
+                                        <select id="perPageSelect" class="form-select form-select-sm rounded-pill w-auto"
+                                            onchange="(function(v){const u=new URL(window.location.href);u.searchParams.set('per_page',v);u.searchParams.delete('page');window.location.href=u.toString();})(this.value)">
+                                            @foreach([10, 25, 50, 100] as $size)
+                                                <option value="{{ $size }}" {{ $perPage == $size ? 'selected' : '' }}>{{ $size }}</option>
+                                            @endforeach
+                                        </select>
+                                        <span class="text-muted small text-nowrap">
+                                            Showing {{ $products->firstItem() ?? 0 }} to {{ $products->lastItem() ?? 0 }} of {{ $products->total() }} entries
+                                        </span>
+                                    </div>
+                                    <nav class="flex-shrink-0">
+                                        {{ $products->links() }}
+                                    </nav>
                                 </div>
-                                <nav>
-                                    {{ $products->links() }}
-                                </nav>
                             </div>
                         </div>
                     </div>
@@ -503,6 +538,114 @@
             background-color: #b02a37;
             border-color: #b02a37;
             color: #fff;
+        }
+
+        /* ============================================
+           Mobile responsiveness ( < lg / 992px )
+           ============================================ */
+
+        /* Search field: a plain inline input on desktop, but on mobile it
+           collapses behind the search icon and opens as a dropdown panel. */
+        @media (min-width: 992px) {
+            .search-dd .dropdown-menu.search-menu,
+            .filter-dd .dropdown-menu.filter-menu {
+                position: static !important;
+                display: block !important;
+                float: none;
+                width: 100%;
+                margin: 0;
+                padding: 0 !important;
+                border: 0 !important;
+                box-shadow: none !important;
+                background: transparent;
+            }
+            /* keep the two selects at their natural inline width on desktop */
+            .filter-dd .filter-menu .form-select { width: auto !important; }
+        }
+        @media (max-width: 991.98px) {
+            .search-dd .dropdown-menu.search-menu {
+                width: min(82vw, 360px);
+            }
+            .filter-dd .dropdown-menu.filter-menu {
+                width: min(82vw, 320px);
+            }
+
+            /* Maximize the horizontally-scrolling table: pull the card out to
+               the page gutter, force single-line cells and a comfortable min
+               width so columns (Product Info, SKU…) keep their size and the
+               user swipes instead of seeing squished / wrapped text. */
+            .products-table-card {
+                margin-left: -0.75rem;
+                margin-right: -0.75rem;
+                border-radius: 0 !important;
+            }
+            .products-table-card .table {
+                min-width: 860px;
+            }
+            .products-table-card .table th,
+            .products-table-card .table td {
+                white-space: nowrap;
+            }
+            .products-table-card .table th:first-child,
+            .products-table-card .table td:first-child {
+                min-width: 240px;
+            }
+
+            /* Pagination lives inside .table-responsive and shares the table's
+               single horizontal scrollbar. Match the table min-width so the
+               bar spans the full scroll width and stays aligned under it. */
+            .pagination-bar {
+                flex-wrap: nowrap;
+                min-width: 860px;
+            }
+            .pagination-bar .pagination {
+                --bs-pagination-padding-x: 0.5rem;
+                --bs-pagination-padding-y: 0.25rem;
+                --bs-pagination-font-size: 0.8rem;
+                margin-bottom: 0;
+            }
+
+            /* Smaller modal type so dialogs fit a phone screen. */
+            .modal-title { font-size: 1rem; }
+            .modal-body { font-size: 0.85rem; }
+            .modal .form-label,
+            .modal .form-control,
+            .modal .form-select,
+            .modal .input-group-text,
+            .modal .btn,
+            .modal small,
+            .modal .small { font-size: 0.8rem; }
+            .modal .product-section-title { font-size: 0.62rem; }
+            .product-modal-header,
+            .product-delete-modal-header {
+                padding: 14px 16px;
+            }
+            .product-modal-footer,
+            .product-delete-modal-footer {
+                padding: 12px 16px;
+            }
+
+            /* Reduce modal spacing/size on small screens (complements the
+               font rules above so dialogs fit a phone without huge gaps). */
+            .product-modal .modal-dialog,
+            .product-delete-modal .modal-dialog {
+                margin: 0.5rem;
+            }
+            .product-modal .modal-body .p-4,
+            .product-delete-modal .modal-body.p-4 {
+                padding: 1rem !important;
+            }
+            .product-modal .row.g-3 {
+                --bs-gutter-y: 0.5rem;
+            }
+            .product-modal .product-side-panel .ratio {
+                max-width: 200px;
+                margin-left: auto;
+                margin-right: auto;
+            }
+            .product-modal .product-field-input.fs-5 {
+                font-size: 0.85rem !important;
+            }
         }
     </style>
 

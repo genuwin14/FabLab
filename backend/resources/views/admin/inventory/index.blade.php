@@ -11,6 +11,14 @@
         <!-- Spacer for fixed sidebar -->
         <div class="d-none d-md-block sidebar-spacer flex-shrink-0" style="width: 280px;"></div>
 
+        <!-- Mobile Sidebar (Offcanvas) -->
+        <div class="offcanvas offcanvas-start border-0" tabindex="-1" id="adminSidebarOffcanvas"
+            aria-labelledby="adminSidebarOffcanvasLabel" style="width: 280px; background-color: #0e2e45;">
+            <div class="offcanvas-body p-0 overflow-hidden">
+                @include('admin.partials.sidebar')
+            </div>
+        </div>
+
         <!-- Main Content -->
         <div class="flex-grow-1 d-flex flex-column" style="background-color: #f1f4f8; overflow: hidden;">
             <!-- Top Navbar -->
@@ -19,7 +27,7 @@
             </header>
 
             <!-- Page Content -->
-            <main class="flex-grow-1 p-4" style="overflow-y: auto;">
+            <main class="flex-grow-1 p-3 p-md-4" style="overflow-y: auto;">
                 <div class="container-fluid">
 
                     <!-- Flash Messages -->
@@ -34,44 +42,74 @@
                     <div class="card border-0 shadow-sm rounded-4 mb-4">
                         <div class="card-body p-3">
                             <form id="inventoryFilterForm" method="GET" action="{{ route('admin.inventory.index') }}"
-                                class="d-flex flex-nowrap align-items-center gap-2">
-                                <div class="input-group flex-grow-1" style="min-width: 0;">
-                                    <span class="input-group-text bg-white border-end-0 rounded-start-2 ps-3">
-                                        <i class="bi bi-search text-muted"></i>
-                                    </span>
-                                    <input type="text" name="search" value="{{ $search ?? '' }}"
-                                        class="form-control border-start-0 rounded-end-2 ps-0"
-                                        placeholder="Search by item name or SKU...">
+                                class="row g-2 align-items-center">
+
+                                <!-- Search: inline on desktop; icon-triggered dropdown on mobile. -->
+                                <div class="col-auto col-lg dropdown search-dd">
+                                    <button type="button"
+                                        class="btn btn-light rounded-2 d-lg-none search-toggle"
+                                        data-bs-toggle="dropdown" data-bs-auto-close="outside"
+                                        aria-expanded="false" title="Search">
+                                        <i class="bi bi-search text-primary"></i>
+                                    </button>
+                                    <div class="dropdown-menu search-menu border-0 shadow p-2 p-lg-0">
+                                        <div class="input-group">
+                                            <span class="input-group-text bg-white border-end-0 rounded-start-2 ps-3">
+                                                <i class="bi bi-search text-muted"></i>
+                                            </span>
+                                            <input type="text" name="search" value="{{ $search ?? '' }}"
+                                                class="form-control border-start-0 rounded-end-2 ps-0"
+                                                placeholder="Search by item name or SKU...">
+                                        </div>
+                                    </div>
                                 </div>
-                                <select name="type" class="form-select rounded-2 flex-shrink-0 w-auto"
-                                    onchange="document.getElementById('inventoryFilterForm').submit()">
-                                    <option value="">All Types</option>
-                                    <option value="Product" {{ ($type ?? '') === 'Product' ? 'selected' : '' }}>Products</option>
-                                    <option value="Raw Material" {{ ($type ?? '') === 'Raw Material' ? 'selected' : '' }}>Raw Materials</option>
-                                    <option value="Texture" {{ ($type ?? '') === 'Texture' ? 'selected' : '' }}>Textures</option>
-                                </select>
-                                <select name="stock_status" class="form-select rounded-2 flex-shrink-0 w-auto"
-                                    onchange="document.getElementById('inventoryFilterForm').submit()">
-                                    <option value="">Stock Status</option>
-                                    <option value="low_stock" {{ ($stockStatus ?? '') === 'low_stock' ? 'selected' : '' }}>Low Stock</option>
-                                    <option value="out_of_stock" {{ ($stockStatus ?? '') === 'out_of_stock' ? 'selected' : '' }}>Out of Stock</option>
-                                </select>
-                                <a href="{{ route('admin.inventory.index') }}"
-                                    class="btn btn-light rounded-2 flex-shrink-0" data-bs-toggle="tooltip" title="Reset filters">
-                                    <i class="bi bi-arrow-clockwise text-primary"></i>
-                                </a>
-                                <a href="{{ route('admin.purchase.index') }}"
-                                    class="btn btn-primary d-flex align-items-center gap-2 rounded-2 px-3 flex-shrink-0">
-                                    <i class="bi bi-receipt small"></i>
-                                    <span class="small fw-bold">View Purchase Orders</span>
-                                </a>
+
+                                <!-- Type + Stock filters: inline on desktop; behind a filter icon on mobile. -->
+                                <div class="col-auto dropdown filter-dd">
+                                    <button type="button"
+                                        class="btn btn-light rounded-2 d-lg-none filter-toggle"
+                                        data-bs-toggle="dropdown" data-bs-auto-close="outside"
+                                        aria-expanded="false" title="Filters">
+                                        <i class="bi bi-funnel text-primary"></i>
+                                    </button>
+                                    <div class="dropdown-menu filter-menu border-0 shadow p-2 p-lg-0">
+                                        <div class="d-flex flex-column flex-lg-row gap-2">
+                                            <select name="type" class="form-select rounded-2 w-100"
+                                                onchange="document.getElementById('inventoryFilterForm').submit()">
+                                                <option value="">All Types</option>
+                                                <option value="Product" {{ ($type ?? '') === 'Product' ? 'selected' : '' }}>Products</option>
+                                                <option value="Raw Material" {{ ($type ?? '') === 'Raw Material' ? 'selected' : '' }}>Raw Materials</option>
+                                                <option value="Texture" {{ ($type ?? '') === 'Texture' ? 'selected' : '' }}>Textures</option>
+                                            </select>
+                                            <select name="stock_status" class="form-select rounded-2 w-100"
+                                                onchange="document.getElementById('inventoryFilterForm').submit()">
+                                                <option value="">Stock Status</option>
+                                                <option value="low_stock" {{ ($stockStatus ?? '') === 'low_stock' ? 'selected' : '' }}>Low Stock</option>
+                                                <option value="out_of_stock" {{ ($stockStatus ?? '') === 'out_of_stock' ? 'selected' : '' }}>Out of Stock</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-auto d-flex gap-2">
+                                    <a href="{{ route('admin.inventory.index') }}"
+                                        class="btn btn-light rounded-2 flex-shrink-0" data-bs-toggle="tooltip" title="Reset filters">
+                                        <i class="bi bi-arrow-clockwise text-primary"></i>
+                                    </a>
+                                    <a href="{{ route('admin.purchase.index') }}"
+                                        class="btn btn-primary d-flex align-items-center justify-content-center gap-2 rounded-2 px-3"
+                                        title="View Purchase Orders">
+                                        <i class="bi bi-receipt small"></i>
+                                        <span class="small fw-bold d-none d-lg-inline">View Purchase Orders</span>
+                                    </a>
+                                </div>
                             </form>
                         </div>
                     </div>
 
                     @if($allLowStockItems->isEmpty())
                         <div class="card border-0 shadow-sm rounded-4">
-                            <div class="card-body p-5 text-center">
+                            <div class="card-body p-4 p-md-5 text-center">
                                 <i class="bi bi-check-circle-fill text-success fs-1 mb-3"></i>
                                 <h5 class="fw-bold text-dark">All Stock Levels Optimal</h5>
                                 <p class="text-muted">There are no products or raw materials below their low stock threshold at this time.</p>
@@ -87,11 +125,11 @@
                         </div>
 
                         <!-- Suggestions grouped by Supplier -->
-                        <div class="row g-4">
+                        <div class="row g-3 g-md-4">
                             @foreach($groupedSuggestions as $supplierId => $items)
                                 <div class="col-xl-6">
                                     <div class="card border-0 shadow-sm rounded-4 overflow-hidden h-100">
-                                        <div class="card-header bg-white border-bottom-0 pt-4 px-4 d-flex justify-content-between align-items-center">
+                                        <div class="card-header bg-white border-bottom-0 pt-3 pt-md-4 px-3 px-md-4 d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-2">
                                             <div class="d-flex align-items-center gap-3">
                                                 <div class="bg-light rounded-circle d-flex align-items-center justify-content-center border" style="width: 48px; height: 48px;">
                                                     <i class="bi bi-truck text-primary fs-4"></i>
@@ -107,14 +145,14 @@
                                                 </div>
                                             </div>
                                             @if($supplierId !== 'no_supplier')
-                                                <a href="{{ route('admin.purchase.create', ['supplier_id' => $supplierId]) }}" class="btn btn-primary btn-sm rounded-pill px-3">
+                                                <a href="{{ route('admin.purchase.create', ['supplier_id' => $supplierId]) }}" class="btn btn-primary btn-sm rounded-pill px-3 flex-shrink-0">
                                                     Create Validated PO
                                                 </a>
                                             @endif
                                         </div>
                                         <div class="card-body p-0">
                                             <div class="table-responsive">
-                                                <table class="table table-hover align-middle mb-0">
+                                                <table class="table table-hover align-middle mb-0 inv-table">
                                                     <thead class="bg-light bg-opacity-50">
                                                         <tr>
                                                             <th class="ps-4 border-0 small text-uppercase text-muted">Item Name</th>
@@ -395,6 +433,69 @@
             background-color: #ffc508;
             border-color: #ffc508;
             color: #0e2e45;
+        }
+
+        /* ============================================
+           Mobile responsiveness ( < lg / 992px )
+           See ResponsiveMobileNote.md
+           ============================================ */
+        @media (min-width: 992px) {
+            .search-dd .dropdown-menu.search-menu,
+            .filter-dd .dropdown-menu.filter-menu {
+                position: static !important;
+                display: block !important;
+                float: none;
+                width: 100%;
+                margin: 0;
+                padding: 0 !important;
+                border: 0 !important;
+                box-shadow: none !important;
+                background: transparent;
+            }
+            .filter-dd .filter-menu .form-select { width: auto !important; }
+        }
+        @media (max-width: 991.98px) {
+            .search-dd .dropdown-menu.search-menu {
+                width: min(82vw, 360px);
+            }
+            .filter-dd .dropdown-menu.filter-menu {
+                width: min(82vw, 320px);
+            }
+
+            /* Suggestion tables sit inside grid cards (header + footer), so
+               no edge-to-edge — just keep columns from squishing: swipe. */
+            .inv-table {
+                min-width: 560px;
+            }
+            .inv-table th,
+            .inv-table td {
+                white-space: nowrap;
+            }
+            .inv-table th:first-child,
+            .inv-table td:first-child {
+                min-width: 200px;
+            }
+
+            /* Smaller modal type + spacing on phones. */
+            .modal-title { font-size: 1rem; }
+            .modal-body { font-size: 0.85rem; }
+            .modal .form-label,
+            .modal .form-control,
+            .modal .form-select,
+            .modal .input-group-text,
+            .modal .btn,
+            .modal small,
+            .modal .small { font-size: 0.8rem; }
+            .modal .inventory-section-title { font-size: 0.62rem; }
+            .inventory-modal .modal-dialog {
+                margin: 0.5rem;
+            }
+            .inventory-modal-header {
+                padding: 14px 16px;
+            }
+            .inventory-modal-footer {
+                padding: 12px 16px;
+            }
         }
     </style>
 

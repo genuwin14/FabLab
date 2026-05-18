@@ -30,15 +30,15 @@
             </header>
 
             <!-- Page Content -->
-            <main class="flex-grow-1 p-4" style="overflow-y: auto;">
+            <main class="flex-grow-1 p-3 p-md-4" style="overflow-y: auto;">
                 <div class="container-fluid">
 
                     <!-- Primary KPI Stats Grid -->
-                    <div class="row g-4 mb-4">
+                    <div class="row g-3 g-md-4 mb-4">
                         <!-- Total Revenue -->
                         <div class="col-md-6 col-xl-3">
                             <div class="card border-0 shadow-sm rounded-4 overflow-hidden stat-card h-100">
-                                <div class="card-body p-4 position-relative">
+                                <div class="card-body p-3 p-md-4 position-relative">
                                     <div class="d-flex justify-content-between align-items-start mb-3">
                                         <div class="rounded-3 bg-primary-soft p-3 text-primary">
                                             <i class="bi bi-currency-dollar fs-4"></i>
@@ -54,7 +54,7 @@
                                         @endif
                                     </div>
                                     <h6 class="text-muted small fw-bold text-uppercase mb-1">Total Revenue</h6>
-                                    <h3 class="fw-bold mb-0">₱{{ number_format($totalRevenue, 2) }}</h3>
+                                    <h3 class="fw-bold mb-0 stat-value">₱{{ number_format($totalRevenue, 2) }}</h3>
                                     <p class="text-muted small mb-0 mt-1">vs last month</p>
                                     <div class="stat-pattern"></div>
                                 </div>
@@ -64,7 +64,7 @@
                         <!-- Today's Revenue -->
                         <div class="col-md-6 col-xl-3">
                             <div class="card border-0 shadow-sm rounded-4 overflow-hidden stat-card h-100">
-                                <div class="card-body p-4 position-relative">
+                                <div class="card-body p-3 p-md-4 position-relative">
                                     <div class="d-flex justify-content-between align-items-start mb-3">
                                         <div class="rounded-3 bg-success bg-opacity-10 p-3 text-success">
                                             <i class="bi bi-calendar-check fs-4"></i>
@@ -74,7 +74,7 @@
                                         </span>
                                     </div>
                                     <h6 class="text-muted small fw-bold text-uppercase mb-1">Today's Revenue</h6>
-                                    <h3 class="fw-bold mb-0">₱{{ number_format($todayRevenue, 2) }}</h3>
+                                    <h3 class="fw-bold mb-0 stat-value">₱{{ number_format($todayRevenue, 2) }}</h3>
                                     <p class="text-muted small mb-0 mt-1">{{ now()->format('M j, Y') }}</p>
                                     <div class="stat-pattern bg-success"></div>
                                 </div>
@@ -85,7 +85,7 @@
                         <div class="col-md-6 col-xl-3">
                             <a href="{{ route('admin.orders.index') }}" class="text-decoration-none">
                                 <div class="card border-0 shadow-sm rounded-4 overflow-hidden stat-card h-100">
-                                    <div class="card-body p-4 position-relative">
+                                    <div class="card-body p-3 p-md-4 position-relative">
                                         <div class="d-flex justify-content-between align-items-start mb-3">
                                             <div class="rounded-3 bg-warning bg-opacity-10 p-3 text-warning">
                                                 <i class="bi bi-clock-history fs-4"></i>
@@ -101,7 +101,7 @@
                                             @endif
                                         </div>
                                         <h6 class="text-muted small fw-bold text-uppercase mb-1">Pending Orders</h6>
-                                        <h3 class="fw-bold mb-0 text-dark">{{ $pendingOrdersCount }}</h3>
+                                        <h3 class="fw-bold mb-0 text-dark stat-value">{{ $pendingOrdersCount }}</h3>
                                         <p class="text-muted small mb-0 mt-1">awaiting review</p>
                                         <div class="stat-pattern bg-warning"></div>
                                     </div>
@@ -113,7 +113,7 @@
                         <div class="col-md-6 col-xl-3">
                             <a href="{{ route('admin.inventory.index') }}" class="text-decoration-none">
                                 <div class="card border-0 shadow-sm rounded-4 overflow-hidden stat-card h-100">
-                                    <div class="card-body p-4 position-relative">
+                                    <div class="card-body p-3 p-md-4 position-relative">
                                         <div class="d-flex justify-content-between align-items-start mb-3">
                                             <div class="rounded-3 bg-danger bg-opacity-10 p-3 text-danger">
                                                 <i class="bi bi-exclamation-triangle fs-4"></i>
@@ -129,7 +129,7 @@
                                             @endif
                                         </div>
                                         <h6 class="text-muted small fw-bold text-uppercase mb-1">Stock Alerts</h6>
-                                        <h3 class="fw-bold mb-0 text-dark">{{ $lowStockCount }}</h3>
+                                        <h3 class="fw-bold mb-0 text-dark stat-value">{{ $lowStockCount }}</h3>
                                         <p class="text-muted small mb-0 mt-1">items at or below threshold</p>
                                         <div class="stat-pattern bg-danger"></div>
                                     </div>
@@ -140,7 +140,7 @@
 
                     <!-- Secondary KPI Row -->
                     <div class="row g-3 mb-4">
-                        <div class="col-6 col-md-3">
+                        <div class="col-6 col-xl-3">
                             <div class="card border-0 shadow-sm rounded-4 overflow-hidden h-100 mini-stat">
                                 <div class="card-body p-3 d-flex align-items-center">
                                     <div class="rounded-3 bg-primary-soft p-2 text-primary me-3">
@@ -153,7 +153,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="col-6 col-md-3">
+                        <div class="col-6 col-xl-3">
                             <div class="card border-0 shadow-sm rounded-4 overflow-hidden h-100 mini-stat">
                                 <div class="card-body p-3 d-flex align-items-center">
                                     <div class="rounded-3 bg-info bg-opacity-10 p-2 text-info me-3">
@@ -171,7 +171,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="col-6 col-md-3">
+                        <div class="col-6 col-xl-3">
                             <div class="card border-0 shadow-sm rounded-4 overflow-hidden h-100 mini-stat">
                                 <div class="card-body p-3 d-flex align-items-center">
                                     <div class="rounded-3 bg-warning bg-opacity-10 p-2 text-warning me-3">
@@ -184,7 +184,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="col-6 col-md-3">
+                        <div class="col-6 col-xl-3">
                             <div class="card border-0 shadow-sm rounded-4 overflow-hidden h-100 mini-stat">
                                 <div class="card-body p-3 d-flex align-items-center">
                                     <div class="rounded-3 bg-success bg-opacity-10 p-2 text-success me-3">
@@ -200,10 +200,10 @@
                     </div>
 
                     <!-- Charts Row -->
-                    <div class="row g-4 mb-4">
+                    <div class="row g-3 g-md-4 mb-4">
                         <div class="col-lg-8">
                             <div class="card border-0 shadow-sm rounded-4 overflow-hidden h-100">
-                                <div class="card-header bg-white border-0 p-4 pb-0 d-flex justify-content-between align-items-center">
+                                <div class="card-header bg-white border-0 p-3 p-md-4 pb-0 d-flex justify-content-between align-items-center gap-2">
                                     <div>
                                         <h5 class="fw-bold mb-0">Stock Trend</h5>
                                         <p class="text-muted small mb-0">Top moving products — last 30 days</p>
@@ -212,18 +212,18 @@
                                         <i class="bi bi-activity me-1"></i>30D
                                     </span>
                                 </div>
-                                <div class="card-body p-4">
-                                    <div id="stockChart" style="min-height: 320px;"></div>
+                                <div class="card-body p-3 p-md-4">
+                                    <div id="stockChart"></div>
                                 </div>
                             </div>
                         </div>
                         <div class="col-lg-4">
                             <div class="card border-0 shadow-sm rounded-4 overflow-hidden h-100">
-                                <div class="card-header bg-white border-0 p-4 pb-0">
+                                <div class="card-header bg-white border-0 p-3 p-md-4 pb-0">
                                     <h5 class="fw-bold mb-0">Top Products</h5>
                                     <p class="text-muted small mb-0">Best performers by units sold</p>
                                 </div>
-                                <div class="card-body p-4">
+                                <div class="card-body p-3 p-md-4 top-products-list">
                                     @forelse($topProducts as $index => $product)
                                         <div class="d-flex align-items-center mb-3 p-2 rounded-3 hover-bg-light transition-all">
                                             <div class="flex-shrink-0 me-3 position-relative">
@@ -267,6 +267,15 @@
             background-color: rgba(var(--bs-primary-rgb), 0.1) !important;
         }
 
+        /* Fluid KPI figure — scales with viewport so long values (e.g. ₱1,234,567.00)
+           never overflow the card at tablet width where the 280px sidebar squeezes
+           content to ~480px. */
+        .stat-value {
+            font-size: clamp(1.2rem, 1rem + 1.4vw, 1.75rem);
+            line-height: 1.2;
+            overflow-wrap: anywhere;
+        }
+
         /* ── Cards / hover effects ── */
         .stat-card {
             transition: transform 0.3s ease, box-shadow 0.3s ease;
@@ -300,6 +309,55 @@
         }
         .transition-all {
             transition: all 0.2s ease-in-out;
+        }
+
+        /* ── Stock Trend chart height ──
+           (Replaces the old inline min-height so the media query can win.) */
+        #stockChart { min-height: 320px; }
+
+        /* ── Mobile view: Stock Trend + Top Products ──
+           Applies while the two cards are stacked full-width (below the lg
+           breakpoint, i.e. phones and the sidebar-squeezed tablet width). */
+        @media (max-width: 991.98px) {
+            #stockChart { min-height: 240px; }
+
+            /* Compact, scroll-capped list so 5+ products don't push the rest
+               of the dashboard far down the page on a phone. */
+            .top-products-list {
+                max-height: 340px;
+                overflow-y: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+            .top-products-list > .d-flex {
+                margin-bottom: 0.25rem !important;
+                padding-top: 0.4rem !important;
+                padding-bottom: 0.4rem !important;
+            }
+            .top-products-list::-webkit-scrollbar { width: 4px; }
+            .top-products-list::-webkit-scrollbar-track { background: transparent; }
+            .top-products-list::-webkit-scrollbar-thumb {
+                background: rgba(0, 0, 0, 0.15);
+                border-radius: 10px;
+            }
+
+            /* Smaller card type so primary KPI / mini-stat / card headers
+               stay proportionate when squeezed (1-up phone, 2-up tablet). */
+            .stat-card .card-body h6 { font-size: 0.6rem !important; }
+            .stat-card .card-body > p { font-size: 0.68rem !important; }
+            .stat-card .card-body .fs-4 { font-size: 1.05rem !important; }
+            .stat-card .card-body .rounded-3.p-3 { padding: 0.6rem !important; }
+            .stat-card .badge { font-size: 0.62rem !important; }
+
+            .mini-stat .text-uppercase { font-size: 0.58rem !important; }
+            .mini-stat .fs-5 { font-size: 0.95rem !important; }
+            .mini-stat .rounded-3 { padding: 0.45rem !important; }
+            .mini-stat .fs-5.bi,
+            .mini-stat .rounded-3 .bi { font-size: 0.95rem !important; }
+
+            .card-header h5 { font-size: 1rem !important; }
+            .card-header p { font-size: 0.72rem !important; }
+
+            .top-products-list h6 { font-size: 0.78rem !important; }
         }
     </style>
 
@@ -350,7 +408,29 @@
                     y: { formatter: v => Number(v).toLocaleString() + ' units' }
                 },
                 markers: { size: 0, hover: { size: 5 } },
-                noData: { text: 'No recent stock activity', style: { color: '#6c757d', fontSize: '13px' } }
+                noData: { text: 'No recent stock activity', style: { color: '#6c757d', fontSize: '13px' } },
+                responsive: [{
+                    // Phone / small tablet: shorter chart, legend moved below the
+                    // plot, fewer axis ticks and smaller type so the multi-line
+                    // series stay readable on a narrow viewport.
+                    breakpoint: 768,
+                    options: {
+                        chart: { height: 240 },
+                        stroke: { width: 2 },
+                        legend: {
+                            position: 'bottom',
+                            horizontalAlign: 'center',
+                            fontSize: '11px',
+                            itemMargin: { horizontal: 6, vertical: 2 }
+                        },
+                        xaxis: {
+                            tickAmount: 4,
+                            labels: { style: { fontSize: '10px', colors: '#6c757d' } }
+                        },
+                        yaxis: { labels: { style: { fontSize: '10px', colors: '#6c757d' } } },
+                        grid: { padding: { left: 4, right: 4 } }
+                    }
+                }]
             };
             new ApexCharts(document.querySelector("#stockChart"), stockOptions).render();
         });

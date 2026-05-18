@@ -27,7 +27,7 @@
             </header>
 
             <!-- Page Content -->
-            <main class="flex-grow-1 p-4" style="overflow-y: auto;">
+            <main class="flex-grow-1 p-3 p-md-4" style="overflow-y: auto;">
                 <div class="container-fluid">
 
                     @php
@@ -44,8 +44,9 @@
                     <!-- Top Action Row -->
                     <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
                         <a href="{{ route('admin.purchase.index') }}"
-                            class="btn btn-light rounded-2 px-3 shadow-sm border small fw-bold text-muted">
-                            <i class="bi bi-arrow-left me-2"></i>Back to Purchase Orders
+                            class="btn btn-light rounded-2 px-3 shadow-sm border small fw-bold text-muted"
+                            title="Back to Purchase Orders">
+                            <i class="bi bi-arrow-left me-lg-2"></i><span class="d-none d-lg-inline">Back to Purchase Orders</span>
                         </a>
 
                         <div class="d-flex flex-wrap gap-2">
@@ -56,18 +57,21 @@
 
                                 @if($purchaseOrder->status === 'draft')
                                     <button name="status" value="sent"
-                                        class="btn btn-primary rounded-2 px-3 shadow-sm fw-bold small">
-                                        <i class="bi bi-send me-1"></i>Mark as Sent
+                                        class="btn btn-primary rounded-2 px-3 shadow-sm fw-bold small"
+                                        title="Mark as Sent">
+                                        <i class="bi bi-send me-lg-1"></i><span class="d-none d-lg-inline">Mark as Sent</span>
                                     </button>
                                 @elseif($purchaseOrder->status === 'sent')
                                     <button name="status" value="confirmed"
-                                        class="btn btn-info text-white rounded-2 px-3 shadow-sm fw-bold small">
-                                        <i class="bi bi-check2-circle me-1"></i>Mark as Confirmed
+                                        class="btn btn-info text-white rounded-2 px-3 shadow-sm fw-bold small"
+                                        title="Mark as Confirmed">
+                                        <i class="bi bi-check2-circle me-lg-1"></i><span class="d-none d-lg-inline">Mark as Confirmed</span>
                                     </button>
                                 @elseif($purchaseOrder->status === 'confirmed')
                                     <button name="status" value="delivered"
-                                        class="btn btn-success rounded-2 px-3 shadow-sm fw-bold small">
-                                        <i class="bi bi-box-seam me-1"></i>Mark as Delivered
+                                        class="btn btn-success rounded-2 px-3 shadow-sm fw-bold small"
+                                        title="Mark as Delivered">
+                                        <i class="bi bi-box-seam me-lg-1"></i><span class="d-none d-lg-inline">Mark as Delivered</span>
                                     </button>
                                 @endif
                             </form>
@@ -75,23 +79,23 @@
                             @if($purchaseOrder->status !== 'delivered' && $purchaseOrder->status !== 'cancelled')
                                 <button type="button"
                                     class="btn btn-outline-danger rounded-2 px-3 shadow-sm fw-bold small"
-                                    data-bs-toggle="modal" data-bs-target="#cancelPOModal">
-                                    <i class="bi bi-x-lg me-1"></i>Cancel Order
+                                    data-bs-toggle="modal" data-bs-target="#cancelPOModal" title="Cancel Order">
+                                    <i class="bi bi-x-lg me-lg-1"></i><span class="d-none d-lg-inline">Cancel Order</span>
                                 </button>
                             @endif
 
                             <button class="btn btn-light rounded-2 px-3 border shadow-sm text-muted fw-bold small"
-                                onclick="window.print()">
-                                <i class="bi bi-printer me-1"></i>Print
+                                onclick="window.print()" title="Print">
+                                <i class="bi bi-printer me-lg-1"></i><span class="d-none d-lg-inline">Print</span>
                             </button>
                         </div>
                     </div>
 
-                    <div class="row g-4">
+                    <div class="row g-3 g-md-4">
                         <!-- Main Info Card -->
                         <div class="col-lg-8">
                             <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4">
-                                <div class="card-header bg-white border-0 border-bottom p-4 pb-3">
+                                <div class="card-header bg-white border-0 border-bottom p-3 p-md-4 pb-3">
                                     <div class="d-flex justify-content-between align-items-start gap-3">
                                         <div>
                                             <h5 class="fw-bold mb-1 text-dark font-monospace">
@@ -117,7 +121,7 @@
                                         </h6>
                                     </div>
                                     <div class="table-responsive">
-                                        <table class="table table-hover align-middle mb-0">
+                                        <table class="table table-hover align-middle mb-0 po-items-table">
                                             <thead>
                                                 <tr class="bg-primary bg-opacity-10">
                                                     <th class="ps-4 py-3 text-primary small text-uppercase fw-bold border-0">
@@ -203,7 +207,7 @@
                         <div class="col-lg-4">
                             <!-- Supplier Details -->
                             <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4">
-                                <div class="card-body p-4">
+                                <div class="card-body p-3 p-md-4">
                                     <h6 class="fw-bold text-dark text-uppercase small mb-3"
                                         style="letter-spacing: 0.04em;">
                                         <i class="bi bi-building me-2 text-primary"></i>Supplier Details
@@ -242,7 +246,7 @@
 
                             <!-- Order Information -->
                             <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4">
-                                <div class="card-body p-4">
+                                <div class="card-body p-3 p-md-4">
                                     <h6 class="fw-bold text-dark text-uppercase small mb-3"
                                         style="letter-spacing: 0.04em;">
                                         <i class="bi bi-info-circle me-2 text-primary"></i>Order Information
@@ -277,7 +281,7 @@
 
                             <!-- Activity Timeline -->
                             <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
-                                <div class="card-body p-4">
+                                <div class="card-body p-3 p-md-4">
                                     <h6 class="fw-bold text-dark text-uppercase small mb-3"
                                         style="letter-spacing: 0.04em;">
                                         <i class="bi bi-clock-history me-2 text-primary"></i>Timeline
@@ -406,6 +410,47 @@
             background-color: #b02a37;
             border-color: #b02a37;
             color: #fff;
+        }
+
+        /* ============================================
+           Mobile responsiveness ( < lg / 992px )
+           See ResponsiveMobileNote.md — detail page (no toolbar/pagination)
+           ============================================ */
+        @media (max-width: 991.98px) {
+            /* Order Items table sits in a card with a header (not a
+               table-only card) — no edge-to-edge; just keep the columns
+               from squishing so it swipes. */
+            .po-items-table {
+                min-width: 620px;
+            }
+            .po-items-table th,
+            .po-items-table td {
+                white-space: nowrap;
+            }
+            .po-items-table th:first-child,
+            .po-items-table td:first-child {
+                min-width: 200px;
+            }
+
+            /* Cancel-PO confirm modal: smaller type + spacing on phones. */
+            .modal-title { font-size: 1rem; }
+            .modal-body { font-size: 0.85rem; }
+            .modal .form-label,
+            .modal .form-control,
+            .modal .form-select,
+            .modal .input-group-text,
+            .modal .btn,
+            .modal small,
+            .modal .small { font-size: 0.8rem; }
+            .purchase-cancel-modal .modal-dialog {
+                margin: 0.5rem;
+            }
+            .purchase-cancel-modal-header {
+                padding: 20px 16px 16px;
+            }
+            .purchase-cancel-modal-footer {
+                padding: 12px 16px 16px;
+            }
         }
 
         @media print {

@@ -313,6 +313,20 @@
         });
     </script>
 
+    <!-- A11y: Bootstrap sets aria-hidden="true" on a modal while a control
+         inside it (e.g. a data-bs-dismiss Cancel button) still holds focus,
+         which logs "Blocked aria-hidden ... descendant retained focus".
+         Move focus out the moment the modal starts hiding. Event bubbles to
+         document, so this one listener covers every modal in the app. -->
+    <script>
+        document.addEventListener('hide.bs.modal', function (event) {
+            var modal = event.target;
+            if (modal && modal.contains(document.activeElement)) {
+                document.activeElement.blur();
+            }
+        });
+    </script>
+
     <style>
         /* Global Tooltip Styling */
         .tooltip {

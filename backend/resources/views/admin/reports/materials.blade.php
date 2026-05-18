@@ -28,42 +28,69 @@
                     <div class="card border-0 shadow-sm rounded-4 mb-4">
                         <div class="card-body p-3">
                             <form id="materialsFilterForm" method="GET" action="{{ route('admin.reports.materials') }}"
-                                class="d-flex flex-wrap flex-md-nowrap align-items-center gap-2 reports-filter-form">
-                                <div class="input-group flex-grow-1" style="min-width: 0;">
-                                    <span class="input-group-text bg-white border-end-0 rounded-start-2 ps-3">
-                                        <i class="bi bi-search text-muted"></i>
-                                    </span>
-                                    <input type="text" name="search" value="{{ $search }}"
-                                        class="form-control border-start-0 rounded-end-2 ps-0"
-                                        placeholder="Search by item name...">
+                                class="row g-2 align-items-center">
+
+                                <!-- Search: inline on desktop; icon-triggered dropdown on mobile. -->
+                                <div class="col-auto col-lg dropdown search-dd">
+                                    <button type="button"
+                                        class="btn btn-light rounded-2 d-lg-none search-toggle"
+                                        data-bs-toggle="dropdown" data-bs-auto-close="outside"
+                                        aria-expanded="false" title="Search">
+                                        <i class="bi bi-search text-primary"></i>
+                                    </button>
+                                    <div class="dropdown-menu search-menu border-0 shadow p-2 p-lg-0">
+                                        <div class="input-group">
+                                            <span class="input-group-text bg-white border-end-0 rounded-start-2 ps-3">
+                                                <i class="bi bi-search text-muted"></i>
+                                            </span>
+                                            <input type="text" name="search" value="{{ $search }}"
+                                                class="form-control border-start-0 rounded-end-2 ps-0"
+                                                placeholder="Search by item name...">
+                                        </div>
+                                    </div>
                                 </div>
 
-                                <div class="input-group rounded-2 flex-shrink-0" style="width: auto;">
-                                    <span class="input-group-text bg-white rounded-start-2"
-                                        title="Filter by last update">
-                                        <i class="bi bi-calendar-event text-muted"></i>
-                                    </span>
-                                    <input type="date" name="date_from" value="{{ $dateFrom }}"
-                                        class="form-control rounded-0" placeholder="From"
-                                        onchange="document.getElementById('materialsFilterForm').submit()">
-                                    <span class="input-group-text bg-white">to</span>
-                                    <input type="date" name="date_to" value="{{ $dateTo }}"
-                                        class="form-control rounded-end-2" placeholder="To"
-                                        onchange="document.getElementById('materialsFilterForm').submit()">
+                                <!-- Date range + item type: inline on desktop; behind a filter icon on mobile. -->
+                                <div class="col-auto dropdown filter-dd">
+                                    <button type="button"
+                                        class="btn btn-light rounded-2 d-lg-none filter-toggle"
+                                        data-bs-toggle="dropdown" data-bs-auto-close="outside"
+                                        aria-expanded="false" title="Filters">
+                                        <i class="bi bi-funnel text-primary"></i>
+                                    </button>
+                                    <div class="dropdown-menu filter-menu border-0 shadow p-2 p-lg-0">
+                                        <div class="d-flex flex-column flex-lg-row gap-2">
+                                            <div class="input-group rounded-2" style="width: auto;">
+                                                <span class="input-group-text bg-white rounded-start-2"
+                                                    title="Filter by last update">
+                                                    <i class="bi bi-calendar-event text-muted"></i>
+                                                </span>
+                                                <input type="date" name="date_from" value="{{ $dateFrom }}"
+                                                    class="form-control rounded-0" placeholder="From"
+                                                    onchange="document.getElementById('materialsFilterForm').submit()">
+                                                <span class="input-group-text bg-white">to</span>
+                                                <input type="date" name="date_to" value="{{ $dateTo }}"
+                                                    class="form-control rounded-end-2" placeholder="To"
+                                                    onchange="document.getElementById('materialsFilterForm').submit()">
+                                            </div>
+
+                                            <select name="group" class="form-select rounded-2 w-100"
+                                                onchange="document.getElementById('materialsFilterForm').submit()">
+                                                <option value="all" {{ $group === 'all' ? 'selected' : '' }}>All Item Types</option>
+                                                <option value="products" {{ $group === 'products' ? 'selected' : '' }}>Products Only</option>
+                                                <option value="raw_materials" {{ $group === 'raw_materials' ? 'selected' : '' }}>Raw Materials Only</option>
+                                                <option value="textures" {{ $group === 'textures' ? 'selected' : '' }}>Textures Only</option>
+                                            </select>
+                                        </div>
+                                    </div>
                                 </div>
 
-                                <select name="group" class="form-select rounded-2 flex-shrink-0 w-auto"
-                                    onchange="document.getElementById('materialsFilterForm').submit()">
-                                    <option value="all" {{ $group === 'all' ? 'selected' : '' }}>All Item Types</option>
-                                    <option value="products" {{ $group === 'products' ? 'selected' : '' }}>Products Only</option>
-                                    <option value="raw_materials" {{ $group === 'raw_materials' ? 'selected' : '' }}>Raw Materials Only</option>
-                                    <option value="textures" {{ $group === 'textures' ? 'selected' : '' }}>Textures Only</option>
-                                </select>
-
-                                <a href="{{ route('admin.reports.materials') }}"
-                                    class="btn btn-light rounded-2 flex-shrink-0" data-bs-toggle="tooltip" title="Reset filters">
-                                    <i class="bi bi-arrow-clockwise text-primary"></i>
-                                </a>
+                                <div class="col-auto d-flex gap-2">
+                                    <a href="{{ route('admin.reports.materials') }}"
+                                        class="btn btn-light rounded-2 flex-shrink-0" data-bs-toggle="tooltip" title="Reset filters">
+                                        <i class="bi bi-arrow-clockwise text-primary"></i>
+                                    </a>
+                                </div>
                             </form>
 
                             @if($dateFrom || $dateTo)
@@ -123,7 +150,7 @@
                                             data-scope="{{ $deptName }} — Materials Report"
                                             data-preview-url="{{ route('admin.reports.materials.preview', $sectionParams) }}">
                                             <i class="bi bi-file-pdf"></i>
-                                            <span class="small fw-bold">PDF</span>
+                                            <span class="small fw-bold d-none d-lg-inline">PDF</span>
                                         </a>
                                         <a href="{{ route('admin.reports.materials.docx', $sectionParams) }}"
                                             class="btn btn-primary d-flex align-items-center gap-2 rounded-2 px-3"
@@ -135,7 +162,7 @@
                                             data-scope="{{ $deptName }} — Materials Report"
                                             data-preview-url="{{ route('admin.reports.materials.preview', $sectionParams) }}">
                                             <i class="bi bi-file-word"></i>
-                                            <span class="small fw-bold">WORD</span>
+                                            <span class="small fw-bold d-none d-lg-inline">WORD</span>
                                         </a>
                                     </div>
                                 </div>

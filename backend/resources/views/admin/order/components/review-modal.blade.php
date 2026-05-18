@@ -30,8 +30,8 @@
                         <i class="bi bi-box-seam me-2"></i>Stock Availability Check
                     </h6>
 
-                    <div class="table-responsive border rounded-3 mb-3 overflow-hidden">
-                        <table class="table table-hover align-middle mb-0">
+                    <div class="table-responsive border rounded-3 mb-3 overflow-hidden modal-table-scroll">
+                        <table class="table table-hover align-middle mb-0 modal-table">
                             <thead>
                                 <tr class="bg-primary bg-opacity-10">
                                     <th class="ps-3 py-2 text-primary small text-uppercase fw-bold border-0">Product</th>

@@ -195,7 +195,7 @@
                 data-scope="Inventory Materials Report (All Departments)"
                 data-preview-url="{{ route('admin.reports.materials.preview', request()->query()) }}">
                 <i class="bi bi-file-pdf"></i>
-                <span class="small fw-bold">Export All Sections (PDF)</span>
+                <span class="small fw-bold d-none d-lg-inline">Export All Sections (PDF)</span>
             </a>
             <a href="{{ route('admin.reports.materials.docx', request()->query()) }}"
                 class="btn btn-primary d-flex align-items-center gap-2 rounded-2 px-3"
@@ -207,7 +207,7 @@
                 data-scope="Inventory Materials Report (All Departments)"
                 data-preview-url="{{ route('admin.reports.materials.preview', request()->query()) }}">
                 <i class="bi bi-file-word"></i>
-                <span class="small fw-bold">Export All Sections (Word)</span>
+                <span class="small fw-bold d-none d-lg-inline">Export All Sections (Word)</span>
             </a>
         </div>
     </div>
@@ -273,8 +273,38 @@
         flex-shrink: 0;
     }
 
-    /* ── Mobile (< md / 768px) ─────────────────────────────── */
-    @media (max-width: 767.98px) {
+    /* Desktop: search/filter dropdowns render inline & static (note §4). */
+    @media (min-width: 992px) {
+        .search-dd .dropdown-menu.search-menu,
+        .filter-dd .dropdown-menu.filter-menu {
+            position: static !important;
+            display: block !important;
+            float: none;
+            width: 100%;
+            margin: 0;
+            padding: 0 !important;
+            border: 0 !important;
+            box-shadow: none !important;
+            background: transparent;
+        }
+        .filter-dd .filter-menu .form-select { width: auto !important; }
+    }
+
+    /* ── Mobile / sidebar-squeezed tablet (< lg / 992px) ───────
+       Canonical breakpoint (see ResponsiveMobileNote.md §1): the fixed
+       280px sidebar appears at md, so tablets need the mobile treatment
+       too — hence lg, not md. ──────────────────────────────── */
+    @media (max-width: 991.98px) {
+        /* In-card report tables have long headers ("No. of Units on
+           Display") — keep columns from wrapping into tall rows; let
+           .table-responsive scroll instead (§5c, no edge-to-edge). */
+        .paginated-section .table {
+            min-width: 760px;
+        }
+        .paginated-section .table th,
+        .paginated-section .table td {
+            white-space: nowrap;
+        }
         /* Header: tighter spacing + smaller title */
         .container-fluid > .border-bottom h4 { font-size: 1.05rem; }
         .container-fluid > .border-bottom p { font-size: 0.72rem; }
@@ -313,19 +343,15 @@
             margin-bottom: 0 !important;
             margin-top: 0.25rem;
         }
-        .report-section-tabs-actions .btn { flex: 1 1 0; justify-content: center; padding: 0.45rem 0.5rem; }
+        .report-section-tabs-actions .btn { padding: 0.5rem 0.75rem; }
         .report-section-tabs-actions .btn .small { font-size: 0.7rem; }
         .report-section-tabs-divider { display: none; }
 
-        /* Filter form: stack each control onto its own row */
-        .reports-filter-form > * { width: 100%; flex: 1 1 100% !important; }
-        .reports-filter-form .btn-light {
-            width: auto;
-            flex: 0 0 auto !important;
-            align-self: flex-start;
-        }
-        .reports-filter-form .input-group,
-        .reports-filter-form .form-select { font-size: 0.85rem; }
+        /* Search / filter collapse into icon dropdowns (note §4). */
+        .search-dd .dropdown-menu.search-menu { width: min(86vw, 380px); }
+        .filter-dd .dropdown-menu.filter-menu { width: min(92vw, 420px); }
+        .filter-dd .filter-menu .form-select,
+        .filter-dd .filter-menu .input-group { font-size: 0.85rem; }
 
         /* Tables: tighter padding + smaller text */
         .table-responsive table th,

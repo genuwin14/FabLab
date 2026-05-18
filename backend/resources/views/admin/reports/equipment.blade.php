@@ -28,68 +28,95 @@
                     <div class="card border-0 shadow-sm rounded-4 mb-4">
                         <div class="card-body p-3">
                             <form id="equipmentFilterForm" method="GET" action="{{ route('admin.reports.equipment') }}"
-                                class="d-flex flex-wrap flex-md-nowrap align-items-center gap-2 reports-filter-form">
-                                <div class="input-group flex-grow-1" style="min-width: 0;">
-                                    <span class="input-group-text bg-white border-end-0 rounded-start-2 ps-3">
-                                        <i class="bi bi-search text-muted"></i>
-                                    </span>
-                                    <input type="text" name="search" value="{{ $search }}"
-                                        class="form-control border-start-0 rounded-end-2 ps-0"
-                                        placeholder="Search by name, brand, or property no...">
+                                class="row g-2 align-items-center">
+
+                                <!-- Search: inline on desktop; icon-triggered dropdown on mobile. -->
+                                <div class="col-auto col-lg dropdown search-dd">
+                                    <button type="button"
+                                        class="btn btn-light rounded-2 d-lg-none search-toggle"
+                                        data-bs-toggle="dropdown" data-bs-auto-close="outside"
+                                        aria-expanded="false" title="Search">
+                                        <i class="bi bi-search text-primary"></i>
+                                    </button>
+                                    <div class="dropdown-menu search-menu border-0 shadow p-2 p-lg-0">
+                                        <div class="input-group">
+                                            <span class="input-group-text bg-white border-end-0 rounded-start-2 ps-3">
+                                                <i class="bi bi-search text-muted"></i>
+                                            </span>
+                                            <input type="text" name="search" value="{{ $search }}"
+                                                class="form-control border-start-0 rounded-end-2 ps-0"
+                                                placeholder="Search by name, brand, or property no...">
+                                        </div>
+                                    </div>
                                 </div>
 
-                                <div class="input-group rounded-2 flex-shrink-0" style="width: auto;">
-                                    <span class="input-group-text bg-white rounded-start-2"
-                                        title="Filter by date acquired">
-                                        <i class="bi bi-calendar-event text-muted"></i>
-                                    </span>
-                                    <input type="date" name="date_from" value="{{ $dateFrom }}"
-                                        class="form-control rounded-0"
-                                        onchange="document.getElementById('equipmentFilterForm').submit()">
-                                    <span class="input-group-text bg-white">to</span>
-                                    <input type="date" name="date_to" value="{{ $dateTo }}"
-                                        class="form-control rounded-end-2"
-                                        onchange="document.getElementById('equipmentFilterForm').submit()">
+                                <!-- Date range + status: inline on desktop; behind a filter icon on mobile. -->
+                                <div class="col-auto dropdown filter-dd">
+                                    <button type="button"
+                                        class="btn btn-light rounded-2 d-lg-none filter-toggle"
+                                        data-bs-toggle="dropdown" data-bs-auto-close="outside"
+                                        aria-expanded="false" title="Filters">
+                                        <i class="bi bi-funnel text-primary"></i>
+                                    </button>
+                                    <div class="dropdown-menu filter-menu border-0 shadow p-2 p-lg-0">
+                                        <div class="d-flex flex-column flex-lg-row gap-2">
+                                            <div class="input-group rounded-2" style="width: auto;">
+                                                <span class="input-group-text bg-white rounded-start-2"
+                                                    title="Filter by date acquired">
+                                                    <i class="bi bi-calendar-event text-muted"></i>
+                                                </span>
+                                                <input type="date" name="date_from" value="{{ $dateFrom }}"
+                                                    class="form-control rounded-0"
+                                                    onchange="document.getElementById('equipmentFilterForm').submit()">
+                                                <span class="input-group-text bg-white">to</span>
+                                                <input type="date" name="date_to" value="{{ $dateTo }}"
+                                                    class="form-control rounded-end-2"
+                                                    onchange="document.getElementById('equipmentFilterForm').submit()">
+                                            </div>
+
+                                            <select name="status" class="form-select rounded-2 w-100"
+                                                onchange="document.getElementById('equipmentFilterForm').submit()">
+                                                <option value="">All Statuses</option>
+                                                <option value="Serviceable" {{ $status === 'Serviceable' ? 'selected' : '' }}>Serviceable</option>
+                                                <option value="Non-Serviceable" {{ $status === 'Non-Serviceable' ? 'selected' : '' }}>Non-Serviceable</option>
+                                                <option value="Functional" {{ $status === 'Functional' ? 'selected' : '' }}>Functional</option>
+                                                <option value="Returned to supplier for repair" {{ $status === 'Returned to supplier for repair' ? 'selected' : '' }}>Returned for Repair</option>
+                                            </select>
+                                        </div>
+                                    </div>
                                 </div>
 
-                                <select name="status" class="form-select rounded-2 flex-shrink-0 w-auto"
-                                    onchange="document.getElementById('equipmentFilterForm').submit()">
-                                    <option value="">All Statuses</option>
-                                    <option value="Serviceable" {{ $status === 'Serviceable' ? 'selected' : '' }}>Serviceable</option>
-                                    <option value="Non-Serviceable" {{ $status === 'Non-Serviceable' ? 'selected' : '' }}>Non-Serviceable</option>
-                                    <option value="Functional" {{ $status === 'Functional' ? 'selected' : '' }}>Functional</option>
-                                    <option value="Returned to supplier for repair" {{ $status === 'Returned to supplier for repair' ? 'selected' : '' }}>Returned for Repair</option>
-                                </select>
+                                <div class="col-auto d-flex gap-2">
+                                    <a href="{{ route('admin.reports.equipment') }}"
+                                        class="btn btn-light rounded-2 flex-shrink-0" data-bs-toggle="tooltip" title="Reset filters">
+                                        <i class="bi bi-arrow-clockwise text-primary"></i>
+                                    </a>
 
-                                <a href="{{ route('admin.reports.equipment') }}"
-                                    class="btn btn-light rounded-2 flex-shrink-0" data-bs-toggle="tooltip" title="Reset filters">
-                                    <i class="bi bi-arrow-clockwise text-primary"></i>
-                                </a>
-
-                                <a href="{{ route('admin.reports.equipment.pdf', request()->query()) }}"
-                                    class="btn btn-danger d-flex align-items-center gap-2 rounded-2 px-3 flex-shrink-0"
-                                    data-bs-toggle="tooltip" data-bs-placement="bottom"
-                                    title="Generate a PDF report of all machinery & equipment matching the current filters"
-                                    data-export-trigger
-                                    data-format="PDF"
-                                    data-scope-kind="Equipment Report"
-                                    data-scope="Machinery & Equipment Report"
-                                    data-preview-url="{{ route('admin.reports.equipment.preview', request()->query()) }}">
-                                    <i class="bi bi-file-pdf"></i>
-                                    <span class="small fw-bold">Export PDF</span>
-                                </a>
-                                <a href="{{ route('admin.reports.equipment.docx', request()->query()) }}"
-                                    class="btn btn-primary d-flex align-items-center gap-2 rounded-2 px-3 flex-shrink-0"
-                                    data-bs-toggle="tooltip" data-bs-placement="bottom"
-                                    title="Generate a Word document of all machinery & equipment matching the current filters"
-                                    data-export-trigger
-                                    data-format="Word"
-                                    data-scope-kind="Equipment Report"
-                                    data-scope="Machinery & Equipment Report"
-                                    data-preview-url="{{ route('admin.reports.equipment.preview', request()->query()) }}">
-                                    <i class="bi bi-file-word"></i>
-                                    <span class="small fw-bold">Export Word</span>
-                                </a>
+                                    <a href="{{ route('admin.reports.equipment.pdf', request()->query()) }}"
+                                        class="btn btn-danger d-flex align-items-center justify-content-center gap-2 rounded-2 px-3 flex-shrink-0"
+                                        data-bs-toggle="tooltip" data-bs-placement="bottom"
+                                        title="Generate a PDF report of all machinery & equipment matching the current filters"
+                                        data-export-trigger
+                                        data-format="PDF"
+                                        data-scope-kind="Equipment Report"
+                                        data-scope="Machinery & Equipment Report"
+                                        data-preview-url="{{ route('admin.reports.equipment.preview', request()->query()) }}">
+                                        <i class="bi bi-file-pdf"></i>
+                                        <span class="small fw-bold d-none d-lg-inline">Export PDF</span>
+                                    </a>
+                                    <a href="{{ route('admin.reports.equipment.docx', request()->query()) }}"
+                                        class="btn btn-primary d-flex align-items-center justify-content-center gap-2 rounded-2 px-3 flex-shrink-0"
+                                        data-bs-toggle="tooltip" data-bs-placement="bottom"
+                                        title="Generate a Word document of all machinery & equipment matching the current filters"
+                                        data-export-trigger
+                                        data-format="Word"
+                                        data-scope-kind="Equipment Report"
+                                        data-scope="Machinery & Equipment Report"
+                                        data-preview-url="{{ route('admin.reports.equipment.preview', request()->query()) }}">
+                                        <i class="bi bi-file-word"></i>
+                                        <span class="small fw-bold d-none d-lg-inline">Export Word</span>
+                                    </a>
+                                </div>
                             </form>
 
                             @if($dateFrom || $dateTo)

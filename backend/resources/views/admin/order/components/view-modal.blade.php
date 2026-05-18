@@ -48,8 +48,8 @@
                 <h6 class="order-section-title">
                     <i class="bi bi-box-seam me-2"></i>Order Items
                 </h6>
-                <div class="table-responsive border rounded-3 mb-3 overflow-hidden">
-                    <table class="table table-hover align-middle mb-0">
+                <div class="table-responsive border rounded-3 mb-3 overflow-hidden modal-table-scroll">
+                    <table class="table table-hover align-middle mb-0 modal-table">
                         <thead>
                             <tr class="bg-primary bg-opacity-10">
                                 <th class="ps-3 py-2 text-primary small text-uppercase fw-bold border-0">Product</th>
@@ -108,7 +108,7 @@
             </div>
 
             <div class="modal-body p-4 bg-white">
-                <div class="row g-4">
+                <div class="row g-3 g-md-4">
                     <div class="col-md-8">
                         <div id="admin-three-container"
                             class="rounded-3 position-relative border overflow-hidden"
@@ -131,7 +131,7 @@
                             <span class="badge rounded-pill"
                                 style="background-color: rgba(255, 197, 8, 0.15); color: #997404; font-size: 0.6rem;">ACTIVE</span>
                         </h6>
-                        <div class="rounded-3 p-3 overflow-auto border"
+                        <div class="rounded-3 p-3 overflow-auto border design-recipe-box"
                             style="height: 410px; background-color: #05111a;">
                             <pre id="detailPopupRecipe" class="mb-0"
                                 style="white-space: pre-wrap; font-family: 'Courier New', monospace; font-size: 0.7rem; color: #6ee7ff;"></pre>
