@@ -66,6 +66,34 @@
     </div>
 </div>
 
+<style>
+    /* Mobile-responsive modal rules (ResponsiveMobileNote §6). */
+    @media (max-width: 991.98px) {
+        /* §6a — shrink type + spacing on phones */
+        #updateStatusModal .modal-title { font-size: 1rem; }
+        #updateStatusModal .modal-body { font-size: 0.85rem; }
+        #updateStatusModal .form-label,
+        #updateStatusModal .form-control,
+        #updateStatusModal .form-select,
+        #updateStatusModal .input-group-text,
+        #updateStatusModal .btn,
+        #updateStatusModal small,
+        #updateStatusModal .small { font-size: 0.8rem; }
+        #updateStatusModal .order-section-title { font-size: 0.62rem; }
+        #updateStatusModal .modal-dialog { margin: 0.5rem; }
+        #updateStatusModal .order-modal-header { padding: 14px 16px; }
+        #updateStatusModal .modal-body.p-4 { padding: 1rem !important; }
+
+        /* §6c — footer with 2 pill buttons stacks full-width */
+        #updateStatusModal .order-modal-footer {
+            padding: 12px 16px;
+            flex-direction: column;
+            align-items: stretch;
+        }
+        #updateStatusModal .order-modal-footer > .btn { width: 100%; }
+    }
+</style>
+
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         const updateModal = document.getElementById('updateStatusModal');

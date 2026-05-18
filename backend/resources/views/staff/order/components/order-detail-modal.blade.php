@@ -78,8 +78,8 @@
                 <h6 class="order-section-title">
                     <i class="bi bi-box-seam me-2"></i>Order Items
                 </h6>
-                <div class="table-responsive border rounded-3 mb-0 overflow-hidden">
-                    <table class="table table-hover align-middle mb-0">
+                <div class="table-responsive border rounded-3 mb-0 overflow-hidden modal-table-scroll">
+                    <table class="table table-hover align-middle mb-0 modal-table">
                         <thead>
                             <tr class="bg-primary bg-opacity-10">
                                 <th class="ps-3 py-2 text-primary small text-uppercase fw-bold border-0">Product</th>
@@ -158,7 +158,7 @@
                             <span class="badge rounded-pill"
                                 style="background-color: rgba(255, 197, 8, 0.15); color: #997404; font-size: 0.6rem;">ACTIVE</span>
                         </h6>
-                        <div class="rounded-3 p-3 overflow-auto border"
+                        <div class="rounded-3 p-3 overflow-auto border design-recipe-box"
                             style="height: 410px; background-color: #05111a;">
                             <pre id="detailPopupRecipe" class="mb-0"
                                 style="white-space: pre-wrap; font-family: 'Courier New', monospace; font-size: 0.7rem; color: #6ee7ff;"></pre>
@@ -175,3 +175,43 @@
         </div>
     </div>
 </div>
+
+<style>
+    /* Mobile-responsive modal rules (ResponsiveMobileNote §6). */
+    @media (max-width: 991.98px) {
+        /* §6a — shrink type + spacing on phones */
+        .order-modal .modal-title { font-size: 1rem; }
+        .order-modal .modal-body { font-size: 0.85rem; }
+        .order-modal .form-label,
+        .order-modal .form-control,
+        .order-modal .form-select,
+        .order-modal .input-group-text,
+        .order-modal .btn,
+        .order-modal small,
+        .order-modal .small { font-size: 0.8rem; }
+        .order-modal .order-section-title { font-size: 0.62rem; }
+        .order-modal .modal-dialog { margin: 0.5rem; }
+        .order-modal .order-modal-header { padding: 14px 16px; }
+        .order-modal .modal-body.p-4 { padding: 1rem !important; }
+        .order-modal .row.g-3 { --bs-gutter-y: 0.5rem; }
+        .order-modal .row.g-4 { --bs-gutter-x: 1rem; --bs-gutter-y: 0.75rem; }
+
+        /* §6c — footer with 2 pill buttons stacks full-width */
+        .order-modal .order-modal-footer {
+            padding: 12px 16px;
+            flex-direction: column;
+            align-items: stretch;
+        }
+        .order-modal .order-modal-footer > .btn { width: 100%; }
+
+        /* §6c — in-modal table: restore scroll past .overflow-hidden */
+        .order-modal .modal-table-scroll { overflow-x: auto !important; }
+        .order-modal .modal-table { min-width: 520px; }
+        .order-modal .modal-table th,
+        .order-modal .modal-table td { white-space: nowrap; }
+
+        /* §6c — two fixed-height panels (3D viewer + recipe) shrink */
+        #designDetailPopup #staff-three-container { height: 280px !important; }
+        #designDetailPopup .design-recipe-box { height: 220px !important; }
+    }
+</style>

@@ -30,7 +30,7 @@
             </header>
 
             <!-- Page Content -->
-            <main class="flex-grow-1 p-4" style="overflow-y: auto;">
+            <main class="flex-grow-1 p-3 p-md-4" style="overflow-y: auto;">
                 <div class="container-fluid">
 
                     @php
@@ -143,11 +143,11 @@
                         </div>
                     </div>
 
-                    <div class="row g-4">
+                    <div class="row g-3 g-md-4">
                         <!-- Revenue Chart -->
                         <div class="col-xl-8">
                             <div class="card border-0 shadow-sm rounded-4 h-100">
-                                <div class="card-body p-4">
+                                <div class="card-body p-3 p-md-4">
                                     <div class="d-flex justify-content-between align-items-center mb-2">
                                         <h6 class="fw-bold text-dark mb-0">Revenue Over Time</h6>
                                         <span class="badge rounded-pill" style="background-color: rgba(25,135,84,0.12); color: #198754; font-size: 0.65rem;">
@@ -162,7 +162,7 @@
                         <!-- Status Breakdown -->
                         <div class="col-xl-4">
                             <div class="card border-0 shadow-sm rounded-4 h-100">
-                                <div class="card-body p-4">
+                                <div class="card-body p-3 p-md-4">
                                     <h6 class="fw-bold text-dark mb-3">Orders by Status</h6>
                                     @forelse($statusMeta as $key => $meta)
                                         @php $row = $statusBreakdown[$key] ?? null; @endphp
@@ -187,12 +187,12 @@
                         <div class="col-xl-7">
                             <div class="card border-0 shadow-sm rounded-4 h-100">
                                 <div class="card-body p-0">
-                                    <div class="p-4 pb-3 d-flex justify-content-between align-items-center">
+                                    <div class="p-3 p-md-4 pb-3 d-flex justify-content-between align-items-center">
                                         <h6 class="fw-bold text-dark mb-0">Best-Selling Products</h6>
                                         <span class="text-muted small">by revenue</span>
                                     </div>
                                     <div class="table-responsive">
-                                        <table class="table table-hover align-middle mb-0">
+                                        <table class="table table-hover align-middle mb-0 sales-table">
                                             <thead>
                                                 <tr class="bg-primary bg-opacity-10">
                                                     <th class="ps-4 py-2 text-primary small text-uppercase fw-bold border-0">Product</th>
@@ -233,12 +233,12 @@
                         <div class="col-xl-5">
                             <div class="card border-0 shadow-sm rounded-4 h-100">
                                 <div class="card-body p-0">
-                                    <div class="p-4 pb-3 d-flex justify-content-between align-items-center">
+                                    <div class="p-3 p-md-4 pb-3 d-flex justify-content-between align-items-center">
                                         <h6 class="fw-bold text-dark mb-0">Recent Completed Sales</h6>
                                         <a href="{{ route('staff.orders.index', ['status' => 'completed']) }}" class="small text-decoration-none">View all</a>
                                     </div>
                                     <div class="table-responsive">
-                                        <table class="table table-hover align-middle mb-0">
+                                        <table class="table table-hover align-middle mb-0 sales-table">
                                             <thead>
                                                 <tr class="bg-primary bg-opacity-10">
                                                     <th class="ps-4 py-2 text-primary small text-uppercase fw-bold border-0">Order</th>
@@ -297,6 +297,34 @@
             font-size: 0.95rem;
             background-color: color-mix(in srgb, var(--kpi-color) 14%, transparent);
             color: var(--kpi-color);
+        }
+
+        /* ============================================
+           Mobile responsiveness ( < lg / 992px )
+           See ResponsiveMobileNote.md — analytics page
+           ============================================ */
+        @media (max-width: 991.98px) {
+            /* KPI figures: keep big peso values from overflowing the 2-up
+               cards (fluid clamp, like §3 .stat-value). */
+            .sales-kpi h4 {
+                font-size: clamp(1rem, 0.8rem + 1.6vw, 1.5rem);
+                line-height: 1.2;
+                overflow-wrap: anywhere;
+            }
+
+            /* In-card tables (Best-Selling / Recent): the card has a header,
+               so no edge-to-edge — just keep columns from squishing. */
+            .sales-table {
+                min-width: 480px;
+            }
+            .sales-table th,
+            .sales-table td {
+                white-space: nowrap;
+            }
+            .sales-table th:first-child,
+            .sales-table td:first-child {
+                min-width: 180px;
+            }
         }
     </style>
 
@@ -360,6 +388,25 @@
                 },
                 markers: { size: 0, hover: { size: 5 } },
                 noData: { text: 'No sales data for this period', style: { color: '#6c757d', fontSize: '13px' } },
+                responsive: [{
+                    // Phone: shorter chart, legend below, fewer ticks, drop the
+                    // axis titles and shrink type so the dual-axis chart fits.
+                    breakpoint: 768,
+                    options: {
+                        chart: { height: 280 },
+                        stroke: { width: [2, 1.5] },
+                        legend: { position: 'bottom', horizontalAlign: 'center', fontSize: '11px' },
+                        xaxis: {
+                            tickAmount: 5,
+                            labels: { style: { fontSize: '10px', colors: '#6c757d' } },
+                        },
+                        yaxis: [
+                            { labels: { style: { fontSize: '10px', colors: '#6c757d' } }, title: { text: '' } },
+                            { opposite: true, labels: { style: { fontSize: '10px', colors: '#6c757d' } }, title: { text: '' } },
+                        ],
+                        grid: { padding: { left: 2, right: 2 } },
+                    },
+                }],
             };
 
             new ApexCharts(document.querySelector('#salesRevenueChart'), options).render();

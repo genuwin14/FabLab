@@ -27,7 +27,7 @@
             </header>
 
             <!-- Page Content -->
-            <main class="flex-grow-1 p-4" style="overflow-y: auto; overflow-x: hidden;">
+            <main class="flex-grow-1 p-3 p-md-4" style="overflow-y: auto;">
                 <div class="container-fluid">
 
                     <!-- Flash Messages -->
@@ -42,28 +42,43 @@
                     <div class="card border-0 shadow-sm rounded-4 mb-4">
                         <div class="card-body p-3">
                             <form id="textureFilterForm" method="GET" action="{{ route('staff.textures.index') }}"
-                                class="d-flex flex-nowrap align-items-center gap-2">
+                                class="row g-2 align-items-center">
                                 <input type="hidden" name="per_page" value="{{ $perPage }}">
-                                <div class="input-group flex-grow-1" style="min-width: 0;">
-                                    <span class="input-group-text bg-white border-end-0 rounded-start-2 ps-3">
-                                        <i class="bi bi-search text-muted"></i>
-                                    </span>
-                                    <input type="text" name="search" value="{{ $search }}"
-                                        class="form-control border-start-0 rounded-end-2 ps-0"
-                                        placeholder="Search by name, supplier, or unit...">
+
+                                <!-- Search: inline on desktop; icon-triggered dropdown on mobile. -->
+                                <div class="col-auto col-lg dropdown search-dd">
+                                    <button type="button"
+                                        class="btn btn-light rounded-2 d-lg-none search-toggle"
+                                        data-bs-toggle="dropdown" data-bs-auto-close="outside"
+                                        aria-expanded="false" title="Search">
+                                        <i class="bi bi-search text-primary"></i>
+                                    </button>
+                                    <div class="dropdown-menu search-menu border-0 shadow p-2 p-lg-0">
+                                        <div class="input-group">
+                                            <span class="input-group-text bg-white border-end-0 rounded-start-2 ps-3">
+                                                <i class="bi bi-search text-muted"></i>
+                                            </span>
+                                            <input type="text" name="search" value="{{ $search }}"
+                                                class="form-control border-start-0 rounded-end-2 ps-0"
+                                                placeholder="Search by name, supplier, or unit...">
+                                        </div>
+                                    </div>
                                 </div>
-                                <a href="{{ route('staff.textures.index') }}"
-                                    class="btn btn-light rounded-2 flex-shrink-0" data-bs-toggle="tooltip" title="Reset filters">
-                                    <i class="bi bi-arrow-clockwise text-primary"></i>
-                                </a>
+
+                                <div class="col-auto d-flex gap-2">
+                                    <a href="{{ route('staff.textures.index') }}"
+                                        class="btn btn-light rounded-2 flex-shrink-0" data-bs-toggle="tooltip" title="Reset filters">
+                                        <i class="bi bi-arrow-clockwise text-primary"></i>
+                                    </a>
+                                </div>
                             </form>
                         </div>
                     </div>
 
                     <!-- Textures Grid -->
-                    <div class="row g-4">
+                    <div class="row g-3 g-md-4">
                         @forelse($textures as $texture)
-                            <div class="col-md-3">
+                            <div class="col-12 col-md-4 col-xl-3">
                                 <div class="card texture-card border-0 shadow-sm rounded-4 h-100 overflow-hidden">
                                     <div class="position-relative texture-card-image">
                                         @if($texture->image_path)
@@ -130,10 +145,11 @@
                         @endforelse
                     </div>
 
-                    <!-- Pagination -->
+                    <!-- Pagination — grid page, so it's a standalone card (no
+                         table to share a scroll with); just wraps + shrinks on mobile. -->
                     <div class="card border-0 shadow-sm rounded-4 mt-4">
-                        <div class="card-body d-flex flex-wrap justify-content-between align-items-center gap-2 p-3">
-                            <div class="d-flex align-items-center gap-2">
+                        <div class="card-body pagination-bar d-flex flex-wrap justify-content-between align-items-center gap-2 p-3">
+                            <div class="d-flex align-items-center gap-2 flex-shrink-0">
                                 <label for="perPageSelect" class="text-muted small mb-0">Per page:</label>
                                 <select id="perPageSelect" class="form-select form-select-sm rounded-pill w-auto"
                                     onchange="(function(v){const u=new URL(window.location.href);u.searchParams.set('per_page',v);u.searchParams.delete('page');window.location.href=u.toString();})(this.value)">
@@ -141,11 +157,11 @@
                                         <option value="{{ $size }}" {{ $perPage == $size ? 'selected' : '' }}>{{ $size }}</option>
                                     @endforeach
                                 </select>
-                                <span class="text-muted small">
+                                <span class="text-muted small text-nowrap d-none d-lg-inline">
                                     Showing {{ $textures->firstItem() ?? 0 }} to {{ $textures->lastItem() ?? 0 }} of {{ $textures->total() }} textures
                                 </span>
                             </div>
-                            <nav>
+                            <nav class="flex-shrink-0">
                                 {{ $textures->links() }}
                             </nav>
                         </div>
@@ -330,6 +346,59 @@
             background-color: #ffc508;
             border-color: #ffc508;
             color: #0e2e45;
+        }
+
+        /* ============================================
+           Mobile responsiveness ( < lg / 992px )
+           See ResponsiveMobileNote.md — grid page (no table)
+           ============================================ */
+        @media (min-width: 992px) {
+            .search-dd .dropdown-menu.search-menu {
+                position: static !important;
+                display: block !important;
+                float: none;
+                width: 100%;
+                margin: 0;
+                padding: 0 !important;
+                border: 0 !important;
+                box-shadow: none !important;
+                background: transparent;
+            }
+        }
+        @media (max-width: 991.98px) {
+            .search-dd .dropdown-menu.search-menu {
+                width: min(82vw, 360px);
+            }
+
+            /* Standalone pagination card: shrink Bootstrap's pager so it
+               wraps neatly instead of overflowing. */
+            .pagination-bar .pagination {
+                --bs-pagination-padding-x: 0.5rem;
+                --bs-pagination-padding-y: 0.25rem;
+                --bs-pagination-font-size: 0.8rem;
+                margin-bottom: 0;
+            }
+
+            /* Smaller modal type + spacing on phones. */
+            .modal-title { font-size: 1rem; }
+            .modal-body { font-size: 0.85rem; }
+            .modal .form-label,
+            .modal .form-control,
+            .modal .form-select,
+            .modal .input-group-text,
+            .modal .btn,
+            .modal small,
+            .modal .small { font-size: 0.8rem; }
+            .modal .texture-section-title { font-size: 0.62rem; }
+            .texture-modal .modal-dialog {
+                margin: 0.5rem;
+            }
+            .texture-modal-header {
+                padding: 14px 16px;
+            }
+            .texture-modal-footer {
+                padding: 12px 16px;
+            }
         }
     </style>
 

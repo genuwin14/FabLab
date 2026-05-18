@@ -27,7 +27,7 @@
             </header>
 
             <!-- Page Content -->
-            <main class="flex-grow-1 p-4" style="overflow-y: auto; overflow-x: hidden;">
+            <main class="flex-grow-1 p-3 p-md-4" style="overflow-y: auto; overflow-x: hidden;">
                 <div class="container-fluid">
 
                     <!-- Status Analytics -->
@@ -56,7 +56,7 @@
                                         style="--stat-color: {{ $meta['color'] }};">
                                         <div class="card-body p-3 position-relative">
                                             <div class="d-flex align-items-center gap-2">
-                                                <div class="rounded-3 d-flex align-items-center justify-content-center flex-shrink-0"
+                                                <div class="rounded-3 d-none d-lg-flex align-items-center justify-content-center flex-shrink-0"
                                                     style="width: 42px; height: 42px; background-color: {{ $meta['bg'] }}; color: {{ $meta['color'] }};">
                                                     <i class="bi {{ $meta['icon'] }}"></i>
                                                 </div>
@@ -83,48 +83,78 @@
                     <div class="card border-0 shadow-sm rounded-4 mb-4">
                         <div class="card-body p-3">
                             <form id="orderFilterForm" method="GET" action="{{ route('staff.orders.index') }}"
-                                class="d-flex flex-nowrap align-items-center gap-2">
+                                class="row g-2 align-items-center">
                                 <input type="hidden" name="per_page" value="{{ $perPage }}">
-                                <div class="input-group flex-grow-1" style="min-width: 0;">
-                                    <span class="input-group-text bg-white border-end-0 rounded-start-2 ps-3">
-                                        <i class="bi bi-search text-muted"></i>
-                                    </span>
-                                    <input type="text" name="search" value="{{ $search }}"
-                                        class="form-control border-start-0 rounded-end-2 ps-0"
-                                        placeholder="Search by Order ID, Ref No, or Customer...">
+
+                                <!-- Search: inline on desktop; icon-triggered dropdown on mobile. -->
+                                <div class="col-auto col-lg dropdown search-dd">
+                                    <button type="button"
+                                        class="btn btn-light rounded-2 d-lg-none search-toggle"
+                                        data-bs-toggle="dropdown" data-bs-auto-close="outside"
+                                        aria-expanded="false" title="Search">
+                                        <i class="bi bi-search text-primary"></i>
+                                    </button>
+                                    <div class="dropdown-menu search-menu border-0 shadow p-2 p-lg-0">
+                                        <div class="input-group">
+                                            <span class="input-group-text bg-white border-end-0 rounded-start-2 ps-3">
+                                                <i class="bi bi-search text-muted"></i>
+                                            </span>
+                                            <input type="text" name="search" value="{{ $search }}"
+                                                class="form-control border-start-0 rounded-end-2 ps-0"
+                                                placeholder="Search by Order ID, Ref No, or Customer...">
+                                        </div>
+                                    </div>
                                 </div>
-                                <select name="status" class="form-select rounded-2 flex-shrink-0 w-auto"
-                                    onchange="document.getElementById('orderFilterForm').submit()">
-                                    <option value="">All Statuses</option>
-                                    @foreach(['pending', 'approved', 'processing', 'ready_for_pickup', 'completed', 'cancelled'] as $s)
-                                        <option value="{{ $s }}" {{ $status === $s ? 'selected' : '' }}>
-                                            {{ ucwords(str_replace('_', ' ', $s)) }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                                <select name="date" class="form-select rounded-2 flex-shrink-0 w-auto"
-                                    onchange="document.getElementById('orderFilterForm').submit()">
-                                    <option value="">All Time</option>
-                                    <option value="today" {{ $date === 'today' ? 'selected' : '' }}>Today</option>
-                                    <option value="week" {{ $date === 'week' ? 'selected' : '' }}>This Week</option>
-                                    <option value="month" {{ $date === 'month' ? 'selected' : '' }}>This Month</option>
-                                </select>
-                                <a href="{{ route('staff.orders.index') }}"
-                                    class="btn btn-light rounded-2 flex-shrink-0" data-bs-toggle="tooltip"
-                                    title="Reset filters">
-                                    <i class="bi bi-arrow-clockwise text-primary"></i>
-                                </a>
-                                <button type="button"
-                                    class="btn btn-primary d-flex align-items-center gap-2 rounded-2 px-3 flex-shrink-0">
-                                    <i class="bi bi-download small"></i>
-                                    <span class="small fw-bold">Export</span>
-                                </button>
+
+                                <!-- Status + Date filters: inline on desktop; behind a filter icon on mobile. -->
+                                <div class="col-auto dropdown filter-dd">
+                                    <button type="button"
+                                        class="btn btn-light rounded-2 d-lg-none filter-toggle"
+                                        data-bs-toggle="dropdown" data-bs-auto-close="outside"
+                                        aria-expanded="false" title="Filters">
+                                        <i class="bi bi-funnel text-primary"></i>
+                                    </button>
+                                    <div class="dropdown-menu filter-menu border-0 shadow p-2 p-lg-0">
+                                        <div class="d-flex flex-column flex-lg-row gap-2">
+                                            <select name="status" class="form-select rounded-2 w-100"
+                                                onchange="document.getElementById('orderFilterForm').submit()">
+                                                <option value="">All Statuses</option>
+                                                @foreach(['pending', 'approved', 'processing', 'ready_for_pickup', 'completed', 'cancelled'] as $s)
+                                                    <option value="{{ $s }}" {{ $status === $s ? 'selected' : '' }}>
+                                                        {{ ucwords(str_replace('_', ' ', $s)) }}
+                                                    </option>
+                                                @endforeach
+                                            </select>
+                                            <select name="date" class="form-select rounded-2 w-100"
+                                                onchange="document.getElementById('orderFilterForm').submit()">
+                                                <option value="">All Time</option>
+                                                <option value="today" {{ $date === 'today' ? 'selected' : '' }}>Today</option>
+                                                <option value="week" {{ $date === 'week' ? 'selected' : '' }}>This Week</option>
+                                                <option value="month" {{ $date === 'month' ? 'selected' : '' }}>This Month</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-auto d-flex gap-2">
+                                    <a href="{{ route('staff.orders.index') }}"
+                                        class="btn btn-light rounded-2 flex-shrink-0" data-bs-toggle="tooltip"
+                                        title="Reset filters">
+                                        <i class="bi bi-arrow-clockwise text-primary"></i>
+                                    </a>
+                                    <button type="button"
+                                        class="btn btn-primary d-flex align-items-center justify-content-center gap-2 rounded-2 px-3"
+                                        title="Export">
+                                        <i class="bi bi-download small"></i>
+                                        <span class="small fw-bold d-none d-lg-inline">Export</span>
+                                    </button>
+                                </div>
                             </form>
                         </div>
                     </div>
 
                     <!-- Orders Table -->
-                    <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+                    <div class="card border-0 shadow-sm rounded-4 overflow-hidden data-table-card">
                         <div class="card-body p-0">
                             <div class="table-responsive">
                                 <table class="table table-hover align-middle mb-0">
@@ -258,29 +288,30 @@
                                         @endforelse
                                     </tbody>
                                 </table>
-                            </div>
 
-                            <!-- Pagination -->
-                            <div
-                                class="d-flex flex-wrap justify-content-between align-items-center gap-2 p-3 border-top">
-                                <div class="d-flex align-items-center gap-2">
-                                    <label for="perPageSelect" class="text-muted small mb-0">Rows per page:</label>
-                                    <select id="perPageSelect" class="form-select form-select-sm rounded-pill w-auto"
-                                        onchange="(function(v){const u=new URL(window.location.href);u.searchParams.set('per_page',v);u.searchParams.delete('page');window.location.href=u.toString();})(this.value)">
-                                        @foreach([10, 25, 50, 100] as $size)
-                                            <option value="{{ $size }}" {{ $perPage == $size ? 'selected' : '' }}>
-                                                {{ $size }}
-                                            </option>
-                                        @endforeach
-                                    </select>
-                                    <span class="text-muted small">
-                                        Showing {{ $orders->firstItem() ?? 0 }} to {{ $orders->lastItem() ?? 0 }} of
-                                        {{ $orders->total() }} entries
-                                    </span>
+                                <!-- Pagination sits INSIDE .table-responsive, so it
+                                     rides the table's single horizontal scrollbar. -->
+                                <div
+                                    class="pagination-bar border-top d-flex justify-content-between align-items-center gap-2 p-3">
+                                    <div class="d-flex align-items-center gap-2 flex-shrink-0">
+                                        <label for="perPageSelect" class="text-muted small mb-0">Rows per page:</label>
+                                        <select id="perPageSelect" class="form-select form-select-sm rounded-pill w-auto"
+                                            onchange="(function(v){const u=new URL(window.location.href);u.searchParams.set('per_page',v);u.searchParams.delete('page');window.location.href=u.toString();})(this.value)">
+                                            @foreach([10, 25, 50, 100] as $size)
+                                                <option value="{{ $size }}" {{ $perPage == $size ? 'selected' : '' }}>
+                                                    {{ $size }}
+                                                </option>
+                                            @endforeach
+                                        </select>
+                                        <span class="text-muted small text-nowrap">
+                                            Showing {{ $orders->firstItem() ?? 0 }} to {{ $orders->lastItem() ?? 0 }} of
+                                            {{ $orders->total() }} entries
+                                        </span>
+                                    </div>
+                                    <nav class="flex-shrink-0">
+                                        {{ $orders->links() }}
+                                    </nav>
                                 </div>
-                                <nav>
-                                    {{ $orders->links() }}
-                                </nav>
                             </div>
                         </div>
                     </div>
@@ -415,6 +446,62 @@
             background-color: #ffc508;
             border-color: #ffc508;
             color: #0e2e45;
+        }
+
+        /* ============================================
+           Mobile responsiveness ( < lg / 992px )
+           See ResponsiveMobileNote.md
+           ============================================ */
+        @media (min-width: 992px) {
+            .search-dd .dropdown-menu.search-menu,
+            .filter-dd .dropdown-menu.filter-menu {
+                position: static !important;
+                display: block !important;
+                float: none;
+                width: 100%;
+                margin: 0;
+                padding: 0 !important;
+                border: 0 !important;
+                box-shadow: none !important;
+                background: transparent;
+            }
+            .filter-dd .filter-menu .form-select { width: auto !important; }
+        }
+        @media (max-width: 991.98px) {
+            .search-dd .dropdown-menu.search-menu {
+                width: min(82vw, 360px);
+            }
+            .filter-dd .dropdown-menu.filter-menu {
+                width: min(82vw, 320px);
+            }
+
+            /* Edge-to-edge scrollable table; pagination shares its scroll. */
+            .data-table-card {
+                margin-left: -0.75rem;
+                margin-right: -0.75rem;
+                border-radius: 0 !important;
+            }
+            .data-table-card .table {
+                min-width: 920px;
+            }
+            .data-table-card .table th,
+            .data-table-card .table td {
+                white-space: nowrap;
+            }
+            .data-table-card .table th:nth-child(3),
+            .data-table-card .table td:nth-child(3) {
+                min-width: 200px;
+            }
+            .pagination-bar {
+                flex-wrap: nowrap;
+                min-width: 920px;
+            }
+            .pagination-bar .pagination {
+                --bs-pagination-padding-x: 0.5rem;
+                --bs-pagination-padding-y: 0.25rem;
+                --bs-pagination-font-size: 0.8rem;
+                margin-bottom: 0;
+            }
         }
     </style>
 

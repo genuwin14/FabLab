@@ -42,3 +42,29 @@
         </div>
     </div>
 </div>
+
+<style>
+    /* Mobile-responsive modal rules (ResponsiveMobileNote §6). */
+    @media (max-width: 991.98px) {
+        /* §6a — shrink type + spacing on phones */
+        #cancelPOModal .modal-title { font-size: 1rem; }
+        #cancelPOModal .modal-body { font-size: 0.85rem; }
+        #cancelPOModal .btn,
+        #cancelPOModal small,
+        #cancelPOModal .small { font-size: 0.8rem; }
+        #cancelPOModal .modal-dialog { margin: 0.5rem; }
+        #cancelPOModal .purchase-cancel-modal-header { padding: 20px 16px 16px; }
+        #cancelPOModal .purchase-cancel-modal-body.p-4 { padding: 1rem !important; }
+
+        /* §6c — footer with 2 actions (Keep / Cancel, one wrapped in a
+           <form>) stacks full-width on phones */
+        #cancelPOModal .purchase-cancel-modal-footer {
+            padding: 12px 16px 16px;
+            flex-direction: column;
+            align-items: stretch;
+        }
+        #cancelPOModal .purchase-cancel-modal-footer > .btn,
+        #cancelPOModal .purchase-cancel-modal-footer > form { width: 100%; }
+        #cancelPOModal .purchase-cancel-modal-footer > form .btn { width: 100%; }
+    }
+</style>

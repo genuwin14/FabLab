@@ -147,3 +147,41 @@
         </div>
     </div>
 </div>
+
+<style>
+    /* Mobile-responsive modal rules (ResponsiveMobileNote §6). */
+    @media (max-width: 991.98px) {
+        /* §6a — shrink type + spacing on phones */
+        #editProductModal .modal-title { font-size: 1rem; }
+        #editProductModal .modal-body { font-size: 0.85rem; }
+        #editProductModal .form-label,
+        #editProductModal .form-control,
+        #editProductModal .form-select,
+        #editProductModal .input-group-text,
+        #editProductModal .btn,
+        #editProductModal small,
+        #editProductModal .small { font-size: 0.8rem; }
+        #editProductModal .product-section-title { font-size: 0.62rem; }
+        #editProductModal .modal-dialog { margin: 0.5rem; }
+        #editProductModal .product-modal-header { padding: 14px 16px; }
+        #editProductModal .product-side-panel.p-4,
+        #editProductModal .col-lg-8.p-4 { padding: 1rem !important; }
+        #editProductModal .row.g-3 { --bs-gutter-y: 0.5rem; }
+
+        /* §6a — cap the big square image preview */
+        #editProductModal .product-side-panel .ratio {
+            max-width: 200px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        #editProductModal .product-field-input.fs-5 { font-size: 0.85rem !important; }
+
+        /* §6c — footer with 2 pill buttons stacks full-width */
+        #editProductModal .product-modal-footer {
+            padding: 12px 16px;
+            flex-direction: column;
+            align-items: stretch;
+        }
+        #editProductModal .product-modal-footer > .btn { width: 100%; }
+    }
+</style>

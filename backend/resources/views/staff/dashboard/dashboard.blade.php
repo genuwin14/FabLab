@@ -29,11 +29,11 @@
             </header>
 
             <!-- Page Content -->
-            <main class="flex-grow-1 p-4" style="overflow-y: auto; overflow-x: hidden;">
+            <main class="flex-grow-1 p-3 p-md-4" style="overflow-y: auto;">
                 <div class="container-fluid">
 
-                    <!-- Combined Stat Row (always 8 in 1 row) -->
-                    <div class="row row-cols-8 g-2 mb-4">
+                    <!-- Combined Stat Row -->
+                    <div class="row row-cols-2 row-cols-md-4 row-cols-xl-8 g-2 g-md-3 mb-4">
                         <div class="col">
                             <a href="{{ route('staff.orders.index') }}" class="text-decoration-none">
                                 <div class="card border-0 shadow-sm h-100 rounded-4 mini-stat">
@@ -155,50 +155,50 @@
                     </div>
 
                     <!-- Charts Row -->
-                    <div class="row g-4 mb-4">
+                    <div class="row g-3 g-md-4 mb-4">
                         <div class="col-lg-8">
                             <div class="card border-0 shadow-sm rounded-4 h-100 overflow-hidden">
-                                <div class="card-header bg-white border-0 p-4 pb-0 d-flex justify-content-between align-items-center">
+                                <div class="card-header bg-white border-0 p-3 p-md-4 pb-0 d-flex justify-content-between align-items-center gap-2">
                                     <div>
                                         <h5 class="fw-bold mb-0">Order Activity</h5>
                                         <p class="text-muted small mb-0">New orders received over the last 7 days</p>
                                     </div>
-                                    <span class="badge bg-primary-soft text-primary rounded-pill px-3 py-2 small fw-bold">
+                                    <span class="badge bg-primary-soft text-primary rounded-pill px-3 py-2 small fw-bold flex-shrink-0">
                                         <i class="bi bi-calendar-week me-1"></i>7 Days
                                     </span>
                                 </div>
-                                <div class="card-body p-4">
-                                    <div id="ordersChart" style="min-height: 300px;"></div>
+                                <div class="card-body p-3 p-md-4">
+                                    <div id="ordersChart"></div>
                                 </div>
                             </div>
                         </div>
                         <div class="col-lg-4">
                             <div class="card border-0 shadow-sm rounded-4 h-100 overflow-hidden">
-                                <div class="card-header bg-white border-0 p-4 pb-0">
+                                <div class="card-header bg-white border-0 p-3 p-md-4 pb-0">
                                     <h5 class="fw-bold mb-0">Active Pipeline</h5>
                                     <p class="text-muted small mb-0">Orders in progress</p>
                                 </div>
-                                <div class="card-body p-4">
-                                    <div id="pipelineChart" style="min-height: 300px;"></div>
+                                <div class="card-body p-3 p-md-4">
+                                    <div id="pipelineChart"></div>
                                 </div>
                             </div>
                         </div>
                     </div>
 
                     <!-- Order Queue & Critical Stock -->
-                    <div class="row g-4 mb-4">
+                    <div class="row g-3 g-md-4 mb-4">
                         <div class="col-lg-7">
                             <div class="card border-0 shadow-sm rounded-4 h-100 overflow-hidden">
-                                <div class="card-header bg-white border-0 p-4 pb-0 d-flex justify-content-between align-items-center">
+                                <div class="card-header bg-white border-0 p-3 p-md-4 pb-0 d-flex justify-content-between align-items-center gap-2">
                                     <div>
                                         <h5 class="fw-bold mb-0">Order Queue</h5>
                                         <p class="text-muted small mb-0">Orders awaiting your action — oldest first</p>
                                     </div>
-                                    <a href="{{ route('staff.orders.index') }}" class="btn btn-light btn-sm rounded-pill px-3 border small text-primary">View All</a>
+                                    <a href="{{ route('staff.orders.index') }}" class="btn btn-light btn-sm rounded-pill px-3 border small text-primary flex-shrink-0">View All</a>
                                 </div>
-                                <div class="card-body p-4">
+                                <div class="card-body p-3 p-md-4">
                                     <div class="table-responsive">
-                                        <table class="table table-hover align-middle mb-0">
+                                        <table class="table table-hover align-middle mb-0 order-queue-table">
                                             <thead class="bg-light bg-opacity-50">
                                                 <tr>
                                                     <th class="ps-3 border-0 small text-uppercase text-muted">Order</th>
@@ -249,16 +249,16 @@
                         </div>
                         <div class="col-lg-5">
                             <div class="card border-0 shadow-sm rounded-4 h-100 overflow-hidden">
-                                <div class="card-header bg-white border-0 p-4 pb-0 d-flex justify-content-between align-items-center">
+                                <div class="card-header bg-white border-0 p-3 p-md-4 pb-0 d-flex justify-content-between align-items-center gap-2">
                                     <div>
                                         <h5 class="fw-bold mb-0">Critical Stock</h5>
                                         <p class="text-muted small mb-0">Products below threshold</p>
                                     </div>
-                                    <a href="{{ route('staff.products.index') }}" class="btn btn-light btn-sm rounded-circle border text-muted">
+                                    <a href="{{ route('staff.products.index') }}" class="btn btn-light btn-sm rounded-circle border text-muted flex-shrink-0">
                                         <i class="bi bi-arrow-up-right"></i>
                                     </a>
                                 </div>
-                                <div class="card-body p-4">
+                                <div class="card-body p-3 p-md-4 critical-stock-list">
                                     @forelse($criticalStockProducts as $product)
                                         <div class="d-flex align-items-center mb-3 p-2 rounded-3 hover-bg-light transition-all">
                                             <div class="flex-shrink-0 me-3">
@@ -322,6 +322,58 @@
         .transition-all {
             transition: all 0.2s ease-in-out;
         }
+
+        /* ── Chart heights ──
+           (No inline min-height so the media query can win — see
+           ResponsiveMobileNote.md §7.) */
+        #ordersChart { min-height: 300px; }
+        #pipelineChart { min-height: 300px; }
+
+        /* ============================================
+           Mobile responsiveness ( < lg / 992px )
+           See ResponsiveMobileNote.md
+           ============================================ */
+        @media (max-width: 991.98px) {
+            #ordersChart { min-height: 240px; }
+            #pipelineChart { min-height: 260px; }
+
+            /* Compact, scroll-capped Critical Stock list so it doesn't push
+               the rest of the dashboard far down the page on a phone. */
+            .critical-stock-list {
+                max-height: 340px;
+                overflow-y: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+            .critical-stock-list > .d-flex {
+                margin-bottom: 0.25rem !important;
+                padding-top: 0.4rem !important;
+                padding-bottom: 0.4rem !important;
+            }
+            .critical-stock-list::-webkit-scrollbar { width: 4px; }
+            .critical-stock-list::-webkit-scrollbar-track { background: transparent; }
+            .critical-stock-list::-webkit-scrollbar-thumb {
+                background: rgba(0, 0, 0, 0.15);
+                border-radius: 10px;
+            }
+
+            /* Order Queue table: keep columns from squishing — swipe. */
+            .order-queue-table {
+                min-width: 520px;
+            }
+            .order-queue-table th,
+            .order-queue-table td {
+                white-space: nowrap;
+            }
+
+            /* Smaller card type so the mini-stat tiles and card headers stay
+               proportionate when squeezed (2-up phone, 4-up tablet). */
+            .mini-stat .text-uppercase { font-size: 0.58rem !important; }
+            .mini-stat .fs-6 { font-size: 0.95rem !important; }
+            .mini-stat .rounded-3 { padding: 0.4rem !important; }
+
+            .card-header h5 { font-size: 1rem !important; }
+            .card-header p { font-size: 0.72rem !important; }
+        }
     </style>
 
     <script>
@@ -368,7 +420,17 @@
                         const dates = @json($dailyOrders->pluck('date'));
                         return '<div class="px-3 py-2"><div class="small text-muted">' + dates[dataPointIndex] + '</div><div class="fw-bold">' + series[seriesIndex][dataPointIndex] + ' orders</div></div>';
                     }
-                }
+                },
+                responsive: [{
+                    breakpoint: 768,
+                    options: {
+                        chart: { height: 240 },
+                        stroke: { width: 2 },
+                        markers: { size: 3 },
+                        xaxis: { labels: { style: { fontSize: '10px' } } },
+                        yaxis: { labels: { style: { fontSize: '10px' } } }
+                    }
+                }]
             };
             new ApexCharts(document.querySelector("#ordersChart"), ordersOptions).render();
 
@@ -418,7 +480,18 @@
                         }
                     }
                 },
-                stroke: { width: 0 }
+                stroke: { width: 0 },
+                responsive: [{
+                    breakpoint: 768,
+                    options: {
+                        chart: { height: 260 },
+                        legend: {
+                            position: 'bottom',
+                            horizontalAlign: 'center',
+                            fontSize: '11px'
+                        }
+                    }
+                }]
             };
             new ApexCharts(document.querySelector("#pipelineChart"), pipelineOptions).render();
         });
