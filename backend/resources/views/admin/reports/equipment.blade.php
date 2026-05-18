@@ -178,24 +178,26 @@
                                         @endforelse
                                     </tbody>
                                 </table>
-                            </div>
 
-                            @if(count($rows) > 0)
-                                <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 p-3 border-top pagination-footer">
-                                    <div class="d-flex align-items-center gap-2">
-                                        <label class="text-muted small mb-0">Rows per page:</label>
-                                        <select class="form-select form-select-sm rounded-pill w-auto page-size-select">
-                                            @foreach([10, 25, 50, 100] as $size)
-                                                <option value="{{ $size }}" {{ $size === 10 ? 'selected' : '' }}>{{ $size }}</option>
-                                            @endforeach
-                                        </select>
-                                        <span class="text-muted small entries-info">Showing 0 to 0 of 0 entries</span>
+                                @if(count($rows) > 0)
+                                    {{-- Pager sits INSIDE .table-responsive so it rides the
+                                         table's single horizontal scroll on mobile (note §5a). --}}
+                                    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 p-3 border-top pagination-footer">
+                                        <div class="d-flex align-items-center gap-2 flex-shrink-0">
+                                            <label class="text-muted small mb-0">Rows per page:</label>
+                                            <select class="form-select form-select-sm rounded-pill w-auto page-size-select">
+                                                @foreach([10, 25, 50, 100] as $size)
+                                                    <option value="{{ $size }}" {{ $size === 10 ? 'selected' : '' }}>{{ $size }}</option>
+                                                @endforeach
+                                            </select>
+                                            <span class="text-muted small entries-info text-nowrap">Showing 0 to 0 of 0 entries</span>
+                                        </div>
+                                        <nav class="flex-shrink-0">
+                                            <ul class="pagination pagination-sm mb-0 page-controls"></ul>
+                                        </nav>
                                     </div>
-                                    <nav>
-                                        <ul class="pagination pagination-sm mb-0 page-controls"></ul>
-                                    </nav>
-                                </div>
-                            @endif
+                                @endif
+                            </div>
                         </div>
                     </div>
                 </div>

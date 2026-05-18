@@ -318,13 +318,19 @@
         .report-summary-card h5 { font-size: 0.95rem; }
         .report-summary-card p { font-size: 0.58rem !important; }
 
-        /* Materials tab nav: horizontal scroll, compact labels */
+        /* Materials tab nav: horizontal scroll, compact labels.
+           min-width:0 lets this flex child shrink below its content
+           width so its OWN overflow-x scrolls the tab strip — without
+           it the 4 long labels widen the page and <main> (overflow-y
+           auto ⇒ overflow-x auto) scrolls the whole page sideways. */
         .report-section-tabs {
             flex-wrap: nowrap !important;
             overflow-x: auto;
             overflow-y: hidden;
             -webkit-overflow-scrolling: touch;
             scrollbar-width: thin;
+            min-width: 0;
+            max-width: 100%;
         }
         .report-section-tabs::-webkit-scrollbar { height: 4px; }
         .report-section-tabs::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.15); border-radius: 999px; }
@@ -366,9 +372,21 @@
         .paginated-section .card-header .btn { padding: 0.35rem 0.65rem; }
         .paginated-section .card-header .btn .small { font-size: 0.7rem; }
 
-        /* Pagination footer */
+        /* Pagination footer: rides the table's single horizontal scroll
+           (note §5a). Match the table's min-width so it stays aligned
+           under the scrolled columns instead of wrapping. */
+        .pagination-footer {
+            flex-wrap: nowrap !important;
+            min-width: 760px;
+        }
         .pagination-footer .entries-info { font-size: 0.72rem; }
         .pagination-footer label { font-size: 0.72rem; }
+        .pagination-footer .pagination {
+            --bs-pagination-padding-x: 0.5rem;
+            --bs-pagination-padding-y: 0.25rem;
+            --bs-pagination-font-size: 0.8rem;
+            margin-bottom: 0;
+        }
     }
 
     /* ── Extra-small (< sm / 576px) ────────────────────────── */
