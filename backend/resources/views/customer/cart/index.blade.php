@@ -29,13 +29,13 @@
             </header>
 
             <!-- Page Content -->
-            <main class="flex-grow-1 p-4" style="overflow-y: auto;">
+            <main class="flex-grow-1 p-3 p-md-4" style="overflow-y: auto;">
                 <div class="container-fluid">
-                    <div class="row g-4">
+                    <div class="row g-3 g-md-4">
                         <!-- Cart Items Column -->
                         <div class="col-lg-8">
                             <div class="card border-0 shadow-sm rounded-4 mb-4">
-                                <div class="card-header bg-white border-bottom p-4">
+                                <div class="card-header bg-white border-bottom p-3 p-md-4">
                                     <div class="d-flex justify-content-between align-items-center">
                                         <h5 class="fw-bold mb-0 text-dark">Your Shopping Cart</h5>
                                         <span class="badge bg-primary rounded-pill" id="cartTotalCount">{{ collect($cart)->sum('quantity') }}
@@ -45,7 +45,7 @@
                                 <div class="card-body p-0">
                                     @if(count($cart) > 0)
                                         <div class="table-responsive">
-                                    <table class="table table-hover align-middle mb-0">
+                                    <table class="table table-hover align-middle mb-0 cart-table">
                                                 <thead class="bg-light text-muted small text-uppercase fw-bold">
                                                     <tr>
                                                         <th class="ps-4 py-3 border-0" style="width: 50px;">
@@ -143,11 +143,11 @@
 
                         <!-- Summary Column -->
                         <div class="col-lg-4">
-                            <div class="card border-0 shadow-sm rounded-4 sticky-top" style="top: 100px;">
-                                <div class="card-header bg-white border-bottom p-4">
+                            <div class="card border-0 shadow-sm rounded-4 sticky-top cart-summary-card" style="top: 100px;">
+                                <div class="card-header bg-white border-bottom p-3 p-md-4">
                                     <h5 class="fw-bold mb-0 text-dark">Order Summary</h5>
                                 </div>
-                                <div class="card-body p-4">
+                                <div class="card-body p-3 p-md-4">
                                     <div class="d-flex justify-content-between mb-3">
                                         <span class="text-muted">Subtotal</span>
                                         <span class="fw-medium" id="summarySubtotal">₱{{ number_format($total ?? 0, 2) }}</span>
@@ -239,6 +239,46 @@
             background-color: #f8f9fa;
             opacity: 0.7;
             cursor: not-allowed;
+        }
+
+        /* ============================================
+           Mobile responsiveness ( < lg / 992px )
+           See ResponsiveMobileNote.md (§5c table-in-card, §6 modal)
+           ============================================ */
+        @media (max-width: 991.98px) {
+            /* Cart table sits in a card WITH a header, so no edge-to-edge
+               negative margins (§5c) — just stop columns squishing and
+               let the user swipe horizontally instead. */
+            .cart-table {
+                min-width: 620px;
+            }
+            .cart-table th,
+            .cart-table td {
+                white-space: nowrap;
+            }
+            .cart-table th:nth-child(2),
+            .cart-table td:nth-child(2) {
+                min-width: 200px;
+            }
+
+            /* Once the summary stacks below the cart, sticky just makes it
+               jump around — pin it off. */
+            .cart-summary-card {
+                position: static !important;
+                top: auto !important;
+            }
+
+            /* Approval modal's p-5 is huge on a phone. */
+            #approvalModal .modal-dialog {
+                margin: 0.5rem;
+            }
+            #approvalModal .modal-body {
+                padding: 1.5rem !important;
+            }
+            #approvalModal .btn {
+                padding-top: 0.6rem !important;
+                padding-bottom: 0.6rem !important;
+            }
         }
     </style>
 

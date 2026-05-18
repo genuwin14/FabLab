@@ -152,6 +152,70 @@
             border-color: rgba(14, 46, 69, 0.18);
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
         }
+
+        /* ============================================
+           Mobile responsiveness ( < lg / 992px )
+           See ResponsiveMobileNote.md (§4 toolbar, §5 table)
+           ============================================ */
+
+        /* Desktop: render the search/filter dropdowns inline & static
+           so they behave like plain inputs (no popup, single field). */
+        @media (min-width: 992px) {
+            .search-dd .dropdown-menu.search-menu,
+            .filter-dd .dropdown-menu.filter-menu {
+                position: static !important;
+                display: block !important;
+                float: none;
+                width: 100%;
+                margin: 0;
+                padding: 0 !important;
+                border: 0 !important;
+                box-shadow: none !important;
+                background: transparent;
+            }
+            .filter-dd .filter-menu .form-select {
+                width: auto !important;
+            }
+        }
+
+        @media (max-width: 991.98px) {
+            .search-dd .dropdown-menu.search-menu {
+                width: min(82vw, 360px);
+            }
+            .filter-dd .dropdown-menu.filter-menu {
+                width: min(82vw, 320px);
+            }
+
+            /* Maximize the horizontally-scrolling table: pull the card
+               to the page gutter, force single-line cells. */
+            .data-table-card {
+                margin-left: -0.75rem;
+                margin-right: -0.75rem;
+                border-radius: 0 !important;
+            }
+            .data-table-card .table {
+                min-width: 760px;
+            }
+            .data-table-card .table th,
+            .data-table-card .table td {
+                white-space: nowrap;
+            }
+
+            /* Compact the page header + stat strip. */
+            .order-history-title {
+                font-size: 1.25rem;
+            }
+            .order-stat-mini {
+                min-width: 0;
+                padding: 6px 10px;
+                gap: 8px;
+            }
+            .order-stat-mini-icon {
+                width: 28px;
+                height: 28px;
+                font-size: 0.85rem;
+            }
+        }
     </style>
 
     <div class="d-flex vh-100" style="background-color: #f8f9fa; overflow: hidden;">
@@ -181,7 +245,7 @@
             </header>
 
             <!-- Page Content -->
-            <main class="flex-grow-1 p-4" style="overflow-y: auto;">
+            <main class="flex-grow-1 p-3 p-md-4" style="overflow-y: auto;">
                 <div class="container-fluid">
                     @php
                         $orderStats = [
@@ -194,7 +258,7 @@
                     @endphp
                     <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
                         <div>
-                            <h3 class="fw-bold text-dark mb-1">Order History</h3>
+                            <h3 class="fw-bold text-dark mb-1 order-history-title">Order History</h3>
                             <p class="text-muted small mb-0">Review your past orders and their statuses.</p>
                         </div>
                         <div class="d-flex flex-wrap gap-2">
@@ -221,47 +285,79 @@
                         <!-- Filters & Search -->
                         <div class="card border-0 shadow-sm rounded-4 mb-4">
                             <div class="card-body p-3">
-                                <div class="d-flex flex-nowrap align-items-center gap-2">
-                                    <div class="btn-group order-view-toggle flex-shrink-0" role="group"
-                                        aria-label="View mode">
-                                        <button type="button" class="btn order-view-btn" data-view="grid"
-                                            data-bs-toggle="tooltip" title="Grid view">
-                                            <i class="bi bi-grid-3x3-gap-fill"></i>
+                                <div class="row g-2 align-items-center">
+                                    <div class="col-auto">
+                                        <div class="btn-group order-view-toggle" role="group"
+                                            aria-label="View mode">
+                                            <button type="button" class="btn order-view-btn" data-view="grid"
+                                                data-bs-toggle="tooltip" title="Grid view">
+                                                <i class="bi bi-grid-3x3-gap-fill"></i>
+                                            </button>
+                                            <button type="button" class="btn order-view-btn active" data-view="table"
+                                                data-bs-toggle="tooltip" title="Table view">
+                                                <i class="bi bi-list-ul"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <!-- Search: inline input on desktop; collapses behind
+                                         the search icon as a dropdown on mobile. -->
+                                    <div class="col-auto col-lg dropdown search-dd">
+                                        <button type="button"
+                                            class="btn btn-light rounded-2 d-lg-none search-toggle"
+                                            data-bs-toggle="dropdown" data-bs-auto-close="outside"
+                                            aria-expanded="false" title="Search">
+                                            <i class="bi bi-search text-primary"></i>
                                         </button>
-                                        <button type="button" class="btn order-view-btn active" data-view="table"
-                                            data-bs-toggle="tooltip" title="Table view">
-                                            <i class="bi bi-list-ul"></i>
+                                        <div class="dropdown-menu search-menu border-0 shadow p-2 p-lg-0">
+                                            <div class="input-group">
+                                                <span class="input-group-text bg-white border-end-0 rounded-start-2 ps-3">
+                                                    <i class="bi bi-search text-muted"></i>
+                                                </span>
+                                                <input type="text" id="orderSearchInput"
+                                                    class="form-control border-start-0 rounded-end-2 ps-0"
+                                                    placeholder="Search by Order ID...">
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Status + date filters collapse behind one icon on mobile. -->
+                                    <div class="col-auto dropdown filter-dd">
+                                        <button type="button"
+                                            class="btn btn-light rounded-2 d-lg-none filter-toggle"
+                                            data-bs-toggle="dropdown" data-bs-auto-close="outside"
+                                            aria-expanded="false" title="Filters">
+                                            <i class="bi bi-funnel text-primary"></i>
+                                        </button>
+                                        <div class="dropdown-menu filter-menu border-0 shadow p-2 p-lg-0">
+                                            <div class="d-flex flex-column flex-lg-row gap-2">
+                                                <select id="orderStatusFilter"
+                                                    class="form-select rounded-2 w-100">
+                                                    <option value="">All Statuses</option>
+                                                    @foreach(['pending', 'approved', 'processing', 'ready_for_pickup', 'completed', 'cancelled'] as $s)
+                                                        <option value="{{ $s }}">
+                                                            {{ ucwords(str_replace('_', ' ', $s)) }}
+                                                        </option>
+                                                    @endforeach
+                                                </select>
+                                                <select id="orderDateFilter"
+                                                    class="form-select rounded-2 w-100">
+                                                    <option value="">All Time</option>
+                                                    <option value="today">Today</option>
+                                                    <option value="week">This Week</option>
+                                                    <option value="month">This Month</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-auto">
+                                        <button type="button" id="orderFilterReset"
+                                            class="btn btn-light rounded-2 flex-shrink-0" data-bs-toggle="tooltip"
+                                            title="Reset filters">
+                                            <i class="bi bi-arrow-clockwise text-primary"></i>
                                         </button>
                                     </div>
-                                    <div class="input-group flex-grow-1" style="min-width: 0;">
-                                        <span class="input-group-text bg-white border-end-0 rounded-start-2 ps-3">
-                                            <i class="bi bi-search text-muted"></i>
-                                        </span>
-                                        <input type="text" id="orderSearchInput"
-                                            class="form-control border-start-0 rounded-end-2 ps-0"
-                                            placeholder="Search by Order ID...">
-                                    </div>
-                                    <select id="orderStatusFilter"
-                                        class="form-select rounded-2 flex-shrink-0 w-auto">
-                                        <option value="">All Statuses</option>
-                                        @foreach(['pending', 'approved', 'processing', 'ready_for_pickup', 'completed', 'cancelled'] as $s)
-                                            <option value="{{ $s }}">
-                                                {{ ucwords(str_replace('_', ' ', $s)) }}
-                                            </option>
-                                        @endforeach
-                                    </select>
-                                    <select id="orderDateFilter"
-                                        class="form-select rounded-2 flex-shrink-0 w-auto">
-                                        <option value="">All Time</option>
-                                        <option value="today">Today</option>
-                                        <option value="week">This Week</option>
-                                        <option value="month">This Month</option>
-                                    </select>
-                                    <button type="button" id="orderFilterReset"
-                                        class="btn btn-light rounded-2 flex-shrink-0" data-bs-toggle="tooltip"
-                                        title="Reset filters">
-                                        <i class="bi bi-arrow-clockwise text-primary"></i>
-                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -274,7 +370,7 @@
                             <p class="text-muted small mb-0">Try a different search term or status.</p>
                         </div>
 
-                        <div class="row g-4 d-none" id="orderGrid">
+                        <div class="row g-3 g-md-4 d-none" id="orderGrid">
                             @foreach($orders as $order)
                                 <div class="col-12 col-md-6 col-lg-4 order-card-wrapper"
                                     data-order-number="{{ strtolower($order->order_number) }}"
@@ -421,7 +517,7 @@
                         </div>
 
                         <!-- Table View -->
-                        <div id="orderTable" class="card border-0 shadow-sm rounded-4 overflow-hidden">
+                        <div id="orderTable" class="card border-0 shadow-sm rounded-4 overflow-hidden data-table-card">
                             <div class="card-body p-0">
                                 <div class="table-responsive">
                                     <table class="table table-hover align-middle mb-0">

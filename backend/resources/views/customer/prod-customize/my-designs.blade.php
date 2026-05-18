@@ -10,8 +10,13 @@
         <!-- Spacer for fixed sidebar -->
         <div class='d-none d-md-block sidebar-spacer flex-shrink-0' style='width: 280px;'></div>
 
-        <!-- Spacer for fixed sidebar -->
-        
+        <!-- Mobile Sidebar (Offcanvas) -->
+        <div class="offcanvas offcanvas-start border-0" tabindex="-1" id="customerSidebarOffcanvas"
+            aria-labelledby="customerSidebarOffcanvasLabel" style="width: 280px; background-color: #0e2e45;">
+            <div class="offcanvas-body p-0 overflow-hidden">
+                @include('customer.partials.sidebar')
+            </div>
+        </div>
 
         <!-- Main Content -->
         <div class="flex-grow-1 d-flex flex-column" style="background-color: #f1f4f8; overflow: hidden;">
@@ -21,11 +26,11 @@
             </header>
 
             <!-- Page Content -->
-            <main class="flex-grow-1 p-4" style="overflow-y: auto;">
+            <main class="flex-grow-1 p-3 p-md-4" style="overflow-y: auto;">
                 <div class="container-fluid">
-                    <div class="row g-4">
+                    <div class="row g-3 g-md-4">
                         @forelse($designs as $design)
-                            <div class="col-sm-6 col-md-4 col-xl-3">
+                            <div class="col-6 col-md-4 col-xl-3 design-col">
                                 <div class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden design-card">
                                     <div class="position-relative">
                                         <div class="ratio ratio-1x1 bg-dark">
@@ -189,6 +194,72 @@
             border-color: rgba(255, 255, 255, 0.5);
             transform: scale(1.1);
         }
+
+        /* ============================================
+           Mobile responsiveness ( < lg / 992px )
+           See ResponsiveMobileNote.md (§5b grid page, §6 modal)
+           ============================================ */
+        @media (max-width: 991.98px) {
+            /* No hover lift on touch (it sticks after a tap). */
+            .design-card:hover {
+                transform: none;
+            }
+
+            /* 3D preview modal: the body has an inline height:600px that
+               dwarfs a phone screen. Shrink it and stack the 3 footer
+               buttons full-width so they fit one per row. */
+            #previewDesignModal .modal-dialog {
+                margin: 0.5rem;
+            }
+            #previewDesignModal .modal-body {
+                height: 320px !important;
+            }
+            .preview-modal-footer {
+                flex-direction: column;
+                align-items: stretch;
+                padding: 1rem !important;
+                gap: 0.5rem;
+            }
+            .preview-modal-footer > .btn {
+                width: 100%;
+                margin: 0;
+            }
+        }
+
+        /* ============================================
+           Phone tier ( < sm / 576px ) — cards are 2-up here.
+           ============================================ */
+        @media (max-width: 575.98px) {
+            .design-card .card-body {
+                padding: 0.6rem !important;
+            }
+            .design-card .card-body .d-flex {
+                gap: 0.4rem !important;
+            }
+            .design-card .btn-soft-accent,
+            .design-card .btn-soft-danger {
+                width: 36px !important;
+            }
+            .design-card .card-body .btn {
+                padding-top: 0.4rem !important;
+                padding-bottom: 0.4rem !important;
+            }
+            /* Tighten the on-image info overlay for the narrow card. */
+            .design-card .position-absolute.bottom-0 {
+                padding: 0.6rem !important;
+            }
+            .design-card .position-absolute.bottom-0 h6 {
+                font-size: 0.78rem;
+            }
+            .design-card .position-absolute .badge,
+            .design-card .position-absolute .tiny {
+                font-size: 0.6rem;
+            }
+            .design-card .btn-dark-glass {
+                width: 32px;
+                height: 32px;
+            }
+        }
     </style>
 
     @push('scripts')
@@ -328,7 +399,7 @@
                 $('.btn-delete-design').on('click', function () {
                     const btn = $(this);
                     designToDelete = btn.data('id');
-                    cardToDelete = btn.closest('.col-sm-6');
+                    cardToDelete = btn.closest('.design-col');
 
                     $('#deleteConfirmModal').modal('show');
                 });

@@ -109,4 +109,23 @@
         border-color: #b02a37;
         color: #fff;
     }
+
+    /* Mobile: the two pill buttons don't fit one phone row — stack
+       them full-width (ResponsiveMobileNote.md §6c). */
+    @media (max-width: 991.98px) {
+        .customer-cancel-order-modal-dialog {
+            margin: 0.5rem;
+        }
+        .customer-cancel-order-modal-footer {
+            flex-direction: column;
+            align-items: stretch;
+        }
+        .customer-cancel-order-modal-footer > .btn,
+        .customer-cancel-order-modal-footer form {
+            width: 100%;
+        }
+        .customer-cancel-order-modal-footer form .btn {
+            width: 100%;
+        }
+    }
 </style>

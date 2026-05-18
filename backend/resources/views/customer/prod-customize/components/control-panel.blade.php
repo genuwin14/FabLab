@@ -1,6 +1,6 @@
 <!-- LEFT PANEL: Components, Features, Textures -->
 <div class="col-md-4 col-lg-3 d-flex flex-column border-end border-white-10 bg-dark-glass customizer-sidebar">
-    <div class="p-4 border-bottom border-white-10">
+    <div class="p-3 p-md-4 border-bottom border-white-10">
         <div class="d-flex align-items-center gap-2 mb-1">
             <i class="bi bi-box-seam text-accent"></i>
             <h5 class="text-white fw-bold mb-0">{{ $product ? $product->name : 'Customizer' }}</h5>
@@ -10,7 +10,7 @@
         </p>
     </div>
 
-    <div class="flex-grow-1 overflow-y-auto p-4 customizer-scrollbar">
+    <div class="flex-grow-1 overflow-y-auto p-3 p-md-4 customizer-scrollbar">
         @if(!$product)
         <!-- Step 0: Choose Base Shape -->
         <div class="mb-5">
@@ -185,8 +185,8 @@
     </div>
 
     <!-- Actions Footer -->
-    <div class="p-4 border-top border-white-10 bg-darker-glass">
-        <div class="d-flex justify-content-between align-items-end mb-4">
+    <div class="p-3 p-md-4 border-top border-white-10 bg-darker-glass">
+        <div class="d-flex justify-content-between align-items-end mb-3 mb-md-4">
             <div>
                 <div class="text-white-50 tiny text-uppercase fw-bold mb-1">Total Estimated Price</div>
                 <div id="total-price-display" class="text-white h4 fw-bold mb-0">

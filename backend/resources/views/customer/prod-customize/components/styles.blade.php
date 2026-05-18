@@ -258,8 +258,38 @@
     }
 
     @media (max-width: 768px) {
+        /* Cap the stacked control panel and give it a clear divider
+           against the 3D viewer below it. */
         .customizer-sidebar {
-            max-height: 50vh;
+            max-height: 52vh;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* Tighten the header and the big gaps between every step so the
+           panel needs far less scrolling on a phone. */
+        .customizer-sidebar h5 {
+            font-size: 1rem;
+        }
+        .customizer-sidebar .mb-5 {
+            margin-bottom: 1.5rem !important;
+        }
+        .customizer-sidebar label.text-uppercase {
+            margin-bottom: 0.75rem !important;
+        }
+
+        /* Compact shape/size selectors. */
+        .btn-shape,
+        .btn-size {
+            padding: 8px;
+        }
+        .shape-icon {
+            font-size: 1.25rem;
+            height: 26px;
+        }
+
+        /* Smaller price figure in the footer. */
+        #total-price-display {
+            font-size: 1.25rem;
         }
     }
 </style>

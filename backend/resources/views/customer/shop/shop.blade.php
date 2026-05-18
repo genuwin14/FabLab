@@ -29,7 +29,7 @@
             </header>
 
             <!-- Page Content -->
-            <main class="flex-grow-1 p-4" style="overflow-y: auto;">
+            <main class="flex-grow-1 p-3 p-md-4" style="overflow-y: auto;">
                 <div class="container-fluid">
                     
                     <!-- Search & Categories Header -->
@@ -38,8 +38,8 @@
                             <h4 class="fw-bold text-dark mb-1">Product Catalog</h4>
                             <p class="text-muted small mb-0">Explore our available items and materials.</p>
                         </div>
-                        <div class="d-flex gap-2">
-                            <form action="{{ route('customer.shop') }}" method="GET" class="input-group" style="max-width: 300px;">
+                        <div class="d-flex gap-2 w-100 shop-search-wrap">
+                            <form action="{{ route('customer.shop') }}" method="GET" class="input-group shop-search-form">
                                 <span class="input-group-text bg-white border-end-0 rounded-start-pill ps-3">
                                     <i class="bi bi-search text-muted"></i>
                                 </span>
@@ -51,22 +51,22 @@
 
                     <!-- Category Quick Filters -->
                     <div class="d-flex gap-2 overflow-x-auto pb-3 mb-4 no-scrollbar">
-                        <a href="{{ route('customer.shop') }}" 
-                           class="btn {{ !request('category') || request('category') == 'all' ? 'btn-primary' : 'btn-white border' }} rounded-pill px-4 small fw-bold text-decoration-none">
+                        <a href="{{ route('customer.shop') }}"
+                           class="btn {{ !request('category') || request('category') == 'all' ? 'btn-primary' : 'btn-white border' }} rounded-pill px-4 small fw-bold text-decoration-none category-chip flex-shrink-0 text-nowrap">
                             All Items
                         </a>
                         @foreach($categories as $category)
-                            <a href="{{ route('customer.shop', ['category' => $category->name, 'search' => request('search')]) }}" 
-                               class="btn {{ request('category') == $category->name ? 'btn-primary' : 'btn-white border' }} rounded-pill px-4 small fw-bold text-decoration-none">
+                            <a href="{{ route('customer.shop', ['category' => $category->name, 'search' => request('search')]) }}"
+                               class="btn {{ request('category') == $category->name ? 'btn-primary' : 'btn-white border' }} rounded-pill px-4 small fw-bold text-decoration-none category-chip flex-shrink-0 text-nowrap">
                                 {{ $category->name }}
                             </a>
                         @endforeach
                     </div>
 
                     <!-- Products Grid (4 Columns) -->
-                    <div class="row g-4">
+                    <div class="row g-3 g-md-4">
                         @forelse($products as $product)
-                        <div class="col-sm-6 col-md-4 col-lg-3 col-xl-2dot4">
+                        <div class="col-6 col-md-4 col-lg-3 col-xl-2dot4">
                             <div class="card h-100 border-0 shadow-sm rounded-4 product-card overflow-hidden">
                                 <!-- Image Preview -->
                                 <div class="position-relative">
@@ -120,14 +120,16 @@
 
                                 <!-- Footer/Action Overlay on Hover -->
                                 <div class="product-overlay">
-                                    <div class="d-flex flex-column gap-2 p-3 w-100">
-                                        <button class="btn btn-primary fw-bold rounded-pill w-100 small shadow-sm py-2 btn-add-to-cart" 
+                                    <div class="d-flex flex-column gap-2 p-3 w-100 product-actions">
+                                        <button class="btn btn-primary fw-bold rounded-pill w-100 small shadow-sm py-2 btn-add-to-cart"
+                                                title="Add to Cart"
                                                 data-id="{{ $product->product_id }}"
                                                 data-name="{{ $product->name }}"
                                                 {{ $product->stock <= 0 ? 'disabled' : '' }}>
-                                            <i class="bi bi-cart-plus me-1"></i> Add to Cart
+                                            <i class="bi bi-cart-plus me-lg-1"></i> <span class="d-none d-lg-inline">Add to Cart</span>
                                         </button>
                                         <button class="btn btn-white text-dark fw-bold rounded-pill w-100 small shadow-sm py-2 btn-quick-view"
+                                                title="Quick View"
                                                 data-id="{{ $product->product_id }}"
                                                 data-name="{{ $product->name }}"
                                                 data-description="{{ $product->description }}"
@@ -138,11 +140,11 @@
                                                 data-unit="{{ $product->unit }}"
                                                 data-sku="{{ $product->sku }}"
                                                 data-brand="{{ $product->brand }}">
-                                            <i class="bi bi-eye me-1"></i> Quick View
+                                            <i class="bi bi-eye me-lg-1"></i> <span class="d-none d-lg-inline">Quick View</span>
                                         </button>
                                         @if($product->is_customizable)
-                                        <a href="{{ route('customer.customize.index', ['product_id' => $product->product_id]) }}" class="btn btn-accent text-primary fw-bold rounded-pill w-100 small shadow-sm py-2 text-decoration-none text-center">
-                                            <i class="bi bi-magic me-1"></i> Customize Now
+                                        <a href="{{ route('customer.customize.index', ['product_id' => $product->product_id]) }}" class="btn btn-accent text-primary fw-bold rounded-pill w-100 small shadow-sm py-2 text-decoration-none text-center" title="Customize Now">
+                                            <i class="bi bi-magic me-lg-1"></i> <span class="d-none d-lg-inline">Customize Now</span>
                                         </a>
                                         @endif
                                     </div>
@@ -252,6 +254,157 @@
             .col-xl-2dot4 {
                 flex: 0 0 auto;
                 width: 20%; /* 100% / 5 columns */
+            }
+        }
+
+        /* Desktop: search keeps its compact, right-aligned size. */
+        @media (min-width: 768px) {
+            .shop-search-wrap {
+                width: auto !important;
+            }
+            .shop-search-form {
+                max-width: 300px;
+            }
+        }
+
+        /* ============================================
+           Mobile responsiveness ( < lg / 992px )
+           See ResponsiveMobileNote.md (§5b grid page, §6 modal)
+           ============================================ */
+        @media (max-width: 991.98px) {
+            /* Search spans the full row instead of a cramped 300px box. */
+            .shop-search-wrap { width: 100%; }
+
+            /* The action buttons live in a hover-only overlay — touch
+               devices can never reveal them. On mobile drop the overlay
+               out of its absolute layer and render the buttons inline at
+               the bottom of the card so they're always tappable. */
+            .product-overlay {
+                position: static;
+                opacity: 1;
+                pointer-events: all;
+                height: auto;
+                background: transparent;
+                padding: 0;
+                border-radius: 0;
+            }
+            .product-overlay > div {
+                padding: 0 0.75rem 0.75rem !important;
+            }
+            /* Icon-only: lay the actions out as one compact row of
+               equal-width icon buttons instead of stacked text bars. */
+            .product-actions {
+                flex-direction: row !important;
+            }
+            .product-actions .btn {
+                width: auto !important;
+                flex: 1 1 0;
+                padding-left: 0;
+                padding-right: 0;
+            }
+            .product-actions .btn i {
+                margin: 0 !important;
+            }
+            /* No hover lift on touch (it sticks after a tap). */
+            .product-card:hover {
+                transform: none;
+            }
+
+            /* Category chips: compact pills that stay on ONE line and
+               scroll horizontally instead of wrapping/growing tall. */
+            .category-chip {
+                padding: 0.3rem 0.85rem !important;
+                font-size: 0.75rem !important;
+            }
+
+            /* Quick View modal: shrink type, spacing and the big image
+               preview so the dialog fits a phone screen. */
+            .modal-title { font-size: 1rem; }
+            .modal-body  { font-size: 0.85rem; }
+            #quickViewModal .modal-dialog { margin: 0.5rem; }
+            #quickViewModal .p-4,
+            #quickViewModal .p-lg-5 { padding: 1rem !important; }
+            #quickViewModal h3 { font-size: 1.15rem; }
+            #quickViewModal h2 { font-size: 1.4rem; }
+            #quickViewModal .btn,
+            #quickViewModal .small,
+            #quickViewModal small { font-size: 0.8rem; }
+            #quickViewModal .row.g-3 { --bs-gutter-y: 0.5rem; }
+            #qv-image {
+                max-height: 220px !important;
+            }
+
+            /* Shrink Bootstrap's pager so it fits a phone row. */
+            .pagination-container .pagination {
+                gap: 3px;
+            }
+            .pagination-container .page-link {
+                padding: 6px 10px;
+                font-size: 0.8rem;
+            }
+        }
+
+        /* ============================================
+           Phone tier ( < sm / 576px ) — cards are 2-up here,
+           so compact every part to fit a ~170px column.
+           ============================================ */
+        @media (max-width: 575.98px) {
+            .product-card .card-body {
+                padding: 0.6rem !important;
+            }
+            .product-card .card-body h6 {
+                font-size: 0.78rem;
+            }
+            .product-card .card-body h5 {
+                font-size: 0.95rem;
+            }
+            .product-card .card-body .small {
+                font-size: 0.68rem;
+            }
+            .product-card .card-body .mt-auto {
+                padding-top: 0.5rem !important;
+            }
+            /* Stack price & stock — they don't fit side by side. */
+            .product-card .card-body .mt-auto .d-flex {
+                flex-direction: column;
+                align-items: flex-start !important;
+                gap: 0.15rem;
+            }
+            /* Smaller corner badges. */
+            .product-card .badge {
+                font-size: 0.6rem;
+            }
+            .product-card .position-absolute.m-3 {
+                margin: 0.5rem !important;
+            }
+            /* Tighter action buttons. */
+            .product-overlay > div {
+                gap: 0.4rem !important;
+            }
+            .product-overlay .btn {
+                font-size: 0.72rem;
+                padding-top: 0.4rem;
+                padding-bottom: 0.4rem;
+            }
+
+            /* Quick View modal: nearly full-screen, single tight column. */
+            #quickViewModal .modal-dialog {
+                margin: 0.4rem;
+                max-width: none;
+            }
+            #qv-image {
+                max-height: 160px !important;
+            }
+            #quickViewModal .p-4,
+            #quickViewModal .p-lg-5 {
+                padding: 0.85rem !important;
+            }
+            #quickViewModal h3 { font-size: 1.05rem; }
+            #quickViewModal h2 { font-size: 1.25rem; }
+            #quickViewModal .mb-4 { margin-bottom: 0.75rem !important; }
+            #quickViewModal .btn-lg {
+                padding: 0.6rem 1rem;
+                font-size: 0.85rem;
             }
         }
     </style>

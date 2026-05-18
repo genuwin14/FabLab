@@ -13,7 +13,7 @@
                 <!-- Three.js Container -->
                 <div id="preview-three-container" style="width: 100%; height: 100%;"></div>
             </div>
-            <div class="modal-footer border-0 p-4 pt-0">
+            <div class="modal-footer border-0 p-4 pt-0 preview-modal-footer">
                 <button type="button" class="btn btn-soft-secondary rounded-pill px-4 tiny fw-bold"
                     data-bs-dismiss="modal">Close</button>
                 <a href="#" id="preview-btn-edit" class="btn btn-soft-primary rounded-pill px-4 tiny fw-bold">

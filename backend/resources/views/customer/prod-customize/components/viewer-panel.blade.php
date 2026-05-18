@@ -1,7 +1,7 @@
 <!-- RIGHT PANEL: 3D Visualization -->
 <div class="flex-grow-1 position-relative bg-viewer overflow-hidden">
     <!-- Canvas Container -->
-    <div id="three-container" class="w-100 h-100 h-md-100" style="min-height: 400px;"></div>
+    <div id="three-container" class="w-100 h-100 h-md-100" style="min-height: 300px;"></div>
 
     <!-- Viewer Controls -->
     <div
@@ -19,7 +19,7 @@
     </div>
 
     <!-- Status Display -->
-    <div class="position-absolute top-0 end-0 m-4">
+    <div class="position-absolute top-0 end-0 m-4 d-none d-md-block">
         <div class="bg-dark-glass p-3 rounded-4 border border-white-10 backdrop-blur d-flex align-items-center gap-3">
             <div class="status-indicator online"></div>
             <div>
