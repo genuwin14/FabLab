@@ -8,17 +8,17 @@ Priorities: **P0** blocks release · **P1** correctness and data safety · **P2*
 
 ---
 
-## P0 — Access control
+## P0 — Access control ✅ Done
 
-The system currently has no authorization at all. Every route sits behind `auth:sanctum` only: no role middleware, no `Gate`, no `authorize()` calls. A signed-in customer can open every admin and staff page, approve their own order, disable an admin account, and delete catalog items.
+The system had no authorization at all: every route sat behind `auth:sanctum` alone, so a signed-in customer could open every admin and staff page, approve their own order, disable an admin account, and delete catalog items.
 
-- [ ] **Add a role middleware.** `app/Http/Middleware/EnsureUserHasRole.php`, registered as an alias in `bootstrap/app.php`.
-- [ ] **Group the routes by role.** Wrap the `/admin/*` routes in `role:admin`, the `/staff/*` routes in `role:staff,admin`, and the `/customer/*` routes in `role:customer` in `routes/web.php`.
-- [ ] **Decide the failure response.** 403 for a wrong-role request; consider redirecting a signed-in user to their own dashboard instead of a bare error page.
-- [ ] **Check the shared routes.** `/notifications/*` is used by all three roles and must stay open to all of them.
-- [ ] **Cover it with tests.** A customer hitting admin routes, a staff member hitting admin-only routes, and each role reaching its own pages.
+- [x] **Add a role middleware.** `app/Http/Middleware/EnsureUserHasRole.php`, aliased as `role` in `bootstrap/app.php`.
+- [x] **Group the routes by role.** `/admin/*` behind `role:admin`, `/staff/*` behind `role:staff,admin`, `/customer/*` behind `role:customer`.
+- [x] **Decide the failure response.** A wrong-role GET redirects to the user's own landing page with an error message; state-changing verbs and JSON requests get a 403.
+- [x] **Check the shared routes.** `/notifications/*` and `/verify-code` stay open to every signed-in user.
+- [x] **Cover it with tests.** `tests/Feature/RoleAccessTest.php` — 13 tests over guests, customers, staff, admins, and the shared routes.
 
-*Done when:* a customer session receives 403 on every `/admin` and `/staff` route, and the tests prove it.
+**Decision:** admins are allowed into the staff screens, because order fulfilment (`processing` → `ready_for_pickup` → `completed`) exists only under `/staff`; locking admins out would leave a shop with no staff account unable to finish an order. Staff remain locked out of everything under `/admin`.
 
 ---
 

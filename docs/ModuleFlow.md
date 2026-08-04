@@ -27,16 +27,28 @@ This document describes the end-to-end flow of every functional module in the In
 2. On success, Sanctum issues a stateful cookie session.
 3. Redirect determined by email domain (§1.3).
 
-**Google OAuth path**: `GET /login/google` → Socialite → callback (`/login/google/callback`). If user doesn't exist, account is auto-created with default role `customer`, email auto-verified, phone verification still required.
+**Google OAuth path**: `GET /login/google` → Socialite → callback (`/login/google/callback`). If the user doesn't exist, the account is auto-created with role `customer`, email verified, and `phone_verified = true` — there is no phone step, and `contact_number` is left empty.
 
 ### 1.3 Post-login Role Routing
-| Email domain | Redirect target |
-| :--- | :--- |
-| `*@admin.com` | `/admin/dashboard` |
-| `*@staff.com` | `/staff/dashboard` |
-| Anything else | `/customer/shop` |
 
-`CheckRole` middleware then enforces per-route role gating.
+Routing is driven by the `users.role` column, not by the email address. Registration always writes `role = customer`; staff and admin accounts are provisioned directly (see `UserSeeder`).
+
+| `users.role` | Redirect target |
+| :--- | :--- |
+| `admin` | `/admin/dashboard` |
+| `staff` | `/staff/dashboard` |
+| `customer` | `/customer/shop` |
+
+`EnsureUserHasRole` (aliased as `role` in `bootstrap/app.php`) then gates each route group:
+
+| Group | Middleware | Allowed |
+| :--- | :--- | :--- |
+| `/admin/*` | `role:admin` | Admins |
+| `/staff/*` | `role:staff,admin` | Staff and admins — order fulfilment lives only here |
+| `/customer/*` | `role:customer` | Customers |
+| `/notifications/*`, `/verify-code` | none beyond `auth:sanctum` | Every signed-in user |
+
+A wrong-role GET is redirected to the user's own landing page with an error message; anything else (state-changing verbs, JSON requests) gets a 403. Covered by `tests/Feature/RoleAccessTest.php`.
 
 ### 1.4 Password Reset
 **Entry**: `GET /forgot-password`
@@ -47,7 +59,7 @@ This document describes the end-to-end flow of every functional module in the In
 4. On success, user proceeds to `/reset-password` to set a new password.
 
 ### 1.5 Logout
-- `POST /logout` invalidates the session and applies `PreventBackHistory` so protected pages can't be back-buttoned.
+- `POST /logout` invalidates the session and regenerates the CSRF token, then redirects to `/login`. Protected pages are unreachable afterwards because `auth:sanctum` rejects the request; there is no cache-busting middleware, so a back-button press may still render a page from the browser's own cache.
 
 ---
 

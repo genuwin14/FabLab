@@ -197,6 +197,8 @@ The overdue check runs daily at 07:00 and flags POs still `sent` or `confirmed` 
 | User accounts | — | — | **Yes** |
 | Own profile and notification setting | Yes | Yes | Yes |
 
+Each role is confined to its own area: a customer who lands on an admin or staff page is sent back to the shop, and staff are turned away from everything under `/admin`. The one crossing is deliberate — **admins may also use the staff screens**, because order fulfilment lives only there, so a shop with no staff on duty can still finish an order.
+
 ---
 
 ## 11. Pricing rules
