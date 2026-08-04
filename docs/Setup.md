@@ -182,21 +182,28 @@ From `backend/`:
 ```bash
 composer dev
 ```
-This starts four processes concurrently (color-coded in your terminal):
+This starts five processes concurrently (color-coded in your terminal):
 - `php artisan serve` — web server on `http://localhost:8000`
 - `php artisan queue:listen` — background queue worker (notifications, etc.)
+- `php artisan schedule:work` — task scheduler (the daily overdue purchase-order check)
 - `php artisan pail` — live log tail
 - `npm run dev` — Vite hot-reload
 
-Hit `Ctrl+C` to stop all four at once.
+Hit `Ctrl+C` to stop all five at once.
 
 ### Manual mode — one process per terminal
 If `composer dev` isn't available or you prefer separate windows:
 ```bash
 php artisan serve              # Terminal 1
 php artisan queue:listen       # Terminal 2 (optional, for notifications)
-npm run dev                    # Terminal 3
+php artisan schedule:work      # Terminal 3 (optional, for scheduled checks)
+npm run dev                    # Terminal 4
 ```
+
+> Scheduled tasks are registered in `bootstrap/app.php` — currently the overdue
+> purchase-order check, which runs daily at 07:00. Without a scheduler process
+> (or the cron entry below in production) that check never runs, and overdue POs
+> raise no notification.
 
 ### Open in your browser
 Navigate to **[http://localhost:8000](http://localhost:8000)** and log in with one of the [seeded accounts](#default-seeded-accounts).
@@ -263,5 +270,10 @@ This guide targets **local development**. For a production deployment, additiona
 - Run `npm run build` (not `dev`) to compile minified assets.
 - Configure a real mail driver, real SMS gateway, real database credentials.
 - Set up a queue worker as a system service (systemd / supervisor) instead of `queue:listen`.
+- Add the scheduler to cron so scheduled checks actually fire (the overdue purchase-order alert depends on it):
+  ```
+  * * * * * cd /path/to/backend && php artisan schedule:run >> /dev/null 2>&1
+  ```
+  On Windows, register the same command as a Task Scheduler job running every minute.
 - Rotate the seeded admin/staff passwords — or remove the `UserSeeder` from `DatabaseSeeder` before deploying.
 - Set proper file permissions on `storage/` and `bootstrap/cache/` (writable by the web server user).
