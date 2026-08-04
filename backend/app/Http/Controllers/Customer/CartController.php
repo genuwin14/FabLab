@@ -4,9 +4,15 @@ namespace App\Http\Controllers\Customer;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use App\Models\CartItem;
 use App\Models\Product;
 use App\Models\CustomDesign;
 
+/**
+ * The cart is stored per user in `cart_items`, so it survives signing out,
+ * session expiry, and moving between devices. Lines are addressed by a key of
+ * product id, plus design id when the line carries a customization.
+ */
 class CartController extends Controller
 {
     /**
@@ -14,8 +20,9 @@ class CartController extends Controller
      */
     public function index()
     {
-        $cart = session()->get('cart', []);
-        return view('customer.cart.index', compact('cart'));
+        $this->absorbSessionCart();
+
+        return view('customer.cart.index', ['cart' => $this->cartForView()]);
     }
 
     /**
@@ -23,8 +30,10 @@ class CartController extends Controller
      */
     public function add(Request $request)
     {
+        $this->absorbSessionCart();
+
         $productId = $request->input('product_id');
-        $quantity = $request->input('quantity', 1);
+        $quantity = max(1, (int) $request->input('quantity', 1));
         $recipe = $request->input('custom_recipe');
         $snapshot = $request->input('custom_snapshot');
 
@@ -38,9 +47,9 @@ class CartController extends Controller
             ], 400);
         }
 
-        $cart = session()->get('cart', []);
         $price = $product->price;
         $designId = $request->input('custom_design_id');
+        $design = null;
 
         // Handle Customization
         if ($recipe) {
@@ -67,12 +76,13 @@ class CartController extends Controller
             $price = $design->calculated_price;
         }
 
-        // Generate unique key for cart (allows multiple different designs of same product)
-        $cartKey = $designId ? $productId . '_custom_' . $designId : $productId;
+        $line = CartItem::where('user_id', auth()->id())
+            ->where('product_id', $product->product_id)
+            ->where('custom_design_id', $designId)
+            ->first();
 
-        // Check if item already exists in cart, update quantity if so
-        if (isset($cart[$cartKey])) {
-            $newQuantity = $cart[$cartKey]['quantity'] + $quantity;
+        if ($line) {
+            $newQuantity = $line->quantity + $quantity;
 
             if ($product->stock < $newQuantity) {
                 return response()->json([
@@ -81,22 +91,16 @@ class CartController extends Controller
                 ], 400);
             }
 
-            $cart[$cartKey]['quantity'] = $newQuantity;
+            $line->update(['quantity' => $newQuantity, 'price' => $price]);
         } else {
-            // New item to cart
-            $cart[$cartKey] = [
-                "product_id" => $product->product_id,
-                "custom_design_id" => $designId,
-                "name" => $product->name . ($designId ? ' (Customized)' : ''),
-                "quantity" => (int) $quantity,
-                "price" => $price,
-                "image" => $snapshot ?: $product->image,
-                "unit" => $product->unit,
-                "sku" => $product->sku
-            ];
+            CartItem::create([
+                'user_id' => auth()->id(),
+                'product_id' => $product->product_id,
+                'custom_design_id' => $designId,
+                'quantity' => $quantity,
+                'price' => $price,
+            ]);
         }
-
-        session()->put('cart', $cart);
 
         $message = 'Product added to cart successfully!';
         if ($recipe) {
@@ -123,31 +127,28 @@ class CartController extends Controller
      */
     public function update(Request $request)
     {
-        $productId = $request->input('product_id');
-        $quantity = $request->input('quantity');
+        $key = (string) $request->input('product_id');
+        $quantity = (int) $request->input('quantity');
 
-        if ($productId && $quantity) {
-            $cart = session()->get('cart', []);
+        $line = $this->lineForKey($key);
 
-            if (isset($cart[$productId])) {
-                $product = Product::find($productId);
+        if ($line && $quantity > 0) {
+            $product = $line->product;
 
-                if (!$product || $product->stock < $quantity) {
-                    return response()->json([
-                        'success' => false,
-                        'message' => 'Insufficient stock!'
-                    ], 400);
-                }
-
-                $cart[$productId]["quantity"] = (int) $quantity;
-                session()->put('cart', $cart);
-
+            if (! $product || $product->stock < $quantity) {
                 return response()->json([
-                    'success' => true,
-                    'message' => 'Cart updated.',
-                    'cart_count' => $this->getCartCount()
-                ]);
+                    'success' => false,
+                    'message' => 'Insufficient stock!'
+                ], 400);
             }
+
+            $line->update(['quantity' => $quantity]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Cart updated.',
+                'cart_count' => $this->getCartCount()
+            ]);
         }
 
         return response()->json([
@@ -161,14 +162,11 @@ class CartController extends Controller
      */
     public function remove(Request $request)
     {
-        $productId = $request->input('product_id');
+        $line = $this->lineForKey((string) $request->input('product_id'));
 
-        if ($productId) {
-            $cart = session()->get('cart', []);
-            if (isset($cart[$productId])) {
-                unset($cart[$productId]);
-                session()->put('cart', $cart);
-            }
+        if ($line) {
+            $line->delete();
+
             return response()->json([
                 'success' => true,
                 'message' => 'Item removed from cart.',
@@ -188,21 +186,14 @@ class CartController extends Controller
     public function checkout(Request $request)
     {
         $selectedItems = $request->input('selected_items', []);
-        $cart = session()->get('cart', []);
 
         if (empty($selectedItems)) {
             return redirect()->back()->with('error', 'Please select at least one item to checkout.');
         }
 
-        // Filter cart to only selected items
-        $checkoutItems = [];
-        foreach ($selectedItems as $id) {
-            if (isset($cart[$id])) {
-                $checkoutItems[$id] = $cart[$id];
-            }
-        }
+        $checkoutLines = $this->linesForKeys($selectedItems);
 
-        if (empty($checkoutItems)) {
+        if ($checkoutLines->isEmpty()) {
             return redirect()->back()->with('error', 'Selected items are no longer available in cart.');
         }
 
@@ -210,13 +201,13 @@ class CartController extends Controller
             \Illuminate\Support\Facades\DB::beginTransaction();
 
             $total = 0;
-            foreach ($checkoutItems as $item) {
-                $total += $item['price'] * $item['quantity'];
+            foreach ($checkoutLines as $line) {
+                $total += $line->price * $line->quantity;
 
                 // Verify stock again just in case
-                $product = Product::find($item['product_id']);
-                if (!$product || $product->stock < $item['quantity']) {
-                    throw new \Exception("Insufficient stock for product: " . $item['name']);
+                $product = $line->product;
+                if (! $product || $product->stock < $line->quantity) {
+                    throw new \Exception("Insufficient stock for product: " . ($product->name ?? 'unknown'));
                 }
             }
 
@@ -229,33 +220,27 @@ class CartController extends Controller
             ]);
 
             // Create Order Items
-            foreach ($checkoutItems as $item) {
+            foreach ($checkoutLines as $line) {
                 \App\Models\OrderItem::create([
                     'order_id' => $order->order_id,
-                    'product_id' => $item['product_id'],
-                    'custom_design_id' => $item['custom_design_id'] ?? null,
-                    'quantity' => $item['quantity'],
-                    'price' => $item['price']
+                    'product_id' => $line->product_id,
+                    'custom_design_id' => $line->custom_design_id,
+                    'quantity' => $line->quantity,
+                    'price' => $line->price
                 ]);
 
                 // Decrease Stock
-                $product = Product::find($item['product_id']);
-                $product->decrement('stock', $item['quantity']);
+                $line->product->decrement('stock', $line->quantity);
             }
+
+            // Only the checked-out lines leave the cart; the rest stay put.
+            CartItem::whereIn('cart_item_id', $checkoutLines->pluck('cart_item_id'))->delete();
 
             \Illuminate\Support\Facades\DB::commit();
 
             // Notify staff & admins about the new order
             $order->loadMissing('user');
             \App\Support\Notifier::staffAndAdmins(new \App\Notifications\NewOrderPlaced($order));
-
-            // Remove only checked out items from cart
-            foreach ($selectedItems as $id) {
-                if (isset($cart[$id])) {
-                    unset($cart[$id]);
-                }
-            }
-            session()->put('cart', $cart);
 
             if ($request->ajax()) {
                 return response()->json([
@@ -285,9 +270,64 @@ class CartController extends Controller
      */
     public function count()
     {
+        $this->absorbSessionCart();
+
         return response()->json([
             'count' => $this->getCartCount()
         ]);
+    }
+
+    /**
+     * The shape the cart view renders: keyed by line key, with the product's
+     * current name, image and SKU resolved at read time.
+     *
+     * @return array<string, array<string, mixed>>
+     */
+    private function cartForView(): array
+    {
+        return CartItem::with(['product', 'customDesign'])
+            ->where('user_id', auth()->id())
+            ->get()
+            ->reject(fn (CartItem $line) => $line->product === null)
+            ->mapWithKeys(function (CartItem $line) {
+                $product = $line->product;
+                $snapshot = $line->customDesign?->snapshot;
+
+                return [$line->lineKey() => [
+                    'product_id' => $product->product_id,
+                    'custom_design_id' => $line->custom_design_id,
+                    'name' => $product->name . ($line->custom_design_id ? ' (Customized)' : ''),
+                    'quantity' => $line->quantity,
+                    'price' => $line->price,
+                    'image' => $snapshot ?: $product->image,
+                    'unit' => $product->unit,
+                    'sku' => $product->sku,
+                ]];
+            })
+            ->all();
+    }
+
+    private function lineForKey(string $key): ?CartItem
+    {
+        if ($key === '') {
+            return null;
+        }
+
+        [$productId, $designId] = CartItem::parseKey($key);
+
+        return CartItem::where('user_id', auth()->id())
+            ->where('product_id', $productId)
+            ->where('custom_design_id', $designId)
+            ->first();
+    }
+
+    /** @param array<int, string> $keys */
+    private function linesForKeys(array $keys): \Illuminate\Support\Collection
+    {
+        return collect($keys)
+            ->map(fn ($key) => $this->lineForKey((string) $key))
+            ->filter()
+            ->values();
     }
 
     /**
@@ -295,11 +335,48 @@ class CartController extends Controller
      */
     private function getCartCount()
     {
-        $cart = session()->get('cart', []);
-        $totalItems = 0;
-        foreach ($cart as $item) {
-            $totalItems += $item['quantity'];
+        return (int) CartItem::where('user_id', auth()->id())->sum('quantity');
+    }
+
+    /**
+     * Carts that were sitting in the session when this became a table are
+     * moved across on the customer's next visit rather than being dropped.
+     */
+    private function absorbSessionCart(): void
+    {
+        $sessionCart = session()->get('cart', []);
+
+        if (empty($sessionCart) || ! auth()->check()) {
+            return;
         }
-        return $totalItems;
+
+        foreach ($sessionCart as $item) {
+            $productId = $item['product_id'] ?? null;
+            if (! $productId || ! Product::find($productId)) {
+                continue;
+            }
+
+            $designId = $item['custom_design_id'] ?? null;
+
+            $line = CartItem::where('user_id', auth()->id())
+                ->where('product_id', $productId)
+                ->where('custom_design_id', $designId)
+                ->first();
+
+            if ($line) {
+                $line->increment('quantity', (int) ($item['quantity'] ?? 1));
+                continue;
+            }
+
+            CartItem::create([
+                'user_id' => auth()->id(),
+                'product_id' => $productId,
+                'custom_design_id' => $designId,
+                'quantity' => (int) ($item['quantity'] ?? 1),
+                'price' => (float) ($item['price'] ?? 0),
+            ]);
+        }
+
+        session()->forget('cart');
     }
 }

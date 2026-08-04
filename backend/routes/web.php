@@ -41,6 +41,10 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::post('/verify-code', [\App\Http\Controllers\Auth\OtpController::class, 'verify'])->name('verify.code.submit');
     Route::post('/verify-code/resend', [\App\Http\Controllers\Auth\OtpController::class, 'resend'])->name('verify.code.resend');
 
+    // Contact number prompt for Google sign-ups (skippable)
+    Route::get('/complete-profile', [AuthController::class, 'showCompleteProfile'])->name('profile.complete');
+    Route::post('/complete-profile', [AuthController::class, 'storeCompleteProfile'])->name('profile.complete.store');
+
     // Notifications (shared across roles)
     Route::get('/notifications', [\App\Http\Controllers\NotificationController::class, 'index'])->name('notifications.index');
     Route::get('/notifications/poll', [\App\Http\Controllers\NotificationController::class, 'poll'])->name('notifications.poll');
@@ -122,6 +126,9 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::post('/admin/orders/{id}/cancel', [\App\Http\Controllers\Admin\OrderController::class, 'cancel'])->name('admin.orders.cancel');
     // Admin Routes/Sales
     Route::get('/admin/sales', [\App\Http\Controllers\Admin\SalesController::class, 'index'])->name('admin.sales.index');
+    Route::get('/admin/sales/preview', [\App\Http\Controllers\Admin\SalesController::class, 'preview'])->name('admin.sales.preview');
+    Route::get('/admin/sales/pdf', [\App\Http\Controllers\Admin\SalesController::class, 'exportPdf'])->name('admin.sales.pdf');
+    Route::get('/admin/sales/docx', [\App\Http\Controllers\Admin\SalesController::class, 'exportDocx'])->name('admin.sales.docx');
     // Admin Routes/Profile
     Route::put('/admin/profile', [\App\Http\Controllers\Admin\ProfileController::class, 'update'])->name('admin.profile.update');
     // Admin Routes/Users

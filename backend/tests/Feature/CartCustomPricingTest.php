@@ -64,10 +64,10 @@ class CartCustomPricingTest extends TestCase
 
     private function cartLinePrice(): float
     {
-        $cart = session('cart', []);
-        $this->assertCount(1, $cart, 'Expected exactly one cart line.');
+        $lines = \App\Models\CartItem::all();
+        $this->assertCount(1, $lines, 'Expected exactly one cart line.');
 
-        return (float) reset($cart)['price'];
+        return (float) $lines->first()->price;
     }
 
     public function test_texture_price_modifier_is_charged_to_the_cart(): void

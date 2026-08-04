@@ -45,7 +45,12 @@
             <a href="{{ route('customer.cart.index') }}" class="navbar-action-btn position-relative"
                 data-bs-toggle="tooltip" data-bs-placement="bottom" title="Shopping Cart">
                 <i class="bi bi-cart3"></i>
-                @php $cartCount = collect(session('cart', []))->sum('quantity'); @endphp
+                @php
+                    // The cart lives in cart_items now, not the session.
+                    $cartCount = auth()->check()
+                        ? (int) \App\Models\CartItem::where('user_id', auth()->id())->sum('quantity')
+                        : 0;
+                @endphp
                 <span class="action-badge cart-badge bg-accent text-primary" style="{{ $cartCount > 0 ? '' : 'display: none;' }}">{{ $cartCount }}</span>
             </a>
 
