@@ -45,7 +45,6 @@ class CartController extends Controller
         // Handle Customization
         if ($recipe) {
             $recipeData = json_decode($recipe, true);
-            $price = $this->calculateCustomPrice($product->price, $recipeData);
 
             // Save/Update Design (Normalized)
             $design = CustomDesign::updateOrCreate(
@@ -60,6 +59,12 @@ class CartController extends Controller
                 ]
             );
             $designId = $design->custom_design_id;
+
+            // Price the saved design through the model so the cart, My Designs
+            // and the studio's live quote all agree — element fees plus the
+            // selected texture's price modifier.
+            $design->setRelation('product', $product);
+            $price = $design->calculated_price;
         }
 
         // Generate unique key for cart (allows multiple different designs of same product)
@@ -296,24 +301,5 @@ class CartController extends Controller
             $totalItems += $item['quantity'];
         }
         return $totalItems;
-    }
-
-    /**
-     * Helper to calculate customization price server-side
-     */
-    private function calculateCustomPrice($basePrice, $recipe)
-    {
-        $extra = 0;
-        $elements = $recipe['elements'] ?? [];
-
-        $extra += count($elements['text'] ?? []) * 50;
-        $extra += count($elements['shapes'] ?? []) * 30;
-        $extra += count($elements['logos'] ?? []) * 150;
-
-        if (isset($recipe['features']['led_lighting']) && $recipe['features']['led_lighting']) {
-            $extra += 500;
-        }
-
-        return $basePrice + $extra;
     }
 }
