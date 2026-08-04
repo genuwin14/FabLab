@@ -160,6 +160,38 @@ class PersistentCartTest extends TestCase
         $this->assertEquals(8, $this->product->refresh()->stock); // 10 - 2
     }
 
+    public function test_checkout_tells_staff_and_admins(): void
+    {
+        $staff = User::create([
+            'fullname' => 'Staff', 'email' => 's@example.test', 'password' => 'password',
+            'role' => 'staff', 'contact_number' => '09222222222', 'phone_verified' => true,
+        ]);
+        $admin = User::create([
+            'fullname' => 'Admin', 'email' => 'a@example.test', 'password' => 'password',
+            'role' => 'admin', 'contact_number' => '09333333333', 'phone_verified' => true,
+        ]);
+
+        Sanctum::actingAs($this->customer);
+        $this->addToCart(1);
+
+        \Illuminate\Support\Facades\Notification::fake();
+
+        $this->post(route('customer.cart.checkout'), [
+            'selected_items' => [(string) $this->product->product_id],
+        ])->assertRedirect(route('customer.orders.index'));
+
+        \Illuminate\Support\Facades\Notification::assertSentTo(
+            [$staff, $admin],
+            \App\Notifications\NewOrderPlaced::class
+        );
+
+        // The customer who placed it isn't told about their own order.
+        \Illuminate\Support\Facades\Notification::assertNotSentTo(
+            [$this->customer],
+            \App\Notifications\NewOrderPlaced::class
+        );
+    }
+
     /** Carts left in a session when this shipped are carried over, not lost. */
     public function test_a_legacy_session_cart_is_absorbed(): void
     {
