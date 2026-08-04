@@ -270,6 +270,7 @@ This guide targets **local development**. For a production deployment, additiona
 - Run `npm run build` (not `dev`) to compile minified assets.
 - Configure a real mail driver, real SMS gateway, real database credentials.
 - Set up a queue worker as a system service (systemd / supervisor) instead of `queue:listen`.
+- Run `php artisan images:offload` once, after `storage:link`, to move any images still held in the database as base64 onto the public disk. `--dry-run` lists what would move. Rows it hasn't converted keep rendering either way.
 - Add the scheduler to cron so scheduled checks actually fire (the overdue purchase-order alert depends on it):
   ```
   * * * * * cd /path/to/backend && php artisan schedule:run >> /dev/null 2>&1

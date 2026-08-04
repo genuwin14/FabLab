@@ -52,12 +52,18 @@ Sales figures moved into `app/Services/SalesReport.php`, shared by the admin pag
 
 ---
 
-## P3 — Tech debt
+## P3 — Tech debt ✅ Done
 
-- [ ] **Move images out of the database.** Product, texture, and raw-material images are stored as base64 data URIs in their tables, so every list query drags the image bytes along and every page inlines them. User photos already use file storage — move the rest to `Storage` and migrate the existing rows.
-- [ ] **Queue the notification fan-out.** Notifications are plain (non-queued) database notifications, and `Notifier::staffAndAdmins` loops over every staff and admin inline — so checkout waits on that write. The queue connection is already `database`; making the notifications `ShouldQueue` puts them on the worker.
-- [ ] **Test the core flows.** Only the cart pricing tests exist. Worth covering: checkout deducts stock, approval deducts materials and emails the slip, PO delivery increments stock, cancellation returns stock.
-- [ ] **Clean up `AuthController`.** It still carries exploratory comments from development ("... existing methods ...", commented-out reasoning in `authenticated()` and `verifyResetCode`).
+- [x] **Move images out of the database.** Product, texture, and raw-material images are files on the public disk now, with the row keeping the path. A `HasStoredImage` trait gives the three models an `image_url` accessor (appended to their JSON, so the order modals' JS gets a usable URL), and `App\Support\ImageUrl` serves the raw query rows the sales page uses. Rows still holding a base64 data URI render exactly as before — `php artisan images:offload` converts them once a writable disk and `storage:link` are in place, and `--dry-run` shows what it would do first.
+- [x] **Test the core flows.** Purchase orders end to end (draft numbering, delivery restocking every line type, reversing a delivery, status fan-out), checkout notifying staff and admins, and the whole password-reset journey including expiry.
+- [x] **Clean up `AuthController`.** The exploratory comments are gone, the login redirect uses `User::homeRoute()` — as `OtpController` now does too — and the reset-code step says what it does instead of narrating alternatives.
+
+**Not doing: queue the notification fan-out.** All eight notifications are `database`-only, so a fan-out is a handful of single-row inserts — a millisecond or two inside the request. Queuing them would trade that for a hard dependency on a running worker, and if one isn't running, notifications stop appearing at all rather than arriving late. Worth revisiting only if a notification gains a mail or SMS channel, or the staff and admin list grows large enough for the inserts to matter.
+
+Two things surfaced while doing this work:
+
+- `public/storage` was a symlink to the repository's old path and had been dead since the move, so any stored file would have 404'd. Re-linked.
+- The dashboards already rendered `asset('storage/' . $product->image)`, which produced a broken URL for the base64 values actually in the column. Both now use the accessor.
 
 ---
 
