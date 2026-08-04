@@ -129,6 +129,33 @@ class AuthController extends Controller
         return redirect('/login');
     }
 
+    /**
+     * Ask a Google-created customer for the one detail Google doesn't provide.
+     * Skippable, so it never blocks anyone from the shop.
+     */
+    public function showCompleteProfile()
+    {
+        if (filled(auth()->user()->contact_number)) {
+            return redirect()->route(auth()->user()->homeRoute());
+        }
+
+        return view('auth.complete-profile');
+    }
+
+    public function storeCompleteProfile(Request $request)
+    {
+        $validated = $request->validate([
+            'contact_number' => ['required', 'string', 'max:20'],
+        ]);
+
+        $user = $request->user();
+        $user->contact_number = $validated['contact_number'];
+        $user->save();
+
+        return redirect()->route($user->homeRoute())
+            ->with('success', 'Thanks — we can reach you about your orders now.');
+    }
+
     protected function authenticated(Request $request, $user)
     {
         // Check if user is verified
@@ -191,6 +218,11 @@ class AuthController extends Controller
                 $existingUser->save();
             }
 
+            // Still no way to reach them about an order — ask again (skippable).
+            if ($existingUser->role === 'customer' && blank($existingUser->contact_number)) {
+                return redirect()->route('profile.complete');
+            }
+
             return $this->authenticated(request(), $existingUser);
         } else {
             // Create new user
@@ -208,7 +240,9 @@ class AuthController extends Controller
             \App\Support\Notifier::staffAndAdmins(new \App\Notifications\NewCustomerRegistered($user));
 
             Auth::login($user);
-            return $this->authenticated(request(), $user);
+
+            // Google gives us a verified email but never a phone number.
+            return redirect()->route('profile.complete');
         }
     }
 
