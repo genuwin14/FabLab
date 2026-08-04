@@ -48,6 +48,13 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::post('/notifications/{id}/read', [\App\Http\Controllers\NotificationController::class, 'markRead'])->name('notifications.read');
     Route::delete('/notifications/{id}', [\App\Http\Controllers\NotificationController::class, 'destroy'])->name('notifications.destroy');
 
+    /*
+    |--------------------------------------------------------------------------
+    | Admin only
+    |--------------------------------------------------------------------------
+    */
+    Route::middleware('role:admin')->group(function () {
+
     // Admin Routes/Dashboard
     Route::get('/admin/dashboard', [\App\Http\Controllers\Admin\DashboardController::class, 'index'])->name('admin.dashboard');
     // Admin Routes/Products
@@ -123,6 +130,18 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/admin/settings', [\App\Http\Controllers\Admin\SettingsController::class, 'index'])->name('admin.settings.index');
     Route::put('/admin/settings', [\App\Http\Controllers\Admin\SettingsController::class, 'update'])->name('admin.settings.update');
 
+    });
+
+    /*
+    |--------------------------------------------------------------------------
+    | Staff area — admins allowed too
+    |
+    | Order fulfilment (processing → ready → completed) exists only under
+    | /staff, so locking admins out would leave a shop with no staff account
+    | unable to finish an order.
+    |--------------------------------------------------------------------------
+    */
+    Route::middleware('role:staff,admin')->group(function () {
 
     // Staff Routes/Dashboard
     Route::get('/staff/dashboard', [\App\Http\Controllers\Staff\DashboardController::class, 'index'])->name('staff.dashboard');
@@ -154,6 +173,14 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/staff/settings', [\App\Http\Controllers\Staff\SettingsController::class, 'index'])->name('staff.settings.index');
     Route::put('/staff/settings', [\App\Http\Controllers\Staff\SettingsController::class, 'update'])->name('staff.settings.update');
 
+    });
+
+    /*
+    |--------------------------------------------------------------------------
+    | Customer only
+    |--------------------------------------------------------------------------
+    */
+    Route::middleware('role:customer')->group(function () {
 
     // Customer Routes/Shop
     Route::get('/customer/shop', [\App\Http\Controllers\Customer\ShopController::class, 'index'])->name('customer.shop');
@@ -182,5 +209,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     // Customer Routes/Settings
     Route::get('/customer/settings', [\App\Http\Controllers\Customer\SettingsController::class, 'index'])->name('customer.settings.index');
     Route::put('/customer/settings', [\App\Http\Controllers\Customer\SettingsController::class, 'update'])->name('customer.settings.update');
+
+    });
 
 });

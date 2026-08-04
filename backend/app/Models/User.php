@@ -60,6 +60,19 @@ class User extends Authenticatable
     }
 
     /**
+     * The named route this user lands on after signing in, and the one they're
+     * sent back to if they wander into an area their role can't reach.
+     */
+    public function homeRoute(): string
+    {
+        return match ($this->role) {
+            'admin' => 'admin.dashboard',
+            'staff' => 'staff.dashboard',
+            default => 'customer.shop',
+        };
+    }
+
+    /**
      * Get the orders for the user.
      */
     public function orders()
