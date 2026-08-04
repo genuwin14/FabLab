@@ -345,6 +345,127 @@
             border-radius: 0.375rem;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
         }
+
+        /* ==================================================================
+           Global Modal Scrolling (admin / customer / staff)
+
+           A tall modal used to grow past the viewport, which handed the
+           scrolling to the .modal overlay — so the bar appeared outside the
+           card, hard against the page edge, and the header scrolled away.
+           Cap the card at the viewport and let .modal-body do the scrolling
+           instead, so the bar sits inside the modal with the same thin
+           styling the sidebars use.
+
+           Loaded after the page-level <style> blocks, so these win ties.
+           ================================================================== */
+        .modal .modal-content {
+            max-height: calc(100vh - 3.5rem);
+            /* dvh keeps mobile browser chrome from eating the footer */
+            max-height: calc(100dvh - 3.5rem);
+        }
+
+        @media (max-width: 575.98px) {
+
+            /* Bootstrap drops --bs-modal-margin to 0.5rem below sm, and the
+               page styles that override it use the same 0.5rem. */
+            .modal .modal-content {
+                max-height: calc(100vh - 1rem);
+                max-height: calc(100dvh - 1rem);
+            }
+        }
+
+        /* Headers and footers hold their size; only the body gives up space.
+           These modals use themed *-modal-header / *-modal-footer divs rather
+           than Bootstrap's own classes, so match on the suffix. */
+        .modal .modal-content > [class*="modal-header"],
+        .modal .modal-content > [class*="modal-footer"],
+        .modal .modal-content > form > [class*="modal-footer"] {
+            flex-shrink: 0;
+        }
+
+        /* Modals that wrap body + footer in a <form> have to pass the height
+           cap through the form, or the body never learns it has to scroll. */
+        .modal .modal-content > form {
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+            overflow: hidden;
+        }
+
+        /* ...but a <form> carrying only the footer must never be squeezed. */
+        .modal .modal-content > form:not(:has(.modal-body)) {
+            flex-shrink: 0;
+            overflow: visible;
+        }
+
+        /* The scroll area. .modal-body-fill opts out: those bodies size their
+           own content (report iframe, 3D canvas). .modal-scroll-area opts in
+           for the one modal that has no .modal-body. */
+        .modal .modal-body:not(.modal-body-fill),
+        .modal .modal-scroll-area {
+            overflow-y: auto;
+            min-height: 0;
+        }
+
+        /* Several modals keep the action bar inside .modal-body (inside the
+           <form>, so the submit button stays wired up). Pin it to the bottom
+           instead of letting it scroll away with the fields. */
+        .modal .modal-body [class*="modal-footer"] {
+            position: sticky;
+            bottom: 0;
+            z-index: 3;
+        }
+
+        /* Thin in-modal scrollbar — same shape as the sidebar bars.
+           Chrome/Edge/Safari take the ::-webkit- rules below; they ignore them
+           the moment scrollbar-width/-color are set, so those go to browsers
+           without ::-webkit-scrollbar support (Firefox) only. */
+        @supports not selector(::-webkit-scrollbar) {
+
+            .modal .modal-body,
+            .modal .modal-scroll-area {
+                scrollbar-width: thin;
+                scrollbar-color: rgba(14, 46, 69, 0.22) transparent;
+            }
+
+            .modal .modal-content.bg-dark .modal-body,
+            .modal .modal-content.modal-content-dark .modal-body {
+                scrollbar-color: rgba(255, 255, 255, 0.22) transparent;
+            }
+        }
+
+        .modal .modal-body::-webkit-scrollbar,
+        .modal .modal-scroll-area::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        .modal .modal-body::-webkit-scrollbar-track,
+        .modal .modal-scroll-area::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .modal .modal-body::-webkit-scrollbar-thumb,
+        .modal .modal-scroll-area::-webkit-scrollbar-thumb {
+            background: rgba(14, 46, 69, 0.22);
+            border-radius: 999px;
+        }
+
+        .modal .modal-body::-webkit-scrollbar-thumb:hover,
+        .modal .modal-scroll-area::-webkit-scrollbar-thumb:hover {
+            background: rgba(14, 46, 69, 0.38);
+        }
+
+        /* Dark-surfaced modals need the light thumb instead. */
+        .modal .modal-content.bg-dark .modal-body::-webkit-scrollbar-thumb,
+        .modal .modal-content.modal-content-dark .modal-body::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.22);
+        }
+
+        .modal .modal-content.bg-dark .modal-body::-webkit-scrollbar-thumb:hover,
+        .modal .modal-content.modal-content-dark .modal-body::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.38);
+        }
     </style>
 </body>
 

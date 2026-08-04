@@ -3,8 +3,10 @@
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 bg-transparent shadow-none">
 
-            <!-- Receipt Container -->
-            <div class="receipt-container mx-auto position-relative bg-white pt-4 px-4 pb-5 shadow-lg"
+            <!-- Receipt Container. modal-scroll-area: this modal has no
+                 .modal-body, so the receipt itself is the scroll area — a long
+                 order list scrolls on the receipt, not on the page. -->
+            <div class="receipt-container modal-scroll-area mx-auto position-relative bg-white pt-4 px-4 pb-5 shadow-lg"
                 style="width: 100%; max-width: 380px; clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%); border-radius: 5px;">
 
                 <!-- Receipt Header -->

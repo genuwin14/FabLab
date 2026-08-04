@@ -21,7 +21,9 @@
             </div>
 
             <!-- Preview Body -->
-            <div class="modal-body p-0 report-preview-modal-body">
+            <!-- modal-body-fill: the iframe fills this body, so it manages its
+                 own height instead of joining the global modal scroll. -->
+            <div class="modal-body p-0 report-preview-modal-body modal-body-fill">
                 <div class="report-preview-loading" id="exportPreviewLoading">
                     <div class="spinner-border text-primary" role="status">
                         <span class="visually-hidden">Loading…</span>

@@ -68,7 +68,7 @@
     <div class="modal fade" id="methodSelectionModal" tabindex="-1" aria-labelledby="methodSelectionModalLabel"
         aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
         <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content"
+            <div class="modal-content modal-content-dark"
                 style="background-color: #0d2235; color: white; border: 1px solid rgba(255,255,255,0.1);">
                 <div class="modal-header border-bottom border-white border-opacity-10">
                     <h5 class="modal-title fw-bold" id="methodSelectionModalLabel">Select Recovery Method</h5>

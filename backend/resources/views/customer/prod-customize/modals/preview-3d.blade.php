@@ -9,7 +9,11 @@
                     <i class="bi bi-x-lg"></i>
                 </button>
             </div>
-            <div class="modal-body p-0" style="height: 600px; position: relative;">
+            <!-- modal-body-fill: the Three.js canvas sizes itself off this box,
+                 so it stays a fixed frame rather than a scroll area. The cap
+                 keeps 600px from pushing the modal past a short viewport. -->
+            <div class="modal-body p-0 modal-body-fill"
+                style="height: min(600px, calc(100dvh - 11rem)); position: relative;">
                 <!-- Three.js Container -->
                 <div id="preview-three-container" style="width: 100%; height: 100%;"></div>
             </div>
