@@ -24,6 +24,9 @@ class User extends Authenticatable
         'role',
         'address',
         'contact_number',
+        // Google sign-up mass-assigns this; without it here the value was
+        // silently dropped and those accounts never read as email-verified.
+        'email_verified_at',
         'phone_verified',
         'phone_verification_code',
         'degree',

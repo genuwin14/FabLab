@@ -24,9 +24,12 @@ class OtpController extends Controller
         if ($user->phone_verification_code === $request->otp) {
             $user->phone_verification_code = null;
 
+            // Verify the channel the code actually went to, and only that one.
+            // Access is granted on either (see AuthController::authenticated),
+            // so an email-verified account still gets in — but its phone number
+            // is not passed off as confirmed.
             if ($request->input('verification_mode') === 'email') {
                 $user->email_verified_at = now();
-                $user->phone_verified = true; // Allow access but ideally this should be separate
             } else {
                 $user->phone_verified = true;
             }
