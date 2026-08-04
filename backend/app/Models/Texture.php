@@ -8,7 +8,12 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class Texture extends Model
 {
     use SoftDeletes;
+    use Concerns\TracksStockLevel;
+
     protected $primaryKey = 'texture_id';
+
+    protected string $stockColumn = 'stock_quantity';
+    protected string $stockItemType = 'Texture';
 
     protected $fillable = [
         'name',

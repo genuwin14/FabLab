@@ -2,13 +2,14 @@
 
 namespace App\Notifications;
 
-use App\Models\Product;
 use App\Support\Notifier;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Notification;
 
 class LowStockAlert extends Notification
 {
-    public function __construct(public Product $product) {}
+    /** @param Model $item a product, raw material or texture */
+    public function __construct(public Model $item) {}
 
     public function via(object $notifiable): array
     {
@@ -17,13 +18,18 @@ class LowStockAlert extends Notification
 
     public function toArray(object $notifiable): array
     {
+        $stock = rtrim(rtrim(number_format($this->item->currentStock(), 2, '.', ''), '0'), '.');
+        $threshold = (float) $this->item->stockThreshold();
+        $threshold = rtrim(rtrim(number_format($threshold, 2, '.', ''), '0'), '.');
+
         return [
             'category' => 'stock',
             'icon' => 'bi-exclamation-triangle',
-            'title' => "Low stock: {$this->product->name}",
-            'body' => "Only {$this->product->stock} {$this->product->unit} left (threshold {$this->product->low_stock_threshold}).",
+            'title' => "Low stock: {$this->item->name}",
+            'body' => "Only {$stock} {$this->item->stockUnit()} left (threshold {$threshold}).",
             'url' => Notifier::routeFor($notifiable, 'inventory.index'),
-            'product_id' => $this->product->product_id,
+            'item_type' => $this->item->stockItemType(),
+            'item_id' => $this->item->getKey(),
         ];
     }
 }

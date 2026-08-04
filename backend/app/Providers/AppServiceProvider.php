@@ -21,7 +21,10 @@ class AppServiceProvider extends ServiceProvider
     {
         \Illuminate\Pagination\Paginator::useBootstrapFive();
 
-        \App\Models\Product::observe(\App\Observers\ProductObserver::class);
+        // Stock alerts cover everything the shop counts, not just products.
+        \App\Models\Product::observe(\App\Observers\StockLevelObserver::class);
+        \App\Models\RawMaterial::observe(\App\Observers\StockLevelObserver::class);
+        \App\Models\Texture::observe(\App\Observers\StockLevelObserver::class);
 
         \Illuminate\Support\Facades\View::composer('customer.partials.sidebar', function ($view) {
             $count = 0;

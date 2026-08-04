@@ -9,7 +9,12 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class RawMaterial extends Model
 {
     use SoftDeletes;
+    use Concerns\TracksStockLevel;
+
     protected $primaryKey = 'raw_material_id';
+
+    protected string $stockColumn = 'stock_quantity';
+    protected string $stockItemType = 'Raw Material';
 
     protected $fillable = [
         'name',

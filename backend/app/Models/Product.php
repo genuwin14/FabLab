@@ -8,7 +8,12 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class Product extends Model
 {
     use SoftDeletes;
+    use Concerns\TracksStockLevel;
+
     protected $primaryKey = 'product_id';
+
+    protected string $stockColumn = 'stock';
+    protected string $stockItemType = 'Product';
 
     protected $fillable = [
         'sku',
