@@ -80,7 +80,9 @@ Each row offers exactly one forward step, so the pipeline can't be skipped:
 
 Each change notifies the customer automatically, provided they haven't switched notifications off.
 
-> Cancelling isn't part of the staff screens. An order can only be stopped while it is still `pending` — the customer cancels it themselves, or an admin rejects it at review and the stock goes back. After approval, nothing in the system cancels an order.
+The pipeline is enforced, not just suggested: an order can only take its next step, so nothing skips a stage or moves backwards.
+
+> Cancelling isn't part of the staff screens. If an order has to be stopped, ask an admin — they can reject it at review, or cancel it any time before hand-over, and the stock and materials come back automatically ([Admin Guide §4](AdminUserGuide.md#4-reviewing-orders)).
 
 **Hand-off:** the customer sees each of these statuses on their orders page and is told when to collect — [Customer Guide §9](CustomerUserGuide.md#9-tracking-your-orders).
 

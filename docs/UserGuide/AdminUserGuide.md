@@ -67,15 +67,27 @@ Open **Review**, check the lines and any customization, then **Approve**. In one
 
 Product stock was already deducted at checkout, so approval does not touch it again.
 
+Review runs once. An order that has already been reviewed can't be reviewed again — otherwise a second approval would deduct its materials twice.
+
 ### Rejecting
 
-Choose **Reject** and write a **reason** — it's required, and the customer reads it on their order. The order becomes `cancelled` and product stock is returned. (Materials and textures come back too if the order had somehow already been approved.)
+Choose **Reject** and write a **reason** — it's required, and the customer reads it on their order. The order becomes `cancelled` and product stock is returned. Materials were never consumed at this point, so there's nothing else to give back.
+
+### If materials are short
+
+Approval is **refused** when the order would take any material or texture below zero. The message names what's short and by how much, for example *"Fabric (needs 6 m, 5 in stock)"*. Restock it — usually via a [purchase order](#12-purchase-orders) — and approve again.
 
 ### What to check before approving
 
 - The quantities look sane for the customer and the product.
 - Any customization is something the shop can actually produce.
-- The raw materials and textures it will consume are actually in stock — approval will happily drive stock negative.
+- The finished-goods stock covers it; the materials check is automatic.
+
+### Cancelling after approval
+
+Orders that are `approved`, `processing`, or `ready_for_pickup` carry a **Cancel** button in the orders list. It asks for a reason, then returns everything the order took — product stock, raw materials, and textures — and notifies the customer.
+
+A `completed` order can't be cancelled: it's already in the customer's hands.
 
 **Hand-off:** approving hands the order to staff, who take it through `processing` → `ready_for_pickup` → `completed` ([Staff Guide §4](StaffUserGuide.md#4-processing-orders)). The customer watches the same statuses ([Customer Guide §9](CustomerUserGuide.md#9-tracking-your-orders)).
 
@@ -85,7 +97,7 @@ Choose **Reject** and write a **reason** — it's required, and the customer rea
 
 `/admin/categories` — create, edit, and delete the categories products are filed under. A category has a name and an optional description.
 
-> **Deleting a category deletes every product in it**, and deleting a product this way also removes the order lines that referenced it. This is a database-level cascade, so the usual soft-delete safety net does not apply. Move products to another category before deleting one.
+> **A category with products in it can't be deleted.** The database cascade would take those products *and* the order lines referencing them, so the delete is refused while any product — including soft-deleted ones — is still filed under it. Move them to another category first.
 
 ---
 
@@ -95,7 +107,9 @@ Choose **Reject** and write a **reason** — it's required, and the customer rea
 
 Suppliers are what tie procurement together: products link to them with an agreed cost, raw materials and textures each name one, and every purchase order belongs to one.
 
-> **Deleting a supplier also deletes their purchase-order history and every raw material assigned to them.** Textures survive with their supplier field cleared. Reassign first, delete second.
+> **A supplier still carrying purchase orders or raw materials can't be deleted** — the cascade would take that history with it. The refusal message says what's blocking. Reassign those first, delete second. (Textures are safe either way: they survive with their supplier field cleared.)
+
+The same protection covers raw materials and textures: neither can be deleted while it appears on a purchase order line, since that would rewrite the purchase history.
 
 ---
 

@@ -109,12 +109,13 @@ If an item has no default supplier, it can't be pre-filled into a PO. Admins can
 | `processing` | Staff | Being made; a payment reference is recorded | None |
 | `ready_for_pickup` | Staff | Waiting for the customer to collect | None |
 | `completed` | Staff | Handed over; counts as a sale | None |
-| `cancelled` | Customer (while `pending`) or Admin (rejecting at review) | Order is dead | Product stock returned; materials and textures too if it had been approved |
+| `cancelled` | Customer (while `pending`), or Admin (rejecting at review, or cancelling any time before hand-over) | Order is dead | Everything it took is returned: product stock, and materials and textures if it had been approved |
 
-Two limits worth knowing:
+Three limits worth knowing:
 
 - Staff cannot set `approved` — that transition exists only in the admin review screen.
-- **Cancelling is only possible while an order is `pending`**: the customer's own cancel button, or an admin rejecting it at review. Once approved, no screen in the system cancels it — treat approval as the point of no return.
+- **Staff advance one step at a time.** `approved` → `processing` → `ready_for_pickup` → `completed`, no skipping and no going back.
+- **A completed order cannot be cancelled.** Up to hand-over an admin can cancel and the stock comes back; once it's `completed`, it's closed.
 
 ---
 
@@ -148,8 +149,9 @@ Every automatic movement in the system:
 | :--- | :--- |
 | Customer checks out | Product stock **down** |
 | Customer cancels a pending order | Product stock **up** |
-| Admin approves an order | Raw materials **down** (by the product's bill of materials × quantity) and the design's texture **down** |
-| Admin rejects or cancels an order | Product stock **up**; if it had been approved, materials and textures **up** too |
+| Admin approves an order | Raw materials **down** (by the product's bill of materials × quantity) and the design's texture **down**. Approval is **refused** if that would take anything below zero |
+| Admin rejects an order at review | Product stock **up** (materials were never consumed) |
+| Admin cancels an approved, processing, or ready order | Product stock **up**, materials and textures **up** |
 | PO marked `delivered` | Every line — product, material, or texture — **up** |
 | PO moved back out of `delivered` | The same amounts **down** again |
 

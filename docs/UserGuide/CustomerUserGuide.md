@@ -160,9 +160,9 @@ Each change also arrives as a notification, as long as notifications are on in y
 
 You can cancel **only while the order is still Pending**. Click **Cancel** on the order; the stock goes back to the shop immediately.
 
-The shop can also stop a pending order — an admin who rejects it must give a reason, which then appears on your order.
+The shop can also stop an order — at review, or later while it's being made. Either way they must give a reason, which then appears on your order, and you're notified.
 
-Once an order has been **approved**, it can't be cancelled from either side: materials have been consumed and production may already have started. If something is wrong with an approved order, contact the shop directly and sort it out with them.
+So if you need to cancel something that's already **Approved** or further along, contact the shop and ask: they can do it right up until you collect. Once an order is **Completed** it's closed for good.
 
 ---
 
