@@ -4,6 +4,8 @@ A phase-by-phase checklist for delivering the **Inventory Monitoring System v2**
 
 > **How to read this**: Each phase has a documentation deliverable (in `/docs`) and the system milestone it describes. Both must be done before the phase is "complete".
 
+> **Engineering work still outstanding** — access control, data-safety fixes, and the remaining features — is tracked separately in [RemainingWork.md](RemainingWork.md).
+
 ---
 
 ## Phase 1 — Technology Stack
