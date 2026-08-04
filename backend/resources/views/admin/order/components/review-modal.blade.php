@@ -8,7 +8,7 @@
                         <span class="order-eyebrow">Admin</span>
                         <span class="order-eyebrow-divider">/</span>
                         <h5 class="modal-title fw-bold mb-0 text-white">
-                            Review Order
+                            <span id="reviewModalTitle">Review Order</span>
                             <span id="reviewOrderNumber" class="ms-1" style="color: #ffc508;"></span>
                         </h5>
                     </div>
@@ -101,7 +101,7 @@
 
                     <!-- Cancel confirmation buttons (Hidden) -->
                     <div id="confirmCancelButton" class="d-none gap-2">
-                        <button type="button" class="btn order-btn-cancel rounded-pill px-4"
+                        <button type="button" class="btn order-btn-cancel rounded-pill px-4" id="btnBackToReview"
                             onclick="hideCancellation()">
                             <i class="bi bi-arrow-left me-1"></i>Back
                         </button>
@@ -134,6 +134,25 @@
         confirmBox.classList.remove('d-flex');
         document.getElementById('reviewReason').required = false;
         document.getElementById('reviewReason').value = '';
+    }
+
+    /**
+     * The same modal serves two jobs: reviewing a pending order (approve or
+     * reject), and cancelling one that is already in production. In cancel
+     * mode there is nothing to approve, so it opens straight on the reason
+     * step with no way back to the approve button.
+     */
+    function setReviewMode(mode) {
+        const cancelOnly = mode === 'cancel';
+
+        document.getElementById('reviewModalTitle').textContent = cancelOnly ? 'Cancel Order' : 'Review Order';
+        document.getElementById('btnBackToReview').classList.toggle('d-none', cancelOnly);
+
+        if (cancelOnly) {
+            showCancellation();
+        } else {
+            hideCancellation();
+        }
     }
 
     function submitReview(status) {

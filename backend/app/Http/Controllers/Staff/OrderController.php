@@ -56,15 +56,36 @@ class OrderController extends Controller
         return view('staff.order.order', compact('orders', 'search', 'status', 'date', 'perPage', 'statusCounts'));
     }
 
+    /**
+     * The production pipeline, in order. Staff advance an order one step at a
+     * time — the same single button the list offers — so a crafted request
+     * can't send a completed order back to pending or skip a stage.
+     */
+    private const TRANSITIONS = [
+        'approved' => 'processing',
+        'processing' => 'ready_for_pickup',
+        'ready_for_pickup' => 'completed',
+    ];
+
     public function updateStatus(Request $request, $id)
     {
         $request->validate([
-            'status' => 'required|in:pending,processing,ready_for_pickup,completed,cancelled',
+            'status' => 'required|in:processing,ready_for_pickup,completed',
             'payment_reference' => 'required_if:status,processing|nullable|string'
         ]);
 
         $order = Order::with('user')->findOrFail($id);
         $oldStatus = $order->status;
+
+        $next = self::TRANSITIONS[$oldStatus] ?? null;
+
+        if ($request->status !== $next) {
+            $readable = str_replace('_', ' ', $oldStatus);
+
+            return back()->with('error', $next === null
+                ? "Order {$order->order_number} is {$readable}; there is no next step for staff to take."
+                : "Order {$order->order_number} is {$readable} — the next step is " . str_replace('_', ' ', $next) . '.');
+        }
 
         $order->status = $request->status;
 

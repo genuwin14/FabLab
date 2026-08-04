@@ -248,6 +248,17 @@
                                                             <i class="bi bi-clipboard-check me-1"></i>Review
                                                         </button>
                                                     @else
+                                                        @if(in_array($order->status, ['approved', 'processing', 'ready_for_pickup']))
+                                                            {{-- Past review but not yet handed over: cancelling here
+                                                                 returns the stock and the materials it consumed. --}}
+                                                            <button class="btn btn-outline-danger btn-sm rounded-pill px-3 fw-bold shadow-sm btn-review-order me-1"
+                                                                data-bs-toggle="modal" data-bs-target="#reviewOrderModal"
+                                                                data-mode="cancel"
+                                                                data-order="{{ $orderJson }}"
+                                                                data-items="{{ $orderItemsJson }}">
+                                                                <i class="bi bi-x-lg me-1"></i>Cancel
+                                                            </button>
+                                                        @endif
                                                         <button class="btn btn-light btn-sm rounded-pill px-3 fw-bold shadow-sm border"
                                                             data-bs-toggle="modal" data-bs-target="#viewOrderModal"
                                                             data-order="{{ $orderJson }}"
@@ -563,8 +574,14 @@
                     const order = JSON.parse(button.getAttribute('data-order'));
                     const items = JSON.parse(button.getAttribute('data-items'));
 
+                    const mode = button.getAttribute('data-mode') === 'cancel' ? 'cancel' : 'review';
+
                     const form = document.getElementById('reviewOrderForm');
-                    form.action = `/admin/orders/${order.order_id}/review`;
+                    form.action = mode === 'cancel'
+                        ? `/admin/orders/${order.order_id}/cancel`
+                        : `/admin/orders/${order.order_id}/review`;
+
+                    setReviewMode(mode);
 
                     document.getElementById('reviewOrderNumber').textContent = '#' + order.order_number;
                     document.getElementById('reviewCustomerName').textContent = order.user ? (order.user.fullname || order.user.name || 'Guest') : 'Guest';
