@@ -36,16 +36,7 @@ class OtpController extends Controller
 
             $user->save();
 
-            // Redirect based on role
-            switch ($user->role) {
-                case 'admin':
-                    return redirect()->route('admin.dashboard');
-                case 'staff':
-                    return redirect()->route('staff.dashboard');
-                case 'customer':
-                default:
-                    return redirect()->route('customer.shop');
-            }
+            return redirect()->route($user->homeRoute());
         }
 
         return back()->withErrors(['otp' => 'The provided code is invalid.'])

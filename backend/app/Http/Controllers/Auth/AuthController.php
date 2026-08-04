@@ -13,9 +13,6 @@ use Illuminate\Support\Facades\Storage;
 
 class AuthController extends Controller
 {
-    // ... (keep start of class)
-
-    // ... (inside handleGoogleCallback)
     public function showLoginForm()
     {
         return view('auth.login');
@@ -156,43 +153,27 @@ class AuthController extends Controller
             ->with('success', 'Thanks — we can reach you about your orders now.');
     }
 
+    /**
+     * Where a successful sign-in lands.
+     *
+     * An account that has verified neither channel gets the verification modal
+     * over the login page instead of a dashboard. It stays signed in, because
+     * the verification request that follows needs the session.
+     */
     protected function authenticated(Request $request, $user)
     {
-        // Check if user is verified
-        if (!$user->phone_verified && !$user->email_verified_at) {
-            // Not verified -> Show Verification Selection Modal on Login Page
-            Auth::logout(); // Logout to prevent dashboard access, or keep logged in? 
-            // Better to keep logged in BUT return the view immediately so they can't browse away.
-            // Actually, if we return the view, they are logged in. 
-            // If they refresh, they go to dashboard (unless middleware stops them).
-            // For security, let's keep them logged in but ensure they verify.
-            // Returning the view 'auth.login' with the modal effectively halts them.
-
-            // Re-login to ensure session is active for the subsequent verification request
-            Auth::login($user);
-
+        if (! $user->phone_verified && ! $user->email_verified_at) {
             return view('auth.login', ['showVerificationModal' => true]);
         }
 
-        // Role-based redirection
-        switch ($user->role) {
-            case 'admin':
-                return redirect()->intended(route('admin.dashboard'));
-            case 'staff':
-                return redirect()->intended(route('staff.dashboard'));
-            case 'customer':
-            default:
-                return redirect()->intended(route('customer.shop'));
-        }
+        return redirect()->intended(route($user->homeRoute()));
     }
-    // ... existing methods ...
 
     public function redirectToGoogle()
     {
         return \Laravel\Socialite\Facades\Socialite::driver('google')->redirect();
     }
 
-    // ... existing Google Callback ... 
     public function handleGoogleCallback()
     {
         try {
@@ -293,12 +274,12 @@ class AuthController extends Controller
         $user = User::where('email', $request->email)->first();
         $otp = str_pad(rand(0, 999999), 6, '0', STR_PAD_LEFT);
 
-        // Store OTP in Session for verification (or DB password_resets table, but following docs "Session")
-        // Docs: "a 6-digit code is generated and stored in the Session"
+        // The code lives in the session rather than a password_resets row —
+        // it's single-device by design and expires with the window below.
         session([
             'password_reset_otp' => $otp,
             'password_reset_email' => $user->email,
-            'password_reset_expires' => now()->addMinutes(10), // 10 min expiry
+            'password_reset_expires' => now()->addMinutes(10),
         ]);
 
         $message = "Your FABLAB password reset code is: {$otp}";
@@ -343,19 +324,13 @@ class AuthController extends Controller
             return back()->withErrors(['otp' => 'Invalid OTP code.']);
         }
 
-        // OTP Valid!
-        // You would typically redirect to a "Reset Password" form here where they enter the new password.
-        // For now, let's just log them in or show success (since user asked to "add functionalities" but didn't specify reset pwd form)
-        // Actually, the standard flow is -> Show Reset Password Form.
+        // The code checks out. Hold a one-time token so the reset form knows
+        // this email has been proven, and send them there.
+        session([
+            'password_reset_token' => \Illuminate\Support\Str::random(60),
+            'password_reset_verified_email' => $sessionEmail,
+        ]);
 
-        // Let's create a temporary token to allow them to reset password.
-        $token = \Illuminate\Support\Str::random(60);
-
-        // Store token in password_resets table or session
-        session(['password_reset_token' => $token, 'password_reset_verified_email' => $sessionEmail]);
-
-        // For this task, I'll redirect to a simple "Reset Password" view, but first let's fix the POST error.
-        // Let's assume we redirect to a route called 'password.reset' which shows the form.
         return redirect()->route('password.reset.form');
     }
     public function showResetPasswordForm()
