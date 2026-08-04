@@ -64,6 +64,26 @@ class SupplierController extends Controller
     public function destroy($id)
     {
         $supplier = Supplier::findOrFail($id);
+
+        // Both purchase_orders.supplier_id and raw_materials.supplier_id cascade
+        // on delete, so removing a supplier in use would erase its procurement
+        // history and every material bought from it.
+        $blockers = [];
+
+        $poCount = \App\Models\PurchaseOrder::where('supplier_id', $id)->count();
+        if ($poCount > 0) {
+            $blockers[] = "{$poCount} purchase order(s)";
+        }
+
+        $materialCount = \App\Models\RawMaterial::where('supplier_id', $id)->count();
+        if ($materialCount > 0) {
+            $blockers[] = "{$materialCount} raw material(s)";
+        }
+
+        if ($blockers !== []) {
+            return back()->with('error', "\"{$supplier->name}\" is still referenced by " . implode(' and ', $blockers) . '. Reassign those first — deleting the supplier would delete them too.');
+        }
+
         $supplier->delete();
 
         return redirect()->route('admin.suppliers.index')->with('success', 'Supplier deleted successfully.');

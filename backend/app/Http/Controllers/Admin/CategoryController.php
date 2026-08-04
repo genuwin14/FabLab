@@ -59,6 +59,16 @@ class CategoryController extends Controller
     public function destroy($id)
     {
         $category = Category::findOrFail($id);
+
+        // products.category_id cascades on delete, and order_items.product_id
+        // cascades in turn — deleting a category with products in it would take
+        // the order history with it, soft deletes included.
+        $productCount = \App\Models\Product::withTrashed()->where('category_id', $id)->count();
+
+        if ($productCount > 0) {
+            return back()->with('error', "\"{$category->name}\" still has {$productCount} product(s) filed under it. Move them to another category first — deleting it would delete those products and their order history.");
+        }
+
         $category->delete();
 
         return redirect()->route('admin.categories.index')->with('success', 'Category deleted successfully.');

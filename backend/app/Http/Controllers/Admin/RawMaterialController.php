@@ -102,6 +102,15 @@ class RawMaterialController extends Controller
     public function destroy($id)
     {
         $rawMaterial = RawMaterial::findOrFail($id);
+
+        // purchase_order_items.raw_material_id cascades, so deleting a material
+        // that has been ordered would rewrite the purchase history.
+        $lineCount = \App\Models\PurchaseOrderItem::where('raw_material_id', $id)->count();
+
+        if ($lineCount > 0) {
+            return back()->with('error', "\"{$rawMaterial->name}\" appears on {$lineCount} purchase order line(s). Deleting it would remove them from that history.");
+        }
+
         $rawMaterial->delete();
 
         return redirect()->route('admin.raw-materials.index')->with('success', 'Raw material deleted successfully.');

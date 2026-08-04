@@ -104,6 +104,14 @@ class TextureController extends Controller
     public function destroy($id)
     {
         $texture = Texture::findOrFail($id);
+
+        // purchase_order_items.texture_id cascades on delete.
+        $lineCount = \App\Models\PurchaseOrderItem::where('texture_id', $id)->count();
+
+        if ($lineCount > 0) {
+            return back()->with('error', "\"{$texture->name}\" appears on {$lineCount} purchase order line(s). Deleting it would remove them from that history.");
+        }
+
         $texture->delete();
 
         return redirect()->route('admin.textures.index')->with('success', 'Texture deleted successfully.');
