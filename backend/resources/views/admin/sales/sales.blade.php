@@ -88,6 +88,27 @@
                                     <i class="bi bi-arrow-clockwise text-primary"></i>
                                 </a>
                             @endif
+
+                            {{-- Exports carry the current range, so the document
+                                 always matches the figures on screen. --}}
+                            <span class="vr d-none d-lg-inline mx-1"></span>
+                            <a href="{{ route('admin.sales.preview', request()->query()) }}" target="_blank"
+                                class="btn btn-light btn-sm rounded-2 border" data-bs-toggle="tooltip"
+                                title="Preview this report">
+                                <i class="bi bi-eye text-primary"></i>
+                            </a>
+                            <a href="{{ route('admin.sales.pdf', request()->query()) }}"
+                                class="btn btn-danger btn-sm rounded-2 d-flex align-items-center gap-2 px-3"
+                                data-bs-toggle="tooltip" title="Download this report as PDF">
+                                <i class="bi bi-file-pdf"></i>
+                                <span class="small fw-bold d-none d-lg-inline">PDF</span>
+                            </a>
+                            <a href="{{ route('admin.sales.docx', request()->query()) }}"
+                                class="btn btn-primary btn-sm rounded-2 d-flex align-items-center gap-2 px-3"
+                                data-bs-toggle="tooltip" title="Download this report as a Word document">
+                                <i class="bi bi-file-word"></i>
+                                <span class="small fw-bold d-none d-lg-inline">WORD</span>
+                            </a>
                         </form>
                     </div>
 
