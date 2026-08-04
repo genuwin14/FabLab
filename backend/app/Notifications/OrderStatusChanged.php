@@ -27,7 +27,10 @@ class OrderStatusChanged extends Notification
             'icon' => 'bi-bag-check',
             'title' => "Order {$this->order->order_number}",
             'body' => "Your order is now {$label}.",
-            'url' => route('customer.orders.index'),
+            // Fragment opens this order's details drawer on arrival, rather
+            // than leaving the customer to find it in the list.
+            'url' => route('customer.orders.index') . '#order-' . $this->order->order_id,
+            'order_id' => $this->order->order_id,
         ];
     }
 }

@@ -90,5 +90,15 @@
                 </div>
             </div>
         @endif
+
+        {{-- The transaction slip exists from approval onwards; this is where a
+             customer looking at the order expects to find it. --}}
+        @if(in_array($order->status, ['approved', 'processing', 'ready_for_pickup', 'completed']))
+            <a href="{{ route('customer.orders.receipt', $order->order_id) }}" target="_blank"
+                class="btn w-100 rounded-pill fw-bold mt-3 d-flex align-items-center justify-content-center"
+                style="background-color: #0e2e45; color: #ffffff;">
+                <i class="bi bi-receipt me-2"></i> View Receipt
+            </a>
+        @endif
     </div>
 </div>

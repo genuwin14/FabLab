@@ -575,6 +575,15 @@
                                                                     data-url="{{ route('customer.orders.cancel', $order->order_id) }}">
                                                                     <i class="bi bi-x-lg me-1"></i>Cancel
                                                                 </button>
+                                                            @elseif(in_array($order->status, ['approved', 'processing', 'ready_for_pickup', 'completed']))
+                                                                {{-- Same action the card view offers, so the two
+                                                                     layouts of this page stay in step. --}}
+                                                                <a href="{{ route('customer.orders.receipt', $order->order_id) }}"
+                                                                    target="_blank"
+                                                                    class="btn btn-sm rounded-pill px-3 fw-bold"
+                                                                    style="background-color: #0e2e45; color: #ffffff;">
+                                                                    <i class="bi bi-receipt me-1"></i>Receipt
+                                                                </a>
                                                             @endif
                                                         </div>
                                                     </td>
@@ -613,6 +622,19 @@
     @include('customer.order.components.cancel-modal')
 
     @push('scripts')
+        <script>
+            // Arriving from an "order status changed" notification, which links to
+            // #order-{id}: open that order's details drawer straight away.
+            document.addEventListener('DOMContentLoaded', function () {
+                var match = /^#order-(\d+)$/.exec(window.location.hash || '');
+                if (!match) return;
+
+                var drawer = document.getElementById('orderDetails-' + match[1]);
+                if (drawer && window.bootstrap) {
+                    bootstrap.Offcanvas.getOrCreateInstance(drawer).show();
+                }
+            });
+        </script>
         <script>
             document.addEventListener('DOMContentLoaded', function () {
                 // Order search, status & date filter
