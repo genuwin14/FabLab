@@ -120,7 +120,7 @@ From here you can:
 - Each line shows the image, name, unit price, quantity, and a remove button.
 - Changing the quantity re-checks stock immediately; if the new number exceeds what's available you'll be told and the line stays as it was.
 - **The same product with two different designs is two separate lines** — that's deliberate, since they're different things to make.
-- Your cart lives in your browser session. Signing out or leaving it long enough for the session to expire clears it; saved **designs** are never lost this way.
+- Your cart is saved to your account, so it's still there when you sign back in, and it follows you from your phone to a laptop.
 
 ---
 
@@ -150,7 +150,9 @@ If anything sold out between adding and checking out, the whole checkout stops w
 | **Completed** | Handed over. Done | Staff |
 | **Cancelled** | Not going ahead. If the shop cancelled it, the reason is shown on the order | You, an admin, or staff |
 
-Each change also arrives as a notification, as long as notifications are on in your [Settings](#13-profile-and-settings).
+Click **Details** on any order for the full picture: every line with its design preview, the payment reference, the total, and the receipt.
+
+Each change also arrives as a notification, as long as notifications are on in your [Settings](#13-profile-and-settings) — and clicking it opens that order's details straight away.
 
 **Hand-off:** the production statuses are driven by staff — [Staff Guide §4](StaffUserGuide.md#4-processing-orders). Approval and rejection are an admin decision — [Admin Guide §4](AdminUserGuide.md#4-reviewing-orders).
 
@@ -171,7 +173,7 @@ So if you need to cancel something that's already **Approved** or further along,
 Every approved order has a **transaction slip**: a PDF carrying the order number as a barcode, your details, the lines, and the total.
 
 - It's **emailed to you automatically** the moment an admin approves the order.
-- You can also open it any time from the order itself, which streams the PDF in your browser — print it or save it from there.
+- You can also open it any time from the order itself — the **View Receipt** button on the order card, in the list, and inside the details panel. It opens the PDF in a new tab; print it or save it from there.
 
 The slip is available once the order reaches Approved, and stays available through Processing, Ready for Pickup, and Completed. Pending and cancelled orders have no slip.
 
@@ -200,7 +202,7 @@ Changing your contact number or email takes effect immediately; there's no re-ve
 
 **Avatar → Settings** holds one switch: **Enable notifications**. Off means no in-app notifications for your account.
 
-**Avatar → Logout** ends the session. Your cart is cleared; your designs and orders are not.
+**Avatar → Logout** ends the session. Your cart, designs, and orders are all waiting when you come back.
 
 ---
 

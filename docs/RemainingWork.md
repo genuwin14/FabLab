@@ -37,14 +37,18 @@ Stock movements moved into `app/Services/OrderStockService.php` — requirements
 
 ---
 
-## P2 — Features and UX
+## P2 — Features and UX ✅ Done
 
-- [ ] **Customer order detail page.** Customers get a list and a receipt PDF but no detail view; there's no route for one.
-- [ ] **Low-stock alerts for raw materials and textures.** `ProductObserver` raises Low stock / Out of stock for products only. The other two item types appear on the watchlist but never notify.
-- [ ] **Paginate and filter the admin user list.** `Admin\UserController::index` loads every account with `->get()` and offers search only — add pagination plus role and status filters.
-- [ ] **Sales report export.** Materials and equipment export to PDF and DOCX; sales has charts but no export.
-- [ ] **Persist the cart.** The cart lives in the session, so signing out or letting the session lapse empties it. A DB-backed cart would survive.
-- [ ] **Ask Google sign-ups for a contact number.** They're created with an empty `contact_number` and never prompted, so the shop can't reach them.
+- [x] **Customer order detail.** The detail view already existed as a per-order drawer — what was missing was reaching it. The receipt is now offered in the drawer and in the table view (the card view already had it), and an order-status notification links to `#order-{id}`, which opens that order's drawer on arrival instead of dropping the customer on the whole list.
+- [x] **Low-stock alerts for raw materials and textures.** `ProductObserver` became `StockLevelObserver`, watching all three stock-bearing models through a shared `TracksStockLevel` trait, and the two alert notifications now take any of them.
+- [x] **Paginate and filter the admin user list.** Pagination with a selectable page size, plus role and status filters alongside the existing search.
+- [x] **Sales report export.** PDF preview, PDF download, and DOCX download, carrying whatever range is on screen.
+- [x] **Persist the cart.** A `cart_items` table keyed per user, so a cart survives sign-out, session expiry, and switching device. Carts still sitting in a session are absorbed on the customer's next visit rather than dropped.
+- [x] **Ask Google sign-ups for a contact number.** A skippable prompt after the Google callback, and again on later sign-ins while the number is still missing.
+
+Sales figures moved into `app/Services/SalesReport.php`, shared by the admin page, the staff page and the exports, so a document can't disagree with the screen it came from.
+
+**Also fixed along the way:** the monthly sales grouping used `DATE_FORMAT()`, which is MySQL-only — on the SQLite setup the guide recommends for local work, any range wider than about ten weeks threw a fatal SQL error. It now buckets by day (`DATE()`, understood by both) and rolls up to months in PHP.
 
 ---
 

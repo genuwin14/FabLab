@@ -94,7 +94,7 @@ The pipeline is enforced, not just suggested: an order can only take its next st
 
 Choose a range (7 days, 30 days, 90 days, 12 months, all time, or a custom from/to) and the page shows revenue, order count, average order value, items sold, all-time revenue, a revenue/orders chart (daily, or monthly for ranges over ~10 weeks), top-selling products, recent sales, and a status breakdown.
 
-It's the same page and the same numbers admins see in [Admin Guide §13](AdminUserGuide.md#13-sales).
+It's the same page and the same numbers admins see in [Admin Guide §13](AdminUserGuide.md#13-sales) — they can also export it to PDF or Word from there.
 
 ---
 
@@ -194,13 +194,13 @@ The bell refreshes every 30 seconds and holds your ten most recent items; **View
 | **New order placed** | A customer checks out |
 | **New custom design** | A customer saves a brand-new design |
 | **New customer registered** | Somebody signs up |
-| **Low stock** / **Out of stock** | A *product's* stock crosses its threshold or hits zero |
+| **Low stock** / **Out of stock** | Any product, raw material, or texture crosses its threshold or hits zero |
 | **Purchase order status changed** | Anyone moves a PO |
 | **Purchase order overdue** | A sent or confirmed PO passes its expected delivery date |
 
 Click any notification to jump to the page it refers to. Mark all as read, or delete items individually.
 
-Raw materials and textures don't raise stock notifications — watch them on the [inventory watchlist](#6-inventory-watchlist).
+Alerts fire on the crossing, not on every movement below the line, so a shortage tells you once rather than on repeat. The [inventory watchlist](#6-inventory-watchlist) is the standing view of everything currently short.
 
 ---
 

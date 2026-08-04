@@ -150,7 +150,7 @@ Deleting from the product page is a **soft delete**: the row stays, so order his
 
 Stock falls automatically when you approve orders for products that list the material in their BOM, and rises when a purchase order containing it is marked `delivered`. Staff can correct the figures ([Staff Guide §8](StaffUserGuide.md#8-raw-materials)).
 
-Raw materials raise **no** low-stock notification — they only appear on the watchlist.
+Raw materials raise a low-stock alert the moment they cross their threshold, the same as products and textures.
 
 ---
 
@@ -204,7 +204,9 @@ The overdue alert is a daily 07:00 check and needs Laravel's scheduler running o
 
 `/admin/sales` reports **completed** orders. Pick a range — 7 days, 30 days, 90 days, 12 months, all time, or a custom from/to — and you get revenue, order count, average order value, items sold, all-time revenue, a revenue and order chart (daily, switching to monthly beyond about ten weeks), top-selling products, recent sales, and a status breakdown.
 
-Staff see the same page ([Staff Guide §5](StaffUserGuide.md#5-sales)).
+**Exporting.** The buttons beside the range picker preview the report, download it as **PDF**, or download it as **DOCX**. Exports carry whatever range is on screen, so the document always matches the figures you were looking at: summary, best sellers, and the period-by-period breakdown.
+
+Staff see the same page, without the export buttons ([Staff Guide §5](StaffUserGuide.md#5-sales)).
 
 ---
 
@@ -232,7 +234,7 @@ Both reports render from the same layout in all three formats, so the PDF you fi
 
 ## 15. User management
 
-`/admin/users` lists every account — admin, staff, and customer — newest first. Search by name, email, or contact number.
+`/admin/users` lists every account — admin, staff, and customer — newest first. Search by name, email, or contact number, filter by **role** or **status**, and page through with a selectable page size.
 
 **Disable** locks an account out: sign-in is refused by password and by Google alike, while all their orders and history stay intact. **Enable** restores access. You cannot disable your own account.
 
@@ -251,11 +253,11 @@ The bell refreshes every 30 seconds and holds the ten most recent items; **View 
 | **New order placed** | A customer checks out — your cue to review it |
 | **New custom design** | A customer saves a brand-new design |
 | **New customer registered** | Somebody signs up |
-| **Low stock** / **Out of stock** | A *product's* stock crosses its threshold or hits zero |
+| **Low stock** / **Out of stock** | Any product, raw material, or texture crosses its threshold or hits zero |
 | **Purchase order status changed** | Anyone moves a PO |
 | **Purchase order overdue** | A sent or confirmed PO passes its expected delivery date |
 
-Only products raise stock notifications. Raw materials and textures need watching on the [inventory watchlist](#11-inventory-watchlist).
+Alerts fire on the crossing, not on every movement below the line. The [inventory watchlist](#11-inventory-watchlist) is the standing view of everything currently short.
 
 ---
 

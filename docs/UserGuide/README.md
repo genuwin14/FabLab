@@ -157,7 +157,7 @@ Every automatic movement in the system:
 
 Manual edits to any stock figure are always allowed for staff and admins; use them to correct counts after a physical audit.
 
-Low-stock and out-of-stock notifications fire for **products only**, and only at the moment stock crosses the threshold. Raw materials and textures still appear on the inventory watchlist, but they raise no notification.
+Low-stock and out-of-stock notifications fire for **products, raw materials, and textures** alike, but only at the moment stock crosses the line — not on every movement while it's already below.
 
 ---
 
@@ -171,7 +171,7 @@ The bell in the top bar polls every 30 seconds and shows the ten most recent ite
 | New custom design saved | Staff + Admins | The design |
 | New customer registered | Staff + Admins | The customer |
 | Order status changed | The customer who owns it | Their orders page |
-| Low stock / Out of stock (products) | Staff + Admins | The inventory watchlist |
+| Low stock / Out of stock | Staff + Admins | The inventory watchlist |
 | Purchase order status changed | Staff + Admins | That PO |
 | Purchase order overdue | Staff + Admins | That PO |
 
