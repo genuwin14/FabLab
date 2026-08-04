@@ -137,8 +137,8 @@
                                                 <td class="ps-4 py-3">
                                                     <div class="d-flex align-items-center gap-3">
                                                         <div class="bg-light rounded-3 d-flex align-items-center justify-content-center overflow-hidden"
-                                                            style="width: 48px; height: 48px; background-size: cover; background-position: center; {{ $product->image ? "background-image: url('{$product->image}');" : '' }}">
-                                                            @if(!$product->image)
+                                                            style="width: 48px; height: 48px; background-size: cover; background-position: center; {{ $product->image_url ? "background-image: url('{$product->image_url}');" : '' }}">
+                                                            @if(!$product->image_url)
                                                                 <i class="bi bi-image text-muted opacity-50"></i>
                                                             @endif
                                                         </div>
@@ -748,8 +748,8 @@
                 var preview = document.getElementById('editImagePreview');
                 var placeholder = document.getElementById('editImagePlaceholder');
 
-                if (product.image) {
-                    preview.style.backgroundImage = 'url(' + product.image + ')';
+                if (product.image_url) {
+                    preview.style.backgroundImage = 'url(' + product.image_url + ')';
                     placeholder.style.display = 'none';
                 } else {
                     preview.style.backgroundImage = "url('{{ asset('img/FABLAB-LOGO.png') }}')";

@@ -8,7 +8,7 @@
         $texturesData = $textures->map(fn($t) => [
             'id' => $t->texture_id,
             'name' => $t->name,
-            'image_path' => $t->image_path,
+            'image_path' => $t->image_url,
             'price_modifier' => (float) ($t->price_modifier ?? 0),
         ])->values();
     @endphp

@@ -87,8 +87,8 @@
                             <div class="col-12 col-md-4 col-xl-3">
                                 <div class="card texture-card border-0 shadow-sm rounded-4 h-100 overflow-hidden">
                                     <div class="position-relative texture-card-image">
-                                        @if($texture->image_path)
-                                            <img src="{{ $texture->image_path }}" class="h-100 w-100 object-fit-cover" alt="{{ $texture->name }}">
+                                        @if($texture->image_url)
+                                            <img src="{{ $texture->image_url }}" class="h-100 w-100 object-fit-cover" alt="{{ $texture->name }}">
                                         @else
                                             <div class="h-100 w-100 d-flex align-items-center justify-content-center text-muted">
                                                 <i class="bi bi-image fs-1 opacity-25"></i>
@@ -106,7 +106,7 @@
                                                            data-id="{{ $texture->texture_id }}"
                                                            data-name="{{ $texture->name }}"
                                                            data-description="{{ $texture->description }}"
-                                                           data-image="{{ $texture->image_path }}"
+                                                           data-image="{{ $texture->image_url }}"
                                                            data-supplier_id="{{ $texture->supplier_id }}"
                                                            data-cost="{{ $texture->cost_per_unit }}"
                                                            data-stock="{{ $texture->stock_quantity }}"

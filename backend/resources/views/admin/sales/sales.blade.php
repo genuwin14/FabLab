@@ -227,7 +227,7 @@
                                                         <td class="ps-4 py-2">
                                                             <div class="d-flex align-items-center">
                                                                 <div class="rounded border bg-white p-1 me-2" style="width: 38px; height: 38px;">
-                                                                    <img src="{{ $p->image ?: asset('FABLAB-LOGO.png') }}" class="w-100 h-100 object-fit-cover rounded" alt="">
+                                                                    <img src="{{ \App\Support\ImageUrl::for($p->image) ?: asset('FABLAB-LOGO.png') }}" class="w-100 h-100 object-fit-cover rounded" alt="">
                                                                 </div>
                                                                 <div>
                                                                     <div class="fw-bold text-dark small">{{ $p->name }}</div>

@@ -595,7 +595,7 @@
                         const isAvailable = stock >= item.quantity;
                         const design = item.custom_design || item.customDesign;
                         const isCustom = !!(item.custom_design_id && design);
-                        const imgSrc = (isCustom && design.snapshot) ? design.snapshot : (product.image ? product.image : '/img/FABLAB-LOGO.png');
+                        const imgSrc = (isCustom && design.snapshot) ? design.snapshot : (product.image_url ? product.image_url : '/img/FABLAB-LOGO.png');
                         const customBadge = isCustom
                             ? '<span class="badge ms-1" style="background-color: rgba(255, 197, 8, 0.18); color: #997404; font-size: 0.55rem; vertical-align: middle;">TAILORED</span>'
                             : '<span class="badge ms-1" style="background-color: rgba(108, 117, 125, 0.12); color: #6c757d; font-size: 0.55rem; vertical-align: middle;">STANDARD</span>';

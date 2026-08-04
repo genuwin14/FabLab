@@ -172,13 +172,13 @@
                                                                     <div class="d-flex align-items-center gap-2">
                                                                         @php
                                                                             if ($item->type === 'Product') {
-                                                                                $thumb = $item->image ?? null;
+                                                                                $thumb = $item->image_url ?? null;
                                                                                 $fallbackIcon = 'bi-image';
                                                                             } elseif ($item->type === 'Texture') {
-                                                                                $thumb = $item->image_path ?? null;
+                                                                                $thumb = $item->image_url ?? null;
                                                                                 $fallbackIcon = 'bi-layers';
                                                                             } else {
-                                                                                $thumb = $item->image_path ?? null;
+                                                                                $thumb = $item->image_url ?? null;
                                                                                 $fallbackIcon = 'bi-box';
                                                                             }
                                                                         @endphp

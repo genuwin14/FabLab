@@ -227,8 +227,8 @@
                                     @forelse($topProducts as $index => $product)
                                         <div class="d-flex align-items-center mb-3 p-2 rounded-3 hover-bg-light transition-all">
                                             <div class="flex-shrink-0 me-3 position-relative">
-                                                @if($product->image)
-                                                    <img src="{{ asset('storage/' . $product->image) }}" class="rounded-3 shadow-sm" style="width: 42px; height: 42px; object-fit: cover;">
+                                                @if($product->image_url)
+                                                    <img src="{{ $product->image_url }}" class="rounded-3 shadow-sm" style="width: 42px; height: 42px; object-fit: cover;">
                                                 @else
                                                     <div class="rounded-3 bg-light d-flex align-items-center justify-content-center text-muted" style="width: 42px; height: 42px;">
                                                         <i class="bi bi-image"></i>

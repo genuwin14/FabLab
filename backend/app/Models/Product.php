@@ -9,11 +9,18 @@ class Product extends Model
 {
     use SoftDeletes;
     use Concerns\TracksStockLevel;
+    use Concerns\HasStoredImage;
 
     protected $primaryKey = 'product_id';
 
     protected string $stockColumn = 'stock';
     protected string $stockItemType = 'Product';
+
+    protected string $imageColumn = 'image';
+    protected string $imageDirectory = 'products';
+
+    /** So JSON payloads (order modals, JS) carry a usable image URL. */
+    protected $appends = ['image_url'];
 
     protected $fillable = [
         'sku',

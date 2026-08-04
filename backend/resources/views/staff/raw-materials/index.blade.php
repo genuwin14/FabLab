@@ -98,8 +98,8 @@
                                             <tr>
                                                 <td class="ps-4 py-3">
                                                     <div class="d-flex align-items-center gap-3">
-                                                        @if($material->image_path)
-                                                            <img src="{{ $material->image_path }}" alt="{{ $material->name }}"
+                                                        @if($material->image_url)
+                                                            <img src="{{ $material->image_url }}" alt="{{ $material->name }}"
                                                                 class="rounded-3 object-fit-cover border"
                                                                 style="width: 48px; height: 48px;">
                                                         @else

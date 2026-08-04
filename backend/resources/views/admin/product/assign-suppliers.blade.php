@@ -48,8 +48,8 @@
                             <div class="row align-items-center">
                                 <div class="col-auto">
                                     <div class="bg-light rounded-3 d-flex align-items-center justify-content-center overflow-hidden"
-                                        style="width: 80px; height: 80px; background-size: cover; background-position: center; {{ $product->image ? "background-image: url('{$product->image}');" : '' }}">
-                                        @if(!$product->image)
+                                        style="width: 80px; height: 80px; background-size: cover; background-position: center; {{ $product->image_url ? "background-image: url('{$product->image_url}');" : '' }}">
+                                        @if(!$product->image_url)
                                             <i class="bi bi-image text-muted opacity-50 fs-2"></i>
                                         @endif
                                     </div>

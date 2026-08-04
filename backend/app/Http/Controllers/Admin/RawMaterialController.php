@@ -56,10 +56,9 @@ class RawMaterialController extends Controller
 
         $data = $request->except('image_file');
 
+        // Images go to the public disk; the row keeps the path.
         if ($request->hasFile('image_file')) {
-            $image = $request->file('image_file');
-            $base64Image = base64_encode(file_get_contents($image->getPathname()));
-            $data['image_path'] = 'data:' . $image->getClientMimeType() . ';base64,' . $base64Image;
+            $data['image_path'] = (new RawMaterial)->storeImage($request->file('image_file'));
         }
 
         RawMaterial::create($data);
@@ -89,9 +88,7 @@ class RawMaterialController extends Controller
         $data = $request->except('image_file');
 
         if ($request->hasFile('image_file')) {
-            $image = $request->file('image_file');
-            $base64Image = base64_encode(file_get_contents($image->getPathname()));
-            $data['image_path'] = 'data:' . $image->getClientMimeType() . ';base64,' . $base64Image;
+            $data['image_path'] = $rawMaterial->storeImage($request->file('image_file'));
         }
 
         $rawMaterial->update($data);

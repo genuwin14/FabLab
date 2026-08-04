@@ -88,11 +88,9 @@ class ProductController extends Controller
             $data['status'] = 'active';
         }
 
-        // Handle Image Upload -> Base64
+        // Images go to the public disk; the row keeps the path.
         if ($request->hasFile('image_file')) {
-            $image = $request->file('image_file');
-            $base64Image = base64_encode(file_get_contents($image->getPathname()));
-            $data['image'] = 'data:' . $image->getClientMimeType() . ';base64,' . $base64Image;
+            $data['image'] = (new Product)->storeImage($request->file('image_file'));
         }
 
         $product = Product::create($data);
@@ -133,10 +131,9 @@ class ProductController extends Controller
             $data['status'] = 'active';
         }
 
+        // Replacing an image also clears the file it was pointing at.
         if ($request->hasFile('image_file')) {
-            $image = $request->file('image_file');
-            $base64Image = base64_encode(file_get_contents($image->getPathname()));
-            $data['image'] = 'data:' . $image->getClientMimeType() . ';base64,' . $base64Image;
+            $data['image'] = $product->storeImage($request->file('image_file'));
         }
 
         $product->update($data);

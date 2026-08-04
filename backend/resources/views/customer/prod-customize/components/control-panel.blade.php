@@ -95,11 +95,11 @@
                         <div class="col-3 text-center">
                             <div class="texture-option {{ $index === 0 ? 'active' : '' }}"
                                 data-texture-id="{{ $texture->texture_id }}"
-                                data-image-path="{{ $texture->image_path }}"
+                                data-image-path="{{ $texture->image_url }}"
                                 data-price-modifier="{{ $texture->price_modifier ?? 0 }}"
                                 title="{{ $texture->name }}{{ $texture->price_modifier > 0 ? ' (+₱' . number_format($texture->price_modifier, 2) . ')' : '' }}">
-                                @if($texture->image_path)
-                                    <div class="texture-preview" style="background-image: url('{{ $texture->image_path }}'); background-size: cover; background-position: center;"></div>
+                                @if($texture->image_url)
+                                    <div class="texture-preview" style="background-image: url('{{ $texture->image_url }}'); background-size: cover; background-position: center;"></div>
                                 @else
                                     <div class="texture-preview d-flex align-items-center justify-content-center bg-secondary text-white-50">
                                         <i class="bi bi-image"></i>

@@ -10,11 +10,17 @@ class RawMaterial extends Model
 {
     use SoftDeletes;
     use Concerns\TracksStockLevel;
+    use Concerns\HasStoredImage;
 
     protected $primaryKey = 'raw_material_id';
 
     protected string $stockColumn = 'stock_quantity';
     protected string $stockItemType = 'Raw Material';
+
+    protected string $imageColumn = 'image_path';
+    protected string $imageDirectory = 'raw-materials';
+
+    protected $appends = ['image_url'];
 
     protected $fillable = [
         'name',

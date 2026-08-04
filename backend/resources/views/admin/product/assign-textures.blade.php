@@ -42,8 +42,8 @@
                             <div class="row align-items-center">
                                 <div class="col-auto">
                                     <div class="bg-light rounded-3 d-flex align-items-center justify-content-center overflow-hidden"
-                                        style="width: 80px; height: 80px; background-size: cover; background-position: center; {{ $product->image ? "background-image: url('{$product->image}');" : '' }}">
-                                        @if(!$product->image)
+                                        style="width: 80px; height: 80px; background-size: cover; background-position: center; {{ $product->image_url ? "background-image: url('{$product->image_url}');" : '' }}">
+                                        @if(!$product->image_url)
                                             <i class="bi bi-image text-muted opacity-50 fs-2"></i>
                                         @endif
                                     </div>
@@ -107,8 +107,8 @@
                                                         {{ $isChecked ? 'checked' : '' }}>
                                                     <div class="texture-card card border-2 rounded-4 h-100 overflow-hidden {{ $isChecked ? 'border-primary shadow-sm' : 'border-transparent' }}">
                                                         <div class="position-relative" style="height: 130px;">
-                                                            @if($texture->image_path)
-                                                                <img src="{{ $texture->image_path }}" class="card-img-top h-100 w-100" style="object-fit: cover;" alt="{{ $texture->name }}">
+                                                            @if($texture->image_url)
+                                                                <img src="{{ $texture->image_url }}" class="card-img-top h-100 w-100" style="object-fit: cover;" alt="{{ $texture->name }}">
                                                             @else
                                                                 <div class="h-100 w-100 d-flex align-items-center justify-content-center bg-light text-muted">
                                                                     <i class="bi bi-image fs-1"></i>

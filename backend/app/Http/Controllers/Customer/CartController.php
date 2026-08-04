@@ -299,7 +299,7 @@ class CartController extends Controller
                     'name' => $product->name . ($line->custom_design_id ? ' (Customized)' : ''),
                     'quantity' => $line->quantity,
                     'price' => $line->price,
-                    'image' => $snapshot ?: $product->image,
+                    'image' => $snapshot ?: $product->image_url,
                     'unit' => $product->unit,
                     'sku' => $product->sku,
                 ]];

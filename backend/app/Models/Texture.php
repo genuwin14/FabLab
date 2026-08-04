@@ -9,11 +9,17 @@ class Texture extends Model
 {
     use SoftDeletes;
     use Concerns\TracksStockLevel;
+    use Concerns\HasStoredImage;
 
     protected $primaryKey = 'texture_id';
 
     protected string $stockColumn = 'stock_quantity';
     protected string $stockItemType = 'Texture';
+
+    protected string $imageColumn = 'image_path';
+    protected string $imageDirectory = 'textures';
+
+    protected $appends = ['image_url'];
 
     protected $fillable = [
         'name',

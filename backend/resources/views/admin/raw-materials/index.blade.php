@@ -104,8 +104,8 @@
                                             <tr>
                                                 <td class="ps-4 py-3">
                                                     <div class="d-flex align-items-center gap-3">
-                                                        @if($material->image_path)
-                                                            <img src="{{ $material->image_path }}" alt="{{ $material->name }}"
+                                                        @if($material->image_url)
+                                                            <img src="{{ $material->image_url }}" alt="{{ $material->name }}"
                                                                 class="rounded-3 object-fit-cover border"
                                                                 style="width: 48px; height: 48px;">
                                                         @else
@@ -151,7 +151,7 @@
                                                         data-units_damaged="{{ $material->units_damaged }}"
                                                         data-units_consumed="{{ $material->units_consumed }}"
                                                         data-department="{{ $material->department }}"
-                                                        data-image="{{ $material->image_path }}" title="Edit">
+                                                        data-image="{{ $material->image_url }}" title="Edit">
                                                         <i class="bi bi-pencil text-warning"></i>
                                                     </button>
                                                     <button class="btn btn-light btn-sm rounded-circle" data-bs-toggle="modal"

@@ -79,9 +79,7 @@ class ProductController extends Controller
         }
 
         if ($request->hasFile('image_file')) {
-            $image = $request->file('image_file');
-            $base64Image = base64_encode(file_get_contents($image->getPathname()));
-            $data['image'] = 'data:' . $image->getClientMimeType() . ';base64,' . $base64Image;
+            $data['image'] = $product->storeImage($request->file('image_file'));
         }
 
         $product->update($data);

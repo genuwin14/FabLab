@@ -60,7 +60,7 @@
                 <div class="customer-order-details-item">
                     <div class="rounded-2 overflow-hidden border bg-white flex-shrink-0"
                         style="width: 48px; height: 48px;">
-                        <img src="{{ ($item->customDesign && $item->customDesign->snapshot) ? $item->customDesign->snapshot : ($item->product->image ?: asset('img/FABLAB-LOGO.png')) }}"
+                        <img src="{{ ($item->customDesign && $item->customDesign->snapshot) ? $item->customDesign->snapshot : ($item->product->image_url ?: asset('img/FABLAB-LOGO.png')) }}"
                             class="w-100 h-100 object-fit-cover" alt="">
                     </div>
                     <div class="flex-grow-1 min-w-0">

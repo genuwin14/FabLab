@@ -72,8 +72,8 @@
                                 <div class="position-relative">
                                     <div class="ratio ratio-1x1 bg-light border-bottom">
                                         <div class="d-flex align-items-center justify-content-center overflow-hidden rounded-top-4"
-                                             style="background-image: url('{{ $product->image ?: asset('img/FABLAB-LOGO.png') }}'); background-size: cover; background-position: center;">
-                                            @if(!$product->image)
+                                             style="background-image: url('{{ $product->image_url ?: asset('img/FABLAB-LOGO.png') }}'); background-size: cover; background-position: center;">
+                                            @if(!$product->image_url)
                                                 <i class="bi bi-image text-muted opacity-50 display-6"></i>
                                             @endif
                                         </div>
@@ -134,7 +134,7 @@
                                                 data-name="{{ $product->name }}"
                                                 data-description="{{ $product->description }}"
                                                 data-price="₱{{ number_format($product->price, 2) }}"
-                                                data-image="{{ $product->image ?: asset('img/FABLAB-LOGO.png') }}"
+                                                data-image="{{ $product->image_url ?: asset('img/FABLAB-LOGO.png') }}"
                                                 data-category="{{ $product->category->name ?? 'Uncategorized' }}"
                                                 data-stock="{{ $product->stock }}"
                                                 data-unit="{{ $product->unit }}"

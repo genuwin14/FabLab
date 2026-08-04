@@ -78,7 +78,7 @@
                     if ($firstItem) {
                         $thumb = ($firstItem->customDesign && $firstItem->customDesign->snapshot)
                             ? $firstItem->customDesign->snapshot
-                            : ($firstItem->product->image ?? null);
+                            : ($firstItem->product->image_url ?? null);
                         $primaryName = optional($firstItem->product)->name ?? $primaryName;
                     }
                 @endphp

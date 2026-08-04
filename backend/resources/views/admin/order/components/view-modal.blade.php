@@ -207,7 +207,7 @@
                     if (isCustom) design.product_name = productName;
 
                     const snapshot = isCustom ? design.snapshot : null;
-                    const imgSrc = snapshot || product.image || '/img/FABLAB-LOGO.png';
+                    const imgSrc = snapshot || product.image_url || '/img/FABLAB-LOGO.png';
 
                     const thumbHtml = isCustom && snapshot
                         ? `<img src="${imgSrc}" class="w-100 h-100 object-fit-cover rounded btn-popout-design" style="cursor: zoom-in;" data-design='${JSON.stringify(design).replace(/'/g, "&apos;")}' alt="">`
