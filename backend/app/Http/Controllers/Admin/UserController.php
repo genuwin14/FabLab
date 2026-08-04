@@ -10,22 +10,41 @@ class UserController extends Controller
 {
     public function index(Request $request)
     {
-        $search = $request->input('search', '');
+        $search = trim((string) $request->input('search', ''));
+        $role = $request->input('role', '');
+        $status = $request->input('status', '');
 
-        $applyFilters = function ($query) use ($search) {
-            if ($search !== '') {
-                $query->where(function ($q) use ($search) {
-                    $q->where('fullname', 'like', "%{$search}%")
-                        ->orWhere('email', 'like', "%{$search}%")
-                        ->orWhere('contact_number', 'like', "%{$search}%");
-                });
-            }
-            return $query;
-        };
+        $perPage = (int) $request->input('per_page', 10);
+        if (! in_array($perPage, [10, 25, 50, 100], true)) {
+            $perPage = 10;
+        }
 
-        $users = $applyFilters(User::whereIn('role', ['admin', 'staff', 'customer']))->latest()->get();
+        $query = User::whereIn('role', ['admin', 'staff', 'customer']);
 
-        return view('admin.users.users', compact('users', 'search'));
+        if ($search !== '') {
+            $query->where(function ($q) use ($search) {
+                $q->where('fullname', 'like', "%{$search}%")
+                    ->orWhere('email', 'like', "%{$search}%")
+                    ->orWhere('contact_number', 'like', "%{$search}%");
+            });
+        }
+
+        if (in_array($role, ['admin', 'staff', 'customer'], true)) {
+            $query->where('role', $role);
+        }
+
+        if (in_array($status, ['active', 'disabled'], true)) {
+            $query->where('status', $status);
+        }
+
+        $users = $query->latest()->paginate($perPage)->withQueryString();
+
+        $roleCounts = User::selectRaw('role, COUNT(*) as total')
+            ->groupBy('role')
+            ->pluck('total', 'role')
+            ->toArray();
+
+        return view('admin.users.users', compact('users', 'search', 'role', 'status', 'perPage', 'roleCounts'));
     }
 
     public function updateStatus(Request $request, $id)

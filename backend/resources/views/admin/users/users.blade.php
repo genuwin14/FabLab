@@ -53,6 +53,7 @@
                         <div class="card-body p-3">
                             <form id="userFilterForm" method="GET" action="{{ route('admin.users.index') }}"
                                 class="row g-2 align-items-center">
+                                <input type="hidden" name="per_page" value="{{ $perPage }}">
 
                                 <!-- Search: inline on desktop; icon-triggered dropdown on mobile. -->
                                 <div class="col-auto col-lg dropdown search-dd">
@@ -70,6 +71,35 @@
                                             <input type="text" name="search" value="{{ $search }}"
                                                 class="form-control border-start-0 rounded-end-2 ps-0"
                                                 placeholder="Search by name, email, or contact number...">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Filters: inline on desktop, funnel dropdown on mobile. -->
+                                <div class="col-auto dropdown filter-dd">
+                                    <button type="button"
+                                        class="btn btn-light rounded-2 d-lg-none filter-toggle"
+                                        data-bs-toggle="dropdown" data-bs-auto-close="outside"
+                                        aria-expanded="false" title="Filters">
+                                        <i class="bi bi-funnel text-primary"></i>
+                                    </button>
+                                    <div class="dropdown-menu filter-menu border-0 shadow p-2 p-lg-0">
+                                        <div class="d-flex flex-column flex-lg-row gap-2">
+                                            <select name="role" class="form-select rounded-2 w-100"
+                                                onchange="document.getElementById('userFilterForm').submit()">
+                                                <option value="">All Roles</option>
+                                                @foreach(['admin' => 'Admins', 'staff' => 'Staff', 'customer' => 'Customers'] as $value => $label)
+                                                    <option value="{{ $value }}" {{ $role === $value ? 'selected' : '' }}>
+                                                        {{ $label }}@isset($roleCounts[$value]) ({{ $roleCounts[$value] }})@endisset
+                                                    </option>
+                                                @endforeach
+                                            </select>
+                                            <select name="status" class="form-select rounded-2 w-100"
+                                                onchange="document.getElementById('userFilterForm').submit()">
+                                                <option value="">Any Status</option>
+                                                <option value="active" {{ $status === 'active' ? 'selected' : '' }}>Active</option>
+                                                <option value="disabled" {{ $status === 'disabled' ? 'selected' : '' }}>Disabled</option>
+                                            </select>
                                         </div>
                                     </div>
                                 </div>
@@ -200,6 +230,26 @@
                                         @endforelse
                                     </tbody>
                                 </table>
+
+                                <!-- Pagination sits INSIDE .table-responsive, so it
+                                     rides the table's single horizontal scrollbar. -->
+                                <div class="pagination-bar border-top d-flex justify-content-between align-items-center gap-2 p-3">
+                                    <div class="d-flex align-items-center gap-2 flex-shrink-0">
+                                        <label for="perPageSelect" class="text-muted small mb-0">Rows per page:</label>
+                                        <select id="perPageSelect" class="form-select form-select-sm rounded-pill w-auto"
+                                            onchange="(function(v){const u=new URL(window.location.href);u.searchParams.set('per_page',v);u.searchParams.delete('page');window.location.href=u.toString();})(this.value)">
+                                            @foreach([10, 25, 50, 100] as $size)
+                                                <option value="{{ $size }}" {{ $perPage == $size ? 'selected' : '' }}>{{ $size }}</option>
+                                            @endforeach
+                                        </select>
+                                        <span class="text-muted small text-nowrap">
+                                            Showing {{ $users->firstItem() ?? 0 }} to {{ $users->lastItem() ?? 0 }} of {{ $users->total() }} entries
+                                        </span>
+                                    </div>
+                                    <nav class="flex-shrink-0">
+                                        {{ $users->links() }}
+                                    </nav>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -305,7 +355,8 @@
            See ResponsiveMobileNote.md
            ============================================ */
         @media (min-width: 992px) {
-            .search-dd .dropdown-menu.search-menu {
+            .search-dd .dropdown-menu.search-menu,
+            .filter-dd .dropdown-menu.filter-menu {
                 position: static !important;
                 display: block !important;
                 float: none;
@@ -316,13 +367,19 @@
                 box-shadow: none !important;
                 background: transparent;
             }
+            /* keep the selects at their natural inline width on desktop */
+            .filter-dd .filter-menu .form-select { width: auto !important; }
         }
         @media (max-width: 991.98px) {
             .search-dd .dropdown-menu.search-menu {
                 width: min(82vw, 360px);
             }
+            .filter-dd .dropdown-menu.filter-menu {
+                width: min(82vw, 320px);
+            }
 
-            /* Edge-to-edge scrollable table (no pagination on this page). */
+            /* Edge-to-edge scrollable table; the pagination bar rides the
+               table's single horizontal scroll so there's only ever one. */
             .data-table-card {
                 margin-left: -0.75rem;
                 margin-right: -0.75rem;
@@ -330,6 +387,16 @@
             }
             .data-table-card .table {
                 min-width: 900px;
+            }
+            .pagination-bar {
+                flex-wrap: nowrap;
+                min-width: 900px;
+            }
+            .pagination-bar .pagination {
+                --bs-pagination-padding-x: 0.5rem;
+                --bs-pagination-padding-y: 0.25rem;
+                --bs-pagination-font-size: 0.8rem;
+                margin-bottom: 0;
             }
             .data-table-card .table th,
             .data-table-card .table td {
