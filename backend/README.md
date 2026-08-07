@@ -208,6 +208,27 @@ php artisan queue:listen       # only if you later move work onto the queue
 > process (or the cron entry in [§12](#12-production-deployment-notes) in
 > production) that check never runs, and overdue POs raise no notification.
 
+### All three at once on Windows — no Node needed
+
+[dev.ps1](dev.ps1) runs the server, scheduler and queue worker together in a **single** window, tagging each line with the process that produced it:
+
+```powershell
+.\dev.ps1                # serve on http://localhost:8000
+.\dev.ps1 -Port 8080     # serve on a different port
+```
+
+Or double-click [dev.bat](dev.bat), a one-line shim that launches the same script — Windows opens a double-clicked `.ps1` in Notepad rather than running it, and the default execution policy blocks local scripts.
+
+```
+  [serve   ] INFO  Server running on [http://127.0.0.1:8000]
+  [schedule] INFO  Running scheduled tasks.
+  [queue   ] INFO  Processing jobs from the [default] queue.
+```
+
+It checks PHP is on your PATH and that `vendor/` and `.env` exist before starting anything. **Ctrl+C** stops all three. If one dies on its own, the other two are stopped too, so you never get a half-running stack.
+
+Unlike `composer dev` below, this needs only PHP.
+
 ### Everything at once — needs Node
 If you have Node installed and want the extras plus a live log tail in one window:
 ```bash
