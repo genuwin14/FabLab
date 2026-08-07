@@ -1,10 +1,10 @@
-# Inventory Monitoring System v2
+# FabLab - Inventory Management
 
-The FABLAB Inventory Monitoring System — a Laravel 12 application covering the shop front, order pipeline, stock movement, procurement and reporting for three roles: customer, staff and admin.
+A Laravel 12 application covering the shop front, order pipeline, stock movement, procurement and reporting for three roles: customer, staff and admin.
 
 This README is the setup guide. Follow the steps in order — by the end you'll have the app running locally with seeded sample data.
 
-> **Estimated time**: ~15 minutes on a machine that already has PHP, Composer, and Node installed.
+> **Estimated time**: ~15 minutes on a machine that already has PHP and Composer installed.
 
 The per-role guides live in [docs/UserGuide/](docs/UserGuide/); start with the [hub](docs/UserGuide/README.md) or the [System Process Guide](docs/UserGuide/SystemProcess.md) if you'd rather see the whole system in the order you use it.
 
@@ -18,9 +18,8 @@ Install these tools first. The versions listed are the **minimum** — newer is 
 | :--- | :--- | :--- |
 | **PHP** | 8.2+ | Required extensions: `pdo_mysql` (or `pdo_sqlite`), `mbstring`, `openssl`, `tokenizer`, `xml`, `ctype`, `json`, `bcmath`, `fileinfo`, `gd` |
 | **Composer** | 2.x | PHP dependency manager — [getcomposer.org](https://getcomposer.org/) |
-| **Node.js** | 18+ | Comes with NPM — [nodejs.org](https://nodejs.org/) |
+| **Node.js** | 18+ | Optional — the app runs without it. Only needed to rebuild front-end assets ([§7](#7-optional-front-end-assets)) or to use `composer dev` ([§8](#8-run-the-app)) |
 | **MySQL or MariaDB** | 8.0+ / 10.5+ | Optional — SQLite works out of the box for testing |
-| **Git** | latest | To clone the repository |
 
 ### Recommended (Windows)
 - **[XAMPP](https://www.apachefriends.org/)** or **[Laragon](https://laragon.org/)** — bundles PHP + MySQL + Apache with one installer.
@@ -31,23 +30,18 @@ Open a terminal and run:
 ```bash
 php -v          # should show 8.2.x or higher
 composer -V     # should show Composer 2.x
-node -v         # should show v18+ or v20+
-npm -v
+node -v         # optional — see the Node.js row above
 ```
-If any of these fail, install the missing tool before continuing.
+If either of the first two fails, install the missing tool before continuing.
 
 ---
 
-## 2. Clone the Repository
+## 2. Project Layout
 
-```bash
-git clone <repository-url> Inventory-Monitoring-System-v2
-cd Inventory-Monitoring-System-v2
-```
+Unpack the project folder anywhere on your machine. Inside it:
 
-The project layout is:
 ```
-Inventory-Monitoring-System-v2/
+fablab-inventory/
 └── backend/        ← Laravel app (all setup commands run here)
     └── docs/       ← User guides
 ```
@@ -125,7 +119,13 @@ GOOGLE_REDIRECT_URI=http://localhost:8000/auth/google/callback
 Get credentials from [Google Cloud Console → APIs & Services → Credentials](https://console.cloud.google.com/apis/credentials). If you leave these blank, normal email/password login still works.
 
 ### 4.5 (Optional) Configure SMS gateway
-The OTP/phone verification uses a **MacroDroid Android device on your LAN**. For local testing you can leave SMS unconfigured — the OTP will still be generated and logged. To enable real SMS delivery, point the app at your MacroDroid endpoint (configured inside the relevant controller — search for the SMS URL).
+OTP and phone verification send through **[PhilSMS](https://philsms.com/)**, read by `app/Services/SmsService.php`. These keys are **not** in `.env.example`, so add them yourself if you want real delivery:
+```env
+PHILSMS_API_TOKEN=your-api-token-here
+PHILSMS_SENDER=FabLabs
+PHILSMS_URL=https://dashboard.philsms.com/api/v3
+```
+Leave them out for local testing — the OTP is still generated and written to `storage/logs/laravel.log`, which is enough to complete a registration.
 
 ### 4.6 (Optional) Configure email
 By default `.env.example` ships with `MAIL_MAILER=log` — outgoing emails (e.g., password-reset codes) are written to `storage/logs/laravel.log` instead of being sent. To enable real email, set `MAIL_MAILER=smtp` and fill in the `MAIL_HOST`, `MAIL_PORT`, `MAIL_USERNAME`, `MAIL_PASSWORD` lines with credentials from your SMTP provider (Gmail SMTP, Mailtrap, SendGrid, etc.).
@@ -165,28 +165,55 @@ php artisan storage:link
 
 ---
 
-## 7. Install Frontend Dependencies & Build Assets
+## 7. (Optional) Front-end Assets
+
+**You can skip this step.** The interface is server-rendered Blade, and every front-end library it uses — Bootstrap 5, Bootstrap Icons, Google Fonts, ApexCharts, three.js, JsBarcode — is loaded from a CDN in the Blade layouts. There is no build step between you and a working app.
+
+The only Vite-managed files are `resources/css/app.css` and `resources/js/app.js`, which are near-empty stubs. Both layouts guard the directive that loads them:
+
+```blade
+@if (file_exists(public_path('build/manifest.json')) || file_exists(public_path('hot')))
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
+@endif
+```
+
+So with no `public/build/` and no Vite dev server, the tag is skipped and nothing breaks. Run the build only if you start putting your own CSS or JS into those two files:
 
 ```bash
 npm install
-npm run build
+npm run build      # or: npm run dev, for a hot-reloading dev server
 ```
 
-- `npm install` downloads Vite, axios, and the 3D mesh tooling (`@gltf-transform/*`, `draco3dgltf`, `meshoptimizer`) used by the customization studio.
-- `npm run build` compiles CSS/JS into `public/build/` for production.
-
-> During development, use `npm run dev` instead of `npm run build` — it starts a hot-reloading Vite dev server.
+> Because the CDN libraries are fetched by the browser, the app needs an internet connection to look right — offline, the pages render unstyled.
 
 ---
 
 ## 8. Run the App
 
-### Easy mode — one command does everything
+### Normal mode — one command
 From `backend/`:
+```bash
+php artisan serve
+```
+That's the whole thing. Open `http://localhost:8000` and log in. Notifications are written straight to the database rather than queued, so no worker is needed for them.
+
+Two optional extras, each in its own terminal:
+```bash
+php artisan schedule:work      # only for the daily overdue purchase-order check
+php artisan queue:listen       # only if you later move work onto the queue
+```
+
+> Scheduled tasks are registered in `bootstrap/app.php` — currently just the
+> overdue purchase-order check, which runs daily at 07:00. Without a scheduler
+> process (or the cron entry in [§12](#12-production-deployment-notes) in
+> production) that check never runs, and overdue POs raise no notification.
+
+### Everything at once — needs Node
+If you have Node installed and want the extras plus a live log tail in one window:
 ```bash
 composer dev
 ```
-This starts five processes concurrently (color-coded in your terminal):
+This shells out to `npx concurrently`, so it **will not work without Node**, even though the app itself doesn't need it. It starts five processes (color-coded in your terminal):
 - `php artisan serve` — web server on `http://localhost:8000`
 - `php artisan queue:listen` — background queue worker (notifications, etc.)
 - `php artisan schedule:work` — task scheduler (the daily overdue purchase-order check)
@@ -194,20 +221,6 @@ This starts five processes concurrently (color-coded in your terminal):
 - `npm run dev` — Vite hot-reload
 
 Hit `Ctrl+C` to stop all five at once.
-
-### Manual mode — one process per terminal
-If `composer dev` isn't available or you prefer separate windows:
-```bash
-php artisan serve              # Terminal 1
-php artisan queue:listen       # Terminal 2 (optional, for notifications)
-php artisan schedule:work      # Terminal 3 (optional, for scheduled checks)
-npm run dev                    # Terminal 4
-```
-
-> Scheduled tasks are registered in `bootstrap/app.php` — currently the overdue
-> purchase-order check, which runs daily at 07:00. Without a scheduler process
-> (or the cron entry below in production) that check never runs, and overdue POs
-> raise no notification.
 
 ### Open in your browser
 Navigate to **[http://localhost:8000](http://localhost:8000)** and log in with one of the [seeded accounts](#default-seeded-accounts).
@@ -236,9 +249,9 @@ If all five pass, the system is set up correctly.
 | **`SQLSTATE[HY000] [2002] No connection`** | MySQL isn't running, or `DB_*` values in `.env` don't match your local DB. Start MySQL (XAMPP/Laragon) or switch to SQLite. |
 | **`could not find driver` (pdo_mysql)** | Enable `extension=pdo_mysql` in your `php.ini`, then restart your terminal. |
 | **`419 Page Expired`** on login forms | `APP_KEY` was changed after sessions were created. Clear `storage/framework/sessions/*` and your browser cookies. |
-| **Vite "manifest not found"** | You forgot `npm run build` (production) or `npm run dev` (local). |
+| **Pages render unstyled** | The CSS comes from a CDN — check the machine's internet connection. |
 | **Images return 404** | You skipped `php artisan storage:link`. |
-| **OTP never arrives during registration** | The MacroDroid SMS gateway isn't configured. For local dev, check `storage/logs/laravel.log` — the OTP is logged. |
+| **OTP never arrives during registration** | The PhilSMS keys aren't set ([§4.5](#45-optional-configure-sms-gateway)). For local dev, check `storage/logs/laravel.log` — the OTP is logged there. |
 | **`Class "GD" not found` (PDF/image export)** | Enable `extension=gd` in `php.ini`. |
 | **Slow first page-load** | Run `php artisan config:cache && php artisan route:cache` in production. Skip in dev (changes won't pick up). |
 
@@ -270,7 +283,7 @@ This guide targets **local development**. For a production deployment, additiona
 - Set `APP_URL` to your real domain (e.g., `https://inventory.example.com`).
 - Serve via Apache or Nginx with a proper virtual host pointing to `backend/public/`.
 - Run `php artisan config:cache`, `route:cache`, and `view:cache` for performance.
-- Run `npm run build` (not `dev`) to compile minified assets.
+- Only if you added your own CSS/JS to `resources/`, run `npm run build` (not `dev`) to compile minified assets. A stock deployment doesn't need Node at all.
 - Configure a real mail driver, real SMS gateway, real database credentials.
 - Set up a queue worker as a system service (systemd / supervisor) instead of `queue:listen`.
 - Run `php artisan images:offload` once, after `storage:link`, to move any images still held in the database as base64 onto the public disk. `--dry-run` lists what would move. Rows it hasn't converted keep rendering either way.
