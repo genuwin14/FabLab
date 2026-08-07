@@ -8,6 +8,8 @@ This folder holds the three role guides for the FABLAB Inventory Monitoring Syst
 | [Staff Guide](StaffUserGuide.md) | The people who fulfil orders and run procurement | `/staff/dashboard` |
 | [Admin Guide](AdminUserGuide.md) | The people who own the catalog, approve orders, and report | `/admin/dashboard` |
 
+There is a fourth document that cuts across all three: the **[System Process Guide](SystemProcess.md)** walks every process in the order you actually have to do them — categories before products, suppliers before raw materials, checkout before review before production — and ends with a chapter-by-chapter script for recording a demo or training video.
+
 The three guides describe one shared system, so they cross-reference each other constantly. When a section ends with a **Hand-off** note, it tells you which role picks the work up next and links to the exact section they'll be reading.
 
 Related documents: [Setup Guide](../Setup.md) (installing and running the app), [Module Flow](../ModuleFlow.md) and [Database Schema](../DatabaseSchema.md) (developer-facing detail).
