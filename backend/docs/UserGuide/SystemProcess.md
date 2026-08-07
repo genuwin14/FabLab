@@ -11,7 +11,7 @@ The three role guides ([Customer](CustomerUserGuide.md) · [Staff](StaffUserGuid
 
 | | |
 | :--- | :--- |
-| Related | [User Guides hub](README.md) · [Setup Guide](../Setup.md) · [Module Flow](../ModuleFlow.md) |
+| Related | [User Guides hub](README.md) · [Setup / README](../../README.md) |
 | Roles used below | **A** = Admin · **S** = Staff · **C** = Customer |
 
 ---
@@ -513,7 +513,7 @@ Every status change notifies all staff and admins.
 
 ## F5. Overdue chasing
 
-A daily **07:00** check flags any PO still `sent` or `confirmed` past its expected delivery date and notifies the team **once per PO**. It needs Laravel's scheduler running on the server — locally that comes up with `composer dev`; in production it needs the cron entry in [Setup §12](../Setup.md#12-production-deployment-notes). Without it, overdue POs pass silently.
+A daily **07:00** check flags any PO still `sent` or `confirmed` past its expected delivery date and notifies the team **once per PO**. It needs Laravel's scheduler running on the server — locally that comes up with `composer dev`; in production it needs the cron entry in [README §12](../../README.md#12-production-deployment-notes). Without it, overdue POs pass silently.
 
 ---
 

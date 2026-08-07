@@ -1,0 +1,4 @@
+# Internal working docs, kept out of the repo.
+# The leading slash anchors this to the repository root, so the user
+# guides in backend/docs/ are still tracked.
+/docs/

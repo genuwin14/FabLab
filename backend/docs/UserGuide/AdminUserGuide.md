@@ -196,7 +196,7 @@ Staff see this same watchlist without the assign action ([Staff Guide §6](Staff
 - **Marking `delivered` is what adds stock.** Moving a PO back out of `delivered` takes the same quantities off again.
 - Every status change notifies all staff and admins; POs past their expected delivery date raise an overdue alert.
 
-The overdue alert is a daily 07:00 check and needs Laravel's scheduler running on the server — locally it comes up with `composer dev`, in production it needs the cron entry in [Setup §12](../Setup.md#12-production-deployment-notes). Without it, overdue POs pass silently.
+The overdue alert is a daily 07:00 check and needs Laravel's scheduler running on the server — locally it comes up with `composer dev`, in production it needs the cron entry in [README §12](../../README.md#12-production-deployment-notes). Without it, overdue POs pass silently.
 
 ---
 

@@ -12,7 +12,7 @@ There is a fourth document that cuts across all three: the **[System Process Gui
 
 The three guides describe one shared system, so they cross-reference each other constantly. When a section ends with a **Hand-off** note, it tells you which role picks the work up next and links to the exact section they'll be reading.
 
-Related documents: [Setup Guide](../Setup.md) (installing and running the app), [Module Flow](../ModuleFlow.md) and [Database Schema](../DatabaseSchema.md) (developer-facing detail).
+Related documents: the [README](../../README.md) (installing and running the app).
 
 ---
 
@@ -177,7 +177,7 @@ The bell in the top bar polls every 30 seconds and shows the ten most recent ite
 | Purchase order status changed | Staff + Admins | That PO |
 | Purchase order overdue | Staff + Admins | That PO |
 
-The overdue check runs daily at 07:00 and flags POs still `sent` or `confirmed` past their expected delivery date, once each. It needs Laravel's scheduler running on the server — see [Setup §8](../Setup.md#8-run-the-app).
+The overdue check runs daily at 07:00 and flags POs still `sent` or `confirmed` past their expected delivery date, once each. It needs Laravel's scheduler running on the server — see [README §8](../../README.md#8-run-the-app).
 
 ---
 
