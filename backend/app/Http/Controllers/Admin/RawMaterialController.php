@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Http\Controllers\Concerns\RecordsMaterialUsage;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\RawMaterial;
@@ -9,6 +10,13 @@ use App\Models\Supplier;
 
 class RawMaterialController extends Controller
 {
+    use RecordsMaterialUsage;
+
+    protected function usageRoutePrefix(): string
+    {
+        return 'admin';
+    }
+
     public function index(Request $request)
     {
         $perPage = (int) $request->query('per_page', 10);
@@ -33,7 +41,17 @@ class RawMaterialController extends Controller
 
         $rawMaterials = $query->latest()->paginate($perPage)->withQueryString();
         $suppliers = Supplier::all();
-        return view('admin.raw-materials.index', compact('rawMaterials', 'suppliers', 'perPage', 'search'));
+
+        // Usage Log tab. Rendered alongside the table rather than fetched on
+        // demand, so a deep link like ?tab=log lands on a populated pane.
+        $movements = $this->usageLog($request);
+        $materialOptions = RawMaterial::orderBy('name')->get(['raw_material_id', 'name']);
+        $activeTab = $request->query('tab') === 'log' ? 'log' : 'materials';
+
+        return view('admin.raw-materials.index', compact(
+            'rawMaterials', 'suppliers', 'perPage', 'search',
+            'movements', 'materialOptions', 'activeTab'
+        ));
     }
 
     public function store(Request $request)
@@ -44,17 +62,20 @@ class RawMaterialController extends Controller
             'cost_per_unit' => 'required|numeric|min:0',
             'stock_quantity' => 'required|numeric|min:0',
             'low_stock_threshold' => 'required|numeric|min:0',
-            'units_on_display' => 'nullable|numeric|min:0',
-            'units_sponsored' => 'nullable|numeric|min:0',
-            'units_damaged' => 'nullable|numeric|min:0',
-            'units_consumed' => 'nullable|numeric|min:0',
             'department' => 'nullable|in:' . implode(',', \App\Enums\Department::values()),
             'unit' => 'required|string|max:50',
             'description' => 'nullable|string',
             'image_file' => 'nullable|image|max:2048',
         ]);
 
-        $data = $request->except('image_file');
+        // Listed explicitly rather than except('image_file'): the four units_*
+        // counters are the ledger's to write, and mass assignment would let a
+        // crafted request seed them behind its back. A new material starts at
+        // its opening stock with every counter at zero.
+        $data = $request->only([
+            'name', 'supplier_id', 'cost_per_unit', 'stock_quantity',
+            'low_stock_threshold', 'department', 'unit', 'description',
+        ]);
 
         // Images go to the public disk; the row keeps the path.
         if ($request->hasFile('image_file')) {
@@ -72,12 +93,7 @@ class RawMaterialController extends Controller
             'name' => 'required|string|max:255',
             'supplier_id' => 'required|exists:suppliers,supplier_id',
             'cost_per_unit' => 'required|numeric|min:0',
-            'stock_quantity' => 'required|numeric|min:0',
             'low_stock_threshold' => 'required|numeric|min:0',
-            'units_on_display' => 'nullable|numeric|min:0',
-            'units_sponsored' => 'nullable|numeric|min:0',
-            'units_damaged' => 'nullable|numeric|min:0',
-            'units_consumed' => 'nullable|numeric|min:0',
             'department' => 'nullable|in:' . implode(',', \App\Enums\Department::values()),
             'unit' => 'required|string|max:50',
             'description' => 'nullable|string',
@@ -85,7 +101,15 @@ class RawMaterialController extends Controller
         ]);
 
         $rawMaterial = RawMaterial::findOrFail($id);
-        $data = $request->except('image_file');
+
+        // Stock and the four report counters are deliberately absent: they move
+        // only through Record Usage, which writes a ledger row for each change.
+        // Typing a new figure here was the old way and left the counters and the
+        // shelf disagreeing with nothing to show why.
+        $data = $request->only([
+            'name', 'supplier_id', 'cost_per_unit',
+            'low_stock_threshold', 'department', 'unit', 'description',
+        ]);
 
         if ($request->hasFile('image_file')) {
             $data['image_path'] = $rawMaterial->storeImage($request->file('image_file'));

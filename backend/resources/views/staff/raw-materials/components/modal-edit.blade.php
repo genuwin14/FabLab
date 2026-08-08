@@ -67,15 +67,33 @@
                                     class="form-control material-field-input" required>
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label small fw-bold text-muted text-uppercase">Stock Quantity</label>
-                                <input type="number" step="0.01" id="editMaterialStock" name="stock_quantity"
-                                    class="form-control material-field-input" required>
-                            </div>
-                            <div class="col-md-6">
                                 <label class="form-label small fw-bold text-muted text-uppercase">Low Stock Threshold</label>
                                 <input type="number" step="0.01" id="editMaterialThreshold" name="low_stock_threshold"
                                     class="form-control material-field-input" required>
                             </div>
+                        </div>
+
+                        {{-- Stock is no longer typed here. It moves only through
+                             Record Usage, which writes a ledger row for every
+                             change — see the Usage Log tab. --}}
+                        <div class="usage-locked-strip mt-3">
+                            <div class="d-flex align-items-center gap-3">
+                                <i class="bi bi-lock text-muted flex-shrink-0"></i>
+                                <div class="flex-grow-1 min-w-0">
+                                    <p class="text-muted mb-0 text-uppercase fw-semibold"
+                                        style="letter-spacing: 0.06em; font-size: 0.62rem;">Current Stock</p>
+                                    <h6 class="fw-bold text-dark mb-0" id="editMaterialStockDisplay">—</h6>
+                                </div>
+                                <button type="button" class="btn btn-light btn-sm rounded-pill px-3 flex-shrink-0"
+                                    data-bs-dismiss="modal" id="editMaterialUsageLink">
+                                    <i class="bi bi-clipboard-check text-primary me-1"></i>
+                                    <span class="fw-bold" style="font-size: 0.75rem;">Record Usage</span>
+                                </button>
+                            </div>
+                            <p class="text-muted mb-0 mt-2" style="font-size: 0.72rem;">
+                                Consumed, damaged, sponsored and display counts are kept by the usage ledger
+                                so the report always matches the shelf.
+                            </p>
                         </div>
                     </div>
 

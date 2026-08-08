@@ -2,9 +2,11 @@
 
 namespace App\Services;
 
+use App\Enums\StockMovementReason;
 use App\Models\Order;
 use App\Models\RawMaterial;
 use App\Models\Texture;
+use Illuminate\Support\Facades\Auth;
 
 /**
  * Every stock movement an order causes, in one place.
@@ -16,9 +18,17 @@ use App\Models\Texture;
  * Quantities are aggregated per material and per texture before being applied:
  * two lines of different products can draw on the same material, and the
  * shortage check is only meaningful against the combined figure.
+ *
+ * Raw materials go through RawMaterialStockService so an approval lands in the
+ * same ledger — and the same `units_consumed` counter — as usage recorded by
+ * hand. Textures have no ledger of their own yet and still move directly.
  */
 class OrderStockService
 {
+    public function __construct(private RawMaterialStockService $materialStock)
+    {
+    }
+
     /**
      * What this order consumes on approval.
      *
@@ -105,7 +115,11 @@ class OrderStockService
         $requirements = $this->requirements($order);
 
         foreach ($requirements['materials'] as $entry) {
-            $entry['model']->decrement('stock_quantity', $entry['quantity']);
+            $this->materialStock->record($entry['model'], StockMovementReason::Consumed, $entry['quantity'], [
+                'user_id' => Auth::id(),
+                'order_id' => $order->order_id,
+                'note' => "Approved order {$order->order_number}",
+            ]);
         }
 
         foreach ($requirements['textures'] as $entry) {
@@ -116,16 +130,20 @@ class OrderStockService
     /**
      * Put materials and textures back. Call this only for an order that was
      * approved — a rejected order never consumed them.
+     *
+     * Materials are returned by reversing the ledger rows the approval wrote,
+     * not by re-reading the bill of materials: a product's BOM can be edited
+     * between approval and cancellation, and giving back a quantity the order
+     * never took would invent stock.
      */
     public function restore(Order $order): void
     {
-        $requirements = $this->requirements($order);
+        $this->materialStock->reverseForOrder($order->order_id, [
+            'user_id' => Auth::id(),
+            'note' => "Cancelled order {$order->order_number}",
+        ]);
 
-        foreach ($requirements['materials'] as $entry) {
-            $entry['model']->increment('stock_quantity', $entry['quantity']);
-        }
-
-        foreach ($requirements['textures'] as $entry) {
+        foreach ($this->requirements($order)['textures'] as $entry) {
             $entry['model']->increment('stock_quantity', $entry['quantity']);
         }
     }

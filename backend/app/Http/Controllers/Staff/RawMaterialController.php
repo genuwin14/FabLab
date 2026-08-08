@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Staff;
 
+use App\Http\Controllers\Concerns\RecordsMaterialUsage;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\RawMaterial;
@@ -9,6 +10,13 @@ use App\Models\Supplier;
 
 class RawMaterialController extends Controller
 {
+    use RecordsMaterialUsage;
+
+    protected function usageRoutePrefix(): string
+    {
+        return 'staff';
+    }
+
     public function index(Request $request)
     {
         $perPage = (int) $request->query('per_page', 10);
@@ -33,7 +41,17 @@ class RawMaterialController extends Controller
 
         $rawMaterials = $query->latest()->paginate($perPage)->withQueryString();
         $suppliers = Supplier::all();
-        return view('staff.raw-materials.index', compact('rawMaterials', 'suppliers', 'perPage', 'search'));
+
+        // Usage Log tab. Rendered alongside the table rather than fetched on
+        // demand, so a deep link like ?tab=log lands on a populated pane.
+        $movements = $this->usageLog($request);
+        $materialOptions = RawMaterial::orderBy('name')->get(['raw_material_id', 'name']);
+        $activeTab = $request->query('tab') === 'log' ? 'log' : 'materials';
+
+        return view('staff.raw-materials.index', compact(
+            'rawMaterials', 'suppliers', 'perPage', 'search',
+            'movements', 'materialOptions', 'activeTab'
+        ));
     }
 
     public function update(Request $request, $id)
@@ -42,14 +60,20 @@ class RawMaterialController extends Controller
             'name' => 'required|string|max:255',
             'supplier_id' => 'required|exists:suppliers,supplier_id',
             'cost_per_unit' => 'required|numeric|min:0',
-            'stock_quantity' => 'required|numeric|min:0',
             'low_stock_threshold' => 'required|numeric|min:0',
             'unit' => 'required|string|max:50',
             'description' => 'nullable|string',
         ]);
 
         $rawMaterial = RawMaterial::findOrFail($id);
-        $rawMaterial->update($request->all());
+
+        // Stock moves only through Record Usage — see the note on the admin
+        // controller. update($request->all()) used to let this form write
+        // stock_quantity straight over the top of it.
+        $rawMaterial->update($request->only([
+            'name', 'supplier_id', 'cost_per_unit',
+            'low_stock_threshold', 'unit', 'description',
+        ]));
 
         return redirect()->route('staff.raw-materials.index')->with('success', 'Raw material updated successfully.');
     }

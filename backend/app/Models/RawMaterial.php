@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class RawMaterial extends Model
@@ -41,5 +42,15 @@ class RawMaterial extends Model
     public function supplier(): BelongsTo
     {
         return $this->belongsTo(Supplier::class, 'supplier_id', 'supplier_id');
+    }
+
+    /**
+     * The stock ledger — every deduction, correction and reversal, newest
+     * first. Written only by RawMaterialStockService.
+     */
+    public function movements(): HasMany
+    {
+        return $this->hasMany(RawMaterialMovement::class, 'raw_material_id', 'raw_material_id')
+            ->latest('movement_id');
     }
 }

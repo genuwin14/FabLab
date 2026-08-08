@@ -38,6 +38,30 @@
                         </div>
                     @endif
 
+                    @if(session('error'))
+                        <div class="alert alert-danger alert-dismissible fade show rounded-4 border-0 shadow-sm mb-4" role="alert">
+                            {{ session('error') }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    @endif
+
+                    @if($errors->any())
+                        <div class="alert alert-danger alert-dismissible fade show rounded-4 border-0 shadow-sm mb-4" role="alert">
+                            <ul class="mb-0 ps-3">
+                                @foreach($errors->all() as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    @endif
+
+                    @include('raw-materials.components.tabs', ['routePrefix' => 'admin'])
+
+                    <div class="tab-content">
+                    <div class="tab-pane fade {{ $activeTab === 'materials' ? 'show active' : '' }}"
+                        id="pane-materials" role="tabpanel" aria-labelledby="tab-materials">
+
                     <!-- Search & Actions -->
                     <div class="card border-0 shadow-sm rounded-4 mb-4">
                         <div class="card-body p-3">
@@ -137,6 +161,15 @@
                                                 <td class="text-muted small text-uppercase">{{ $material->unit }}</td>
                                                 <td class="text-end pe-4">
                                                     <button class="btn btn-light btn-sm rounded-circle me-1"
+                                                        data-bs-toggle="modal" data-bs-target="#recordUsageModal"
+                                                        data-id="{{ $material->raw_material_id }}"
+                                                        data-name="{{ $material->name }}"
+                                                        data-stock="{{ $material->stock_quantity }}"
+                                                        data-unit="{{ $material->unit }}"
+                                                        title="Record usage">
+                                                        <i class="bi bi-clipboard-check text-primary"></i>
+                                                    </button>
+                                                    <button class="btn btn-light btn-sm rounded-circle me-1"
                                                         data-bs-toggle="modal" data-bs-target="#editRawMaterialModal"
                                                         data-id="{{ $material->raw_material_id }}"
                                                         data-name="{{ $material->name }}"
@@ -192,12 +225,20 @@
                                         </span>
                                     </div>
                                     <nav class="flex-shrink-0">
-                                        {{ $rawMaterials->links() }}
+                                        {{ $rawMaterials->appends(['tab' => 'materials'])->links() }}
                                     </nav>
                                 </div>
                             </div>
                         </div>
                     </div>
+
+                    </div><!-- /#pane-materials -->
+
+                    <div class="tab-pane fade {{ $activeTab === 'log' ? 'show active' : '' }}"
+                        id="pane-log" role="tabpanel" aria-labelledby="tab-log">
+                        @include('raw-materials.components.usage-log', ['routePrefix' => 'admin'])
+                    </div><!-- /#pane-log -->
+                    </div><!-- /.tab-content -->
 
                 </div>
             </main>
@@ -210,6 +251,10 @@
     @include('admin.raw-materials.components.modal-edit')
     <!-- Delete Raw Material Modal -->
     @include('admin.raw-materials.components.modal-delete')
+    <!-- Stock ledger: record a movement, and undo one -->
+    @include('raw-materials.components.modal-record-usage', ['routePrefix' => 'admin'])
+    @include('raw-materials.components.modal-reverse', ['routePrefix' => 'admin'])
+    @include('raw-materials.components.usage-styles')
 
     <style>
         /* ============================================
@@ -493,15 +538,19 @@
                 document.getElementById('editMaterialName').value = name;
                 document.getElementById('editMaterialSupplier').value = supplierId;
                 document.getElementById('editMaterialCost').value = cost;
-                document.getElementById('editMaterialStock').value = stock;
                 document.getElementById('editMaterialThreshold').value = threshold;
                 document.getElementById('editMaterialUnit').value = unit;
                 document.getElementById('editMaterialDescription').value = description;
                 document.getElementById('editMaterialDepartment').value = button.getAttribute('data-department') || '';
-                document.getElementById('editMaterialDisplay').value = button.getAttribute('data-units_on_display') || 0;
-                document.getElementById('editMaterialSponsored').value = button.getAttribute('data-units_sponsored') || 0;
-                document.getElementById('editMaterialDamaged').value = button.getAttribute('data-units_damaged') || 0;
-                document.getElementById('editMaterialConsumed').value = button.getAttribute('data-units_consumed') || 0;
+                document.getElementById('editMaterialStockDisplay').textContent = stock + ' ' + unit;
+
+                // Carry this material over to Record Usage, since stock is no
+                // longer editable on this form.
+                var usageLink = document.getElementById('editMaterialUsageLink');
+                usageLink.setAttribute('data-id', id);
+                usageLink.setAttribute('data-name', name);
+                usageLink.setAttribute('data-stock', stock);
+                usageLink.setAttribute('data-unit', unit);
 
                 var image = button.getAttribute('data-image');
                 var preview = document.getElementById('editMaterialPreview');
@@ -512,6 +561,16 @@
                     preview.src = '#';
                     preview.classList.add('d-none');
                 }
+            });
+
+            // Hand off from Edit to Record Usage. Waiting for the first modal
+            // to finish hiding avoids the two backdrops stacking.
+            document.getElementById('editMaterialUsageLink').addEventListener('click', function () {
+                var link = this;
+                editModal.addEventListener('hidden.bs.modal', function once() {
+                    editModal.removeEventListener('hidden.bs.modal', once);
+                    bootstrap.Modal.getOrCreateInstance(document.getElementById('recordUsageModal')).show(link);
+                });
             });
 
             // Delete Modal Logic
@@ -525,6 +584,16 @@
                 form.action = '/admin/raw-materials/' + id;
 
                 document.getElementById('deleteMaterialName').textContent = name;
+            });
+
+            // Keep ?tab= in step with the visible pane, so a refresh — or a
+            // pagination link rendered from the current URL — stays put.
+            document.querySelectorAll('#rawMaterialTabs [data-tab-key]').forEach(function (tab) {
+                tab.addEventListener('shown.bs.tab', function () {
+                    var url = new URL(window.location.href);
+                    url.searchParams.set('tab', tab.getAttribute('data-tab-key'));
+                    window.history.replaceState({}, '', url.toString());
+                });
             });
         });
     </script>

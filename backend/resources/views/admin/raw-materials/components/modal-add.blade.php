@@ -96,32 +96,14 @@
                             </div>
                         </div>
 
-                        <h6 class="material-section-title mt-4">
-                            <i class="bi bi-bar-chart-fill me-2"></i>Report Tracking
-                        </h6>
-
-                        <div class="row g-3">
-                            <div class="col-md-6">
-                                <label class="form-label small fw-bold text-muted text-uppercase">Units on Display</label>
-                                <input type="number" step="0.01" name="units_on_display"
-                                    class="form-control material-field-input" value="0">
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label small fw-bold text-muted text-uppercase">Sponsored Units</label>
-                                <input type="number" step="0.01" name="units_sponsored"
-                                    class="form-control material-field-input" value="0">
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label small fw-bold text-muted text-uppercase">Damaged Units</label>
-                                <input type="number" step="0.01" name="units_damaged"
-                                    class="form-control material-field-input" value="0">
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label small fw-bold text-muted text-uppercase">Consumed Units</label>
-                                <input type="number" step="0.01" name="units_consumed"
-                                    class="form-control material-field-input" value="0">
-                            </div>
-                        </div>
+                        {{-- No consumed/damaged/sponsored/display fields here: a new
+                             material starts at zero on all four and only Record Usage
+                             moves them, so the report can never drift from the shelf. --}}
+                        <p class="text-muted mb-0 mt-3 d-flex align-items-start gap-2" style="font-size: 0.72rem;">
+                            <i class="bi bi-info-circle mt-1 flex-shrink-0"></i>
+                            <span>Initial stock is the opening count. Every change after this is recorded through
+                                <span class="fw-semibold">Record Usage</span> and shows up in the Usage Log.</span>
+                        </p>
                     </div>
 
                     <div class="material-modal-footer">

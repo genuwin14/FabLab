@@ -86,6 +86,9 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::post('/admin/raw-materials', [\App\Http\Controllers\Admin\RawMaterialController::class, 'store'])->name('admin.raw-materials.store');
     Route::put('/admin/raw-materials/{id}', [\App\Http\Controllers\Admin\RawMaterialController::class, 'update'])->name('admin.raw-materials.update');
     Route::delete('/admin/raw-materials/{id}', [\App\Http\Controllers\Admin\RawMaterialController::class, 'destroy'])->name('admin.raw-materials.destroy');
+    // Stock ledger: the only path that moves a material's stock by hand.
+    Route::post('/admin/raw-materials/{id}/usage', [\App\Http\Controllers\Admin\RawMaterialController::class, 'storeUsage'])->name('admin.raw-materials.usage.store');
+    Route::post('/admin/raw-material-movements/{movement}/reverse', [\App\Http\Controllers\Admin\RawMaterialController::class, 'reverseUsage'])->name('admin.raw-materials.usage.reverse');
     // Admin Routes/Textures
     Route::get('/admin/textures', [\App\Http\Controllers\Admin\TextureController::class, 'index'])->name('admin.textures.index');
     Route::post('/admin/textures', [\App\Http\Controllers\Admin\TextureController::class, 'store'])->name('admin.textures.store');
@@ -166,6 +169,9 @@ Route::middleware(['auth:sanctum'])->group(function () {
     // Staff Routes/Raw Materials (read + edit only)
     Route::get('/staff/raw-materials', [\App\Http\Controllers\Staff\RawMaterialController::class, 'index'])->name('staff.raw-materials.index');
     Route::put('/staff/raw-materials/{id}', [\App\Http\Controllers\Staff\RawMaterialController::class, 'update'])->name('staff.raw-materials.update');
+    // Stock ledger: staff record usage but cannot correct a count.
+    Route::post('/staff/raw-materials/{id}/usage', [\App\Http\Controllers\Staff\RawMaterialController::class, 'storeUsage'])->name('staff.raw-materials.usage.store');
+    Route::post('/staff/raw-material-movements/{movement}/reverse', [\App\Http\Controllers\Staff\RawMaterialController::class, 'reverseUsage'])->name('staff.raw-materials.usage.reverse');
     // Staff Routes/Textures (read + edit only)
     Route::get('/staff/textures', [\App\Http\Controllers\Staff\TextureController::class, 'index'])->name('staff.textures.index');
     Route::put('/staff/textures/{id}', [\App\Http\Controllers\Staff\TextureController::class, 'update'])->name('staff.textures.update');
