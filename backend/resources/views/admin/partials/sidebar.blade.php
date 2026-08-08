@@ -433,34 +433,40 @@ if (!window.adminSidebarInit) {
             });
         });
 
-        // ── Hover-to-open for collapsible submenu groups (e.g. Reports) ──
+        // ── Fly-out positioning for collapsible submenu groups (e.g. Reports) ──
+        // On the expanded sidebar the group opens and closes only on click, which
+        // Bootstrap's data-bs-toggle="collapse" handles on its own. Collapsed to
+        // icons there is no width to expand into, so CSS reveals the submenu as a
+        // hover fly-out and the only job left here is placing it — position:fixed
+        // needs viewport coordinates JS has to measure.
         document.querySelectorAll('.sidebar-has-submenu').forEach(toggle => {
             const li = toggle.closest('.nav-item');
             const target = document.querySelector(toggle.getAttribute('href'));
             const inner = toggle.closest('.sidebar-inner');
-            if (!li || !target || !window.bootstrap) return;
-            let hideTimer;
+            const scroller = toggle.closest('.custom-scrollbar');
+            if (!li || !target) return;
 
             li.addEventListener('mouseenter', () => {
-                if (inner && inner.classList.contains('sidebar-collapsed')) {
-                    // Position the fly-out next to the icon (fixed coords, viewport-relative).
-                    const r = toggle.getBoundingClientRect();
-                    target.style.setProperty('--flyout-top', Math.max(8, r.top) + 'px');
-                    target.style.setProperty('--flyout-left', (r.right + 10) + 'px');
-                    return;
-                }
-                clearTimeout(hideTimer);
-                bootstrap.Collapse.getOrCreateInstance(target, { toggle: false }).show();
+                if (!inner || !inner.classList.contains('sidebar-collapsed')) return;
+                const r = toggle.getBoundingClientRect();
+                target.style.setProperty('--flyout-top', Math.max(8, r.top) + 'px');
+                target.style.setProperty('--flyout-left', (r.right + 10) + 'px');
             });
-            li.addEventListener('mouseleave', () => {
-                if (inner && inner.classList.contains('sidebar-collapsed')) return;
-                clearTimeout(hideTimer);
-                hideTimer = setTimeout(() => {
-                    // Keep it open when one of its links is the active page.
-                    if (target.querySelector('.nav-link.active')) return;
-                    bootstrap.Collapse.getOrCreateInstance(target, { toggle: false }).hide();
-                }, 220);
-            });
+
+            // These groups sit at the bottom of the menu, so an opened submenu can
+            // land below the fold. Scroll the menu down by however far it overhangs
+            // and no further, leaving the rest of the sidebar where the user left it.
+            function revealSubmenu() {
+                if (!scroller || (inner && inner.classList.contains('sidebar-collapsed'))) return;
+                const overhang = target.getBoundingClientRect().bottom - scroller.getBoundingClientRect().bottom;
+                if (overhang > 0) scroller.scrollBy({ top: overhang + 8, behavior: 'smooth' });
+            }
+
+            // Fires after the expand transition, when the submenu's height is final.
+            target.addEventListener('shown.bs.collapse', revealSubmenu);
+
+            // Already open on arrival (a Reports page renders it expanded).
+            if (target.classList.contains('show')) requestAnimationFrame(revealSubmenu);
         });
     });
 }
