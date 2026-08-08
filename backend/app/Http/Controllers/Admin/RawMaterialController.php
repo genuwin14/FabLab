@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Concerns\RecordsMaterialUsage;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use App\Models\RawMaterial;
 use App\Models\Supplier;
 
@@ -63,9 +64,11 @@ class RawMaterialController extends Controller
             'stock_quantity' => 'required|numeric|min:0',
             'low_stock_threshold' => 'required|numeric|min:0',
             'department' => 'nullable|in:' . implode(',', \App\Enums\Department::values()),
-            'unit' => 'required|string|max:50',
+            'unit' => ['required', Rule::in(\App\Enums\MaterialUnit::values())],
             'description' => 'nullable|string',
             'image_file' => 'nullable|image|max:2048',
+        ], [
+            'unit.in' => 'Pick a unit from the list.',
         ]);
 
         // Listed explicitly rather than except('image_file'): the four units_*
@@ -89,18 +92,20 @@ class RawMaterialController extends Controller
 
     public function update(Request $request, $id)
     {
+        $rawMaterial = RawMaterial::findOrFail($id);
+
         $request->validate([
             'name' => 'required|string|max:255',
             'supplier_id' => 'required|exists:suppliers,supplier_id',
             'cost_per_unit' => 'required|numeric|min:0',
             'low_stock_threshold' => 'required|numeric|min:0',
             'department' => 'nullable|in:' . implode(',', \App\Enums\Department::values()),
-            'unit' => 'required|string|max:50',
+            'unit' => ['required', Rule::in(\App\Enums\MaterialUnit::allowedFor($rawMaterial->unit))],
             'description' => 'nullable|string',
             'image_file' => 'nullable|image|max:2048',
+        ], [
+            'unit.in' => 'Pick a unit from the list.',
         ]);
-
-        $rawMaterial = RawMaterial::findOrFail($id);
 
         // Stock and the four report counters are deliberately absent: they move
         // only through Record Usage, which writes a ledger row for each change.

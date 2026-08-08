@@ -263,7 +263,7 @@ class RawMaterialUsageTest extends TestCase
         $this->post('/admin/raw-materials', [
             'name' => 'Woven Strap', 'supplier_id' => $this->material->supplier_id,
             'cost_per_unit' => 8, 'stock_quantity' => 50, 'low_stock_threshold' => 5,
-            'unit' => 'm', 'units_consumed' => 300, 'units_damaged' => 12,
+            'unit' => 'meter', 'units_consumed' => 300, 'units_damaged' => 12,
         ])->assertRedirect();
 
         $strap = RawMaterial::where('name', 'Woven Strap')->firstOrFail();

@@ -79,10 +79,8 @@
                                         class="form-control material-field-input fw-bold text-success" required>
                                 </div>
                             </div>
-                            <div class="col-md-6">
-                                <label class="form-label small fw-bold text-muted text-uppercase">Unit</label>
-                                <input type="text" name="unit" class="form-control material-field-input"
-                                    placeholder="e.g. meters" required>
+                            <div class="col-12">
+                                @include('raw-materials.components.unit-select', ['id' => 'addMaterialUnit'])
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label small fw-bold text-muted text-uppercase">Initial Stock</label>

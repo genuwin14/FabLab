@@ -79,6 +79,19 @@ class SeedDataIntegrityTest extends TestCase
         }
     }
 
+    public function test_every_seeded_material_uses_a_listed_unit(): void
+    {
+        $allowed = \App\Enums\MaterialUnit::values();
+
+        foreach (RawMaterial::all() as $material) {
+            $this->assertContains(
+                $material->unit,
+                $allowed,
+                "\"{$material->name}\" is seeded with \"{$material->unit}\", which the unit dropdown does not offer."
+            );
+        }
+    }
+
     public function test_the_seeded_ledger_is_not_empty(): void
     {
         // An empty log would make the assertion above pass trivially.

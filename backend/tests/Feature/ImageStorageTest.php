@@ -95,7 +95,7 @@ class ImageStorageTest extends TestCase
 
         $this->post('/admin/raw-materials', [
             'name' => 'Fabric', 'supplier_id' => $supplier->supplier_id, 'cost_per_unit' => 10,
-            'stock_quantity' => 50, 'low_stock_threshold' => 5, 'unit' => 'm',
+            'stock_quantity' => 50, 'low_stock_threshold' => 5, 'unit' => 'meter',
             'image_file' => UploadedFile::fake()->image('fabric.png'),
         ])->assertRedirect();
 

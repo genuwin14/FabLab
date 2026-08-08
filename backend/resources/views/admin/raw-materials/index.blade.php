@@ -539,7 +539,7 @@
                 document.getElementById('editMaterialSupplier').value = supplierId;
                 document.getElementById('editMaterialCost').value = cost;
                 document.getElementById('editMaterialThreshold').value = threshold;
-                document.getElementById('editMaterialUnit').value = unit;
+                window.setMaterialUnit(document.getElementById('editMaterialUnit'), unit);
                 document.getElementById('editMaterialDescription').value = description;
                 document.getElementById('editMaterialDepartment').value = button.getAttribute('data-department') || '';
                 document.getElementById('editMaterialStockDisplay').textContent = stock + ' ' + unit;
