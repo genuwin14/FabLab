@@ -7,60 +7,74 @@ use App\Models\Product;
 use App\Models\Category;
 use App\Models\Supplier;
 
+/**
+ * What the FabLab sells.
+ *
+ * Everything here is finished output. Plywood, filament and acrylic used to be
+ * seeded as products in a "Raw Materials" category while also existing in the
+ * `raw_materials` table — the same item on two screens, with two stock figures
+ * that drifted apart. They now live only in RawMaterialSeeder, and the products
+ * that consume them are wired up in BOMSeeder.
+ *
+ * The scenarios the rest of the app is tested against are preserved: healthy
+ * multi-supplier stock, an out-of-stock line, a low-stock line with no supplier
+ * attached, an asset, and several customisable items.
+ */
 class ProductSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
     public function run(): void
     {
-        // Get category IDs
-        $rawMaterialsId = Category::where('name', 'Raw Materials')->first()->category_id;
+        $finishedGoodsId = Category::where('name', 'Finished Goods')->first()->category_id;
         $machineryId = Category::where('name', 'Machinery & Equipment')->first()->category_id;
         $merchandiseId = Category::where('name', 'Merchandise')->first()->category_id;
         $furnitureId = Category::where('name', 'Furniture')->first()->category_id;
 
-        // Get Suppliers
         $suppliers = Supplier::all();
         $techSupply = $suppliers->firstWhere('name', 'Tech Supply Co.');
         $genMerch = $suppliers->firstWhere('name', 'General Merchandise Inc.');
         $ecoMaterials = $suppliers->firstWhere('name', 'Eco-Materials Ltd.');
 
+        $dcc = \App\Enums\Department::DigitalCustomizationCenter->value;
+        $book = \App\Enums\Department::BookProduction->value;
+        $wood = \App\Enums\Department::Woodworks->value;
+
         $products = [
-            // Scenario 1: Healthy Stock, Single Supplier (Eco-Materials)
+            // The house speciality, and the clearest example of a bill of
+            // materials: one lace draws a clip, some strap and a card holder.
             [
-                'sku' => 'RW-PLY-001',
-                'name' => 'Plywood 4x8 1/4 inch',
-                'description' => 'Standard marine plywood for laser cutting projects.',
-                'brand' => 'Eco-Wood',
-                'price' => 450.00,
-                'stock' => 50,
-                'units_on_display' => 0,
+                'sku' => 'IDL-LACE-STD',
+                'name' => 'Custom ID Lace',
+                'description' => 'Sublimated lanyard with swivel clip and clear ID card holder.',
+                'brand' => 'FabLab',
+                'price' => 150.00,
+                'stock' => 240,
+                'units_on_display' => 6,
                 'units_sponsored' => 0,
-                'units_damaged' => 4,
-                'units_consumed' => 45,
-                'department' => \App\Enums\Department::Woodworks->value,
-                'category_id' => $rawMaterialsId,
+                'units_damaged' => 0,
+                'units_consumed' => 0,
+                'department' => $dcc,
+                'category_id' => $merchandiseId,
                 'unit' => 'pcs',
-                'low_stock_threshold' => 10,
+                'low_stock_threshold' => 50,
+                'is_customizable' => true,
                 'status' => 'active',
                 'suppliers' => [
-                    ['id' => $ecoMaterials->supplier_id, 'cost' => 380.00, 'moq' => 10, 'lead' => 3, 'default' => true]
+                    ['id' => $genMerch->supplier_id, 'cost' => 78.00, 'moq' => 50, 'lead' => 5, 'default' => true]
                 ]
             ],
-            // Scenario 2: Healthy Stock (Customizable), Multiple Suppliers
+            // Healthy stock, multiple suppliers.
             [
                 'sku' => 'MG-WHT-11',
                 'name' => 'White Ceramic Mug 11oz',
                 'description' => 'Blank white mugs for sublimation printing.',
                 'brand' => 'Yiwu',
                 'price' => 85.00,
-                'stock' => 100, // Healthy stock for easy testing
+                'stock' => 100,
                 'units_on_display' => 9,
                 'units_sponsored' => 1,
                 'units_damaged' => 1,
                 'units_consumed' => 0,
-                'department' => \App\Enums\Department::DigitalCustomizationCenter->value,
+                'department' => $dcc,
                 'category_id' => $merchandiseId,
                 'unit' => 'pcs',
                 'low_stock_threshold' => 24,
@@ -71,80 +85,18 @@ class ProductSeeder extends Seeder
                     ['id' => $techSupply->supplier_id, 'cost' => 55.00, 'moq' => 12, 'lead' => 2, 'default' => false]
                 ]
             ],
-            // Scenario 3: Asset/Machine, Single Supplier
-            [
-                'sku' => 'MC-LSR-6090',
-                'name' => 'CO2 Laser Cutter 60w',
-                'description' => 'Industrial grade laser cutter for engraving and wood cutting.',
-                'brand' => 'ThunderLaser',
-                'price' => 0.00, // Asset
-                'stock' => 2,
-                'units_on_display' => 1,
-                'units_sponsored' => 0,
-                'units_damaged' => 0,
-                'units_consumed' => 0,
-                'department' => \App\Enums\Department::DigitalCustomizationCenter->value,
-                'category_id' => $machineryId,
-                'unit' => 'set',
-                'low_stock_threshold' => 1,
-                'status' => 'functional',
-                'suppliers' => [
-                    ['id' => $techSupply->supplier_id, 'cost' => 150000.00, 'moq' => 1, 'lead' => 30, 'default' => true]
-                ]
-            ],
-            // Scenario 4: Out of Stock! (Needs urgent reorder)
-            [
-                'sku' => 'RW-FIL-PLA-RED',
-                'name' => 'PLA Filament Red 1.75mm',
-                'description' => 'High quality PLA for 3D printing.',
-                'brand' => 'eSun',
-                'price' => 950.00,
-                'stock' => 0, // Out of stock!
-                'units_on_display' => 0,
-                'units_sponsored' => 0,
-                'units_damaged' => 2,
-                'units_consumed' => 30,
-                'department' => \App\Enums\Department::DigitalCustomizationCenter->value,
-                'category_id' => $rawMaterialsId,
-                'unit' => 'roll',
-                'low_stock_threshold' => 5,
-                'status' => 'active',
-                'suppliers' => [
-                    ['id' => $techSupply->supplier_id, 'cost' => 600.00, 'moq' => 5, 'lead' => 5, 'default' => true]
-                ]
-            ],
-            // Scenario 5: Product with NO Supplier (Test warning in monitoring)
-            [
-                'sku' => 'RW-ACR-CLR-3MM',
-                'name' => 'Acrylic Sheet Clear 3mm',
-                'description' => 'Cast acrylic sheet 4x8 ft.',
-                'brand' => 'Sunlight',
-                'price' => 2500.00,
-                'stock' => 3, // Low stock (Threshold 5)
-                'units_on_display' => 0,
-                'units_sponsored' => 0,
-                'units_damaged' => 0,
-                'units_consumed' => 0,
-                // No department assigned — demonstrates "Uncategorized" section in report.
-                'category_id' => $rawMaterialsId,
-                'unit' => 'pcs',
-                'low_stock_threshold' => 5,
-                'status' => 'active',
-                'suppliers' => [] // No suppliers assigned yet
-            ],
-            // Scenario 6: Healthy Stock (Customizable)
             [
                 'sku' => 'MG-BLK-11',
                 'name' => 'Black Ceramic Mug 11oz',
-                'description' => 'Inner color black sublimation mug.',
+                'description' => 'Inner colour black sublimation mug.',
                 'brand' => 'Yiwu',
                 'price' => 95.00,
                 'stock' => 150,
                 'units_on_display' => 5,
                 'units_sponsored' => 12,
                 'units_damaged' => 3,
-                'units_consumed' => 80,
-                'department' => \App\Enums\Department::DigitalCustomizationCenter->value,
+                'units_consumed' => 0,
+                'department' => $dcc,
                 'category_id' => $merchandiseId,
                 'unit' => 'pcs',
                 'low_stock_threshold' => 24,
@@ -154,19 +106,18 @@ class ProductSeeder extends Seeder
                     ['id' => $genMerch->supplier_id, 'cost' => 55.00, 'moq' => 36, 'lead' => 7, 'default' => true]
                 ]
             ],
-            // Scenario 7: Customizable T-Shirt
             [
                 'sku' => 'TS-CTN-WHT',
                 'name' => 'White Cotton T-Shirt',
-                'description' => 'Premium 100% cotton white t-shirt for DTG or vinyl printing.',
+                'description' => 'Premium 100% cotton white t-shirt for DTF or vinyl printing.',
                 'brand' => 'BlueCorner',
                 'price' => 180.00,
                 'stock' => 200,
                 'units_on_display' => 4,
                 'units_sponsored' => 22,
                 'units_damaged' => 6,
-                'units_consumed' => 130,
-                'department' => \App\Enums\Department::DigitalCustomizationCenter->value,
+                'units_consumed' => 0,
+                'department' => $dcc,
                 'category_id' => $merchandiseId,
                 'unit' => 'pcs',
                 'low_stock_threshold' => 50,
@@ -176,28 +127,89 @@ class ProductSeeder extends Seeder
                     ['id' => $genMerch->supplier_id, 'cost' => 110.00, 'moq' => 20, 'lead' => 5, 'default' => true]
                 ]
             ],
-            // Scenario 8: Furniture with complex BOM
+            // Book Production output.
             [
-                'sku' => 'FN-SFA-LTH-BLK',
-                'name' => 'Luxury Leather Sofa (3-Seater)',
-                'description' => 'A premium 3-seater sofa made with high-density foam and genuine leather.',
-                'brand' => 'FabHome',
-                'price' => 45000.00,
-                'stock' => 5,
-                'units_on_display' => 1,
+                'sku' => 'BK-BKLT-A5',
+                'name' => 'A5 Saddle-Stitched Booklet (24pp)',
+                'description' => 'Twenty-four page A5 booklet with a vellum board cover.',
+                'brand' => 'FabLab',
+                'price' => 120.00,
+                'stock' => 85,
+                'units_on_display' => 3,
                 'units_sponsored' => 0,
                 'units_damaged' => 0,
-                'units_consumed' => 2,
-                'department' => \App\Enums\Department::Woodworks->value,
-                'category_id' => $furnitureId,
-                'unit' => 'set',
-                'low_stock_threshold' => 2,
+                'units_consumed' => 0,
+                'department' => $book,
+                'category_id' => $finishedGoodsId,
+                'unit' => 'pcs',
+                'low_stock_threshold' => 20,
+                'status' => 'active',
+                'suppliers' => [
+                    ['id' => $genMerch->supplier_id, 'cost' => 62.00, 'moq' => 25, 'lead' => 4, 'default' => true]
+                ]
+            ],
+            // Out of stock — needs an urgent reorder.
+            [
+                'sku' => 'WD-PLQ-OAK',
+                'name' => 'Engraved Oak Plaque',
+                'description' => 'Laser-engraved solid oak recognition plaque with gloss finish.',
+                'brand' => 'FabLab',
+                'price' => 1450.00,
+                'stock' => 0,
+                'units_on_display' => 2,
+                'units_sponsored' => 0,
+                'units_damaged' => 1,
+                'units_consumed' => 0,
+                'department' => $wood,
+                'category_id' => $finishedGoodsId,
+                'unit' => 'pcs',
+                'low_stock_threshold' => 5,
                 'is_customizable' => true,
                 'status' => 'active',
                 'suppliers' => [
-                    ['id' => $ecoMaterials->supplier_id, 'cost' => 30000.00, 'moq' => 1, 'lead' => 14, 'default' => true]
+                    ['id' => $ecoMaterials->supplier_id, 'cost' => 890.00, 'moq' => 5, 'lead' => 10, 'default' => true]
                 ]
-            ]
+            ],
+            // Low stock AND no supplier attached — exercises the monitoring warning.
+            [
+                'sku' => 'WD-STL-PINE',
+                'name' => 'Pine Study Stool',
+                'description' => 'Flat-pack stool cut on the laser bed and hand-finished.',
+                'brand' => 'FabLab',
+                'price' => 1650.00,
+                'stock' => 3,
+                'units_on_display' => 1,
+                'units_sponsored' => 0,
+                'units_damaged' => 0,
+                'units_consumed' => 0,
+                // No department assigned — demonstrates "Uncategorized" in the report.
+                'category_id' => $furnitureId,
+                'unit' => 'pcs',
+                'low_stock_threshold' => 5,
+                'status' => 'active',
+                'suppliers' => [] // No suppliers assigned yet
+            ],
+            // Asset rather than stock-for-sale.
+            [
+                'sku' => 'MC-LSR-6090',
+                'name' => 'CO2 Laser Cutter 60w',
+                'description' => 'Industrial grade laser cutter for engraving and wood cutting.',
+                'brand' => 'ThunderLaser',
+                'price' => 0.00,
+                'stock' => 2,
+                'units_on_display' => 1,
+                'units_sponsored' => 0,
+                'units_damaged' => 0,
+                'units_consumed' => 0,
+                'department' => $dcc,
+                'category_id' => $machineryId,
+                'unit' => 'set',
+                'low_stock_threshold' => 1,
+                'status' => 'functional',
+                'suppliers' => [
+                    ['id' => $techSupply->supplier_id, 'cost' => 150000.00, 'moq' => 1, 'lead' => 30, 'default' => true]
+                ]
+            ],
         ];
 
         foreach ($products as $productData) {

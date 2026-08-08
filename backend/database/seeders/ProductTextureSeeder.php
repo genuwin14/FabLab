@@ -13,11 +13,15 @@ class ProductTextureSeeder extends Seeder
         $textures = Texture::all()->keyBy('name');
 
         $assignments = [
-            'FN-SFA-LTH-BLK' => [
-                'Smooth Black Leather',
+            'WD-PLQ-OAK' => [
                 'Natural Oak Grain',
                 'Rustic Walnut',
+                'Smooth Black Leather',
+                'Polished Chrome',
+            ],
+            'IDL-LACE-STD' => [
                 'Woven Fabric (Grey)',
+                'Smooth Black Leather',
                 'Polished Chrome',
             ],
             'MG-WHT-11' => [

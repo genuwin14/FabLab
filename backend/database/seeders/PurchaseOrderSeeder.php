@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use App\Models\PurchaseOrder;
 use App\Models\PurchaseOrderItem;
+use App\Models\RawMaterial;
 use App\Models\Supplier;
 use App\Models\Product;
 use App\Models\User;
@@ -29,9 +30,12 @@ class PurchaseOrderSeeder extends Seeder
         $techSupply = $suppliers->firstWhere('name', 'Tech Supply Co.');
         $genMerch = $suppliers->firstWhere('name', 'General Merchandise Inc.');
 
-        $filament = $products->firstWhere('sku', 'RW-FIL-PLA-RED');
         $mugWhite = $products->firstWhere('sku', 'MG-WHT-11');
         $mugBlack = $products->firstWhere('sku', 'MG-BLK-11');
+
+        // Filament is a raw material, not a product — a purchase order line
+        // points at it through raw_material_id.
+        $filament = RawMaterial::where('name', 'PLA Filament Red 1.75mm')->first();
 
         // IF data is missing (e.g. partial seed), skip
         if (!$techSupply || !$genMerch || !$filament || !$mugWhite)
@@ -49,7 +53,7 @@ class PurchaseOrderSeeder extends Seeder
 
         PurchaseOrderItem::create([
             'purchase_order_id' => $po1->purchase_order_id,
-            'product_id' => $filament->product_id, // Red Filament
+            'raw_material_id' => $filament->raw_material_id, // Red Filament
             'quantity' => 5,
             'cost' => 600.00
         ]);

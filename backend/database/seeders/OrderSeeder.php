@@ -23,10 +23,10 @@ class OrderSeeder extends Seeder
         $mugWhite = $products->firstWhere('sku', 'MG-WHT-11');
         $mugBlack = $products->firstWhere('sku', 'MG-BLK-11');
         $tshirt = $products->firstWhere('sku', 'TS-CTN-WHT');
-        $plywood = $products->firstWhere('sku', 'RW-PLY-001');
-        $sofa = $products->firstWhere('sku', 'FN-SFA-LTH-BLK');
+        $idLace = $products->firstWhere('sku', 'IDL-LACE-STD');
+        $plaque = $products->firstWhere('sku', 'WD-PLQ-OAK');
 
-        if (!$mugWhite || !$mugBlack || !$tshirt || !$plywood || !$sofa)
+        if (!$mugWhite || !$mugBlack || !$tshirt || !$idLace || !$plaque)
             return;
 
         // Order 1: PENDING (Awaiting admin approval)
@@ -84,13 +84,13 @@ class OrderSeeder extends Seeder
             'user_id' => $customer->id,
             'status' => 'ready_for_pickup',
             'payment_reference' => 'GCASH-REF-' . rand(100000, 999999),
-            'total_amount' => 2250.00,
+            'total_amount' => 6000.00,
         ]);
         OrderItem::create([
             'order_id' => $o4->order_id,
-            'product_id' => $plywood->product_id,
-            'quantity' => 5,
-            'price' => 450.00,
+            'product_id' => $idLace->product_id,
+            'quantity' => 40,
+            'price' => 150.00,
         ]);
 
         // Order 5: COMPLETED (Historical, picked up last month)
@@ -99,15 +99,15 @@ class OrderSeeder extends Seeder
             'user_id' => $customer->id,
             'status' => 'completed',
             'payment_reference' => 'GCASH-REF-' . rand(100000, 999999),
-            'total_amount' => 45000.00,
+            'total_amount' => 14500.00,
             'created_at' => now()->subMonth(),
             'updated_at' => now()->subMonth()->addDays(3),
         ]);
         OrderItem::create([
             'order_id' => $o5->order_id,
-            'product_id' => $sofa->product_id,
-            'quantity' => 1,
-            'price' => 45000.00,
+            'product_id' => $plaque->product_id,
+            'quantity' => 10,
+            'price' => 1450.00,
         ]);
 
         // Order 6: CANCELLED (Customer changed their mind)

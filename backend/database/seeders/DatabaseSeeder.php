@@ -24,6 +24,9 @@ class DatabaseSeeder extends Seeder
             TextureSeeder::class,
             EquipmentSeeder::class,
             BOMSeeder::class,
+            // Must follow RawMaterialSeeder: it writes the usage ledger that
+            // produces the units_* counters, rather than them being typed in.
+            RawMaterialMovementSeeder::class,
             ProductTextureSeeder::class,
             PurchaseOrderSeeder::class,
             OrderSeeder::class,

@@ -8,26 +8,24 @@ use App\Models\Category;
 class CategorySeeder extends Seeder
 {
     /**
-     * Run the database seeds.
+     * Categories classify **products** — the things the FabLab sells.
+     *
+     * There is deliberately no "Raw Materials" category. Raw materials are not
+     * products: they live in the `raw_materials` table, are drawn down by a
+     * product's bill of materials, and are restocked through purchase orders.
+     * Seeding them as products too meant the same plywood existed twice, once
+     * on each screen, with two stock figures that never agreed.
      */
     public function run(): void
     {
         $categories = [
             [
-                'name' => 'Raw Materials',
-                'description' => 'Unprocessed materials like wood, acrylic, and filament.'
-            ],
-            [
-                'name' => 'Machinery & Equipment',
-                'description' => 'Permanent assets such as laser cutters and 3D printers.'
-            ],
-            [
                 'name' => 'Finished Goods',
-                'description' => 'Ready-to-sell customized products.'
+                'description' => 'Customised output made in-house: lanyards, booklets, engraved items.'
             ],
             [
                 'name' => 'Merchandise',
-                'description' => 'Fablab branded shirts, mugs, and other items.'
+                'description' => 'FabLab branded shirts, mugs, and other items.'
             ],
             [
                 'name' => 'Electronics',
@@ -35,7 +33,11 @@ class CategorySeeder extends Seeder
             ],
             [
                 'name' => 'Furniture',
-                'description' => 'Large scale furniture items like sofas, tables, and chairs.'
+                'description' => 'Woodworks output such as stools, tables, and shelving.'
+            ],
+            [
+                'name' => 'Machinery & Equipment',
+                'description' => 'Permanent assets such as laser cutters and 3D printers.'
             ]
         ];
 

@@ -6,33 +6,65 @@ use Illuminate\Database\Seeder;
 use App\Models\Product;
 use App\Models\RawMaterial;
 
+/**
+ * Bills of materials — what each product is made of, and how much of it.
+ *
+ * This is the link that makes a raw material mean something: approving an
+ * order for 40 ID laces walks this table and draws 40 clips, 36 metres of
+ * strap and 40 card holders off the shelf, each through the usage ledger.
+ */
 class BOMSeeder extends Seeder
 {
     public function run(): void
     {
-        $sofa = Product::where('sku', 'FN-SFA-LTH-BLK')->first();
-        
-        if ($sofa) {
-            $leather = RawMaterial::where('name', 'like', '%Leather%')->first();
-            $foam = RawMaterial::where('name', 'like', '%Foam%')->first();
-            $wood = RawMaterial::where('name', 'like', '%Wood%')->first();
-            $springs = RawMaterial::where('name', 'like', '%Springs%')->first();
+        // quantity_required is per single unit of the product.
+        $recipes = [
+            'IDL-LACE-STD' => [
+                'Lanyard Metal Clip' => 1,
+                'Woven Polyester Strap (16mm)' => 0.9,
+                'PVC ID Card Holder' => 1,
+                'Sublimation Transfer Paper (A4)' => 1,
+            ],
+            'MG-WHT-11' => [
+                'Sublimation Transfer Paper (A4)' => 1,
+            ],
+            'MG-BLK-11' => [
+                'Sublimation Transfer Paper (A4)' => 1,
+            ],
+            'TS-CTN-WHT' => [
+                'Sublimation Transfer Paper (A4)' => 2,
+            ],
+            'BK-BKLT-A5' => [
+                'Bond Paper (A4, 80gsm)' => 6,   // 24 pages, 4 up per sheet
+                'Vellum Board (220gsm)' => 1,
+            ],
+            'WD-PLQ-OAK' => [
+                'Solid Oak Wood Planks' => 0.5,
+                'Wood Varnish (Gloss)' => 0.05,
+            ],
+            'WD-STL-PINE' => [
+                'Plywood 4x8 1/4 inch' => 1.5,
+                'Wood Varnish (Gloss)' => 0.1,
+            ],
+        ];
 
-            $materials = [];
-            if ($leather) $materials[$leather->raw_material_id] = ['quantity_required' => 5.5]; // 5.5 meters
-            if ($foam) $materials[$foam->raw_material_id] = ['quantity_required' => 3.0]; // 3 pcs
-            if ($wood) $materials[$wood->raw_material_id] = ['quantity_required' => 10.0]; // 10 planks
-            if ($springs) $materials[$springs->raw_material_id] = ['quantity_required' => 24.0]; // 24 springs
+        $materials = RawMaterial::all()->keyBy('name');
 
-            $sofa->rawMaterials()->attach($materials);
-        }
+        foreach ($recipes as $sku => $components) {
+            $product = Product::where('sku', $sku)->first();
+            if (! $product) {
+                continue;
+            }
 
-        // Link T-Shirt to Cotton Fabric (Example)
-        $tshirt = Product::where('sku', 'TS-CTN-WHT')->first();
-        if ($tshirt) {
-            $cotton = RawMaterial::where('name', 'like', '%Cotton%')->first();
-            if ($cotton) {
-                $tshirt->rawMaterials()->attach($cotton->raw_material_id, ['quantity_required' => 0.8]); // 0.8 meters per shirt
+            $attach = [];
+            foreach ($components as $name => $quantity) {
+                if ($material = $materials->get($name)) {
+                    $attach[$material->raw_material_id] = ['quantity_required' => $quantity];
+                }
+            }
+
+            if ($attach !== []) {
+                $product->rawMaterials()->sync($attach);
             }
         }
     }

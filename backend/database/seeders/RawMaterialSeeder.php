@@ -6,6 +6,19 @@ use Illuminate\Database\Seeder;
 use App\Models\RawMaterial;
 use App\Models\Supplier;
 
+/**
+ * The components the FabLab consumes making things — the metal clip on an ID
+ * lace, the bond paper inside a booklet, the plank a plaque is cut from.
+ *
+ * Two rules this file follows on purpose:
+ *
+ * 1. Nothing here is also a product. Plywood, filament and acrylic used to be
+ *    seeded on both screens with two stock figures that never agreed.
+ * 2. No `units_consumed` / `units_damaged` / `units_sponsored` /
+ *    `units_on_display` values. Those counters belong to the usage ledger and
+ *    every material starts at zero on all four; RawMaterialMovementSeeder then
+ *    records real movements so the counters and the Usage Log always agree.
+ */
 class RawMaterialSeeder extends Seeder
 {
     public function run(): void
@@ -14,104 +27,129 @@ class RawMaterialSeeder extends Seeder
         $genSupplier = Supplier::where('name', 'General Merchandise Inc.')->first();
         $ecoSupplier = Supplier::where('name', 'Eco-Materials Ltd.')->first();
 
+        $dcc = \App\Enums\Department::DigitalCustomizationCenter->value;
+        $book = \App\Enums\Department::BookProduction->value;
+        $wood = \App\Enums\Department::Woodworks->value;
+
         $materials = [
+            // ---- Digital Customization Center: the ID lace components ----
             [
-                'name' => 'Premium Leather (Black)',
+                'name' => 'Lanyard Metal Clip',
                 'supplier_id' => $techSupplier->supplier_id ?? 1,
-                'cost_per_unit' => 450.00,
-                'stock_quantity' => 100,
-                'units_on_display' => 0,
-                'units_sponsored' => 0,
-                'units_damaged' => 5,
-                'units_consumed' => 35,
-                'low_stock_threshold' => 20,
-                'unit' => 'meter',
-                'description' => 'High quality synthetic leather for upholstery.',
-                'department' => \App\Enums\Department::Woodworks->value,
+                'cost_per_unit' => 6.50,
+                'stock_quantity' => 1200,
+                'low_stock_threshold' => 200,
+                'unit' => 'pcs',
+                'description' => 'Swivel hook clip crimped to the end of an ID lace.',
+                'department' => $dcc,
             ],
             [
-                'name' => 'High-Density Foam (4-inch)',
+                'name' => 'Woven Polyester Strap (16mm)',
                 'supplier_id' => $genSupplier->supplier_id ?? 2,
-                'cost_per_unit' => 850.00,
-                'stock_quantity' => 50,
-                'units_on_display' => 0,
-                'units_sponsored' => 0,
-                'units_damaged' => 0,
-                'units_consumed' => 18,
-                'low_stock_threshold' => 10,
-                'unit' => 'pcs',
-                'description' => 'Standard foam for sofa cushions.',
-                'department' => \App\Enums\Department::Woodworks->value,
-            ],
-            [
-                'name' => 'Solid Oak Wood Planks',
-                'supplier_id' => $ecoSupplier->supplier_id ?? 3,
-                'cost_per_unit' => 1200.00,
-                'stock_quantity' => 200,
-                'units_on_display' => 0,
-                'units_sponsored' => 0,
-                'units_damaged' => 12,
-                'units_consumed' => 88,
-                'low_stock_threshold' => 40,
-                'unit' => 'pcs',
-                'description' => 'Durable oak wood for furniture framing.',
-                'department' => \App\Enums\Department::Woodworks->value,
-            ],
-            [
-                'name' => 'Steel Springs (Heavy Duty)',
-                'supplier_id' => $techSupplier->supplier_id ?? 1,
-                'cost_per_unit' => 45.00,
-                'stock_quantity' => 500,
-                'units_on_display' => 0,
-                'units_sponsored' => 0,
-                'units_damaged' => 25,
-                'units_consumed' => 75,
-                'low_stock_threshold' => 100,
-                'unit' => 'pcs',
-                'description' => 'Industrial grade springs for seating support.',
-                'department' => \App\Enums\Department::Woodworks->value,
-            ],
-            [
-                'name' => 'Cotton Fabric (Beige)',
-                'supplier_id' => $ecoSupplier->supplier_id ?? 3,
-                'cost_per_unit' => 150.00,
-                'stock_quantity' => 300,
-                'units_on_display' => 0,
-                'units_sponsored' => 0,
-                'units_damaged' => 0,
-                'units_consumed' => 0,
-                'low_stock_threshold' => 50,
+                'cost_per_unit' => 12.00,
+                'stock_quantity' => 850,
+                'low_stock_threshold' => 150,
                 'unit' => 'meter',
-                'description' => 'Breathable cotton fabric for cushions.',
-                // No department assigned — demonstrates "Uncategorized" section in report.
+                'description' => 'Sublimation-ready lanyard webbing, 16mm wide.',
+                'department' => $dcc,
             ],
+            [
+                'name' => 'PVC ID Card Holder',
+                'supplier_id' => $genSupplier->supplier_id ?? 2,
+                'cost_per_unit' => 9.00,
+                'stock_quantity' => 940,
+                'low_stock_threshold' => 200,
+                'unit' => 'pcs',
+                'description' => 'Clear vertical card sleeve that hangs from the clip.',
+                'department' => $dcc,
+            ],
+            [
+                'name' => 'Sublimation Transfer Paper (A4)',
+                'supplier_id' => $techSupplier->supplier_id ?? 1,
+                'cost_per_unit' => 4.50,
+                'stock_quantity' => 3000,
+                'low_stock_threshold' => 400,
+                'unit' => 'pcs',
+                'description' => 'Heat transfer paper for mugs, shirts and lanyard straps.',
+                'department' => $dcc,
+            ],
+            [
+                'name' => 'PLA Filament Red 1.75mm',
+                'supplier_id' => $techSupplier->supplier_id ?? 1,
+                'cost_per_unit' => 600.00,
+                // Out of stock — drives the reorder prompts on the dashboard.
+                'stock_quantity' => 0,
+                'low_stock_threshold' => 5,
+                'unit' => 'roll',
+                'description' => 'High quality PLA for the Creality 3D printers.',
+                'department' => $dcc,
+            ],
+
+            // ---- Book Production ----
             [
                 'name' => 'Bond Paper (A4, 80gsm)',
                 'supplier_id' => $genSupplier->supplier_id ?? 2,
-                'cost_per_unit' => 280.00,
-                'stock_quantity' => 2000,
-                'units_on_display' => 0,
-                'units_sponsored' => 0,
-                'units_damaged' => 0,
-                'units_consumed' => 0,
-                'low_stock_threshold' => 200,
+                'cost_per_unit' => 0.80,
+                'stock_quantity' => 12000,
+                'low_stock_threshold' => 2000,
                 'unit' => 'pcs',
-                'description' => 'Standard bond paper for book pages.',
-                'department' => \App\Enums\Department::BookProduction->value,
+                'description' => 'Standard bond paper for booklet pages.',
+                'department' => $book,
             ],
             [
                 'name' => 'Vellum Board (220gsm)',
                 'supplier_id' => $genSupplier->supplier_id ?? 2,
                 'cost_per_unit' => 22.00,
                 'stock_quantity' => 1590,
-                'units_on_display' => 0,
-                'units_sponsored' => 0,
-                'units_damaged' => 0,
-                'units_consumed' => 410,
-                'low_stock_threshold' => 100,
+                'low_stock_threshold' => 300,
                 'unit' => 'pcs',
-                'description' => 'Cover stock for booklet printing.',
-                'department' => \App\Enums\Department::BookProduction->value,
+                'description' => 'Cover stock for saddle-stitched booklets.',
+                'department' => $book,
+            ],
+
+            // ---- Woodworks ----
+            [
+                'name' => 'Plywood 4x8 1/4 inch',
+                'supplier_id' => $ecoSupplier->supplier_id ?? 3,
+                'cost_per_unit' => 380.00,
+                'stock_quantity' => 50,
+                'low_stock_threshold' => 10,
+                'unit' => 'pcs',
+                'description' => 'Marine plywood for laser cutting and stool seats.',
+                'department' => $wood,
+            ],
+            [
+                'name' => 'Solid Oak Wood Planks',
+                'supplier_id' => $ecoSupplier->supplier_id ?? 3,
+                'cost_per_unit' => 1200.00,
+                'stock_quantity' => 200,
+                'low_stock_threshold' => 40,
+                'unit' => 'pcs',
+                'description' => 'Durable oak stock for engraved plaques and framing.',
+                'department' => $wood,
+            ],
+            [
+                'name' => 'Wood Varnish (Gloss)',
+                'supplier_id' => $ecoSupplier->supplier_id ?? 3,
+                'cost_per_unit' => 450.00,
+                // Low stock — sits under its threshold to exercise the alerts.
+                'stock_quantity' => 6,
+                'low_stock_threshold' => 10,
+                'unit' => 'liter',
+                'description' => 'Clear gloss finish for engraved woodwork.',
+                'department' => $wood,
+            ],
+
+            // ---- Deliberately unassigned: fills the report's Uncategorized section ----
+            [
+                'name' => 'Acrylic Sheet Clear 3mm',
+                'supplier_id' => $techSupplier->supplier_id ?? 1,
+                'cost_per_unit' => 2500.00,
+                'stock_quantity' => 3,
+                'low_stock_threshold' => 5,
+                'unit' => 'pcs',
+                'description' => 'Cast acrylic sheet 4x8 ft for laser-cut signage.',
+                // No department assigned — demonstrates "Uncategorized" in the report.
             ],
         ];
 
