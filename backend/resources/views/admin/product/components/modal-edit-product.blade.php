@@ -142,10 +142,12 @@
                                                     class="form-control product-field-input fw-bold text-success" required>
                                             </div>
                                         </div>
-                                        <div class="col-md-6">
-                                            <label class="form-label small fw-bold text-muted text-uppercase">Unit</label>
-                                            <input type="text" name="unit" id="editUnit"
-                                                class="form-control product-field-input" required>
+                                        <div class="col-12">
+                                            @include('shared.unit-select', [
+                                                'id' => 'editUnit',
+                                                'class' => 'product-field-input',
+                                                'hint' => false,
+                                            ])
                                         </div>
                                         <div class="col-md-6">
                                             <label class="form-label small fw-bold text-muted text-uppercase">Stock</label>

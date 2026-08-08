@@ -433,7 +433,7 @@
                 document.getElementById('editTextureCost').value = button.getAttribute('data-cost') || 0;
                 document.getElementById('editTextureStock').value = button.getAttribute('data-stock') || 0;
                 document.getElementById('editTextureThreshold').value = button.getAttribute('data-threshold') || 0;
-                document.getElementById('editTextureUnit').value = button.getAttribute('data-unit') || 'pcs';
+                window.setMaterialUnit(document.getElementById('editTextureUnit'), button.getAttribute('data-unit') || 'pcs');
                 document.getElementById('editTexturePriceModifier').value = button.getAttribute('data-price_modifier') || 0;
 
                 var preview = document.getElementById('editTexturePreview');

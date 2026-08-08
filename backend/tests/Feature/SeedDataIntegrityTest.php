@@ -79,15 +79,19 @@ class SeedDataIntegrityTest extends TestCase
         }
     }
 
-    public function test_every_seeded_material_uses_a_listed_unit(): void
+    public function test_everything_stocked_is_seeded_with_a_listed_unit(): void
     {
         $allowed = \App\Enums\MaterialUnit::values();
 
-        foreach (RawMaterial::all() as $material) {
+        $rows = RawMaterial::all()
+            ->concat(Product::all())
+            ->concat(\App\Models\Texture::all());
+
+        foreach ($rows as $row) {
             $this->assertContains(
-                $material->unit,
+                $row->unit,
                 $allowed,
-                "\"{$material->name}\" is seeded with \"{$material->unit}\", which the unit dropdown does not offer."
+                "\"{$row->name}\" is seeded with \"{$row->unit}\", which the unit dropdown does not offer."
             );
         }
     }

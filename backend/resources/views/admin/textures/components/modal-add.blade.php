@@ -98,11 +98,13 @@
                                 <input type="number" step="0.01" min="0" name="low_stock_threshold"
                                     class="form-control texture-field-input" value="10">
                             </div>
-                            <div class="col-md-4">
-                                <label class="form-label small fw-bold text-muted text-uppercase">Unit</label>
-                                <input type="text" name="unit"
-                                    class="form-control texture-field-input" value="pcs"
-                                    placeholder="pcs / m / kg">
+                            <div class="col-12">
+                                @include('shared.unit-select', [
+                                    'id' => 'addTextureUnit',
+                                    'class' => 'texture-field-input',
+                                    'selected' => 'pcs',
+                                    'hint' => false,
+                                ])
                             </div>
                         </div>
 

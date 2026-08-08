@@ -80,7 +80,7 @@
                                 </div>
                             </div>
                             <div class="col-12">
-                                @include('raw-materials.components.unit-select', ['id' => 'editMaterialUnit'])
+                                @include('shared.unit-select', ['id' => 'editMaterialUnit'])
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label small fw-bold text-muted text-uppercase">Low Stock Threshold</label>

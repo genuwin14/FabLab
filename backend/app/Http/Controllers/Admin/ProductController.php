@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 use App\Models\Product;
 use App\Models\Category;
@@ -66,7 +67,7 @@ class ProductController extends Controller
             'category_id' => 'required|exists:categories,category_id',
             'price' => 'required|numeric|min:0',
             'stock' => 'required|integer|min:0',
-            'unit' => 'required|string',
+            'unit' => ['required', Rule::in(\App\Enums\MaterialUnit::values())],
             'brand' => 'nullable|string|max:255',
             'low_stock_threshold' => 'nullable|integer|min:0',
             'units_on_display' => 'nullable|integer|min:0',
@@ -78,6 +79,8 @@ class ProductController extends Controller
             'status' => 'nullable|string|max:50',
             'image_file' => 'nullable|image|max:2048', // 2MB Max
             // is_customizable handled as checkbox
+        ], [
+            'unit.in' => 'Pick a unit from the list.',
         ]);
 
         $data = $request->except('image_file');
@@ -102,13 +105,15 @@ class ProductController extends Controller
 
     public function update(Request $request, $id)
     {
+        $product = Product::findOrFail($id);
+
         $request->validate([
             'name' => 'required|string|max:255',
             'sku' => 'required|string|max:255|unique:products,sku,' . $id . ',product_id',
             'category_id' => 'required|exists:categories,category_id',
             'price' => 'required|numeric|min:0',
             'stock' => 'required|integer|min:0',
-            'unit' => 'required|string',
+            'unit' => ['required', Rule::in(\App\Enums\MaterialUnit::allowedFor($product->unit))],
             'brand' => 'nullable|string|max:255',
             'low_stock_threshold' => 'nullable|integer|min:0',
             'units_on_display' => 'nullable|integer|min:0',
@@ -119,9 +124,9 @@ class ProductController extends Controller
             'description' => 'nullable|string',
             'status' => 'nullable|string|max:50',
             'image_file' => 'nullable|image|max:2048',
+        ], [
+            'unit.in' => 'Pick a unit from the list.',
         ]);
-
-        $product = Product::findOrFail($id);
 
         $data = $request->except('image_file');
         $data['is_customizable'] = $request->has('is_customizable');

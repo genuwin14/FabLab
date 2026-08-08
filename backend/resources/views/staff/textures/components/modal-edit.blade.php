@@ -90,10 +90,12 @@
                                 <input type="number" step="0.01" min="0" id="editTextureThreshold" name="low_stock_threshold"
                                     class="form-control texture-field-input">
                             </div>
-                            <div class="col-md-4">
-                                <label class="form-label small fw-bold text-muted text-uppercase">Unit</label>
-                                <input type="text" id="editTextureUnit" name="unit"
-                                    class="form-control texture-field-input">
+                            <div class="col-12">
+                                @include('shared.unit-select', [
+                                    'id' => 'editTextureUnit',
+                                    'class' => 'texture-field-input',
+                                    'hint' => false,
+                                ])
                             </div>
                         </div>
                     </div>

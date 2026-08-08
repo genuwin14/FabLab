@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Staff;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use App\Models\Texture;
 use App\Models\Supplier;
 
@@ -38,6 +39,8 @@ class TextureController extends Controller
 
     public function update(Request $request, $id)
     {
+        $texture = Texture::findOrFail($id);
+
         $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
@@ -46,12 +49,20 @@ class TextureController extends Controller
             'cost_per_unit' => 'nullable|numeric|min:0',
             'stock_quantity' => 'nullable|numeric|min:0',
             'low_stock_threshold' => 'nullable|numeric|min:0',
-            'unit' => 'nullable|string|max:50',
+            'unit' => ['nullable', Rule::in(\App\Enums\MaterialUnit::allowedFor($texture->unit))],
             'price_modifier' => 'nullable|numeric|min:0',
+        ], [
+            'unit.in' => 'Pick a unit from the list.',
         ]);
 
-        $texture = Texture::findOrFail($id);
         $data = $request->except('image_file');
+
+        // `textures.unit` is NOT NULL with a 'pcs' default, and Laravel turns an
+        // empty form field into null — which would fail the update rather than
+        // fall back to the default. Dropping the key lets the column decide.
+        if (array_key_exists('unit', $data) && ($data['unit'] === null || $data['unit'] === '')) {
+            unset($data['unit']);
+        }
 
         if ($request->hasFile('image_file')) {
             $data['image_path'] = $texture->storeImage($request->file('image_file'));

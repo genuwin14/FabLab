@@ -722,7 +722,7 @@
                 document.getElementById('editCategoryId').value = product.category_id;
                 document.getElementById('editBrand').value = product.brand;
                 document.getElementById('editPrice').value = product.price;
-                document.getElementById('editUnit').value = product.unit;
+                window.setMaterialUnit(document.getElementById('editUnit'), product.unit);
                 document.getElementById('editStock').value = product.stock;
                 document.getElementById('editLowStock').value = product.low_stock_threshold;
                 document.getElementById('editUnitsOnDisplay').value = product.units_on_display ?? 0;

@@ -1,6 +1,13 @@
 {{--
-    Unit dropdown for a raw material, shared by the add and edit forms across
-    both roles. Caller passes $id and optionally $selected.
+    Unit dropdown, shared by every form that sets one: raw materials, textures
+    and products, across both roles.
+
+    Caller passes:
+      $id        element id (required — the edit modals address it from JS)
+      $selected  current value, for server-rendered forms
+      $class     form-control class of the host modal's theme
+      $required  false where the column is nullable (textures)
+      $hint      false to drop the explanatory line in tighter layouts
 
     Grouped by what is being measured, with a typical material beside each unit
     so the right one is obvious — ink is grams, lanyard strap is metres.
@@ -9,13 +16,18 @@
     use App\Enums\MaterialUnit;
 
     $selected ??= null;
+    $class ??= 'material-field-input';
+    $required ??= true;
+    $hint ??= true;
 @endphp
 
 <label class="form-label small fw-bold text-muted text-uppercase" for="{{ $id }}">
-    Unit <span class="text-danger">*</span>
+    Unit @if($required)<span class="text-danger">*</span>@endif
 </label>
-<select id="{{ $id }}" name="unit" class="form-select material-field-input unit-select" required>
-    <option value="" disabled {{ $selected ? '' : 'selected' }}>Select a unit…</option>
+<select id="{{ $id }}" name="unit" class="form-select {{ $class }} unit-select" {{ $required ? 'required' : '' }}>
+    <option value="" {{ $required ? 'disabled' : '' }} {{ $selected ? '' : 'selected' }}>
+        {{ $required ? 'Select a unit…' : '— None —' }}
+    </option>
     @foreach(MaterialUnit::grouped() as $group => $units)
         <optgroup label="{{ $group }}">
             @foreach($units as $unit)
@@ -26,12 +38,13 @@
         </optgroup>
     @endforeach
 </select>
-<p class="text-muted mb-0 mt-2 d-flex align-items-start gap-2" style="font-size: 0.72rem;">
-    <i class="bi bi-rulers mt-1 flex-shrink-0"></i>
-    <span>Pick how this material is counted. Bills of materials and stock are
-        measured in this unit, so it cannot be mixed — ink in grams, strap in metres,
-        clips in pcs.</span>
-</p>
+@if($hint)
+    <p class="text-muted mb-0 mt-2 d-flex align-items-start gap-2" style="font-size: 0.72rem;">
+        <i class="bi bi-rulers mt-1 flex-shrink-0"></i>
+        <span>Pick how this is counted. Stock and bills of materials are measured in
+            this unit, so it cannot be mixed — ink in grams, strap in metres, clips in pcs.</span>
+    </p>
+@endif
 
 <script>
     // Selecting a legacy unit that predates this list. Rather than silently

@@ -134,17 +134,13 @@
                                             placeholder="0.00" required>
                                     </div>
                                 </div>
-                                <div class="col-md-6">
-                                    <label class="form-label small fw-bold text-muted text-uppercase">Unit</label>
-                                    <select name="unit" class="form-select product-field-input" required>
-                                        <option value="pcs" selected>Pieces (pcs)</option>
-                                        <option value="set">Set</option>
-                                        <option value="box">Box</option>
-                                        <option value="roll">Roll</option>
-                                        <option value="ream">Ream</option>
-                                        <option value="kg">Kg</option>
-                                        <option value="meter">Meter</option>
-                                    </select>
+                                <div class="col-12">
+                                    @include('shared.unit-select', [
+                                        'id' => 'addProductUnit',
+                                        'class' => 'product-field-input',
+                                        'selected' => 'pcs',
+                                        'hint' => false,
+                                    ])
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label small fw-bold text-muted text-uppercase">Current Stock</label>

@@ -123,6 +123,85 @@ class MaterialUnitTest extends TestCase
         $this->assertSame('m', $material->refresh()->unit);
     }
 
+    // ------------------------------------------- textures and products share it
+
+    public function test_a_texture_rejects_a_unit_outside_the_list(): void
+    {
+        $this->post('/admin/textures', [
+            'name' => 'Weave', 'cost_per_unit' => 5, 'stock_quantity' => 10,
+            'low_stock_threshold' => 2, 'unit' => 'metres', 'price_modifier' => 0,
+        ])->assertSessionHasErrors('unit');
+
+        $this->assertSame(0, \App\Models\Texture::count());
+    }
+
+    public function test_an_empty_texture_unit_falls_back_to_the_column_default(): void
+    {
+        // textures.unit is NOT NULL DEFAULT 'pcs', and Laravel turns an empty
+        // field into null — which used to fail the insert outright.
+        $this->post('/admin/textures', [
+            'name' => 'Weave', 'cost_per_unit' => 5, 'stock_quantity' => 10,
+            'low_stock_threshold' => 2, 'unit' => '', 'price_modifier' => 0,
+        ])->assertSessionHasNoErrors();
+
+        $this->assertSame('pcs', \App\Models\Texture::firstOrFail()->unit);
+    }
+
+    public function test_a_texture_keeps_a_listed_unit(): void
+    {
+        $this->post('/admin/textures', [
+            'name' => 'Weave', 'cost_per_unit' => 5, 'stock_quantity' => 10,
+            'low_stock_threshold' => 2, 'unit' => 'meter', 'price_modifier' => 0,
+        ])->assertSessionHasNoErrors();
+
+        $this->assertSame('meter', \App\Models\Texture::firstOrFail()->unit);
+    }
+
+    public function test_a_product_rejects_a_unit_outside_the_list(): void
+    {
+        $category = \App\Models\Category::create(['name' => 'Cat', 'description' => 'x']);
+
+        $this->post('/admin/products', [
+            'name' => 'Tarpaulin', 'sku' => 'TRP-1', 'category_id' => $category->category_id,
+            'price' => 500, 'stock' => 4, 'unit' => 'sqm',
+        ])->assertSessionHasErrors('unit');
+
+        $this->assertSame(0, \App\Models\Product::count());
+    }
+
+    public function test_a_product_accepts_a_listed_unit(): void
+    {
+        $category = \App\Models\Category::create(['name' => 'Cat', 'description' => 'x']);
+
+        $this->post('/admin/products', [
+            'name' => 'Tarpaulin', 'sku' => 'TRP-1', 'category_id' => $category->category_id,
+            'price' => 500, 'stock' => 4, 'unit' => 'sq m',
+        ])->assertSessionHasNoErrors();
+
+        $this->assertSame('sq m', \App\Models\Product::firstOrFail()->unit);
+    }
+
+    public function test_a_products_legacy_unit_survives_an_unrelated_edit(): void
+    {
+        $category = \App\Models\Category::create(['name' => 'Cat', 'description' => 'x']);
+
+        // "kg" was offered by the old hardcoded product dropdown, which the
+        // shared list replaced with "kilogram".
+        $product = \App\Models\Product::create([
+            'sku' => 'P-1', 'name' => 'Resin Batch', 'price' => 100, 'stock' => 5,
+            'unit' => 'kg', 'category_id' => $category->category_id, 'status' => 'active',
+            'low_stock_threshold' => 1,
+        ]);
+
+        $this->put("/admin/products/{$product->product_id}", [
+            'name' => 'Resin Batch', 'sku' => 'P-1', 'category_id' => $category->category_id,
+            'price' => 250, 'stock' => 5, 'unit' => 'kg',
+        ])->assertSessionHasNoErrors();
+
+        $this->assertSame('kg', $product->refresh()->unit);
+        $this->assertEquals(250, $product->price);
+    }
+
     public function test_the_add_form_offers_grouped_units_with_examples(): void
     {
         $this->get('/admin/raw-materials')
@@ -131,6 +210,16 @@ class MaterialUnitTest extends TestCase
             ->assertSee('meter — lanyard strap, fabric, cabling')
             ->assertSee('<optgroup label="Weight">', false)
             ->assertSee('<optgroup label="Volume">', false);
+    }
+
+    public function test_the_texture_and_product_forms_offer_the_same_list(): void
+    {
+        foreach (['/admin/textures', '/admin/products'] as $url) {
+            $this->get($url)
+                ->assertOk()
+                ->assertSee('gram — ink, resin powder, pigment')
+                ->assertSee('<optgroup label="Weight">', false);
+        }
     }
 
     public function test_staff_get_the_same_list(): void
