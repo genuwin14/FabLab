@@ -42,6 +42,52 @@
             padding: 0;
         }
 
+        /* ==================================================================
+           Thin scrollbars, app-wide (admin / staff / customer)
+
+           A baseline for every scroll area that never styled a bar of its
+           own — the page itself, tables, panels — so none of them fall back
+           to the chunky OS default. This sits in the head block on purpose:
+           page-level <style> blocks load later and still win, including the
+           ones that deliberately hide a bar or repaint it darker.
+
+           Chrome\Edge\Safari take the ::-webkit- rules below; they ignore
+           them the moment scrollbar-width/-color are set, so those go to
+           browsers without ::-webkit-scrollbar support (Firefox) only.
+           ================================================================== */
+        @supports not selector(::-webkit-scrollbar) {
+
+            /* Both properties inherit, so html alone reaches every scroller. */
+            html {
+                scrollbar-width: thin;
+                scrollbar-color: rgba(14, 46, 69, 0.28) transparent;
+            }
+
+            /* The three sidebars are the only dark scroll surfaces; a dark
+               thumb would vanish against them. */
+            .custom-scrollbar {
+                scrollbar-color: rgba(255, 255, 255, 0.22) transparent;
+            }
+        }
+
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(14, 46, 69, 0.28);
+            border-radius: 999px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(14, 46, 69, 0.45);
+        }
+
         .navbar-brand {
             font-weight: 700;
             font-size: 1.5rem;
