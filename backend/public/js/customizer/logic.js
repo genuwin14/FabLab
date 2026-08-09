@@ -11,7 +11,8 @@ function syncElementsAndRender() {
             color: $(this).find('.color-input').val(),
             x: parseFloat($(this).find('.x-range').val()),
             y: parseFloat($(this).find('.y-range').val()),
-            scale: parseFloat($(this).find('.scale-range').val())
+            scale: parseFloat($(this).find('.scale-range').val()),
+            rotation: parseFloat($(this).find('.rotation-range').val()) || 0
         });
     });
 

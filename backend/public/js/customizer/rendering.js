@@ -142,6 +142,7 @@ function renderOverlayOnCanvas(ctx, baseImage) {
         const ty = 512 + (textElem.y * 10);
 
         ctx.translate(tx, ty);
+        ctx.rotate((textElem.rotation || 0) * Math.PI / 180);
         ctx.fillText(textElem.text, 0, 0);
         ctx.restore();
     });

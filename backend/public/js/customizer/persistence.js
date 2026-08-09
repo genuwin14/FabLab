@@ -38,7 +38,8 @@ function loadDesignRecipe(recipe) {
                     color: txt.color || '#ffffff',
                     x: parseFloat(txt.x) || 0,
                     y: parseFloat(txt.y) || 0,
-                    scale: parseFloat(txt.scale) || 1
+                    scale: parseFloat(txt.scale) || 1,
+                    rotation: parseFloat(txt.rotation) || 0
                 });
 
                 const html = `
@@ -63,17 +64,21 @@ function loadDesignRecipe(recipe) {
                             </div>
                         </div>
                         <div class="row g-2">
-                            <div class="col-4">
-                                <label class="tiny text-white-50 d-block mb-1">X Pos</label>
+                            <div class="col-3">
+                                <label class="tiny text-white-50 d-block mb-1">X</label>
                                 <input type="range" class="form-range x-range" min="-50" max="50" value="${parseFloat(txt.x) || 0}">
                             </div>
-                            <div class="col-4">
-                                <label class="tiny text-white-50 d-block mb-1">Y Pos</label>
+                            <div class="col-3">
+                                <label class="tiny text-white-50 d-block mb-1">Y</label>
                                 <input type="range" class="form-range y-range" min="-50" max="50" value="${parseFloat(txt.y) || 0}">
                             </div>
-                            <div class="col-4">
+                            <div class="col-3">
                                 <label class="tiny text-white-50 d-block mb-1">Size</label>
                                 <input type="range" class="form-range scale-range" min="0.5" max="4" step="0.1" value="${parseFloat(txt.scale) || 1}">
+                            </div>
+                            <div class="col-3">
+                                <label class="tiny text-white-50 d-block mb-1">Rot</label>
+                                <input type="range" class="form-range rotation-range" min="0" max="360" value="${parseFloat(txt.rotation) || 0}">
                             </div>
                         </div>
                     </div>`;
@@ -253,7 +258,8 @@ function loadDesignRecipePreview(recipe) {
                     color: txt.color || '#ffffff',
                     x: parseFloat(txt.x) || 0,
                     y: parseFloat(txt.y) || 0,
-                    scale: parseFloat(txt.scale) || 1
+                    scale: parseFloat(txt.scale) || 1,
+                    rotation: parseFloat(txt.rotation) || 0
                 });
             });
         }
