@@ -7,6 +7,8 @@ function createMugModel() {
         model_group.remove(model_group.children[0]);
     }
 
+    designPrintArea = FULL_PRINT_AREA;
+
     const loader = new THREE.GLTFLoader();
     console.log("Loading cup.glb...");
 

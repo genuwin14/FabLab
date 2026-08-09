@@ -1,11 +1,30 @@
 /**
  * Tote Bag Model Loader
  */
+
+/**
+ * Unlike the other products, the bag's atlas doesn't print across the whole
+ * tile. Its outer front panel — the face the camera looks at — is packed into
+ * the top-left corner at u 0.009..0.315, v 0.002..0.421; the middle of the tile
+ * is the *inside* of the back panel, which is where designs were ending up.
+ * Inset from the measured panel so an element pushed to the edge can't bleed
+ * onto the island packed alongside it — the panel isn't a clean rectangle, it
+ * tapers at the bottom corners. These bounds keep all four extremes of the X/Y
+ * sliders on fabric.
+ *
+ * The panel is also unwrapped bottom-to-top: its v runs from the base of the bag
+ * up to the rim (corr(v, worldY) = +0.61), while canvas v grows downward. Left
+ * alone that renders every design mirrored, so flag it for a vertical flip.
+ */
+const BAG_PRINT_AREA = { u0: 0.05, v0: 0.04, u1: 0.275, v1: 0.30, flipV: true };
+
 function createBagModel() {
     // Clear existing children from model_group
     while (model_group.children.length > 0) {
         model_group.remove(model_group.children[0]);
     }
+
+    designPrintArea = BAG_PRINT_AREA;
 
     const loader = new THREE.GLTFLoader();
     console.log("Loading bag.glb...");

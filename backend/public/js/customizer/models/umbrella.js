@@ -16,6 +16,9 @@ function createUmbrellaModel() {
         model_group.remove(model_group.children[0]);
     }
 
+    // The canopy gets a purpose-built projection below, which fills the tile.
+    designPrintArea = FULL_PRINT_AREA;
+
     const loader = new THREE.GLTFLoader();
     console.log("Loading umbreella_open.glb...");
 

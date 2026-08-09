@@ -88,22 +88,54 @@ function renderOverlayOnCanvas(ctx, baseImage) {
         ctx.fillRect(0, 0, 1024, 1024);
     }
 
+    // Elements sit relative to the model's printable panel, not the whole tile.
+    // On the bag that panel is a corner of the atlas — drawing at the middle of
+    // the canvas put designs on the inside of its back panel. For a model that
+    // prints across the whole tile these work out to the original numbers
+    // exactly: 10px per position unit and 1x sizes.
+    const area = designPrintArea || FULL_PRINT_AREA;
+    const areaX = area.u0 * 1024;
+    const areaY = area.v0 * 1024;
+    const areaW = (area.u1 - area.u0) * 1024;
+    const areaH = (area.v1 - area.v0) * 1024;
+    const centerX = areaX + areaW / 2;
+    const centerY = areaY + areaH / 2;
+    const unitX = 10 * (areaW / 1024);
+    const unitY = 10 * (areaH / 1024);
+    const sizeScale = Math.min(areaW, areaH) / 1024;
+
+    // Keep elements off neighbouring UV islands when pushed to the edge.
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(areaX, areaY, areaW, areaH);
+    ctx.clip();
+
+    // A panel can be unwrapped mirrored — the bag's runs bottom-to-top, so a
+    // design drawn straight onto the canvas came out reflected. Mirror the whole
+    // print area to compensate, which rights the artwork and makes the X/Y
+    // sliders push the design the way the customer expects.
+    if (area.flipU || area.flipV) {
+        ctx.translate(centerX, centerY);
+        ctx.scale(area.flipU ? -1 : 1, area.flipV ? -1 : 1);
+        ctx.translate(-centerX, -centerY);
+    }
+
     // 1. Draw Shapes first (background layer)
     shapeElements.forEach(shape => {
         ctx.save();
-        const sx = 512 + (shape.x * 10);
-        const sy = 512 + (shape.y * 10);
+        const sx = centerX + (shape.x * unitX);
+        const sy = centerY + (shape.y * unitY);
         ctx.translate(sx, sy);
         ctx.rotate((shape.rotation || 0) * Math.PI / 180);
         ctx.fillStyle = shape.color;
 
         if (shape.type === 'circle') {
             ctx.beginPath();
-            ctx.arc(0, 0, 50 * shape.scale, 0, Math.PI * 2);
+            ctx.arc(0, 0, 50 * shape.scale * sizeScale, 0, Math.PI * 2);
             ctx.fill();
         } else if (shape.type === 'line') {
-            const w = 200 * shape.scale;
-            const h = 20 * shape.scale;
+            const w = 200 * shape.scale * sizeScale;
+            const h = 20 * shape.scale * sizeScale;
             ctx.fillRect(-w / 2, -h / 2, w, h);
         }
         ctx.restore();
@@ -113,8 +145,8 @@ function renderOverlayOnCanvas(ctx, baseImage) {
     logoElements.forEach(logo => {
         if (!logo.img || !logo.img.complete) return;
         ctx.save();
-        const lx = 512 + (logo.x * 10);
-        const ly = 512 + (logo.y * 10);
+        const lx = centerX + (logo.x * unitX);
+        const ly = centerY + (logo.y * unitY);
         ctx.translate(lx, ly);
         ctx.rotate((logo.rotation || 0) * Math.PI / 180);
 
@@ -122,7 +154,7 @@ function renderOverlayOnCanvas(ctx, baseImage) {
         const h = logo.img.height;
         const aspect = w / h;
 
-        const targetW = 200 * logo.scale;
+        const targetW = 200 * logo.scale * sizeScale;
         const targetH = targetW / aspect;
 
         ctx.drawImage(logo.img, -targetW / 2, -targetH / 2, targetW, targetH);
@@ -135,17 +167,19 @@ function renderOverlayOnCanvas(ctx, baseImage) {
         ctx.save();
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
-        ctx.font = `bold ${48 * textElem.scale}px "${textElem.font}"`;
+        ctx.font = `bold ${48 * textElem.scale * sizeScale}px "${textElem.font}"`;
         ctx.fillStyle = textElem.color;
 
-        const tx = 512 + (textElem.x * 10);
-        const ty = 512 + (textElem.y * 10);
+        const tx = centerX + (textElem.x * unitX);
+        const ty = centerY + (textElem.y * unitY);
 
         ctx.translate(tx, ty);
         ctx.rotate((textElem.rotation || 0) * Math.PI / 180);
         ctx.fillText(textElem.text, 0, 0);
         ctx.restore();
     });
+
+    ctx.restore(); // release the print-area clip
 }
 
 /**
