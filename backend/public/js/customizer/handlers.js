@@ -44,8 +44,14 @@ $(document).ready(function () {
             model_group.scale.set(1, 1, 1);
         }
 
+        // The GLBs run to tens of megabytes, so the first switch to a shape is a
+        // real download. Put the loader back up — each loader hides it when done.
+        $('#loader').stop(true, true).fadeIn(200);
+
         if (shape === 'mug') createMugModel();
         else if (shape === 't-shirt') createTshirtModel();
+        else if (shape === 'umbrella') createUmbrellaModel();
+        else if (shape === 'bag') createBagModel();
 
         if (currentTextureId) updateModelMaterial(currentTextureId);
 

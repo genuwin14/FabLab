@@ -50,6 +50,37 @@
                         <div class="tiny mt-1 fw-bold">Mug</div>
                     </button>
                 </div>
+
+                <div class="col-6">
+                    <button class="btn btn-shape {{ ($initialShape ?? 't-shirt') === 'umbrella' ? 'active' : '' }} w-100"
+                        data-shape="umbrella" title="Golf Umbrella">
+                        <div class="shape-icon">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                                style="width: 24px; height: 24px;">
+                                <path d="M23 12a11.05 11.05 0 0 0-22 0z"></path>
+                                <path d="M18 19a3 3 0 0 1-6 0v-7"></path>
+                            </svg>
+                        </div>
+                        <div class="tiny mt-1 fw-bold">Umbrella</div>
+                    </button>
+                </div>
+
+                <div class="col-6">
+                    <button class="btn btn-shape {{ ($initialShape ?? 't-shirt') === 'bag' ? 'active' : '' }} w-100"
+                        data-shape="bag" title="Tote Bag">
+                        <div class="shape-icon">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                                style="width: 24px; height: 24px;">
+                                <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
+                                <line x1="3" y1="6" x2="21" y2="6"></line>
+                                <path d="M16 10a4 4 0 0 1-8 0"></path>
+                            </svg>
+                        </div>
+                        <div class="tiny mt-1 fw-bold">Bag</div>
+                    </button>
+                </div>
             </div>
         </div>
         @endif

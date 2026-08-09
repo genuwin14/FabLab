@@ -28,10 +28,15 @@ class CustomizeController extends Controller
         if ($productId) {
             $product = Product::find($productId);
             if ($product && !$design) { // If not loading a specific design, auto-detect shape
-                if (str_contains(strtolower($product->name), 'mug')) {
+                $name = strtolower($product->name);
+                if (str_contains($name, 'mug')) {
                     $initialShape = 'mug';
-                } elseif (str_contains(strtolower($product->name), 't-shirt')) {
+                } elseif (str_contains($name, 't-shirt')) {
                     $initialShape = 't-shirt';
+                } elseif (str_contains($name, 'umbrella')) {
+                    $initialShape = 'umbrella';
+                } elseif (str_contains($name, 'bag')) {
+                    $initialShape = 'bag';
                 }
             }
         }

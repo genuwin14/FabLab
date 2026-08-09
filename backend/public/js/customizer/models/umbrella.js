@@ -1,6 +1,15 @@
 /**
  * Umbrella Model Loader
  */
+
+/**
+ * The GLB splits the umbrella into the printable dome — the canopy fabric plus
+ * the small cap at its apex — and black hardware: shaft, ribs and handle. Only
+ * the dome carries the customer's design, so only those meshes are renamed to
+ * 'base'; applyMapToBaseMesh() then leaves the metalwork alone.
+ */
+const UMBRELLA_CANOPY_MATERIALS = ['Cloth_Flower', 'pasted__aiStandardSurface25'];
+
 function createUmbrellaModel() {
     // Clear existing children from model_group
     while (model_group.children.length > 0) {
@@ -8,25 +17,50 @@ function createUmbrellaModel() {
     }
 
     const loader = new THREE.GLTFLoader();
-    console.log("Loading umbrella.glb...");
+    console.log("Loading umbreella_open.glb...");
 
-    loader.load('/gbl/umbrella.glb', function(gltf) {
+    loader.load('/gbl/umbreella_open.glb', function(gltf) {
         const model = gltf.scene;
-        model.position.set(0, -1, 0);
-        model.scale.set(0.01, 0.01, 0.01);
+        const canopyMeshes = [];
 
         model.traverse((child) => {
-            if (child.isMesh) {
-                child.name = 'base';
-                if (child.material) {
-                    child.material.color.setHex(getActiveColor());
-                    child.material.roughness = 0.4;
-                    child.material.metalness = 0.3;
-                    child.material.side = THREE.DoubleSide;
-                }
+            if (!child.isMesh || !child.material) return;
+
+            if (UMBRELLA_CANOPY_MATERIALS.includes(child.material.name)) {
+                canopyMeshes.push(child);
+            } else {
+                // Shaft, ribs and handle: kept dark and out of the print area.
+                child.material.roughness = 0.35;
+                child.material.metalness = 0.6;
             }
+            child.material.side = THREE.DoubleSide;
         });
 
+        // Safety net for a swapped-in asset whose materials are named differently:
+        // treat the whole model as printable rather than leaving nothing to design on.
+        if (canopyMeshes.length === 0) {
+            console.warn('No umbrella canopy material matched — treating the whole model as printable.');
+            model.traverse((child) => {
+                if (child.isMesh && child.material) canopyMeshes.push(child);
+            });
+        }
+
+        // The canopy's authored UVs sit outside the 0..1 tile and split into two
+        // islands, so the design canvas never reached it. Re-unwrap the cloth
+        // through one shared top-down projection: a single continuous print area
+        // that lines up across the outer skin and the lining underneath.
+        const canopyBounds = new THREE.Box3();
+        canopyMeshes.forEach((mesh) => getMeshBounds(mesh, canopyBounds));
+
+        canopyMeshes.forEach((mesh) => {
+            if (!applyPlanarUVs(mesh, canopyBounds)) return;
+            mesh.name = 'base';
+            mesh.material.color.setHex(getActiveColor());
+            mesh.material.roughness = 0.7;
+            mesh.material.metalness = 0.0;
+        });
+
+        fitModelToView(model);
         model_group.add(model);
         console.log("Umbrella model loaded successfully.");
 

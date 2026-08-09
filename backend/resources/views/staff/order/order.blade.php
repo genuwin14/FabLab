@@ -518,6 +518,7 @@
         <script src="{{ asset('js/customizer/models/t-shirt.js') }}"></script>
         <script src="{{ asset('js/customizer/models/shorts.js') }}"></script>
         <script src="{{ asset('js/customizer/models/umbrella.js') }}"></script>
+        <script src="{{ asset('js/customizer/models/bag.js') }}"></script>
         <script src="{{ asset('js/customizer/rendering.js') }}"></script>
         <script src="{{ asset('js/customizer/persistence.js') }}"></script>
 
@@ -626,6 +627,7 @@
 
                             if (itemName.includes('mug')) baseShape = 'mug';
                             else if (itemName.includes('umbrella')) baseShape = 'umbrella';
+                            else if (itemName.includes('bag')) baseShape = 'bag';
                             else if (itemName.includes('shorts')) baseShape = 'shorts';
                             else if (recipe.base_style) baseShape = recipe.base_style;
 

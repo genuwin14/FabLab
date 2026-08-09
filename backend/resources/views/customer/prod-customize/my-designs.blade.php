@@ -275,6 +275,7 @@
         <script src="{{ asset('js/customizer/models/t-shirt.js') }}"></script>
         <script src="{{ asset('js/customizer/models/shorts.js') }}"></script>
         <script src="{{ asset('js/customizer/models/umbrella.js') }}"></script>
+        <script src="{{ asset('js/customizer/models/bag.js') }}"></script>
         <script src="{{ asset('js/customizer/rendering.js') }}"></script>
         <script src="{{ asset('js/customizer/logic.js') }}"></script>
         <script src="{{ asset('js/customizer/persistence.js') }}"></script>

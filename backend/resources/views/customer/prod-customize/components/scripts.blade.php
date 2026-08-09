@@ -42,6 +42,7 @@
     <script src="{{ asset('js/customizer/models/t-shirt.js') }}"></script>
     <script src="{{ asset('js/customizer/models/shorts.js') }}"></script>
     <script src="{{ asset('js/customizer/models/umbrella.js') }}"></script>
+    <script src="{{ asset('js/customizer/models/bag.js') }}"></script>
 
     <!-- Logic & Rendering -->
     <script src="{{ asset('js/customizer/rendering.js') }}"></script>
