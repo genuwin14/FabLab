@@ -121,6 +121,7 @@ $(document).ready(function () {
                                 <input type="range" class="form-range rotation-range" min="0" max="360" value="0">
                             </div>
                         </div>
+                        ${flipControlsHtml(false, false)}
                     </div>`;
                 const $item = $(html);
                 $item.data('img-obj', img);
@@ -174,6 +175,7 @@ $(document).ready(function () {
                         <input type="range" class="form-range rotation-range" min="0" max="360" value="0">
                     </div>
                 </div>
+                ${flipControlsHtml(false, false)}
             </div>`;
         $('#textList').append(html);
         syncElementsAndRender();
@@ -215,6 +217,7 @@ $(document).ready(function () {
                         <input type="range" class="form-range rotation-range" min="0" max="360" value="0">
                     </div>
                 </div>
+                ${flipControlsHtml(false, false)}
             </div>`;
         $('#shapeList').append(html);
         syncElementsAndRender();

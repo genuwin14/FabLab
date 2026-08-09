@@ -12,7 +12,9 @@ function syncElementsAndRender() {
             x: parseFloat($(this).find('.x-range').val()),
             y: parseFloat($(this).find('.y-range').val()),
             scale: parseFloat($(this).find('.scale-range').val()),
-            rotation: parseFloat($(this).find('.rotation-range').val()) || 0
+            rotation: parseFloat($(this).find('.rotation-range').val()) || 0,
+            flipH: $(this).find('.flip-h-input').is(':checked'),
+            flipV: $(this).find('.flip-v-input').is(':checked')
         });
     });
 
@@ -25,7 +27,9 @@ function syncElementsAndRender() {
             x: parseFloat($(this).find('.x-range').val()),
             y: parseFloat($(this).find('.y-range').val()),
             scale: parseFloat($(this).find('.scale-range').val()),
-            rotation: parseFloat($(this).find('.rotation-range').val())
+            rotation: parseFloat($(this).find('.rotation-range').val()),
+            flipH: $(this).find('.flip-h-input').is(':checked'),
+            flipV: $(this).find('.flip-v-input').is(':checked')
         });
     });
 
@@ -37,7 +41,9 @@ function syncElementsAndRender() {
             x: parseFloat($(this).find('.x-range').val()),
             y: parseFloat($(this).find('.y-range').val()),
             scale: parseFloat($(this).find('.scale-range').val()),
-            rotation: parseFloat($(this).find('.rotation-range').val())
+            rotation: parseFloat($(this).find('.rotation-range').val()),
+            flipH: $(this).find('.flip-h-input').is(':checked'),
+            flipV: $(this).find('.flip-v-input').is(':checked')
         });
     });
 

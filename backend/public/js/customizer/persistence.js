@@ -1,6 +1,24 @@
 /**
  * Design data serialization and persistence
  */
+
+/**
+ * The Flip H / Flip V pair every element card carries. Shared by the "restore a
+ * saved design" templates below and the "add element" templates in handlers.js
+ * (which loads after this file) so the two can't drift apart.
+ */
+function flipControlsHtml(flipH, flipV) {
+    return `
+        <div class="d-flex gap-3 mt-2">
+            <label class="tiny text-white-50 d-flex align-items-center gap-1 mb-0" style="cursor: pointer;">
+                <input type="checkbox" class="form-check-input flip-h-input mt-0"${flipH ? ' checked' : ''}> Flip H
+            </label>
+            <label class="tiny text-white-50 d-flex align-items-center gap-1 mb-0" style="cursor: pointer;">
+                <input type="checkbox" class="form-check-input flip-v-input mt-0"${flipV ? ' checked' : ''}> Flip V
+            </label>
+        </div>`;
+}
+
 function loadDesignRecipe(recipe) {
     if (!recipe) return;
 
@@ -39,7 +57,9 @@ function loadDesignRecipe(recipe) {
                     x: parseFloat(txt.x) || 0,
                     y: parseFloat(txt.y) || 0,
                     scale: parseFloat(txt.scale) || 1,
-                    rotation: parseFloat(txt.rotation) || 0
+                    rotation: parseFloat(txt.rotation) || 0,
+                    flipH: !!txt.flipH,
+                    flipV: !!txt.flipV
                 });
 
                 const html = `
@@ -81,6 +101,7 @@ function loadDesignRecipe(recipe) {
                                 <input type="range" class="form-range rotation-range" min="0" max="360" value="${parseFloat(txt.rotation) || 0}">
                             </div>
                         </div>
+                        ${flipControlsHtml(txt.flipH, txt.flipV)}
                     </div>`;
                 $('#textList').append(html);
             });
@@ -95,7 +116,9 @@ function loadDesignRecipe(recipe) {
                     x: parseFloat(shp.x) || 0,
                     y: parseFloat(shp.y) || 0,
                     scale: parseFloat(shp.scale) || 1,
-                    rotation: parseFloat(shp.rotation) || 0
+                    rotation: parseFloat(shp.rotation) || 0,
+                    flipH: !!shp.flipH,
+                    flipV: !!shp.flipV
                 });
 
                 const html = `
@@ -133,6 +156,7 @@ function loadDesignRecipe(recipe) {
                                 <input type="range" class="form-range rotation-range" min="0" max="360" value="${parseFloat(shp.rotation) || 0}">
                             </div>
                         </div>
+                        ${flipControlsHtml(shp.flipH, shp.flipV)}
                     </div>`;
                 $('#shapeList').append(html);
             });
@@ -148,7 +172,9 @@ function loadDesignRecipe(recipe) {
                         x: parseFloat(logo.x) || 0,
                         y: parseFloat(logo.y) || 0,
                         scale: parseFloat(logo.scale) || 1,
-                        rotation: parseFloat(logo.rotation) || 0
+                        rotation: parseFloat(logo.rotation) || 0,
+                        flipH: !!logo.flipH,
+                        flipV: !!logo.flipV
                     });
 
                     const html = `
@@ -180,6 +206,7 @@ function loadDesignRecipe(recipe) {
                                     <input type="range" class="form-range rotation-range" min="0" max="360" value="${parseFloat(logo.rotation) || 0}">
                                 </div>
                             </div>
+                            ${flipControlsHtml(logo.flipH, logo.flipV)}
                         </div>`;
                     const $item = $(html);
                     $item.data('img-obj', img);
@@ -220,6 +247,8 @@ function serializeDesign() {
                 y: logo.y,
                 scale: logo.scale,
                 rotation: logo.rotation,
+                flipH: logo.flipH,
+                flipV: logo.flipV,
                 src: logo.img.src
             }))
         }
@@ -259,7 +288,9 @@ function loadDesignRecipePreview(recipe) {
                     x: parseFloat(txt.x) || 0,
                     y: parseFloat(txt.y) || 0,
                     scale: parseFloat(txt.scale) || 1,
-                    rotation: parseFloat(txt.rotation) || 0
+                    rotation: parseFloat(txt.rotation) || 0,
+                    flipH: !!txt.flipH,
+                    flipV: !!txt.flipV
                 });
             });
         }
@@ -272,7 +303,9 @@ function loadDesignRecipePreview(recipe) {
                     x: parseFloat(shp.x) || 0,
                     y: parseFloat(shp.y) || 0,
                     scale: parseFloat(shp.scale) || 1,
-                    rotation: parseFloat(shp.rotation) || 0
+                    rotation: parseFloat(shp.rotation) || 0,
+                    flipH: !!shp.flipH,
+                    flipV: !!shp.flipV
                 });
             });
         }
@@ -286,7 +319,9 @@ function loadDesignRecipePreview(recipe) {
                         x: parseFloat(logo.x) || 0,
                         y: parseFloat(logo.y) || 0,
                         scale: parseFloat(logo.scale) || 1,
-                        rotation: parseFloat(logo.rotation) || 0
+                        rotation: parseFloat(logo.rotation) || 0,
+                        flipH: !!logo.flipH,
+                        flipV: !!logo.flipV
                     });
                     updateModelMaterial(currentTextureId);
                 };

@@ -72,6 +72,17 @@ function loadThreeTextureFromPath(imagePath, onLoaded) {
 }
 
 /**
+ * Mirror an element about its own axes. Applied after the element's rotation,
+ * so a flip reads as "mirror this artwork" rather than "mirror the canvas" —
+ * the same way it behaves in a design tool.
+ */
+function applyElementFlip(ctx, element) {
+    if (element.flipH || element.flipV) {
+        ctx.scale(element.flipH ? -1 : 1, element.flipV ? -1 : 1);
+    }
+}
+
+/**
  * Composite design elements (shapes, logos, text) onto a 1024x1024 canvas
  * over either the base texture image or a flat color fallback.
  */
@@ -127,6 +138,7 @@ function renderOverlayOnCanvas(ctx, baseImage) {
         const sy = centerY + (shape.y * unitY);
         ctx.translate(sx, sy);
         ctx.rotate((shape.rotation || 0) * Math.PI / 180);
+        applyElementFlip(ctx, shape);
         ctx.fillStyle = shape.color;
 
         if (shape.type === 'circle') {
@@ -149,6 +161,7 @@ function renderOverlayOnCanvas(ctx, baseImage) {
         const ly = centerY + (logo.y * unitY);
         ctx.translate(lx, ly);
         ctx.rotate((logo.rotation || 0) * Math.PI / 180);
+        applyElementFlip(ctx, logo);
 
         const w = logo.img.width;
         const h = logo.img.height;
@@ -175,6 +188,7 @@ function renderOverlayOnCanvas(ctx, baseImage) {
 
         ctx.translate(tx, ty);
         ctx.rotate((textElem.rotation || 0) * Math.PI / 180);
+        applyElementFlip(ctx, textElem);
         ctx.fillText(textElem.text, 0, 0);
         ctx.restore();
     });
