@@ -255,6 +255,153 @@
     <!-- Logout Modal -->
     @include('auth.modal-logout')
 
+    <!-- ==================================================================
+         Global Alert / Confirm Modal
+
+         Replaces the browser's native alert()/confirm() dialogs, which
+         ignore the app's theme entirely. Driven from JS via
+         showAlertModal() / showConfirmModal() — see the script further
+         down. One element, reused by every caller.
+         ================================================================== -->
+    <div class="modal fade app-alert-modal" id="appAlertModal" tabindex="-1" aria-labelledby="appAlertModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered app-alert-modal-dialog">
+            <div class="modal-content border-0 shadow-lg overflow-hidden">
+                <!-- Themed Header -->
+                <div class="app-alert-modal-header">
+                    <div class="app-alert-modal-icon">
+                        <i class="bi bi-info-circle-fill" id="appAlertModalIcon"></i>
+                    </div>
+                    <h5 class="modal-title fw-bold mb-1 text-white" id="appAlertModalLabel">Notice</h5>
+                    <p class="text-white-50 small mb-0 d-none" id="appAlertModalSubtitle"></p>
+                </div>
+
+                <!-- Message Body -->
+                <div class="modal-body p-4 app-alert-modal-body">
+                    <p class="text-dark mb-0 text-center" id="appAlertModalMessage"></p>
+                </div>
+
+                <!-- Footer with actions -->
+                <div class="app-alert-modal-footer">
+                    <button type="button" class="btn fw-semibold rounded-pill px-4 app-alert-cancel-btn d-none"
+                        id="appAlertModalCancel" data-bs-dismiss="modal">
+                        Cancel
+                    </button>
+                    <button type="button" class="btn fw-semibold rounded-pill px-4 app-alert-confirm-btn"
+                        id="appAlertModalConfirm">
+                        OK
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        /* ==================================================================
+           Global Alert / Confirm Modal
+
+           Same shape as the app's themed confirmation modals (dark gradient
+           header, icon tile, centered body, pill buttons). The accent is a
+           set of custom properties so one element can serve every variant.
+           ================================================================== */
+        .app-alert-modal {
+            --app-alert-rgb: 13, 110, 253;
+            --app-alert-icon: #8ab4fe;
+            --app-alert-solid: #0d6efd;
+            --app-alert-solid-hover: #0b5ed7;
+            --app-alert-on-solid: #fff;
+        }
+
+        .app-alert-modal-dialog {
+            max-width: 420px;
+        }
+
+        .app-alert-modal-header {
+            background: linear-gradient(135deg, #05111a 0%, #0e2e45 100%);
+            padding: 28px 24px 20px;
+            text-align: center;
+            position: relative;
+        }
+
+        .app-alert-modal-header::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(var(--app-alert-rgb), 0.4), transparent);
+        }
+
+        .app-alert-modal-icon {
+            width: 56px;
+            height: 56px;
+            margin: 0 auto 14px;
+            border-radius: 16px;
+            background: rgba(var(--app-alert-rgb), 0.15);
+            border: 1px solid rgba(var(--app-alert-rgb), 0.3);
+            color: var(--app-alert-icon);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .app-alert-modal-body {
+            background-color: #fff;
+        }
+
+        .app-alert-modal-footer {
+            background-color: #fff;
+            padding: 16px 24px 24px;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            border-top: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .app-alert-cancel-btn {
+            background-color: #f1f4f8;
+            border: 1px solid #e9ecef;
+            color: #6c757d;
+            transition: all 0.2s ease;
+        }
+
+        .app-alert-cancel-btn:hover {
+            background-color: #e9ecef;
+            color: #0e2e45;
+        }
+
+        .app-alert-confirm-btn {
+            background-color: var(--app-alert-solid);
+            border: 1px solid var(--app-alert-solid);
+            color: var(--app-alert-on-solid);
+            transition: all 0.2s ease;
+        }
+
+        .app-alert-confirm-btn:hover,
+        .app-alert-confirm-btn:focus {
+            background-color: var(--app-alert-solid-hover);
+            border-color: var(--app-alert-solid-hover);
+            color: var(--app-alert-on-solid);
+        }
+
+        @media (max-width: 575.98px) {
+            .app-alert-modal-header {
+                padding: 20px 16px 16px;
+            }
+
+            .app-alert-modal-footer {
+                padding: 12px 16px 16px;
+                flex-direction: column-reverse;
+            }
+
+            .app-alert-modal-footer > .btn {
+                width: 100%;
+            }
+        }
+    </style>
+
     <!-- Toast Container -->
     <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 1055;">
         <!-- Toasts will be dynamically pushed here -->
@@ -324,6 +471,138 @@
                 showToast("{{ $errors->first() }}", 'error');
             @endif
         });
+    </script>
+
+    <!-- Global Alert / Confirm Modal Script -->
+    <script>
+        (function () {
+            const el = document.getElementById('appAlertModal');
+            if (!el) return;
+
+            const iconEl = document.getElementById('appAlertModalIcon');
+            const titleEl = document.getElementById('appAlertModalLabel');
+            const subtitleEl = document.getElementById('appAlertModalSubtitle');
+            const messageEl = document.getElementById('appAlertModalMessage');
+            const cancelBtn = document.getElementById('appAlertModalCancel');
+            const confirmBtn = document.getElementById('appAlertModalConfirm');
+
+            const VARIANTS = {
+                info: { icon: 'bi-info-circle-fill', rgb: '13, 110, 253', tint: '#8ab4fe', solid: '#0d6efd', hover: '#0b5ed7', on: '#fff' },
+                success: { icon: 'bi-check-circle-fill', rgb: '25, 135, 84', tint: '#75d3a5', solid: '#198754', hover: '#146c43', on: '#fff' },
+                warning: { icon: 'bi-exclamation-triangle-fill', rgb: '255, 197, 8', tint: '#ffd75c', solid: '#ffc508', hover: '#eebb07', on: '#0e2e45' },
+                danger: { icon: 'bi-exclamation-triangle-fill', rgb: '220, 53, 69', tint: '#ff8088', solid: '#dc3545', hover: '#b02a37', on: '#fff' }
+            };
+
+            // The dialog is asynchronous, unlike the native alert()/confirm() it
+            // replaces — callers get a Promise that settles once it has closed.
+            let resolver = null;
+            let outcome = false;
+
+            // These dialogs usually open on top of another modal (a validation
+            // warning raised from inside a form modal), which Bootstrap doesn't
+            // support out of the box: the parent keeps the higher stacking order
+            // and its focus trap drags focus straight back out of this dialog.
+            // Lift this one above the parent and park the parent's trap meanwhile.
+            let suspendedTraps = [];
+
+            el.addEventListener('show.bs.modal', function () {
+                const openModals = document.querySelectorAll('.modal.show');
+
+                suspendedTraps = [];
+                openModals.forEach(function (parent) {
+                    const trap = (bootstrap.Modal.getInstance(parent) || {})._focustrap;
+                    if (trap && typeof trap.deactivate === 'function') {
+                        trap.deactivate();
+                        suspendedTraps.push(trap);
+                    }
+                });
+
+                if (!openModals.length) {
+                    el.style.zIndex = '';
+                    return;
+                }
+
+                const z = 1055 + openModals.length * 20;
+                el.style.zIndex = z;
+                // The backdrop is appended after this event, so bump it next tick.
+                setTimeout(function () {
+                    const backdrops = document.querySelectorAll('.modal-backdrop');
+                    const top = backdrops[backdrops.length - 1];
+                    if (top) top.style.zIndex = z - 5;
+                }, 0);
+            });
+
+            el.addEventListener('hidden.bs.modal', function () {
+                suspendedTraps.forEach(function (trap) {
+                    if (typeof trap.activate === 'function') trap.activate();
+                });
+                suspendedTraps = [];
+
+                // Bootstrap drops .modal-open on the body when any modal closes,
+                // which would unlock page scrolling behind a still-open parent.
+                if (document.querySelectorAll('.modal.show').length > 0) {
+                    document.body.classList.add('modal-open');
+                }
+
+                if (resolver) {
+                    const done = resolver;
+                    resolver = null;
+                    done(outcome);
+                }
+            });
+
+            confirmBtn.addEventListener('click', function () {
+                outcome = true;
+                bootstrap.Modal.getOrCreateInstance(el).hide();
+            });
+
+            function open(options, isConfirm) {
+                const o = typeof options === 'string' ? { message: options } : (options || {});
+                const variant = VARIANTS[o.variant] || (isConfirm ? VARIANTS.warning : VARIANTS.info);
+
+                el.style.setProperty('--app-alert-rgb', variant.rgb);
+                el.style.setProperty('--app-alert-icon', variant.tint);
+                el.style.setProperty('--app-alert-solid', variant.solid);
+                el.style.setProperty('--app-alert-solid-hover', variant.hover);
+                el.style.setProperty('--app-alert-on-solid', variant.on);
+
+                iconEl.className = 'bi ' + (o.icon || variant.icon);
+                titleEl.textContent = o.title || (isConfirm ? 'Are you sure?' : 'Notice');
+                messageEl.textContent = o.message || '';
+
+                subtitleEl.textContent = o.subtitle || '';
+                subtitleEl.classList.toggle('d-none', !o.subtitle);
+
+                confirmBtn.textContent = o.confirmText || (isConfirm ? 'Confirm' : 'OK');
+                cancelBtn.textContent = o.cancelText || 'Cancel';
+                cancelBtn.classList.toggle('d-none', !isConfirm);
+
+                // A second call while one is still open settles the first as dismissed.
+                if (resolver) {
+                    const stale = resolver;
+                    resolver = null;
+                    stale(false);
+                }
+
+                outcome = false;
+                bootstrap.Modal.getOrCreateInstance(el).show();
+
+                return new Promise(function (resolve) {
+                    resolver = resolve;
+                });
+            }
+
+            // showAlertModal('Something went wrong.')
+            // showAlertModal({ title, subtitle, message, variant, confirmText })
+            window.showAlertModal = function (options) {
+                return open(options, false);
+            };
+
+            // showConfirmModal({ ... }).then(ok => { if (ok) ... })
+            window.showConfirmModal = function (options) {
+                return open(options, true);
+            };
+        })();
     </script>
 
     <!-- Global Tooltip Initialization -->

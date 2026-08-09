@@ -633,19 +633,43 @@
             }
 
             // Handle Supplier Change
+            // The confirmation modal is async, so remember the supplier the rows
+            // belong to and roll the dropdown back when the change is declined.
+            let currentSupplierId = supplierSelect.value;
+
             supplierSelect.addEventListener('change', function () {
-                if (itemsBody.children.length > 0) {
-                    if (confirm('Changing the supplier will clear all current items. Proceed?')) {
-                        itemsBody.innerHTML = '';
-                        calculateGrandTotal();
-                        if (emptyState) emptyState.classList.remove('d-none');
-                    }
+                if (itemsBody.children.length === 0) {
+                    currentSupplierId = supplierSelect.value;
+                    return;
                 }
+
+                const nextSupplierId = supplierSelect.value;
+                showConfirmModal({
+                    title: 'Change Supplier',
+                    subtitle: 'The current items will be cleared',
+                    message: 'Changing the supplier will clear all current items. Proceed?',
+                    variant: 'warning',
+                    confirmText: 'Yes, Change Supplier',
+                    cancelText: 'Keep Items'
+                }).then(function (confirmed) {
+                    if (!confirmed) {
+                        supplierSelect.value = currentSupplierId;
+                        return;
+                    }
+                    currentSupplierId = nextSupplierId;
+                    itemsBody.innerHTML = '';
+                    calculateGrandTotal();
+                    if (emptyState) emptyState.classList.remove('d-none');
+                });
             });
 
             addItemBtn.addEventListener('click', function () {
                 if (!supplierSelect.value) {
-                    alert('Please select a supplier first.');
+                    showAlertModal({
+                        title: 'Supplier Required',
+                        message: 'Please select a supplier first.',
+                        variant: 'warning'
+                    });
                     return;
                 }
                 if (emptyState) emptyState.classList.add('d-none');
@@ -657,7 +681,11 @@
                 const itemsForSupplier = supplierItems[supplierId] || [];
 
                 if (itemsForSupplier.length === 0 && !data) {
-                    alert('This supplier has no assigned products or raw materials.');
+                    showAlertModal({
+                        title: 'Nothing to Order',
+                        message: 'This supplier has no assigned products or raw materials.',
+                        variant: 'warning'
+                    });
                     return;
                 }
 
