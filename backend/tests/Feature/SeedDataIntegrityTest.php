@@ -102,6 +102,29 @@ class SeedDataIntegrityTest extends TestCase
         $this->assertGreaterThan(0, RawMaterialMovement::count());
     }
 
+    public function test_every_customizable_product_has_a_model_to_open_in(): void
+    {
+        // The studio renders four shapes and defaults to the t-shirt for
+        // anything else, so a customizable product it cannot match came out as
+        // a shirt wearing that product's name — an ID lace, an oak plaque.
+        foreach (Product::where('is_customizable', true)->get() as $product) {
+            $this->assertNotNull(
+                $product->customizerShape(),
+                "\"{$product->name}\" is marked customizable, but the studio has no model for it."
+            );
+        }
+    }
+
+    public function test_only_customizable_products_are_assigned_textures(): void
+    {
+        foreach (Product::has('textures')->get() as $product) {
+            $this->assertTrue(
+                (bool) $product->is_customizable,
+                "\"{$product->name}\" has textures assigned but never opens in the customizer."
+            );
+        }
+    }
+
     public function test_the_id_lace_has_a_bill_of_materials(): void
     {
         $lace = Product::where('sku', 'IDL-LACE-STD')->firstOrFail();

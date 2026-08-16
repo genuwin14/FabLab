@@ -19,6 +19,10 @@ use App\Models\Supplier;
  * The scenarios the rest of the app is tested against are preserved: healthy
  * multi-supplier stock, an out-of-stock line, a low-stock line with no supplier
  * attached, an asset, and several customisable items.
+ *
+ * `is_customizable` is only set on items the studio has a 3D model for — the
+ * mugs and the t-shirt. See Product::customizerShape(); marking anything else
+ * customizable opens it in the studio as a t-shirt.
  */
 class ProductSeeder extends Seeder
 {
@@ -41,6 +45,10 @@ class ProductSeeder extends Seeder
         $products = [
             // The house speciality, and the clearest example of a bill of
             // materials: one lace draws a clip, some strap and a card holder.
+            //
+            // Not customizable: the studio has no lanyard model, so opening this
+            // in it rendered the default t-shirt under the lace's name. Ship a
+            // lanyard GLB and a loader for it, and this becomes true again.
             [
                 'sku' => 'IDL-LACE-STD',
                 'name' => 'Custom ID Lace',
@@ -56,7 +64,7 @@ class ProductSeeder extends Seeder
                 'category_id' => $merchandiseId,
                 'unit' => 'pcs',
                 'low_stock_threshold' => 50,
-                'is_customizable' => true,
+                'is_customizable' => false,
                 'status' => 'active',
                 'suppliers' => [
                     ['id' => $genMerch->supplier_id, 'cost' => 78.00, 'moq' => 50, 'lead' => 5, 'default' => true]
@@ -148,7 +156,8 @@ class ProductSeeder extends Seeder
                     ['id' => $genMerch->supplier_id, 'cost' => 62.00, 'moq' => 25, 'lead' => 4, 'default' => true]
                 ]
             ],
-            // Out of stock — needs an urgent reorder.
+            // Out of stock — needs an urgent reorder. Not customizable for the
+            // same reason as the lace: no plaque model in the studio.
             [
                 'sku' => 'WD-PLQ-OAK',
                 'name' => 'Engraved Oak Plaque',
@@ -164,7 +173,7 @@ class ProductSeeder extends Seeder
                 'category_id' => $finishedGoodsId,
                 'unit' => 'pcs',
                 'low_stock_threshold' => 5,
-                'is_customizable' => true,
+                'is_customizable' => false,
                 'status' => 'active',
                 'suppliers' => [
                     ['id' => $ecoMaterials->supplier_id, 'cost' => 890.00, 'moq' => 5, 'lead' => 10, 'default' => true]

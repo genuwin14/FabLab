@@ -67,7 +67,8 @@ The hard rules, stated plainly:
 | **Bill of materials** | The **product** and its **raw materials** | Nothing to pick from; the product then consumes no materials on approval |
 | **Purchase order** | A **supplier** with items attached to it | The item picker will be empty |
 | **Pre-filled purchase order** | A **default supplier** on the item | The item sits in the watchlist's "no supplier" group and can't be auto-ordered |
-| **Customization** | A product marked **customizable**, plus **textures** | The product shows no *Customize Now* button |
+| **Customization** | A product marked **customizable**, named after a shape the studio can render (t-shirt, mug, umbrella, bag) | The product shows no *Customize Now* button — or opens as a t-shirt if the flag is ticked with no matching model |
+| **Textures in the studio** | Textures **assigned to that product** | It offers no textures at all, only plain colours |
 
 > **The one you'll trip over:** skip step 1 and the whole of step 5 is blocked. Create your categories first, always.
 
@@ -263,7 +264,8 @@ Before you open the shop — or before you start recording — confirm all of th
 - [ ] Textures have an **image**, **stock**, and a **price modifier** where applicable
 - [ ] Products are **active/functional** with a **price above zero** — otherwise they're invisible to customers
 - [ ] Every product has a **default supplier** with an agreed cost
-- [ ] Customizable products have **textures ticked**
+- [ ] Only products the studio has a model for (**t-shirt, mug, umbrella, bag**) are marked **customizable**
+- [ ] Customizable products have **textures ticked** — assign none and they offer plain colours only
 - [ ] Products that consume materials have a **BOM**
 - [ ] A **customer test account** is registered and verified
 

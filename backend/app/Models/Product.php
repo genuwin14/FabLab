@@ -42,6 +42,37 @@ class Product extends Model
         'image'
     ];
 
+    /**
+     * The shapes the 3D studio can actually render, matched against a name.
+     *
+     * One entry per GLB in public/gbl — mug is cup.glb, umbrella is
+     * umbreella_open.glb. Shorts is deliberately absent: models/shorts.js loads
+     * a file that was never shipped and falls through to a placeholder box.
+     */
+    private const CUSTOMIZER_SHAPES = ['mug', 't-shirt', 'umbrella', 'bag'];
+
+    /**
+     * Which model the studio opens this product in, or null if none fits.
+     *
+     * A product outside the list has no mesh to render, so the customizer would
+     * open it as the default t-shirt wearing another product's name — an ID lace
+     * shown as a shirt. That makes `is_customizable` on such a product a data
+     * error rather than a choice, which is what the seeder and its guard in
+     * SeedDataIntegrityTest enforce.
+     */
+    public function customizerShape(): ?string
+    {
+        $name = strtolower($this->name ?? '');
+
+        foreach (self::CUSTOMIZER_SHAPES as $shape) {
+            if (str_contains($name, $shape)) {
+                return $shape;
+            }
+        }
+
+        return null;
+    }
+
     public function category()
     {
         return $this->belongsTo(Category::class, 'category_id');

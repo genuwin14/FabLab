@@ -124,6 +124,8 @@ Optional: brand, description, low-stock threshold, the **units on display / spon
 
 Status decides shop visibility: only **active** or **functional** products with a price above zero appear to customers. *Maintenance* and *broken* keep an item in the catalog but out of the shop.
 
+> **The customizable flag needs a 3D model to go with it.** The studio can only render a **t-shirt**, a **mug**, an **umbrella**, or a **bag**, and it picks which one by looking for that word in the product name. Tick the flag on anything else — an ID lace, a plaque — and the customer opens it as a plain t-shirt carrying that product's name.
+
 Saving takes you straight to supplier assignment, because a product with no supplier can never be pre-filled into a purchase order.
 
 ### Suppliers for a product

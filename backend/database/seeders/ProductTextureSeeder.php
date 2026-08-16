@@ -9,9 +9,10 @@ use App\Models\Texture;
 /**
  * Which textures each customizable product offers in the 3D customizer.
  *
- * A product with no assignment falls back to showing every texture, so this is
- * about narrowing the choice to what actually suits the item — leather on a
- * plaque, cloth on a shirt — rather than about enabling customization.
+ * A product is offered exactly what it is assigned here and nothing else, so an
+ * item left out of this list has no patterned finish at all — customers pick a
+ * plain colour for it instead. Only products the studio has a model for are
+ * worth listing; the ID lace and the oak plaque are not customizable.
  */
 class ProductTextureSeeder extends Seeder
 {
@@ -20,11 +21,6 @@ class ProductTextureSeeder extends Seeder
         $textures = Texture::all()->keyBy('name');
 
         $assignments = [
-            // Wood and leather read well engraved; cloth does not.
-            'WD-PLQ-OAK' => ['Leather037', 'Leather034C', 'Fabric062'],
-
-            'IDL-LACE-STD' => ['Fabric077', 'Fabric080', 'Fabric083'],
-
             'MG-WHT-11' => ['Fabric083', 'Leather037', 'Fabric062'],
             'MG-BLK-11' => ['Fabric083', 'Leather037', 'Fabric062'],
 

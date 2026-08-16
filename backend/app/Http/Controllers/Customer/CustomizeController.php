@@ -27,17 +27,11 @@ class CustomizeController extends Controller
 
         if ($productId) {
             $product = Product::find($productId);
-            if ($product && !$design) { // If not loading a specific design, auto-detect shape
-                $name = strtolower($product->name);
-                if (str_contains($name, 'mug')) {
-                    $initialShape = 'mug';
-                } elseif (str_contains($name, 't-shirt')) {
-                    $initialShape = 't-shirt';
-                } elseif (str_contains($name, 'umbrella')) {
-                    $initialShape = 'umbrella';
-                } elseif (str_contains($name, 'bag')) {
-                    $initialShape = 'bag';
-                }
+            // If not loading a specific design, auto-detect the shape. A product
+            // the studio has no model for keeps the default, which is why only
+            // products on that list are marked customizable.
+            if ($product && !$design) {
+                $initialShape = $product->customizerShape() ?? $initialShape;
             }
         }
 
