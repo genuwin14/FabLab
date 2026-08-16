@@ -220,6 +220,10 @@
         .pricing-section-icon {
             width: 40px;
             height: 40px;
+            /* It sits in a d-flex beside the heading, so without this the panel
+               with the longest description squashes its icon narrower than the
+               others and the three stop matching. */
+            flex-shrink: 0;
             border-radius: 10px;
             background-color: #0e2e45;
             color: #ffc508;

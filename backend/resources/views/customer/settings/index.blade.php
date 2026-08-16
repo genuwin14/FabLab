@@ -80,6 +80,9 @@
         .settings-section-icon {
             width: 40px;
             height: 40px;
+            /* Flex item beside the heading — without this it squashes narrower
+               than 40px as soon as the description needs the room. */
+            flex-shrink: 0;
             border-radius: 10px;
             background-color: #0e2e45;
             color: #ffc508;
