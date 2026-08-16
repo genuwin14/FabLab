@@ -5,12 +5,8 @@
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
 
     @php
-        $texturesData = $textures->map(fn($t) => [
-            'id' => $t->texture_id,
-            'name' => $t->name,
-            'image_path' => $t->image_url,
-            'price_modifier' => (float) ($t->price_modifier ?? 0),
-        ])->values();
+        // Same shape the preview pages ship — see partials/customizer-textures.
+        $texturesData = \App\Models\Texture::customizerPayload($textures);
     @endphp
     <script>
         /**

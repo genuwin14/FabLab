@@ -522,6 +522,8 @@
         <script src="{{ asset('js/customizer/rendering.js') }}"></script>
         <script src="{{ asset('js/customizer/persistence.js') }}"></script>
 
+        @include('partials.customizer-textures')
+
         <script>
             $(document).ready(function () {
 
@@ -631,10 +633,12 @@
                             else if (itemName.includes('shorts')) baseShape = 'shorts';
                             else if (recipe.base_style) baseShape = recipe.base_style;
 
-                            window.CustomizerConfig = {
-                                initialShape: baseShape,
-                                activeColor: recipe.color || 'blue'
-                            };
+                            // Merge, don't replace — a wholesale assignment here
+                            // dropped the texture catalogue and every previewed
+                            // design rendered blank white.
+                            window.CustomizerConfig = Object.assign(window.CustomizerConfig || {}, {
+                                initialShape: baseShape
+                            });
 
                             init('staff-three-container');
 

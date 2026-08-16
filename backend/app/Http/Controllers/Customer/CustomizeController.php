@@ -107,7 +107,11 @@ class CustomizeController extends Controller
     public function myDesigns()
     {
         $designs = auth()->user()->customDesigns()->with('product')->latest()->get();
-        return view('customer.prod-customize.my-designs', compact('designs'));
+
+        // The preview modal resolves each design's texture out of this.
+        $customizerTextures = Texture::customizerPayload();
+
+        return view('customer.prod-customize.my-designs', compact('designs', 'customizerTextures'));
     }
 
     public function destroy($id)

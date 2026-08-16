@@ -53,7 +53,10 @@ class OrderController extends Controller
             ->pluck('total', 'status')
             ->toArray();
 
-        return view('staff.order.order', compact('orders', 'search', 'status', 'date', 'perPage', 'statusCounts'));
+        // The design detail popout resolves a recipe's texture out of this.
+        $customizerTextures = \App\Models\Texture::customizerPayload();
+
+        return view('staff.order.order', compact('orders', 'search', 'status', 'date', 'perPage', 'statusCounts', 'customizerTextures'));
     }
 
     /**

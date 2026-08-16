@@ -48,4 +48,28 @@ class Texture extends Model
         return $this->belongsToMany(Product::class, 'product_textures', 'texture_id', 'product_id')
             ->withTimestamps();
     }
+
+    /**
+     * The shape the customizer's JavaScript wants a texture in.
+     *
+     * Any page that renders a 3D design — the studio, My Designs, the admin and
+     * staff order inspectors — has to ship this catalogue, because a saved
+     * recipe stores only a texture_id and the renderer resolves the image from
+     * here. Without it every previewed model comes out blank white.
+     *
+     * @param  \Illuminate\Support\Collection<int, self>|null  $textures
+     */
+    public static function customizerPayload($textures = null)
+    {
+        // Retired textures are included: this catalogue exists to resolve
+        // designs that were already saved, and those keep their finish.
+        $textures ??= self::withTrashed()->get();
+
+        return $textures->map(fn($texture) => [
+            'id' => $texture->texture_id,
+            'name' => $texture->name,
+            'image_path' => $texture->image_url,
+            'price_modifier' => (float) ($texture->price_modifier ?? 0),
+        ])->values();
+    }
 }

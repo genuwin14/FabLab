@@ -25,25 +25,34 @@ function loadDesignRecipe(recipe) {
     // 1. Update UI state for base attributes WITHOUT triggering render
     // The finish is either/or, so restoring one clears whatever the page
     // defaulted to in the other group.
+    // A finish the product no longer offers has no swatch to highlight, but the
+    // design still has to open looking the way it was saved — so fall back to
+    // what the recipe itself carries rather than reverting to blank white.
     if (recipe.texture_id) {
         $('.texture-option, .color-option').removeClass('active');
         currentColorId = null;
         currentColorHex = null;
+        currentTextureId = recipe.texture_id;
+
         const $match = $(`.texture-option[data-texture-id="${recipe.texture_id}"]`);
         if ($match.length) {
             $match.addClass('active');
-            currentTextureId = recipe.texture_id;
             currentTextureImagePath = $match.data('image-path');
+        } else {
+            currentTextureImagePath = recipe.texture_image || null;
         }
-    } else if (recipe.color_id) {
+    } else if (recipe.color_id || recipe.color_hex) {
         $('.texture-option, .color-option').removeClass('active');
         currentTextureId = null;
         currentTextureImagePath = null;
+        currentColorId = recipe.color_id || null;
+
         const $match = $(`.color-option[data-color-id="${recipe.color_id}"]`);
         if ($match.length) {
             $match.addClass('active');
-            currentColorId = recipe.color_id;
             currentColorHex = $match.data('hex');
+        } else {
+            currentColorHex = recipe.color_hex || null;
         }
     }
     if (recipe.size) {
@@ -250,8 +259,11 @@ function serializeDesign() {
     return JSON.stringify({
         base_style: activeShape,
         size: activeSize,
-        // Exactly one of these is set — the finish is either/or.
+        // Exactly one of these is set — the finish is either/or. The image path
+        // and hex ride along so a preview can render the design even if the
+        // texture or colour is retired from the catalogue later.
         texture_id: currentTextureId,
+        texture_image: currentTextureId ? currentTextureImagePath : null,
         color_id: currentColorId,
         color_hex: currentColorHex,
         features: {
@@ -295,8 +307,10 @@ function loadDesignRecipePreview(recipe) {
 
     if (recipe.texture_id) {
         currentTextureId = recipe.texture_id;
+        // The catalogue is preferred — it has the current image if the texture
+        // was re-uploaded — with the recipe's own copy as the fallback.
         const lookup = getTextureById(recipe.texture_id);
-        if (lookup) currentTextureImagePath = lookup.image_path;
+        currentTextureImagePath = (lookup && lookup.image_path) || recipe.texture_image || null;
     } else if (recipe.color_hex) {
         currentColorId = recipe.color_id || null;
         currentColorHex = recipe.color_hex;

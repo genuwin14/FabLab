@@ -56,7 +56,10 @@ class OrderController extends Controller
             ->pluck('total', 'status')
             ->toArray();
 
-        return view('admin.order.order', compact('orders', 'search', 'status', 'date', 'perPage', 'statusCounts'));
+        // The Design Inspection popout resolves a recipe's texture out of this.
+        $customizerTextures = \App\Models\Texture::customizerPayload();
+
+        return view('admin.order.order', compact('orders', 'search', 'status', 'date', 'perPage', 'statusCounts', 'customizerTextures'));
     }
     /**
      * Approve or reject an order awaiting review.

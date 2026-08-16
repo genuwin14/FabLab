@@ -280,6 +280,8 @@
         <script src="{{ asset('js/customizer/logic.js') }}"></script>
         <script src="{{ asset('js/customizer/persistence.js') }}"></script>
 
+        @include('partials.customizer-textures')
+
         <script>
             $(document).ready(function () {
                 let currentDesignData = null;
