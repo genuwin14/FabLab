@@ -105,7 +105,7 @@
                                                         value="{{ $texture->texture_id }}"
                                                         class="texture-checkbox d-none"
                                                         {{ $isChecked ? 'checked' : '' }}>
-                                                    <div class="texture-card card border-2 rounded-4 h-100 overflow-hidden {{ $isChecked ? 'border-primary shadow-sm' : 'border-transparent' }}">
+                                                    <div class="texture-card card border-2 rounded-4 h-100 overflow-hidden">
                                                         <div class="position-relative" style="height: 130px;">
                                                             @if($texture->image_url)
                                                                 <img src="{{ $texture->image_url }}" class="card-img-top h-100 w-100" style="object-fit: cover;" alt="{{ $texture->name }}">
@@ -114,8 +114,11 @@
                                                                     <i class="bi bi-image fs-1"></i>
                                                                 </div>
                                                             @endif
-                                                            <div class="texture-check-badge position-absolute top-0 end-0 m-2 rounded-circle bg-primary text-white d-flex align-items-center justify-content-center"
-                                                                style="width: 28px; height: 28px; {{ $isChecked ? '' : 'display: none !important;' }}">
+                                                            {{-- No d-flex here: it is display:flex !important, which beat the
+                                                                 inline display:none the old JS used to hide this, so a
+                                                                 deselected card kept its tick. Centring lives in the CSS below. --}}
+                                                            <div class="texture-check-badge position-absolute top-0 end-0 m-2 rounded-circle bg-primary text-white"
+                                                                style="width: 28px; height: 28px;">
                                                                 <i class="bi bi-check-lg"></i>
                                                             </div>
                                                         </div>
@@ -163,51 +166,43 @@
     <style>
         .texture-card {
             transition: all 0.15s ease;
+            border-color: transparent !important;
         }
         .texture-card-label:hover .texture-card {
             transform: translateY(-2px);
             box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.08) !important;
         }
-        .texture-card.border-primary {
+
+        .texture-check-badge {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /*
+         * Selection is read straight off the checkbox rather than mirrored into
+         * classes by JS. The old sync hid the tick with an inline
+         * `display: none`, which Bootstrap's `.d-flex` (display: flex !important)
+         * simply outranked — so deselecting unticked the box but left the card
+         * looking selected. Nothing to fall out of step with now, and Select All
+         * / Clear work by setting .checked alone.
+         */
+        .texture-checkbox:checked ~ .texture-card {
             border-color: #0d6efd !important;
+            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075) !important;
+        }
+        .texture-checkbox:not(:checked) ~ .texture-card .texture-check-badge {
+            display: none;
         }
     </style>
 
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             const checkboxes = document.querySelectorAll('.texture-checkbox');
+            const setAll = (checked) => checkboxes.forEach(cb => { cb.checked = checked; });
 
-            function syncCard(checkbox) {
-                const card = checkbox.closest('label').querySelector('.texture-card');
-                const badge = checkbox.closest('label').querySelector('.texture-check-badge');
-                if (checkbox.checked) {
-                    card.classList.add('border-primary', 'shadow-sm');
-                    card.classList.remove('border-transparent');
-                    badge.style.display = 'flex';
-                } else {
-                    card.classList.remove('border-primary', 'shadow-sm');
-                    card.classList.add('border-transparent');
-                    badge.style.display = 'none';
-                }
-            }
-
-            checkboxes.forEach(cb => {
-                cb.addEventListener('change', () => syncCard(cb));
-            });
-
-            const selectAllBtn = document.getElementById('selectAllBtn');
-            const clearAllBtn = document.getElementById('clearAllBtn');
-
-            if (selectAllBtn) {
-                selectAllBtn.addEventListener('click', () => {
-                    checkboxes.forEach(cb => { cb.checked = true; syncCard(cb); });
-                });
-            }
-            if (clearAllBtn) {
-                clearAllBtn.addEventListener('click', () => {
-                    checkboxes.forEach(cb => { cb.checked = false; syncCard(cb); });
-                });
-            }
+            document.getElementById('selectAllBtn')?.addEventListener('click', () => setAll(true));
+            document.getElementById('clearAllBtn')?.addEventListener('click', () => setAll(false));
         });
     </script>
 @endsection
