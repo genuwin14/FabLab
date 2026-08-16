@@ -15,6 +15,22 @@ class Color extends Model
 {
     use SoftDeletes;
 
+    /**
+     * What the admin and staff screens accept. Shared so the two can't drift
+     * into disagreeing on what a valid swatch is — '#RRGGBB' only, because the
+     * customizer hands hex_code straight to CSS and THREE.Color.
+     */
+    public const VALIDATION_RULES = [
+        'name' => 'required|string|max:255',
+        'hex_code' => ['required', 'string', 'regex:/^#[0-9A-Fa-f]{6}$/'],
+        'description' => 'nullable|string|max:255',
+        'price_modifier' => 'nullable|numeric|min:0|max:999999.99',
+    ];
+
+    public const VALIDATION_MESSAGES = [
+        'hex_code.regex' => 'Enter a colour as a 6-digit hex code, e.g. #1B2A4A.',
+    ];
+
     protected $primaryKey = 'color_id';
 
     protected $fillable = [

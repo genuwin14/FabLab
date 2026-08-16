@@ -1,14 +1,19 @@
 <?php
 
-namespace App\Http\Controllers\Admin;
+namespace App\Http\Controllers\Staff;
 
 use App\Http\Controllers\Controller;
 use App\Models\Color;
 use Illuminate\Http\Request;
 
 /**
- * Admin CRUD for the plain finishes a customer can pick in the 3D customizer,
- * the alternative to an image texture.
+ * Staff view of the plain finishes the 3D customizer offers.
+ *
+ * Read and edit only, mirroring Staff\TextureController: staff can correct a
+ * name, description or surcharge, but adding a colour or retiring one changes
+ * what every product is able to offer, so those stay with an admin. There is
+ * deliberately no store() or destroy() here and no staff route that reaches
+ * them.
  */
 class ColorController extends Controller
 {
@@ -33,19 +38,7 @@ class ColorController extends Controller
 
         $colors = $query->orderBy('name')->paginate($perPage)->withQueryString();
 
-        return view('admin.colors.index', compact('colors', 'perPage', 'search'));
-    }
-
-    public function store(Request $request)
-    {
-        $data = $request->validate(Color::VALIDATION_RULES, Color::VALIDATION_MESSAGES);
-
-        $data['hex_code'] = strtolower($data['hex_code']);
-        $data['price_modifier'] = $data['price_modifier'] ?? 0;
-
-        Color::create($data);
-
-        return redirect()->route('admin.colors.index')->with('success', 'Color added successfully.');
+        return view('staff.colors.index', compact('colors', 'perPage', 'search'));
     }
 
     public function update(Request $request, $id)
@@ -59,18 +52,6 @@ class ColorController extends Controller
 
         $color->update($data);
 
-        return redirect()->route('admin.colors.index')->with('success', 'Color updated successfully.');
-    }
-
-    public function destroy($id)
-    {
-        $color = Color::findOrFail($id);
-
-        // Soft delete: designs already saved in this colour still resolve it,
-        // it just stops being offered on new ones.
-        $color->delete();
-
-        return redirect()->route('admin.colors.index')
-            ->with('success', "\"{$color->name}\" retired. Designs already saved in it keep their finish.");
+        return redirect()->route('staff.colors.index')->with('success', 'Color updated successfully.');
     }
 }

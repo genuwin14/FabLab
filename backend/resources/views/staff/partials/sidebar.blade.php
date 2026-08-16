@@ -42,6 +42,14 @@
                     <span class="sidebar-label">Sales</span>
                 </a>
             </li>
+            <li class="nav-item">
+                <a href="{{ route('staff.customization-pricing.index') }}"
+                    class="nav-link sidebar-tooltip {{ request()->routeIs('staff.customization-pricing.*') ? 'active bg-accent text-primary fw-bold' : 'text-white hover-accent' }}"
+                    data-sidebar-tooltip="true" title="Customization Pricing">
+                    <i class="bi bi-cash-stack me-2"></i>
+                    <span class="sidebar-label">Customization Pricing</span>
+                </a>
+            </li>
         </ul>
 
         <!-- Inventory Control Section -->
@@ -69,6 +77,14 @@
                     data-sidebar-tooltip="true" title="Textures">
                     <i class="bi bi-layers me-2"></i>
                     <span class="sidebar-label">Textures</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{{ route('staff.colors.index') }}"
+                    class="nav-link sidebar-tooltip {{ request()->routeIs('staff.colors.*') ? 'active bg-accent text-primary fw-bold' : 'text-white hover-accent' }}"
+                    data-sidebar-tooltip="true" title="Colors">
+                    <i class="bi bi-palette me-2"></i>
+                    <span class="sidebar-label">Colors</span>
                 </a>
             </li>
             <li class="nav-item">

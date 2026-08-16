@@ -185,6 +185,13 @@ Route::middleware(['auth:sanctum'])->group(function () {
     // Staff Routes/Textures (read + edit only)
     Route::get('/staff/textures', [\App\Http\Controllers\Staff\TextureController::class, 'index'])->name('staff.textures.index');
     Route::put('/staff/textures/{id}', [\App\Http\Controllers\Staff\TextureController::class, 'update'])->name('staff.textures.update');
+    // Staff Routes/Colors (read + edit only). Adding or retiring a finish
+    // changes what every product can offer, so there is no staff route for it.
+    Route::get('/staff/colors', [\App\Http\Controllers\Staff\ColorController::class, 'index'])->name('staff.colors.index');
+    Route::put('/staff/colors/{id}', [\App\Http\Controllers\Staff\ColorController::class, 'update'])->name('staff.colors.update');
+    // Staff Routes/Customization Pricing (read only — staff look a rate up for
+    // a customer, but repricing hits every live quote, so that stays with admins)
+    Route::get('/staff/customization-pricing', [\App\Http\Controllers\Staff\CustomizationPricingController::class, 'index'])->name('staff.customization-pricing.index');
     // Staff Routes/Purchase Orders (full procurement workflow)
     Route::get('/staff/purchase', [\App\Http\Controllers\Staff\PurchaseOrderController::class, 'index'])->name('staff.purchase.index');
     Route::get('/staff/purchase/create', [\App\Http\Controllers\Staff\PurchaseOrderController::class, 'create'])->name('staff.purchase.create');
