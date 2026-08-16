@@ -290,6 +290,16 @@ function describe(island) {
 
 const FACING = 0.5; // normal.z above this = pointing at the camera at (4,3,8)
 const WRAPPED = 0.9; // an island covering this much of u is a wrap, not a panel
+const FLAT = 0.95;   // and above this, the surface is square-on enough to print
+
+/** Trimmed UV bounds of a set of triangles, ignoring 2% of strays at each end. */
+function boundsOf(tris) {
+    const us = [], vs = [];
+    for (const t of tris) for (const v of t.verts) { us.push(v.uv[0]); vs.push(v.uv[1]); }
+    if (!us.length) return null;
+    const su = us.sort((a, b) => a - b), sv = vs.sort((a, b) => a - b);
+    return { u0: quantile(su, 0.02), u1: quantile(su, 0.98), v0: quantile(sv, 0.02), v1: quantile(sv, 0.98) };
+}
 
 for (const path of process.argv.slice(2)) {
     const gltf = readGlb(path);
@@ -310,6 +320,7 @@ for (const path of process.argv.slice(2)) {
         .map(island => ({
             ...describe(island),
             facing: island.filter(t => t.normal[2] > FACING),
+            flat: island.filter(t => t.normal[2] > FLAT),
         }))
         .filter(island => island.facing.length)
         .sort((a, b) => b.uvArea - a.uvArea)
@@ -343,11 +354,31 @@ for (const path of process.argv.slice(2)) {
             console.log(`    SUGGESTED { u0: 0, v0: ${f(s.v0)}, u1: 1, v1: ${f(s.v1)}`
                 + `${island.corrVY > 0 ? ', flipV: true' : ''} }`);
         } else {
+            /*
+             * Suggest the FLAT subset, not the island's own bounds.
+             *
+             * A garment panel's island runs right round to the side seams, so
+             * its outer edges are fabric curving away from the viewer. Sizing
+             * the print area to them lets a design wrap onto the side of the
+             * body — it shows up as a stray sliver at the silhouette. This
+             * mistake shipped once. The square-on core is the printable bit.
+             */
+            const flat = island.flat.length > island.facing.length * 0.1
+                ? boundsOf(island.flat)
+                : p02;
+
+            if (flat !== p02) {
+                console.log(`    flat core       u ${f(flat.u0)}..${f(flat.u1)}   v ${f(flat.v0)}..${f(flat.v1)}`
+                    + `   (${island.flat.length} tris square-on)`);
+            } else {
+                console.log('    flat core       too little square-on geometry; falling back to island bounds');
+            }
+
             const s = {
-                u0: p02.u0 + (p02.u1 - p02.u0) * 0.08,
-                u1: p02.u1 - (p02.u1 - p02.u0) * 0.08,
-                v0: p02.v0 + (p02.v1 - p02.v0) * 0.08,
-                v1: p02.v1 - (p02.v1 - p02.v0) * 0.08,
+                u0: flat.u0 + (flat.u1 - flat.u0) * 0.02,
+                u1: flat.u1 - (flat.u1 - flat.u0) * 0.02,
+                v0: flat.v0 + (flat.v1 - flat.v0) * 0.02,
+                v1: flat.v1 - (flat.v1 - flat.v0) * 0.02,
             };
             console.log(`    SUGGESTED { u0: ${f(s.u0)}, v0: ${f(s.v0)}, u1: ${f(s.u1)}, v1: ${f(s.v1)}`
                 + `${island.corrUX < 0 ? ', flipU: true' : ''}${island.corrVY > 0 ? ', flipV: true' : ''} }`);

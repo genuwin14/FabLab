@@ -3,23 +3,24 @@
  */
 
 /**
- * The front body panel, measured off the GLB with tools/measure-print-area.cjs:
- * the island at u 0.068..0.476, v 0.357..0.899, centred on the midline and
- * nearest the camera. (It comes back as a pair — the outer face carries 26,722
- * camera-facing triangles, the lining behind it 20 — sharing one UV region.)
- * The back sits at u 0.526..0.934 and the sleeves are separate islands again.
+ * The flat chest, measured off the GLB with tools/measure-print-area.cjs.
  *
- * Left on FULL_PRINT_AREA the X/Y sliders ranged over the whole tile, so the
- * middle of the slider sat at u 0.5 — past the right edge of the chest, in the
- * gap before the back panel — and pushing X walked designs onto a neighbouring
- * island, which renders them mirrored and cut at the seam. That is the
- * "doesn't cover the shoulders properly" behaviour.
+ * Two numbers matter and they are not the same. The front island spans
+ * u 0.068..0.476 — but that is the whole body, and its outer edges are fabric
+ * curving round to the side seams (world x reaches ±0.21). The square-on core,
+ * the part you could actually put a print on, is only u 0.154..0.397
+ * (x ±0.14). Sizing to the island instead of the core let a wide design wrap
+ * onto the side of the body, showing up as a stray sliver at the silhouette.
  *
- * Inset 8% from the trimmed bounds so an element at a slider extreme stays on
- * the chest rather than bleeding over the side seam. Unmirrored on both axes
- * (corr(u,worldX) +0.99, corr(v,worldY) -1.00), so no flips.
+ * The back sits at u 0.526..0.934 and the sleeves are separate islands, so on
+ * FULL_PRINT_AREA the middle of the X slider sat at u 0.5 — off the chest
+ * entirely, in the gap before the back panel — and pushing X walked designs
+ * onto a neighbouring island, where they render mirrored and cut at the seam.
+ *
+ * Unmirrored on both axes (corr(u,worldX) +0.99, corr(v,worldY) -1.00), so no
+ * flips. v starts below the collar because the shoulders curve away too.
  */
-const TSHIRT_PRINT_AREA = { u0: 0.107, v0: 0.436, u1: 0.423, v1: 0.847 };
+const TSHIRT_PRINT_AREA = { u0: 0.159, v0: 0.509, u1: 0.392, v1: 0.858 };
 
 function createTshirtModel() {
     // Clear existing children from model_group
