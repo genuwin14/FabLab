@@ -2,27 +2,29 @@
  * Ceramic Mug Model Loader
  */
 
-/**
- * The slice of the outer wall that faces the default camera, measured off the
- * GLB. The wall's UVs wrap the full circumference across u, and the seam falls
- * near the front, so the camera-facing arc arrives as two pieces: u 0..0.222 at
- * 0.95 square-on to the camera, and u 0.825..1 at only 0.56. This is the
- * square-on one.
- *
- * v matters as much as u here: the wall only occupies v 0..0.485, so on
- * FULL_PRINT_AREA the bottom half of the Y slider put designs on the rim, the
- * inside of the cup and its base. Rim to base runs with v (corr(v,worldY)
- * -1.00), so no flip.
- */
-const MUG_PRINT_AREA = { u0: 0.020, v0: 0.040, u1: 0.205, v1: 0.440 };
-
 function createMugModel() {
     // Clear existing children from model_group
     while (model_group.children.length > 0) {
         model_group.remove(model_group.children[0]);
     }
 
-    designPrintArea = MUG_PRINT_AREA;
+    /**
+     * Left uncalibrated on purpose — a cylinder is not a flat panel.
+     *
+     * The mug's outer wall is one island wrapping the whole circumference,
+     * u 0..1, so unlike the t-shirt's chest there is no narrower u range to
+     * clamp to. Constraining u to the arc that happens to face the camera cut
+     * the print area to 18% of the tile, which drags sizeScale down with it and
+     * clips anything a customer scales up.
+     *
+     * What *is* wrong here: the wall only occupies v 0..0.5 (v 0 is the rim,
+     * v 0.5 the base), so the lower half of the Y slider runs off it onto the
+     * base and the inside. Fixing that alone would still move every saved mug
+     * design, so it wants doing deliberately rather than as a side effect.
+     * Rotating the mesh so the UV seam faces away from the camera would let a
+     * centred print area work properly.
+     */
+    designPrintArea = FULL_PRINT_AREA;
 
     const loader = new THREE.GLTFLoader();
     console.log("Loading cup.glb...");

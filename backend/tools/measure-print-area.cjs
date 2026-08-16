@@ -22,7 +22,7 @@
  * Validated against bag.js, whose values were measured by hand: this reproduces
  * them to within 0.005 UV.
  *
- * Usage:  cd public/gbl && node ../../tools/measure-print-area.js t-shirt.glb
+ * Usage:  cd public/gbl && node ../../tools/measure-print-area.cjs t-shirt.glb
  */
 
 const fs = require('fs');
@@ -289,43 +289,68 @@ function describe(island) {
 // ── Report ───────────────────────────────────────────────────────────────
 
 const FACING = 0.5; // normal.z above this = pointing at the camera at (4,3,8)
+const WRAPPED = 0.9; // an island covering this much of u is a wrap, not a panel
 
 for (const path of process.argv.slice(2)) {
     const gltf = readGlb(path);
     const all = collectTriangles(gltf);
-    const facing = all.filter(t => t.normal[2] > FACING);
 
     console.log(`\n${'='.repeat(72)}\n${path}`);
-    console.log(`${all.length} triangles, ${facing.length} facing the camera (normal.z > ${FACING})`);
+    console.log(`${all.length} triangles, ${all.filter(t => t.normal[2] > FACING).length} facing the camera`);
 
-    if (!facing.length) {
+    /*
+     * Cluster the WHOLE mesh, then look at each island's camera-facing part.
+     *
+     * Clustering only the camera-facing triangles is the trap: on a cylinder
+     * the UV seam falls inside the visible arc, so one wrapped island arrives
+     * as two fragments and a 65-degree slice of a mug looks like a whole panel.
+     * That mistake shipped once and had to be reverted.
+     */
+    const islands = clusterIslands(all)
+        .map(island => ({
+            ...describe(island),
+            facing: island.filter(t => t.normal[2] > FACING),
+        }))
+        .filter(island => island.facing.length)
+        .sort((a, b) => b.uvArea - a.uvArea)
+        .slice(0, 6);
+
+    if (!islands.length) {
         console.log('  No camera-facing geometry found — check the model orientation.');
         continue;
     }
 
-    const islands = clusterIslands(facing)
-        .map(describe)
-        .sort((a, b) => b.uvArea - a.uvArea)
-        .slice(0, 6);
-
     islands.forEach((island, i) => {
         const { raw, p02 } = island;
-        const inset = (b) => ({
-            u0: b.u0 + (b.u1 - b.u0) * 0.08,
-            u1: b.u1 - (b.u1 - b.u0) * 0.08,
-            v0: b.v0 + (b.v1 - b.v0) * 0.08,
-            v1: b.v1 - (b.v1 - b.v0) * 0.08,
-        });
-        const s = inset(p02);
         const f = (n) => n.toFixed(3);
+        const wrapped = (raw.u1 - raw.u0) >= WRAPPED;
 
-        console.log(`\n  Island ${i + 1}: ${island.triangles} tris, UV area ${island.uvArea.toFixed(4)}`);
+        console.log(`\n  Island ${i + 1}: ${island.triangles} tris (${island.facing.length} camera-facing), UV area ${island.uvArea.toFixed(4)}`);
         console.log(`    world centroid  x ${island.centroid[0].toFixed(2)}  y ${island.centroid[1].toFixed(2)}  z ${island.centroid[2].toFixed(2)}`);
-        console.log(`    raw bounds      u ${f(raw.u0)}..${f(raw.u1)}   v ${f(raw.v0)}..${f(raw.v1)}`);
+        console.log(`    island bounds   u ${f(raw.u0)}..${f(raw.u1)}   v ${f(raw.v0)}..${f(raw.v1)}`);
         console.log(`    trimmed (2-98%) u ${f(p02.u0)}..${f(p02.u1)}   v ${f(p02.v0)}..${f(p02.v1)}`);
         console.log(`    corr(u,worldX) ${island.corrUX.toFixed(2)}   corr(v,worldY) ${island.corrVY.toFixed(2)}`);
-        console.log(`    flipU ${island.corrUX < 0}   flipV ${island.corrVY > 0}`);
-        console.log(`    SUGGESTED { u0: ${f(s.u0)}, v0: ${f(s.v0)}, u1: ${f(s.u1)}, v1: ${f(s.v1)}`
-            + `${island.corrUX < 0 ? ', flipU: true' : ''}${island.corrVY > 0 ? ', flipV: true' : ''} }`);
+
+        if (wrapped) {
+            console.log('    WRAPPED — spans the full u range, so this is a surface that goes all the');
+            console.log('    way round (a mug wall, a sleeve tube), not a flat panel. Do NOT clamp u to');
+            console.log('    the visible arc: it shrinks sizeScale and clips designs. Constrain v only,');
+            console.log('    or rotate the mesh so the seam faces away and then take a centred slice.');
+            const s = {
+                v0: p02.v0 + (p02.v1 - p02.v0) * 0.08,
+                v1: p02.v1 - (p02.v1 - p02.v0) * 0.08,
+            };
+            console.log(`    SUGGESTED { u0: 0, v0: ${f(s.v0)}, u1: 1, v1: ${f(s.v1)}`
+                + `${island.corrVY > 0 ? ', flipV: true' : ''} }`);
+        } else {
+            const s = {
+                u0: p02.u0 + (p02.u1 - p02.u0) * 0.08,
+                u1: p02.u1 - (p02.u1 - p02.u0) * 0.08,
+                v0: p02.v0 + (p02.v1 - p02.v0) * 0.08,
+                v1: p02.v1 - (p02.v1 - p02.v0) * 0.08,
+            };
+            console.log(`    SUGGESTED { u0: ${f(s.u0)}, v0: ${f(s.v0)}, u1: ${f(s.u1)}, v1: ${f(s.v1)}`
+                + `${island.corrUX < 0 ? ', flipU: true' : ''}${island.corrVY > 0 ? ', flipV: true' : ''} }`);
+        }
     });
 }
