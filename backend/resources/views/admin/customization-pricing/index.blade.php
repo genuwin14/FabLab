@@ -26,10 +26,10 @@
             </header>
 
             <main class="flex-grow-1 p-3 p-md-4" style="overflow-y: auto;">
-                {{-- Wider than a single-column settings page: the two panels sit
+                {{-- Full width, like the other admin pages. The two panels sit
                      side by side from lg up so the whole price list is on screen
                      at once, instead of size surcharges hiding below the fold. --}}
-                <div class="container-fluid" style="max-width: 1240px;">
+                <div class="container-fluid">
                     <div class="mb-4">
                         <h4 class="fw-bold text-dark mb-1">Customization Pricing</h4>
                         <p class="text-muted small mb-0">
