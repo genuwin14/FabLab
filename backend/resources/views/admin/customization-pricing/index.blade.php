@@ -26,7 +26,10 @@
             </header>
 
             <main class="flex-grow-1 p-3 p-md-4" style="overflow-y: auto;">
-                <div class="container-fluid" style="max-width: 880px;">
+                {{-- Wider than a single-column settings page: the two panels sit
+                     side by side from lg up so the whole price list is on screen
+                     at once, instead of size surcharges hiding below the fold. --}}
+                <div class="container-fluid" style="max-width: 1240px;">
                     <div class="mb-4">
                         <h4 class="fw-bold text-dark mb-1">Customization Pricing</h4>
                         <p class="text-muted small mb-0">
@@ -58,125 +61,136 @@
                         @csrf
                         @method('PUT')
 
-                        <div class="card border-0 shadow-sm pricing-card">
-                            <div class="card-header bg-white border-0 pt-3 pt-md-4 pb-2 px-3 px-md-4">
-                                <div class="d-flex align-items-center gap-2">
-                                    <span class="pricing-section-icon"><i class="bi bi-cash-stack"></i></span>
-                                    <div>
-                                        <h6 class="fw-bold mb-0 text-dark">Design element rates</h6>
-                                        <small class="text-muted">Charged per element a customer adds to their design.</small>
+                        <div class="row g-3 g-md-4 align-items-start">
+
+                        <!-- Panel 1: what a customer adds to the design -->
+                        <div class="col-12 col-lg-6">
+                            <div class="card border-0 shadow-sm pricing-card">
+                                <div class="card-header bg-white border-0 pt-3 pt-md-4 pb-2 px-3 px-md-4">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <span class="pricing-section-icon"><i class="bi bi-cash-stack"></i></span>
+                                        <div>
+                                            <h6 class="fw-bold mb-0 text-dark">Design element rates</h6>
+                                            <small class="text-muted">Charged per element a customer adds to their design.</small>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                            <div class="card-body px-3 px-md-4 pb-3 pb-md-4">
-                                @foreach($rates['elements'] ?? [] as $key => $rate)
-                                    <div class="pricing-row d-flex justify-content-between align-items-start gap-3 py-3 border-top">
-                                        <div class="flex-grow-1">
-                                            <div class="fw-semibold text-dark">
-                                                <i class="bi {{ $rate['icon'] }} me-1 text-muted"></i>{{ $rate['label'] }}
+                                <div class="card-body px-3 px-md-4 pb-3 pb-md-4">
+                                    @foreach($rates['elements'] ?? [] as $key => $rate)
+                                        <div class="pricing-row d-flex justify-content-between align-items-start gap-3 py-3 border-top">
+                                            <div class="flex-grow-1">
+                                                <div class="fw-semibold text-dark">
+                                                    <i class="bi {{ $rate['icon'] }} me-1 text-muted"></i>{{ $rate['label'] }}
+                                                </div>
+                                                <small class="text-muted">{{ $rate['description'] }}</small>
                                             </div>
-                                            <small class="text-muted">{{ $rate['description'] }}</small>
-                                        </div>
-                                        <div class="pricing-input flex-shrink-0">
-                                            <div class="input-group">
-                                                <span class="input-group-text bg-white text-muted fw-semibold">₱</span>
-                                                <input type="number" step="0.01" min="0" max="999999.99"
-                                                    class="form-control text-end fw-semibold @error('rates.' . $key) is-invalid @enderror"
-                                                    name="rates[{{ $key }}]"
-                                                    id="rate-{{ $key }}"
-                                                    data-rate-key="{{ $key }}"
-                                                    value="{{ old('rates.' . $key, number_format($rate['amount'], 2, '.', '')) }}"
-                                                    aria-label="{{ $rate['label'] }} rate">
+                                            <div class="pricing-input flex-shrink-0">
+                                                <div class="input-group">
+                                                    <span class="input-group-text bg-white text-muted fw-semibold">₱</span>
+                                                    <input type="number" step="0.01" min="0" max="999999.99"
+                                                        class="form-control text-end fw-semibold @error('rates.' . $key) is-invalid @enderror"
+                                                        name="rates[{{ $key }}]"
+                                                        id="rate-{{ $key }}"
+                                                        data-rate-key="{{ $key }}"
+                                                        value="{{ old('rates.' . $key, number_format($rate['amount'], 2, '.', '')) }}"
+                                                        aria-label="{{ $rate['label'] }} rate">
+                                                </div>
+                                                <small class="text-muted d-block text-end mt-1">{{ $rate['suffix'] }}</small>
                                             </div>
-                                            <small class="text-muted d-block text-end mt-1">{{ $rate['suffix'] }}</small>
                                         </div>
-                                    </div>
-                                @endforeach
+                                    @endforeach
+                                </div>
                             </div>
                         </div>
 
-                        <div class="card border-0 shadow-sm pricing-card mt-3 mt-md-4">
-                            <div class="card-header bg-white border-0 pt-3 pt-md-4 pb-2 px-3 px-md-4">
-                                <div class="d-flex align-items-center gap-2">
-                                    <span class="pricing-section-icon"><i class="bi bi-rulers"></i></span>
-                                    <div>
-                                        <h6 class="fw-bold mb-0 text-dark">Size surcharges</h6>
-                                        <small class="text-muted">
-                                            Added on top when a customer orders that size. Only one ever applies to an
-                                            item. Leave a size at 0 to charge nothing extra for it.
-                                        </small>
+                        <!-- Panel 2: what the ordered size adds, with the image
+                             scale reference tucked underneath it -->
+                        <div class="col-12 col-lg-6">
+                            <div class="card border-0 shadow-sm pricing-card">
+                                <div class="card-header bg-white border-0 pt-3 pt-md-4 pb-2 px-3 px-md-4">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <span class="pricing-section-icon"><i class="bi bi-rulers"></i></span>
+                                        <div>
+                                            <h6 class="fw-bold mb-0 text-dark">Size surcharges</h6>
+                                            <small class="text-muted">
+                                                Added on top when a customer orders that size. Only one ever applies to an
+                                                item. Leave a size at 0 to charge nothing extra for it.
+                                            </small>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                            <div class="card-body px-3 px-md-4 pb-3 pb-md-4">
-                                @foreach($rates['sizes'] ?? [] as $key => $rate)
-                                    <div class="pricing-row d-flex justify-content-between align-items-start gap-3 py-3 border-top">
-                                        <div class="flex-grow-1">
-                                            <div class="fw-semibold text-dark">
-                                                <i class="bi {{ $rate['icon'] }} me-1 text-muted"></i>{{ $rate['label'] }}
+                                <div class="card-body px-3 px-md-4 pb-3 pb-md-4">
+                                    @foreach($rates['sizes'] ?? [] as $key => $rate)
+                                        <div class="pricing-row d-flex justify-content-between align-items-start gap-3 py-3 border-top">
+                                            <div class="flex-grow-1">
+                                                <div class="fw-semibold text-dark">
+                                                    <i class="bi {{ $rate['icon'] }} me-1 text-muted"></i>{{ $rate['label'] }}
+                                                </div>
+                                                <small class="text-muted">{{ $rate['description'] }}</small>
                                             </div>
-                                            <small class="text-muted">{{ $rate['description'] }}</small>
+                                            <div class="pricing-input flex-shrink-0">
+                                                <div class="input-group">
+                                                    <span class="input-group-text bg-white text-muted fw-semibold">₱</span>
+                                                    <input type="number" step="0.01" min="0" max="999999.99"
+                                                        class="form-control text-end fw-semibold @error('rates.' . $key) is-invalid @enderror"
+                                                        name="rates[{{ $key }}]"
+                                                        id="rate-{{ $key }}"
+                                                        value="{{ old('rates.' . $key, number_format($rate['amount'], 2, '.', '')) }}"
+                                                        aria-label="{{ $rate['label'] }} surcharge">
+                                                </div>
+                                                <small class="text-muted d-block text-end mt-1">{{ $rate['suffix'] }}</small>
+                                            </div>
                                         </div>
-                                        <div class="pricing-input flex-shrink-0">
-                                            <div class="input-group">
-                                                <span class="input-group-text bg-white text-muted fw-semibold">₱</span>
-                                                <input type="number" step="0.01" min="0" max="999999.99"
-                                                    class="form-control text-end fw-semibold @error('rates.' . $key) is-invalid @enderror"
-                                                    name="rates[{{ $key }}]"
-                                                    id="rate-{{ $key }}"
-                                                    value="{{ old('rates.' . $key, number_format($rate['amount'], 2, '.', '')) }}"
-                                                    aria-label="{{ $rate['label'] }} surcharge">
-                                            </div>
-                                            <small class="text-muted d-block text-end mt-1">{{ $rate['suffix'] }}</small>
+                                    @endforeach
+                                </div>
+                            </div>
+
+                            <div class="card border-0 shadow-sm pricing-card mt-3 mt-md-4">
+                                <div class="card-header bg-white border-0 pt-3 pt-md-4 pb-2 px-3 px-md-4">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <span class="pricing-section-icon"><i class="bi bi-aspect-ratio"></i></span>
+                                        <div>
+                                            <h6 class="fw-bold mb-0 text-dark">What an uploaded image costs by size</h6>
+                                            <small class="text-muted">
+                                                The image rate is multiplied by the Size slider, which runs
+                                                {{ rtrim(rtrim(number_format($logoMinScale, 2), '0'), '.') }}× to
+                                                {{ rtrim(rtrim(number_format($logoMaxScale, 2), '0'), '.') }}×.
+                                            </small>
                                         </div>
                                     </div>
-                                @endforeach
+                                </div>
+                                <div class="card-body px-3 px-md-4 pb-3 pb-md-4">
+                                    <div class="table-responsive">
+                                        <table class="table table-sm align-middle mb-0 scale-preview-table">
+                                            <thead>
+                                                <tr class="text-muted text-uppercase" style="font-size: 0.68rem; letter-spacing: 0.04em;">
+                                                    <th class="ps-0 fw-semibold">Printed size</th>
+                                                    @foreach([$logoMinScale, 0.5, 1, 2, $logoMaxScale] as $sample)
+                                                        <th class="text-end fw-semibold">{{ rtrim(rtrim(number_format($sample, 2), '0'), '.') }}×</th>
+                                                    @endforeach
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr>
+                                                    <td class="ps-0 text-muted small">Charged</td>
+                                                    @foreach([$logoMinScale, 0.5, 1, 2, $logoMaxScale] as $sample)
+                                                        <td class="text-end fw-semibold text-dark scale-preview-cell"
+                                                            data-scale="{{ $sample }}">
+                                                            ₱{{ number_format(($rates['elements']['logo']['amount'] ?? 0) * $sample, 2) }}
+                                                        </td>
+                                                    @endforeach
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <small class="text-muted d-block mt-2">
+                                        Updates as you type. Sizes beyond the slider's range are clamped to it, so this is
+                                        the full span of what one image can cost.
+                                    </small>
+                                </div>
                             </div>
                         </div>
 
-                        <div class="card border-0 shadow-sm pricing-card mt-3 mt-md-4">
-                            <div class="card-header bg-white border-0 pt-3 pt-md-4 pb-2 px-3 px-md-4">
-                                <div class="d-flex align-items-center gap-2">
-                                    <span class="pricing-section-icon"><i class="bi bi-aspect-ratio"></i></span>
-                                    <div>
-                                        <h6 class="fw-bold mb-0 text-dark">What an uploaded image costs by size</h6>
-                                        <small class="text-muted">
-                                            The image rate is multiplied by the Size slider, which runs
-                                            {{ rtrim(rtrim(number_format($logoMinScale, 2), '0'), '.') }}× to
-                                            {{ rtrim(rtrim(number_format($logoMaxScale, 2), '0'), '.') }}×.
-                                        </small>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="card-body px-3 px-md-4 pb-3 pb-md-4">
-                                <div class="table-responsive">
-                                    <table class="table table-sm align-middle mb-0 scale-preview-table">
-                                        <thead>
-                                            <tr class="text-muted text-uppercase" style="font-size: 0.68rem; letter-spacing: 0.04em;">
-                                                <th class="ps-0 fw-semibold">Printed size</th>
-                                                @foreach([$logoMinScale, 0.5, 1, 2, $logoMaxScale] as $sample)
-                                                    <th class="text-end fw-semibold">{{ rtrim(rtrim(number_format($sample, 2), '0'), '.') }}×</th>
-                                                @endforeach
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <tr>
-                                                <td class="ps-0 text-muted small">Charged</td>
-                                                @foreach([$logoMinScale, 0.5, 1, 2, $logoMaxScale] as $sample)
-                                                    <td class="text-end fw-semibold text-dark scale-preview-cell"
-                                                        data-scale="{{ $sample }}">
-                                                        ₱{{ number_format(($rates['elements']['logo']['amount'] ?? 0) * $sample, 2) }}
-                                                    </td>
-                                                @endforeach
-                                            </tr>
-                                        </tbody>
-                                    </table>
-                                </div>
-                                <small class="text-muted d-block mt-2">
-                                    Updates as you type. Sizes beyond the slider's range are clamped to it, so this is
-                                    the full span of what one image can cost.
-                                </small>
-                            </div>
                         </div>
 
                         <div class="alert alert-light border rounded-4 small text-muted mt-3 mt-md-4 mb-0">
