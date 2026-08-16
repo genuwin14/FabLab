@@ -66,6 +66,11 @@ function loadThreeTextureFromPath(imagePath, onLoaded) {
         imagePath,
         (tex) => {
             tex.flipY = false;
+            // The renderer outputs sRGB, so a texture it is not told about is
+            // treated as already-linear and gets gamma applied twice — which
+            // reads as a washed-out, faded version of the image. GLTFLoader
+            // sets this on the model's own maps; ours have to say so too.
+            tex.encoding = THREE.sRGBEncoding;
             textureCache[imagePath] = tex;
             onLoaded(tex);
         },
@@ -304,6 +309,10 @@ function updateModelMaterial(textureId) {
 
             const canvasTexture = new THREE.CanvasTexture(canvas);
             canvasTexture.flipY = false;
+            // Canvas pixels are sRGB, same as any image — say so, or the design
+            // fades the moment an element is added and the model switches to
+            // this path.
+            canvasTexture.encoding = THREE.sRGBEncoding;
 
             applyMapToBaseMesh(canvasTexture);
         };
@@ -349,7 +358,10 @@ function applyMapToBaseMesh(threeTex, tintHex) {
                 child.material.color.setHex(0xFFFFFF);
             } else if (tintHex) {
                 child.material.map = null;
-                child.material.color.set(tintHex);
+                // Same sRGB story as the textures: a hex out of the colour
+                // picker is sRGB, but material colours are read as linear, so
+                // without converting, every plain finish renders pale.
+                child.material.color.set(tintHex).convertSRGBToLinear();
             } else {
                 child.material.map = child.userData.originalMap;
                 child.material.color.setHex(0xFFFFFF);
