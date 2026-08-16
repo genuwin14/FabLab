@@ -6,6 +6,20 @@ use Illuminate\Database\Seeder;
 use App\Models\Texture;
 use App\Models\Supplier;
 
+/**
+ * Textures are named after their ambientCG asset ID — Fabric083, Leather037 —
+ * because that is what identifies the material the images came from, and it
+ * keeps the row and the downloaded folder obviously the same thing.
+ *
+ * Images are not seeded: upload the asset's `_Color` map through
+ * Admin → Textures. Only the Color map, and it must be seamless — the
+ * customizer tiles a texture across the model, so a plain photograph shows its
+ * grid.
+ *
+ * The stock figures below are deliberately varied: some healthy, one under its
+ * threshold to exercise low-stock alerts, and one with no department so the
+ * materials report still has an "Uncategorized" section to show.
+ */
 class TextureSeeder extends Seeder
 {
     public function run(): void
@@ -18,8 +32,8 @@ class TextureSeeder extends Seeder
         $textures = [
             // Healthy stock, standard pricing
             [
-                'name' => 'Smooth Black Leather',
-                'description' => 'Matte black leather texture with fine grain.',
+                'name' => 'Leather037',
+                'description' => 'Fine-grain leather. Seamless.',
                 'supplier_id' => $ecoMaterials?->supplier_id,
                 'cost_per_unit' => 120.00,
                 'stock_quantity' => 80,
@@ -33,9 +47,9 @@ class TextureSeeder extends Seeder
                 'department' => \App\Enums\Department::DigitalCustomizationCenter->value,
             ],
             [
-                'name' => 'Natural Oak Grain',
-                'description' => 'Light oak wood pattern with visible rings.',
-                'supplier_id' => $ecoMaterials?->supplier_id,
+                'name' => 'Fabric077',
+                'description' => 'Plain woven cloth. Seamless.',
+                'supplier_id' => $genMerch?->supplier_id,
                 'cost_per_unit' => 95.00,
                 'stock_quantity' => 60,
                 'units_on_display' => 1,
@@ -49,8 +63,8 @@ class TextureSeeder extends Seeder
             ],
             // Low stock — should appear in inventory alerts
             [
-                'name' => 'Rustic Walnut',
-                'description' => 'Dark walnut texture for a vintage look.',
+                'name' => 'Leather034C',
+                'description' => 'Dark tooled leather. Seamless.',
                 'supplier_id' => $ecoMaterials?->supplier_id,
                 'cost_per_unit' => 130.00,
                 'stock_quantity' => 8,
@@ -65,8 +79,8 @@ class TextureSeeder extends Seeder
             ],
             // Healthy fabric
             [
-                'name' => 'Woven Fabric (Grey)',
-                'description' => 'Coarse woven fabric pattern for modern sofas.',
+                'name' => 'Fabric083',
+                'description' => 'Checked cotton weave. Seamless.',
                 'supplier_id' => $genMerch?->supplier_id,
                 'cost_per_unit' => 65.00,
                 'stock_quantity' => 120,
@@ -79,10 +93,25 @@ class TextureSeeder extends Seeder
                 'price_modifier' => 0,
                 // No department — demonstrates "Uncategorized" section in report.
             ],
+            [
+                'name' => 'Fabric080',
+                'description' => 'Ribbed knit. Seamless.',
+                'supplier_id' => $genMerch?->supplier_id,
+                'cost_per_unit' => 78.00,
+                'stock_quantity' => 95,
+                'units_on_display' => 1,
+                'units_sponsored' => 0,
+                'units_damaged' => 0,
+                'units_consumed' => 4,
+                'low_stock_threshold' => 20,
+                'unit' => 'meter',
+                'price_modifier' => 40.00,
+                'department' => \App\Enums\Department::DigitalCustomizationCenter->value,
+            ],
             // Premium / very low stock
             [
-                'name' => 'Polished Chrome',
-                'description' => 'Reflective metallic texture for chair legs.',
+                'name' => 'Fabric062',
+                'description' => 'Heavy canvas. Seamless.',
                 'supplier_id' => $techSupply?->supplier_id,
                 'cost_per_unit' => 220.00,
                 'stock_quantity' => 4,
@@ -91,7 +120,7 @@ class TextureSeeder extends Seeder
                 'units_damaged' => 0,
                 'units_consumed' => 0,
                 'low_stock_threshold' => 10,
-                'unit' => 'pcs',
+                'unit' => 'meter',
                 'price_modifier' => 100.00,
                 'department' => \App\Enums\Department::DigitalCustomizationCenter->value,
             ],
