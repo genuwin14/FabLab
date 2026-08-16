@@ -24,25 +24,51 @@ let currentColorHex = null;
 const textureCache = {};
 
 /**
- * Where the current model's printable panel sits on the design canvas, in UV
- * space.
+ * Where a model's printable panels sit on the design canvas, in UV space.
  *
- * Design elements are placed relative to this rather than to the tile as a
+ * Elements are placed relative to their own panel rather than to the tile as a
  * whole, and the X/Y sliders and element sizes renormalise to it — so ±50 on a
- * slider always means "the edge of the panel", whatever slice of the atlas that
+ * slider always means "the edge of this panel", whatever slice of the atlas the
  * panel occupies.
  *
- * Nearly every model needs it: a garment atlas packs front, back and sleeves
- * side by side, so the middle of the tile is rarely the middle of the panel a
- * customer sees. The bag's outer front sits at u 0.009..0.315, the t-shirt's
- * chest at u 0.104..0.442, the mug's camera-facing wall at u 0..0.222. Left at
- * FULL_PRINT_AREA a design drifts onto a neighbouring island, where it renders
- * mirrored and cut at the seam.
+ * Nearly every model needs this: a garment atlas packs front, back and sleeves
+ * side by side, so the middle of the tile is rarely the middle of any panel.
+ * Left at FULL_PRINT_AREA a design drifts onto a neighbouring island, where it
+ * renders mirrored and cut at the seam.
  *
- * Measure a new model rather than guessing: take the largest camera-facing UV
- * island, inset it ~8%, and flip an axis where the panel is unwrapped mirrored
- * (canvas v grows downward, so an unmirrored panel wants corr(v, worldY) < 0).
- * Each model loader sets this.
+ * Measure a new model rather than guessing — tools/measure-print-area.cjs, one
+ * pass per --view. Two traps it encodes, both of which shipped once:
+ *   - Size the panel to its square-on core, not the island's full extent. A
+ *     garment island runs round to the side seams and a design sized to it
+ *     wraps onto the side of the body.
+ *   - Only the axis that curves around the body wants that strict treatment.
+ *     Judging the vertical the same way lops the top off tall artwork.
  */
 const FULL_PRINT_AREA = { u0: 0, v0: 0, u1: 1, v1: 1 };
-let designPrintArea = FULL_PRINT_AREA;
+
+/**
+ * The panels a customer can put a design on, in the order they are offered.
+ *
+ * Every model declares at least one. Each element records which panel it
+ * belongs to, so a t-shirt can carry different artwork front, back and on each
+ * sleeve. `camera` is where to move the viewer to look at that panel head-on.
+ */
+const SINGLE_ZONE = [{ id: 'front', label: 'Front', area: FULL_PRINT_AREA, camera: { x: 4, y: 3, z: 8 } }];
+let designZones = SINGLE_ZONE;
+
+/** The panel currently being edited. Elements are added to this one. */
+let currentZoneId = 'front';
+
+/** Elements saved before panels existed belong to whatever comes first. */
+function defaultZoneId() {
+    return (designZones && designZones.length) ? designZones[0].id : 'front';
+}
+
+function getZoneById(zoneId) {
+    return (designZones || []).find(z => z.id === zoneId) || null;
+}
+
+/** Which panel an element sits on, tolerating recipes that predate panels. */
+function zoneOf(element) {
+    return (element && element.zone) || defaultZoneId();
+}

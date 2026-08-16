@@ -170,6 +170,54 @@
         letter-spacing: 0.08em;
     }
 
+    /* Design panel tabs (Front / Back / sleeves). Same visual language as the
+       shape and size selectors so they read as one family of controls. */
+    .btn-zone {
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 999px;
+        padding: 6px 14px;
+        color: rgba(255, 255, 255, 0.85);
+        font-size: 0.7rem;
+        font-weight: 600;
+        transition: all 0.2s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .btn-zone:hover {
+        background: rgba(255, 255, 255, 0.08);
+        border-color: rgba(255, 255, 255, 0.25);
+        color: #fff;
+    }
+
+    .btn-zone.active {
+        background: rgba(255, 197, 8, 0.12);
+        border-color: #ffc508;
+        color: #ffc508;
+    }
+
+    /* How many elements sit on that panel — so artwork on the side you're not
+       looking at can't be forgotten about. */
+    .zone-count {
+        background: rgba(255, 197, 8, 0.9);
+        color: #05111a;
+        border-radius: 999px;
+        min-width: 16px;
+        height: 16px;
+        padding: 0 4px;
+        font-size: 0.6rem;
+        font-weight: 700;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .btn-zone.active .zone-count {
+        background: #ffc508;
+    }
+
     /* Shape & Size Selection Styling */
     .btn-shape,
     .btn-size {

@@ -24,7 +24,7 @@ function createMugModel() {
      * Rotating the mesh so the UV seam faces away from the camera would let a
      * centred print area work properly.
      */
-    designPrintArea = FULL_PRINT_AREA;
+    designZones = SINGLE_ZONE;
 
     const loader = new THREE.GLTFLoader();
     console.log("Loading cup.glb...");

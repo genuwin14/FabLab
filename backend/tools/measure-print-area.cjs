@@ -288,7 +288,20 @@ function describe(island) {
 
 // ── Report ───────────────────────────────────────────────────────────────
 
-const FACING = 0.5; // normal.z above this = pointing at the camera at (4,3,8)
+/**
+ * Which way the panel being measured faces. A garment has more than one
+ * printable side, and each is found by looking at it from its own direction:
+ *   front +Z, back -Z, right +X, left -X.
+ * Pass --view=back etc. Defaults to front.
+ */
+const VIEWS = {
+    front: [0, 0, 1],
+    back: [0, 0, -1],
+    right: [1, 0, 0],
+    left: [-1, 0, 0],
+};
+
+const FACING = 0.5; // dot(normal, view) above this = pointing at the viewer
 const WRAPPED = 0.9; // an island covering this much of u is a wrap, not a panel
 /*
  * How square-on a triangle must be to count as printable — and the two axes
@@ -315,12 +328,20 @@ function boundsOf(tris) {
     return { u0: quantile(su, 0.02), u1: quantile(su, 0.98), v0: quantile(sv, 0.02), v1: quantile(sv, 0.98) };
 }
 
-for (const path of process.argv.slice(2)) {
+const args = process.argv.slice(2);
+const viewArg = (args.find(a => a.startsWith('--view=')) || '--view=front').split('=')[1];
+const view = VIEWS[viewArg];
+if (!view) throw new Error(`Unknown --view=${viewArg}. Use ${Object.keys(VIEWS).join(', ')}.`);
+
+/** How square-on a triangle is to the panel being measured. */
+const squareness = (t) => t.normal[0] * view[0] + t.normal[1] * view[1] + t.normal[2] * view[2];
+
+for (const path of args.filter(a => !a.startsWith('--'))) {
     const gltf = readGlb(path);
     const all = collectTriangles(gltf);
 
-    console.log(`\n${'='.repeat(72)}\n${path}`);
-    console.log(`${all.length} triangles, ${all.filter(t => t.normal[2] > FACING).length} facing the camera`);
+    console.log(`\n${'='.repeat(72)}\n${path}  [${viewArg}]`);
+    console.log(`${all.length} triangles, ${all.filter(t => squareness(t) > FACING).length} facing the viewer`);
 
     /*
      * Cluster the WHOLE mesh, then look at each island's camera-facing part.
@@ -333,12 +354,20 @@ for (const path of process.argv.slice(2)) {
     const islands = clusterIslands(all)
         .map(island => ({
             ...describe(island),
-            facing: island.filter(t => t.normal[2] > FACING),
-            flatU: island.filter(t => t.normal[2] > FLAT_U),
-            flatV: island.filter(t => t.normal[2] > FLAT_V),
+            facing: island.filter(t => squareness(t) > FACING),
+            flatU: island.filter(t => squareness(t) > FLAT_U),
+            flatV: island.filter(t => squareness(t) > FLAT_V),
         }))
         .filter(island => island.facing.length)
-        .sort((a, b) => b.uvArea - a.uvArea)
+        /*
+         * Rank by how much of the island actually faces this way, not by size.
+         * A garment's shells come in outer/lining pairs sharing one UV region,
+         * and the lining faces the opposite way to its own outer skin — so
+         * looking from the back, the *front* panel's lining is the largest
+         * thing pointing at you. `depth` separates them: it is the mean
+         * position along the view axis, so the nearest island is the outer one.
+         */
+        .sort((a, b) => b.facing.length - a.facing.length)
         .slice(0, 6);
 
     if (!islands.length) {
@@ -351,8 +380,11 @@ for (const path of process.argv.slice(2)) {
         const f = (n) => n.toFixed(3);
         const wrapped = (raw.u1 - raw.u0) >= WRAPPED;
 
-        console.log(`\n  Island ${i + 1}: ${island.triangles} tris (${island.facing.length} camera-facing), UV area ${island.uvArea.toFixed(4)}`);
-        console.log(`    world centroid  x ${island.centroid[0].toFixed(2)}  y ${island.centroid[1].toFixed(2)}  z ${island.centroid[2].toFixed(2)}`);
+        const depth = island.centroid[0] * view[0] + island.centroid[1] * view[1] + island.centroid[2] * view[2];
+
+        console.log(`\n  Island ${i + 1}: ${island.triangles} tris (${island.facing.length} facing this way), UV area ${island.uvArea.toFixed(4)}`);
+        console.log(`    world centroid  x ${island.centroid[0].toFixed(2)}  y ${island.centroid[1].toFixed(2)}  z ${island.centroid[2].toFixed(2)}`
+            + `   depth toward viewer ${depth >= 0 ? '+' : ''}${depth.toFixed(2)}`);
         console.log(`    island bounds   u ${f(raw.u0)}..${f(raw.u1)}   v ${f(raw.v0)}..${f(raw.v1)}`);
         console.log(`    trimmed (2-98%) u ${f(p02.u0)}..${f(p02.u1)}   v ${f(p02.v0)}..${f(p02.v1)}`);
         console.log(`    corr(u,worldX) ${island.corrUX.toFixed(2)}   corr(v,worldY) ${island.corrVY.toFixed(2)}`);

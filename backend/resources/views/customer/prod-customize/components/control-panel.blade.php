@@ -180,6 +180,17 @@
             @endif
         </div>
 
+        <!-- Design panel picker — populated from the loaded model's zones, and
+             hidden entirely for models that only have one. -->
+        <div class="mb-5" id="zonePicker" style="display: none;">
+            <label class="text-accent small text-uppercase fw-bold tracking-wider mb-2 d-block">Design Area</label>
+            <div id="zoneTabs" class="d-flex flex-wrap gap-2"></div>
+            <div class="tiny text-white-50 mt-2">
+                Text, shapes and logos are added to the selected area. Switching moves the
+                view round to it.
+            </div>
+        </div>
+
         <!-- Step 3: Custom Text -->
         <div class="mb-5">
             <div class="d-flex justify-content-between align-items-center mb-3">

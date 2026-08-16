@@ -105,12 +105,32 @@ function renderOverlayOnCanvas(ctx, baseImage) {
         ctx.fillRect(0, 0, 1024, 1024);
     }
 
-    // Elements sit relative to the model's printable panel, not the whole tile.
-    // On the bag that panel is a corner of the atlas — drawing at the middle of
-    // the canvas put designs on the inside of its back panel. For a model that
-    // prints across the whole tile these work out to the original numbers
-    // exactly: 10px per position unit and 1x sizes.
-    const area = designPrintArea || FULL_PRINT_AREA;
+    // Each panel is composited independently, so a t-shirt's front, back and
+    // sleeves can carry different artwork without one bleeding into another.
+    const zones = (designZones && designZones.length) ? designZones : SINGLE_ZONE;
+    const fallback = zones[0].id;
+
+    for (const zone of zones) {
+        const mine = (el) => ((el && el.zone) || fallback) === zone.id;
+
+        renderZoneOnCanvas(ctx, zone.area || FULL_PRINT_AREA, {
+            shapes: shapeElements.filter(mine),
+            logos: logoElements.filter(mine),
+            texts: textElements.filter(mine),
+        });
+    }
+}
+
+/**
+ * Composite one panel's elements into its slice of the canvas.
+ *
+ * Positions and sizes are relative to the panel, not the tile: on the bag that
+ * panel is a corner of the atlas, and drawing at the middle of the canvas put
+ * designs on the inside of its back panel. For a model that prints across the
+ * whole tile these work out to the original numbers exactly — 10px per position
+ * unit and 1x sizes.
+ */
+function renderZoneOnCanvas(ctx, area, elements) {
     const areaX = area.u0 * 1024;
     const areaY = area.v0 * 1024;
     const areaW = (area.u1 - area.u0) * 1024;
@@ -138,7 +158,7 @@ function renderOverlayOnCanvas(ctx, baseImage) {
     }
 
     // 1. Draw Shapes first (background layer)
-    shapeElements.forEach(shape => {
+    elements.shapes.forEach(shape => {
         ctx.save();
         const sx = centerX + (shape.x * unitX);
         const sy = centerY + (shape.y * unitY);
@@ -160,7 +180,7 @@ function renderOverlayOnCanvas(ctx, baseImage) {
     });
 
     // 2. Draw Logos (middle layer)
-    logoElements.forEach(logo => {
+    elements.logos.forEach(logo => {
         if (!logo.img || !logo.img.complete) return;
         ctx.save();
         const lx = centerX + (logo.x * unitX);
@@ -181,7 +201,7 @@ function renderOverlayOnCanvas(ctx, baseImage) {
     });
 
     // 3. Draw Text (foreground layer)
-    textElements.forEach(textElem => {
+    elements.texts.forEach(textElem => {
         if (!textElem.text.trim()) return;
         ctx.save();
         ctx.textAlign = 'center';

@@ -82,11 +82,12 @@ function loadDesignRecipe(recipe) {
                     scale: parseFloat(txt.scale) || 1,
                     rotation: parseFloat(txt.rotation) || 0,
                     flipH: !!txt.flipH,
-                    flipV: !!txt.flipV
+                    flipV: !!txt.flipV,
+                    zone: txt.zone || defaultZoneId()
                 });
 
                 const html = `
-                    <div class="customizer-item p-3 border border-white-10 rounded bg-dark-glass mb-3">
+                    <div class="customizer-item p-3 border border-white-10 rounded bg-dark-glass mb-3" data-zone="${txt.zone || defaultZoneId()}">
                         <div class="d-flex justify-content-between align-items-center mb-2">
                             <span class="tiny text-white-50 fw-bold">TEXT ELEMENT</span>
                             <button type="button" class="btn btn-link text-danger p-0 delete-btn"><i class="bi bi-trash"></i></button>
@@ -141,11 +142,12 @@ function loadDesignRecipe(recipe) {
                     scale: parseFloat(shp.scale) || 1,
                     rotation: parseFloat(shp.rotation) || 0,
                     flipH: !!shp.flipH,
-                    flipV: !!shp.flipV
+                    flipV: !!shp.flipV,
+                    zone: shp.zone || defaultZoneId()
                 });
 
                 const html = `
-                    <div class="customizer-item p-3 border border-white-10 rounded bg-dark-glass mb-3">
+                    <div class="customizer-item p-3 border border-white-10 rounded bg-dark-glass mb-3" data-zone="${shp.zone || defaultZoneId()}">
                         <div class="d-flex justify-content-between align-items-center mb-2">
                             <span class="tiny text-white-50 fw-bold">SHAPE ELEMENT</span>
                             <button type="button" class="btn btn-link text-danger p-0 delete-btn"><i class="bi bi-trash"></i></button>
@@ -197,11 +199,12 @@ function loadDesignRecipe(recipe) {
                         scale: parseFloat(logo.scale) || 1,
                         rotation: parseFloat(logo.rotation) || 0,
                         flipH: !!logo.flipH,
-                        flipV: !!logo.flipV
+                        flipV: !!logo.flipV,
+                        zone: logo.zone || defaultZoneId()
                     });
 
                     const html = `
-                        <div class="customizer-item p-3 border border-white-10 rounded bg-dark-glass mb-3">
+                        <div class="customizer-item p-3 border border-white-10 rounded bg-dark-glass mb-3" data-zone="${logo.zone || defaultZoneId()}">
                             <div class="d-flex justify-content-between align-items-center mb-2">
                                 <span class="tiny text-white-50 fw-bold">LOGO ELEMENT (LOADED) <span class="ms-1 logo-fee" style="color: #ffc508;">&nbsp;</span></span>
                                 <button type="button" class="btn btn-link text-danger p-0 delete-btn"><i class="bi bi-trash"></i></button>
@@ -235,7 +238,10 @@ function loadDesignRecipe(recipe) {
                     const $item = $(html);
                     $item.data('img-obj', img);
                     $('#logoList').append($item);
-                    
+
+                    // Images land whenever they finish loading, so re-filter as
+                    // each one arrives rather than only once at the end.
+                    applyZoneFilter();
                     updateModelMaterial(currentTextureId);
                     calculateCustomPrice();
                 };
@@ -243,6 +249,11 @@ function loadDesignRecipe(recipe) {
             });
         }
     }
+
+    // The restored cards carry their panels; rebuild the tabs around them and
+    // show only the one being edited.
+    renderZoneTabs();
+    applyZoneFilter();
 
     updateModelMaterial(currentTextureId);
     calculateCustomPrice();
@@ -279,6 +290,7 @@ function serializeDesign() {
                 rotation: logo.rotation,
                 flipH: logo.flipH,
                 flipV: logo.flipV,
+                zone: logo.zone,
                 src: logo.img.src
             }))
         }
@@ -332,7 +344,8 @@ function loadDesignRecipePreview(recipe) {
                     scale: parseFloat(txt.scale) || 1,
                     rotation: parseFloat(txt.rotation) || 0,
                     flipH: !!txt.flipH,
-                    flipV: !!txt.flipV
+                    flipV: !!txt.flipV,
+                    zone: txt.zone || defaultZoneId()
                 });
             });
         }
@@ -347,7 +360,8 @@ function loadDesignRecipePreview(recipe) {
                     scale: parseFloat(shp.scale) || 1,
                     rotation: parseFloat(shp.rotation) || 0,
                     flipH: !!shp.flipH,
-                    flipV: !!shp.flipV
+                    flipV: !!shp.flipV,
+                    zone: shp.zone || defaultZoneId()
                 });
             });
         }
@@ -363,7 +377,8 @@ function loadDesignRecipePreview(recipe) {
                         scale: parseFloat(logo.scale) || 1,
                         rotation: parseFloat(logo.rotation) || 0,
                         flipH: !!logo.flipH,
-                        flipV: !!logo.flipV
+                        flipV: !!logo.flipV,
+                        zone: logo.zone || defaultZoneId()
                     });
                     updateModelMaterial(currentTextureId);
                 };

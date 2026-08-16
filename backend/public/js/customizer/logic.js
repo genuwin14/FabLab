@@ -49,6 +49,74 @@ function formatPeso(amount) {
     return '₱' + Number(amount || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
+/* ── Design panels ──────────────────────────────────────────────────────────
+ *
+ * A t-shirt offers front, back and both sleeves; a mug offers one. Each element
+ * card carries data-zone, and only the panel being edited is shown — the rest
+ * stay in the DOM, still on the garment and still priced.
+ */
+
+/** Build the panel tabs from whatever the loaded model offers. */
+function renderZoneTabs() {
+    const $tabs = $('#zoneTabs');
+    if (!$tabs.length) return;
+
+    const zones = designZones || [];
+    // A single-panel model isn't a choice; don't spend sidebar space on it.
+    $('#zonePicker').toggle(zones.length > 1);
+
+    if (!zones.some(z => z.id === currentZoneId)) currentZoneId = defaultZoneId();
+
+    $tabs.html(zones.map(zone => `
+        <button type="button" class="btn btn-zone ${zone.id === currentZoneId ? 'active' : ''}"
+            data-zone-id="${zone.id}">${zone.label}</button>`).join(''));
+
+    refreshZoneCounts();
+}
+
+/** Badge each tab with how much artwork lives on that panel. */
+function refreshZoneCounts() {
+    $('#zoneTabs .btn-zone').each(function () {
+        const id = $(this).data('zone-id');
+        const count = $('.customizer-item').filter(function () {
+            return ($(this).data('zone') || defaultZoneId()) === id;
+        }).length;
+
+        $(this).find('.zone-count').remove();
+        if (count) $(this).append(`<span class="zone-count">${count}</span>`);
+    });
+}
+
+/** Show only the elements belonging to the panel being edited. */
+function applyZoneFilter() {
+    $('.customizer-item').each(function () {
+        $(this).toggle(($(this).data('zone') || defaultZoneId()) === currentZoneId);
+    });
+    refreshZoneCounts();
+}
+
+function setActiveZone(zoneId) {
+    currentZoneId = zoneId;
+    $('#zoneTabs .btn-zone').removeClass('active').filter(`[data-zone-id="${zoneId}"]`).addClass('active');
+    applyZoneFilter();
+    if (typeof focusZoneCamera === 'function') focusZoneCamera(getZoneById(zoneId));
+}
+
+/**
+ * Panels belong to the model, so switching shape rebuilds them. Artwork left on
+ * a panel the new model hasn't got moves to its first panel rather than
+ * disappearing without explanation.
+ */
+function reconcileZones() {
+    const valid = new Set((designZones || []).map(z => z.id));
+    $('.customizer-item').each(function () {
+        if (!valid.has($(this).data('zone') || defaultZoneId())) $(this).data('zone', defaultZoneId());
+    });
+    renderZoneTabs();
+    applyZoneFilter();
+    syncElementsAndRender();
+}
+
 function syncElementsAndRender() {
     // Sync Text
     textElements = [];
@@ -62,7 +130,8 @@ function syncElementsAndRender() {
             scale: parseFloat($(this).find('.scale-range').val()),
             rotation: parseFloat($(this).find('.rotation-range').val()) || 0,
             flipH: $(this).find('.flip-h-input').is(':checked'),
-            flipV: $(this).find('.flip-v-input').is(':checked')
+            flipV: $(this).find('.flip-v-input').is(':checked'),
+            zone: $(this).data('zone') || defaultZoneId()
         });
     });
 
@@ -77,7 +146,8 @@ function syncElementsAndRender() {
             scale: parseFloat($(this).find('.scale-range').val()),
             rotation: parseFloat($(this).find('.rotation-range').val()),
             flipH: $(this).find('.flip-h-input').is(':checked'),
-            flipV: $(this).find('.flip-v-input').is(':checked')
+            flipV: $(this).find('.flip-v-input').is(':checked'),
+            zone: $(this).data('zone') || defaultZoneId()
         });
     });
 
@@ -91,12 +161,14 @@ function syncElementsAndRender() {
             scale: parseFloat($(this).find('.scale-range').val()),
             rotation: parseFloat($(this).find('.rotation-range').val()),
             flipH: $(this).find('.flip-h-input').is(':checked'),
-            flipV: $(this).find('.flip-v-input').is(':checked')
+            flipV: $(this).find('.flip-v-input').is(':checked'),
+            zone: $(this).data('zone') || defaultZoneId()
         });
     });
 
     updateModelMaterial(currentTextureId);
     calculateCustomPrice();
+    refreshZoneCounts();
 }
 
 /**

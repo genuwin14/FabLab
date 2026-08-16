@@ -19,7 +19,7 @@ function createUmbrellaModel() {
     // Correct as-is, unlike the t-shirt and mug: applyPlanarUVs() below throws
     // the authored UVs away — they run to u 3.2, outside the tile — and re-unwraps
     // the canopy into exactly 0..1, so the whole tile really is the print area.
-    designPrintArea = FULL_PRINT_AREA;
+    designZones = SINGLE_ZONE;
 
     const loader = new THREE.GLTFLoader();
     console.log("Loading umbreella_open.glb...");

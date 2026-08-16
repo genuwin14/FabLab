@@ -11,7 +11,7 @@ function createShortsModel() {
     // always falls through to the box below, whose faces each take the whole
     // 0..1 tile. Ship a real shorts GLB and this needs measuring like the
     // t-shirt and mug were.
-    designPrintArea = FULL_PRINT_AREA;
+    designZones = SINGLE_ZONE;
 
     const loader = new THREE.GLTFLoader();
     console.log("Loading shorts.glb...");

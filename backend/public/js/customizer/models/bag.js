@@ -16,7 +16,7 @@
  * up to the rim (corr(v, worldY) = +0.61), while canvas v grows downward. Left
  * alone that renders every design mirrored, so flag it for a vertical flip.
  */
-const BAG_PRINT_AREA = { u0: 0.05, v0: 0.04, u1: 0.275, v1: 0.30, flipV: true };
+const BAG_ZONES = [{ id: 'front', label: 'Front', area: { u0: 0.05, v0: 0.04, u1: 0.275, v1: 0.30, flipV: true }, camera: { x: 4, y: 3, z: 8 } }];
 
 function createBagModel() {
     // Clear existing children from model_group
@@ -24,7 +24,7 @@ function createBagModel() {
         model_group.remove(model_group.children[0]);
     }
 
-    designPrintArea = BAG_PRINT_AREA;
+    designZones = BAG_ZONES;
 
     const loader = new THREE.GLTFLoader();
     console.log("Loading bag.glb...");

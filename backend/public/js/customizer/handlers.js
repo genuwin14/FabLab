@@ -56,6 +56,15 @@ $(document).ready(function () {
         if (typeof calculateCustomPrice === 'function') calculateCustomPrice();
     });
 
+    // 2b. Design panels — front / back / sleeves on a t-shirt, one panel on a mug.
+    $(document).on('click', '.btn-zone', function () {
+        setActiveZone($(this).data('zone-id'));
+    });
+
+    // The first model is built inside init(); give its loader a moment to set
+    // designZones before drawing the tabs.
+    setTimeout(renderZoneTabs, 300);
+
     $('.btn-size').on('click', function () {
         $('.btn-size').removeClass('active');
         $(this).addClass('active');
@@ -85,6 +94,10 @@ $(document).ready(function () {
 
         const currentSize = $('.btn-size.active').data('size');
         if (currentSize) updateModelSize(currentSize);
+
+        // Each loader sets designZones synchronously before it starts fetching
+        // the GLB, so the new panels are already known here.
+        reconcileZones();
     });
 
     $('.btn-config').on('click', function () {
@@ -120,7 +133,7 @@ $(document).ready(function () {
             const img = new Image();
             img.onload = function () {
                 const html = `
-                    <div class="customizer-item p-3 border border-white-10 rounded bg-dark-glass mb-3">
+                    <div class="customizer-item p-3 border border-white-10 rounded bg-dark-glass mb-3" data-zone="${currentZoneId}">
                         <div class="d-flex justify-content-between align-items-center mb-2">
                             <span class="tiny text-white-50 fw-bold">LOGO ELEMENT <span class="ms-1 logo-fee" style="color: #ffc508;">+${formatPeso(CustomizerPricing.rate('logo'))}</span></span>
                             <button type="button" class="btn btn-link text-danger p-0 delete-btn"><i class="bi bi-trash"></i></button>
@@ -166,7 +179,7 @@ $(document).ready(function () {
     // 5. Text & Shape Adders
     $('#addTextBtn').on('click', function () {
         const html = `
-            <div class="customizer-item p-3 border border-white-10 rounded bg-dark-glass mb-3">
+            <div class="customizer-item p-3 border border-white-10 rounded bg-dark-glass mb-3" data-zone="${currentZoneId}">
                 <div class="d-flex justify-content-between align-items-center mb-2">
                     <span class="tiny text-white-50 fw-bold">TEXT ELEMENT <span class="ms-1" style="color: #ffc508;">+${formatPeso(CustomizerPricing.rate('text'))}</span></span>
                     <button type="button" class="btn btn-link text-danger p-0 delete-btn"><i class="bi bi-trash"></i></button>
@@ -212,7 +225,7 @@ $(document).ready(function () {
 
     $('#addShapeBtn').on('click', function () {
         const html = `
-            <div class="customizer-item p-3 border border-white-10 rounded bg-dark-glass mb-3">
+            <div class="customizer-item p-3 border border-white-10 rounded bg-dark-glass mb-3" data-zone="${currentZoneId}">
                 <div class="d-flex justify-content-between align-items-center mb-2">
                     <span class="tiny text-white-50 fw-bold">SHAPE ELEMENT <span class="ms-1" style="color: #ffc508;">+${formatPeso(CustomizerPricing.rate('shape'))}</span></span>
                     <button type="button" class="btn btn-link text-danger p-0 delete-btn"><i class="bi bi-trash"></i></button>

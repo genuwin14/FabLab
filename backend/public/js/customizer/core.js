@@ -196,6 +196,23 @@ function resetCamera() {
     if(controls) controls.target.set(0, 0, 0);
 }
 
+/**
+ * Swing the viewer round to look at a panel head-on.
+ *
+ * Editing the back of a shirt while staring at its front is guesswork, so
+ * picking a panel moves the camera to it. All four sit the same distance out,
+ * so switching panels reframes rather than zooms.
+ */
+function focusZoneCamera(zone) {
+    if (!zone || !zone.camera || !camera) return;
+
+    camera.position.set(zone.camera.x, zone.camera.y, zone.camera.z);
+    if (controls) {
+        controls.target.set(0, 0, 0);
+        controls.update();
+    }
+}
+
 function toggleAutoRotate() {
     isRotating = !isRotating;
     if(controls) controls.autoRotate = isRotating;

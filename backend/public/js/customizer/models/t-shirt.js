@@ -27,7 +27,38 @@
  * flips. Widening v costs nothing in element size: sizeScale follows the
  * narrower side, which is u either way.
  */
-const TSHIRT_PRINT_AREA = { u0: 0.159, v0: 0.446, u1: 0.392, v1: 0.878 };
+const TSHIRT_ZONES = [
+    {
+        id: 'front',
+        label: 'Front',
+        area: { u0: 0.159, v0: 0.446, u1: 0.392, v1: 0.878 },
+        camera: { x: 4, y: 3, z: 8 },
+    },
+    {
+        // Unwrapped mirrored (corr(u,worldX) -0.99), hence flipU: without it
+        // every design on the back reads backwards.
+        id: 'back',
+        label: 'Back',
+        area: { u0: 0.615, v0: 0.447, u1: 0.812, v1: 0.833, flipU: true },
+        camera: { x: -4, y: 3, z: -8 },
+    },
+    {
+        // Sleeves are tubes, so u runs *around* the arm rather than across it —
+        // corr(u,worldX) is ~0 on them. These bounds are the outward-facing arc
+        // only, measured with --view=left/right; the rest of the u range curves
+        // under the arm and round to the inside.
+        id: 'left-sleeve',
+        label: 'Left Sleeve',
+        area: { u0: 0.178, v0: 0.052, u1: 0.318, v1: 0.193 },
+        camera: { x: -8, y: 3, z: 4 },
+    },
+    {
+        id: 'right-sleeve',
+        label: 'Right Sleeve',
+        area: { u0: 0.716, v0: 0.041, u1: 0.856, v1: 0.184 },
+        camera: { x: 8, y: 3, z: 4 },
+    },
+];
 
 function createTshirtModel() {
     // Clear existing children from model_group
@@ -35,7 +66,7 @@ function createTshirtModel() {
         model_group.remove(model_group.children[0]);
     }
 
-    designPrintArea = TSHIRT_PRINT_AREA;
+    designZones = TSHIRT_ZONES;
 
     const loader = new THREE.GLTFLoader();
     console.log("Loading t-shirt.glb...");
