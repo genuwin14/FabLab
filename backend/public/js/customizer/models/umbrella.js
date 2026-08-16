@@ -16,7 +16,9 @@ function createUmbrellaModel() {
         model_group.remove(model_group.children[0]);
     }
 
-    // The canopy gets a purpose-built projection below, which fills the tile.
+    // Correct as-is, unlike the t-shirt and mug: applyPlanarUVs() below throws
+    // the authored UVs away — they run to u 3.2, outside the tile — and re-unwraps
+    // the canopy into exactly 0..1, so the whole tile really is the print area.
     designPrintArea = FULL_PRINT_AREA;
 
     const loader = new THREE.GLTFLoader();
