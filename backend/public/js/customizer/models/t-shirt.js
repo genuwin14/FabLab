@@ -67,6 +67,9 @@ function createTshirtModel() {
     }
 
     designZones = TSHIRT_ZONES;
+    // The visible chest is ~0.24 of the tile wide, so this lands roughly 4 tiles
+    // across it. At 1 the customer saw a 4x magnified crop of the image.
+    designTextureRepeat = 16;
 
     const loader = new THREE.GLTFLoader();
     console.log("Loading t-shirt.glb...");

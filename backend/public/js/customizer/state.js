@@ -59,6 +59,18 @@ let designZones = SINGLE_ZONE;
 /** The panel currently being edited. Elements are added to this one. */
 let currentZoneId = 'front';
 
+/**
+ * How many times a texture image tiles across the model's UV tile.
+ *
+ * A texture is a material sample — a weave, a grain — not a picture, so it has
+ * to read at something like its real size. Stretching one copy over the whole
+ * atlas magnifies it enormously: a t-shirt's chest is barely 40% of the tile
+ * across, so a single copy shows the customer a blown-up crop rather than
+ * fabric. Each model sets its own count, because the same number means
+ * different things on a chest and on a mug wall.
+ */
+let designTextureRepeat = 1;
+
 /** Elements saved before panels existed belong to whatever comes first. */
 function defaultZoneId() {
     return (designZones && designZones.length) ? designZones[0].id : 'front';

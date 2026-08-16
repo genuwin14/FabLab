@@ -12,6 +12,7 @@ function createShortsModel() {
     // 0..1 tile. Ship a real shorts GLB and this needs measuring like the
     // t-shirt and mug were.
     designZones = SINGLE_ZONE;
+    designTextureRepeat = 8;
 
     const loader = new THREE.GLTFLoader();
     console.log("Loading shorts.glb...");

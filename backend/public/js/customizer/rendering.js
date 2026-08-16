@@ -89,21 +89,67 @@ function applyElementFlip(ctx, element) {
 }
 
 /**
+ * Tile a texture across the model at the current model's repeat count.
+ *
+ * Set at apply time rather than at load: loadThreeTextureFromPath caches by
+ * image path, so one THREE.Texture is shared by every model that uses it and
+ * the count has to follow whichever is on screen.
+ *
+ * Only for textures applied straight to the material — the overlay canvas has
+ * its tiling painted in already and must stay at 1:1.
+ */
+function applyTextureTiling(threeTex) {
+    if (!threeTex) return;
+
+    const repeat = Math.max(1, designTextureRepeat || 1);
+    threeTex.wrapS = THREE.RepeatWrapping;
+    threeTex.wrapT = THREE.RepeatWrapping;
+    threeTex.repeat.set(repeat, repeat);
+    threeTex.needsUpdate = true;
+}
+
+/**
+ * Lay the base texture down under the design, tiled the same number of times
+ * the no-overlay path tiles it, so adding a logo doesn't change how the
+ * material reads.
+ */
+function paintBaseTexture(ctx, baseImage) {
+    const flat = () => {
+        ctx.fillStyle = getOverlayBaseColor();
+        ctx.fillRect(0, 0, 1024, 1024);
+    };
+
+    if (!baseImage) return flat();
+
+    try {
+        const repeat = Math.max(1, designTextureRepeat || 1);
+
+        if (repeat === 1) {
+            ctx.drawImage(baseImage, 0, 0, 1024, 1024);
+            return;
+        }
+
+        // Scale one copy into an offscreen cell and tile that, so the cell lands
+        // on an exact pixel boundary and the seams don't shimmer.
+        const cell = Math.max(1, Math.round(1024 / repeat));
+        const tile = document.createElement('canvas');
+        tile.width = cell;
+        tile.height = cell;
+        tile.getContext('2d').drawImage(baseImage, 0, 0, cell, cell);
+
+        ctx.fillStyle = ctx.createPattern(tile, 'repeat');
+        ctx.fillRect(0, 0, 1024, 1024);
+    } catch (e) {
+        flat();
+    }
+}
+
+/**
  * Composite design elements (shapes, logos, text) onto a 1024x1024 canvas
  * over either the base texture image or a flat color fallback.
  */
 function renderOverlayOnCanvas(ctx, baseImage) {
-    if (baseImage) {
-        try {
-            ctx.drawImage(baseImage, 0, 0, 1024, 1024);
-        } catch (e) {
-            ctx.fillStyle = getOverlayBaseColor();
-            ctx.fillRect(0, 0, 1024, 1024);
-        }
-    } else {
-        ctx.fillStyle = getOverlayBaseColor();
-        ctx.fillRect(0, 0, 1024, 1024);
-    }
+    paintBaseTexture(ctx, baseImage);
 
     // Each panel is composited independently, so a t-shirt's front, back and
     // sleeves can carry different artwork without one bleeding into another.
@@ -272,6 +318,7 @@ function updateModelMaterial(textureId) {
     } else if (imagePath) {
         // Just apply the texture directly (cached after first load)
         loadThreeTextureFromPath(imagePath, (threeTex) => {
+            applyTextureTiling(threeTex);
             applyMapToBaseMesh(threeTex);
         });
     } else if (currentColorHex) {

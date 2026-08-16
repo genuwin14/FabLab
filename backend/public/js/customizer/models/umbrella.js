@@ -20,6 +20,7 @@ function createUmbrellaModel() {
     // the authored UVs away — they run to u 3.2, outside the tile — and re-unwraps
     // the canopy into exactly 0..1, so the whole tile really is the print area.
     designZones = SINGLE_ZONE;
+    designTextureRepeat = 6;
 
     const loader = new THREE.GLTFLoader();
     console.log("Loading umbreella_open.glb...");

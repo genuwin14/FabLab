@@ -25,6 +25,8 @@ function createBagModel() {
     }
 
     designZones = BAG_ZONES;
+    // Front panel is ~0.23 of the tile wide: about 3 tiles across the face.
+    designTextureRepeat = 12;
 
     const loader = new THREE.GLTFLoader();
     console.log("Loading bag.glb...");

@@ -25,6 +25,8 @@ function createMugModel() {
      * centred print area work properly.
      */
     designZones = SINGLE_ZONE;
+    // Wraps the full circumference, so this is tiles all the way round the mug.
+    designTextureRepeat = 8;
 
     const loader = new THREE.GLTFLoader();
     console.log("Loading cup.glb...");
