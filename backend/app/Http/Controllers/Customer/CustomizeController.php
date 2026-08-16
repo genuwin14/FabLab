@@ -46,11 +46,19 @@ class CustomizeController extends Controller
             $requiresSelection = true;
         }
 
-        // Finishes: filtered by product if assignments exist, otherwise show all.
-        // A design carries one or the other, never both.
+        // Finishes: a design carries one or the other, never both.
+        //
+        // Textures are exactly what the admin assigned. Assigning none is how a
+        // product says it has no patterned finish — the assignment page promises
+        // "only textures assigned here will appear in the customizer" — so there
+        // is no fall back to the whole catalogue, which used to offer every
+        // texture on a product the admin had deliberately left bare.
+        //
+        // Colours keep their fallback, which their assignment page documents:
+        // assign none and every colour is offered.
         if ($product) {
             $product->load(['textures', 'colors']);
-            $textures = $product->textures->isNotEmpty() ? $product->textures : Texture::all();
+            $textures = $product->textures;
             $colors = $product->colors->isNotEmpty() ? $product->colors : \App\Models\Color::orderBy('name')->get();
         } else {
             $textures = Texture::all();

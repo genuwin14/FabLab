@@ -146,17 +146,28 @@
                 </div>
             @endif
 
-            @if($colors->isNotEmpty() && $textures->isNotEmpty())
-                <div class="finish-group-label tiny text-white-50 fw-bold mb-2">
-                    <i class="bi bi-layers me-1"></i>TEXTURES
-                </div>
-            @endif
-
-            @if($textures->isEmpty() && $colors->isEmpty())
+            @if($textures->isEmpty())
+                {{-- A product only offers the textures an admin assigned it, so one
+                     with no assignment has none. Say so where colours still fill
+                     the step: a group that just vanishes reads as swatches that
+                     failed to load. --}}
+                @if($colors->isNotEmpty())
+                    <div class="finish-group-label tiny text-white-50 fw-bold mb-2">
+                        <i class="bi bi-layers me-1"></i>TEXTURES
+                    </div>
+                @endif
                 <div class="text-white-50 small text-center py-3 border border-white-10 rounded">
-                    <i class="bi bi-info-circle me-1"></i> No finishes available for this product.
+                    <i class="bi bi-info-circle me-1"></i>
+                    {{ $colors->isEmpty()
+                        ? 'No finishes available for this product.'
+                        : 'No textures available for this product.' }}
                 </div>
-            @elseif($textures->isNotEmpty())
+            @else
+                @if($colors->isNotEmpty())
+                    <div class="finish-group-label tiny text-white-50 fw-bold mb-2">
+                        <i class="bi bi-layers me-1"></i>TEXTURES
+                    </div>
+                @endif
                 <div class="row g-3">
                     @foreach($textures as $index => $texture)
                         <div class="col-3 text-center">

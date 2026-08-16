@@ -135,6 +135,23 @@ class DesignPreviewRenderingTest extends TestCase
             ->assertSee('"id":' . $texture->texture_id, false);
     }
 
+    public function test_the_studio_ships_the_catalogue_even_when_the_product_offers_no_textures(): void
+    {
+        $customer = $this->user('customer', 'customer@example.test');
+        $product = $this->product();
+        $texture = $this->texture();
+        $design = $this->design($customer, $product, $texture);
+
+        // The product has no textures assigned, so the swatch list is empty —
+        // but the design still has to reopen wearing the finish it was saved in.
+        $this->actingAs($customer)
+            ->get(route('customer.customize.index', ['design_id' => $design->custom_design_id]))
+            ->assertOk()
+            ->assertSee('"id":' . $texture->texture_id, false)
+            ->assertSee('canvas.png', false)
+            ->assertDontSee('data-texture-id="' . $texture->texture_id . '"', false);
+    }
+
     public function test_the_catalogue_carries_what_the_renderer_reads(): void
     {
         $texture = $this->texture();

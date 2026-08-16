@@ -139,6 +139,7 @@
                                     <div class="alert alert-info mt-4 mb-0">
                                         <i class="bi bi-info-circle me-2"></i>
                                         <strong>Tip:</strong> Only textures assigned here will appear in the customizer for this product.
+                                        Assign none and it is offered no textures at all — customers finish it with a colour instead.
                                         @if(!$product->is_customizable)
                                             This product is currently <strong>not marked as customizable</strong> — assignments will be saved but the customizer won't be reachable until you toggle that flag.
                                         @endif

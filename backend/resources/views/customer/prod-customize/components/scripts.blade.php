@@ -6,7 +6,13 @@
 
     @php
         // Same shape the preview pages ship — see partials/customizer-textures.
-        $texturesData = \App\Models\Texture::customizerPayload($textures);
+        //
+        // The whole catalogue, not this product's swatches: this is what the
+        // renderer resolves a saved recipe's texture_id against, and a design
+        // saved before its texture was unassigned (or retired) still has to
+        // come back looking like itself rather than blank white. The swatches
+        // the customer may pick from are the assigned ones — see control-panel.
+        $texturesData = \App\Models\Texture::customizerPayload();
     @endphp
     <script>
         /**

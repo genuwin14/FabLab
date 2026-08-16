@@ -100,7 +100,10 @@ class ImageRenderingTest extends TestCase
 
         $this->get('/customer/shop')->assertOk()->assertSee('/storage/products/shirt.jpg', false);
 
-        // The studio hands texture URLs to three.js.
+        // The studio hands texture URLs to three.js — but only for the textures
+        // assigned to the product, so this one has to be one of them.
+        $this->product->textures()->sync([$this->texture->texture_id]);
+
         $this->get('/customer/customize?product_id=' . $this->product->product_id)
             ->assertOk()
             ->assertSee('/storage/textures/weave.png', false);

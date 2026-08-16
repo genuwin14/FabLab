@@ -57,10 +57,10 @@ class ColorFinishTest extends TestCase
         ]);
     }
 
-    private function texture(float $surcharge = 0): Texture
+    private function texture(float $surcharge = 0, string $name = 'Canvas Weave'): Texture
     {
         return Texture::create([
-            'name' => 'Canvas Weave', 'price_modifier' => $surcharge,
+            'name' => $name, 'price_modifier' => $surcharge,
             'stock_quantity' => 5, 'low_stock_threshold' => 1, 'cost_per_unit' => 50, 'unit' => 'pcs',
         ]);
     }
@@ -254,5 +254,51 @@ class ColorFinishTest extends TestCase
         $this->get(route('customer.customize.index', ['product_id' => $product->product_id]))
             ->assertOk()
             ->assertSee('class="color-option active"', false);
+    }
+
+    public function test_the_customizer_offers_only_the_textures_assigned_to_the_product(): void
+    {
+        $product = $this->product();
+        $assigned = $this->texture();
+        $unassigned = $this->texture(0, 'Denim');
+        $product->textures()->sync([$assigned->texture_id]);
+
+        Sanctum::actingAs($this->customer());
+
+        $this->get(route('customer.customize.index', ['product_id' => $product->product_id]))
+            ->assertOk()
+            ->assertSee('data-texture-id="' . $assigned->texture_id . '"', false)
+            ->assertDontSee('data-texture-id="' . $unassigned->texture_id . '"', false);
+    }
+
+    public function test_a_product_with_no_textures_assigned_offers_none(): void
+    {
+        $product = $this->product();
+        $this->color('Navy Blue');
+        $this->texture();
+
+        // Assigning nothing on the admin page used to offer the whole texture
+        // catalogue here, the opposite of what that page promises.
+        Sanctum::actingAs($this->customer());
+
+        $html = $this->get(route('customer.customize.index', ['product_id' => $product->product_id]))
+            ->assertOk()
+            ->assertSee('No textures available for this product.')
+            ->getContent();
+
+        $this->assertStringNotContainsString('data-texture-id=', $html);
+    }
+
+    public function test_a_product_with_neither_finish_says_so_once(): void
+    {
+        $product = $this->product();
+        $this->texture();
+
+        Sanctum::actingAs($this->customer());
+
+        $this->get(route('customer.customize.index', ['product_id' => $product->product_id]))
+            ->assertOk()
+            ->assertSee('No finishes available for this product.')
+            ->assertDontSee('No textures available for this product.');
     }
 }
