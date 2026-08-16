@@ -198,7 +198,7 @@
                     <span class="ms-1 fw-normal" style="font-size: 0.65rem; text-transform: none; color: rgba(255,255,255,0.6);">+₱{{ number_format($rates['text'] ?? 50, 2) }} each</span>
                 </label>
                 <button type="button" id="addTextBtn"
-                    class="btn btn-tiny btn-outline-accent rounded-pill px-2 py-1 small" style="font-size: 0.65rem;">
+                    class="btn btn-tiny btn-outline-accent rounded-pill px-2 py-1 small text-nowrap" style="font-size: 0.65rem;">
                     <i class="bi bi-plus-lg"></i> Add Text
                 </button>
             </div>
@@ -214,7 +214,7 @@
                     <span class="ms-1 fw-normal" style="font-size: 0.65rem; text-transform: none; color: rgba(255,255,255,0.6);">+₱{{ number_format($rates['shape'] ?? 30, 2) }} each</span>
                 </label>
                 <button type="button" id="addShapeBtn"
-                    class="btn btn-tiny btn-outline-accent rounded-pill px-2 py-1 small" style="font-size: 0.65rem;">
+                    class="btn btn-tiny btn-outline-accent rounded-pill px-2 py-1 small text-nowrap" style="font-size: 0.65rem;">
                     <i class="bi bi-plus-lg"></i> Add Shape
                 </button>
             </div>
@@ -225,18 +225,21 @@
 
         <!-- Step 5: Custom Logos / Images -->
         <div class="mb-5">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <label class="text-accent small text-uppercase fw-bold tracking-wider mb-0">5. Custom Logos
-                    <span class="ms-1 fw-normal" style="font-size: 0.65rem; text-transform: none; color: rgba(255,255,255,0.6);">+₱{{ number_format($rates['logo'] ?? 150, 2) }} each at 1&times; size, priced by size</span>
-                </label>
-                <div>
+            {{-- This rate note is the long one, so it sits under the header rather
+                 than inside it — inline it squeezed the button onto two lines. --}}
+            <div class="d-flex justify-content-between align-items-center gap-2 mb-1">
+                <label class="text-accent small text-uppercase fw-bold tracking-wider mb-0">5. Custom Logos</label>
+                <div class="flex-shrink-0">
                     <input type="file" id="logoInput" class="d-none" accept="image/*,.svg">
                     <button type="button" onclick="document.getElementById('logoInput').click()"
-                        class="btn btn-tiny btn-outline-accent rounded-pill px-2 py-1 small"
+                        class="btn btn-tiny btn-outline-accent rounded-pill px-2 py-1 small text-nowrap"
                         style="font-size: 0.65rem;">
                         <i class="bi bi-upload"></i> Upload Logo
                     </button>
                 </div>
+            </div>
+            <div class="fw-normal mb-3" style="font-size: 0.65rem; color: rgba(255,255,255,0.6);">
+                +₱{{ number_format($rates['logo'] ?? 150, 2) }} each at 1&times; size, priced by size
             </div>
             <div id="logoList" class="d-grid gap-3">
                 <!-- Dynamic logo items go here -->
