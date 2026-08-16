@@ -79,4 +79,11 @@ class Product extends Model
         return $this->belongsToMany(Texture::class, 'product_textures', 'product_id', 'texture_id')
             ->withTimestamps();
     }
+
+    /** Plain finishes offered for this product, the alternative to a texture. */
+    public function colors(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    {
+        return $this->belongsToMany(Color::class, 'product_colors', 'product_id', 'color_id')
+            ->withTimestamps();
+    }
 }

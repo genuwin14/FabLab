@@ -59,6 +59,14 @@
                 </a>
             </li>
             <li class="nav-item">
+                <a href="{{ route('admin.colors.index') }}"
+                    class="nav-link sidebar-tooltip {{ request()->routeIs('admin.colors.*') ? 'active bg-accent text-primary fw-bold' : 'text-white hover-accent' }}"
+                    data-sidebar-tooltip="true" title="Colors">
+                    <i class="bi bi-palette me-2"></i>
+                    <span class="sidebar-label">Colors</span>
+                </a>
+            </li>
+            <li class="nav-item">
                 <a href="{{ route('admin.inventory.index') }}"
                     class="nav-link sidebar-tooltip {{ request()->routeIs('admin.inventory.index') ? 'active bg-accent text-primary fw-bold' : 'text-white hover-accent' }}"
                     data-sidebar-tooltip="true" title="Stock Monitoring">
@@ -127,6 +135,14 @@
                     data-sidebar-tooltip="true" title="Users">
                     <i class="bi bi-people me-2"></i>
                     <span class="sidebar-label">Users</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{{ route('admin.customization-pricing.index') }}"
+                    class="nav-link sidebar-tooltip {{ request()->routeIs('admin.customization-pricing.*') ? 'active bg-accent text-primary fw-bold' : 'text-white hover-accent' }}"
+                    data-sidebar-tooltip="true" title="Customization Pricing">
+                    <i class="bi bi-cash-stack me-2"></i>
+                    <span class="sidebar-label">Customization Pricing</span>
                 </a>
             </li>
             <li class="nav-item">

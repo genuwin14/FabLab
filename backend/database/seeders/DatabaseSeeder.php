@@ -22,6 +22,7 @@ class DatabaseSeeder extends Seeder
             ProductSeeder::class,
             RawMaterialSeeder::class,
             TextureSeeder::class,
+            ColorSeeder::class,
             EquipmentSeeder::class,
             BOMSeeder::class,
             // Must follow RawMaterialSeeder: it writes the usage ledger that

@@ -561,7 +561,8 @@
             /* 3D design popup: two fixed-height panels stacked = a huge
                modal. Shrink them to phone-friendly heights. */
             #designDetailPopup #admin-three-container { height: 280px !important; }
-            #designDetailPopup .design-recipe-box { height: 220px !important; }
+            #designDetailPopup .design-recipe-box { height: 180px !important; }
+            #designDetailPopup .design-charges-box { height: auto !important; max-height: 200px; }
         }
     </style>
 
@@ -647,6 +648,37 @@
         <script src="{{ asset('js/customizer/persistence.js') }}"></script>
 
         <script>
+            /**
+             * Itemised customization charges, priced server-side by
+             * App\Models\CustomDesign. Each uploaded image is its own line
+             * because its fee follows the size it is printed at.
+             */
+            function renderDesignCharges(lines) {
+                const $box = $('#detailPopupCharges');
+                lines = Array.isArray(lines) ? lines : [];
+
+                if (!lines.length) {
+                    $box.html('<div class="text-muted fst-italic">No extra charges — base price only.</div>');
+                    return;
+                }
+
+                const peso = value => '₱' + Number(value || 0).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                const escape = text => $('<div>').text(text ?? '').html();
+                const total = lines.reduce((sum, line) => sum + (Number(line.amount) || 0), 0);
+
+                $box.html(
+                    lines.map(line => `
+                        <div class="d-flex justify-content-between gap-2 py-1 border-bottom border-light-subtle">
+                            <span class="text-dark">${escape(line.label)}</span>
+                            <span class="text-dark fw-semibold text-nowrap">${peso(line.amount)}</span>
+                        </div>`).join('') +
+                    `<div class="d-flex justify-content-between gap-2 pt-2">
+                        <span class="fw-bold text-dark">Total customization</span>
+                        <span class="fw-bold text-nowrap" style="color: #997404;">${peso(total)}</span>
+                    </div>`
+                );
+            }
+
             // Design Inspection popout — opened from the "View Order" modal's customized items
             $(document).on('click', '.btn-popout-design', function () {
                 const design = $(this).data('design');
@@ -664,6 +696,7 @@
                 }
                 recipe = recipe || {};
                 $('#detailPopupRecipe').text(JSON.stringify(recipe, null, 4));
+                renderDesignCharges(design.price_breakdown);
 
                 const modal = new bootstrap.Modal(document.getElementById('designDetailPopup'));
                 modal.show();

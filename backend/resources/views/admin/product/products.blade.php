@@ -223,6 +223,11 @@
                                                             title="Manage Textures">
                                                             <i class="bi bi-layers text-info"></i>
                                                         </a>
+                                                        <a href="{{ route('admin.products.colors.assign', $product->product_id) }}"
+                                                            class="btn btn-light btn-sm rounded-circle"
+                                                            title="Manage Colors">
+                                                            <i class="bi bi-palette text-success"></i>
+                                                        </a>
                                                         <button class="btn btn-light btn-sm rounded-circle"
                                                             data-bs-toggle="modal" data-bs-target="#editProductModal"
                                                             data-product="{{ json_encode($product) }}" title="Edit Product">

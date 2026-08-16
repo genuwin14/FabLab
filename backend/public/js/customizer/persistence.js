@@ -23,13 +23,27 @@ function loadDesignRecipe(recipe) {
     if (!recipe) return;
 
     // 1. Update UI state for base attributes WITHOUT triggering render
+    // The finish is either/or, so restoring one clears whatever the page
+    // defaulted to in the other group.
     if (recipe.texture_id) {
-        $('.texture-option').removeClass('active');
+        $('.texture-option, .color-option').removeClass('active');
+        currentColorId = null;
+        currentColorHex = null;
         const $match = $(`.texture-option[data-texture-id="${recipe.texture_id}"]`);
         if ($match.length) {
             $match.addClass('active');
             currentTextureId = recipe.texture_id;
             currentTextureImagePath = $match.data('image-path');
+        }
+    } else if (recipe.color_id) {
+        $('.texture-option, .color-option').removeClass('active');
+        currentTextureId = null;
+        currentTextureImagePath = null;
+        const $match = $(`.color-option[data-color-id="${recipe.color_id}"]`);
+        if ($match.length) {
+            $match.addClass('active');
+            currentColorId = recipe.color_id;
+            currentColorHex = $match.data('hex');
         }
     }
     if (recipe.size) {
@@ -180,7 +194,7 @@ function loadDesignRecipe(recipe) {
                     const html = `
                         <div class="customizer-item p-3 border border-white-10 rounded bg-dark-glass mb-3">
                             <div class="d-flex justify-content-between align-items-center mb-2">
-                                <span class="tiny text-white-50 fw-bold">LOGO ELEMENT (LOADED)</span>
+                                <span class="tiny text-white-50 fw-bold">LOGO ELEMENT (LOADED) <span class="ms-1 logo-fee" style="color: #ffc508;">&nbsp;</span></span>
                                 <button type="button" class="btn btn-link text-danger p-0 delete-btn"><i class="bi bi-trash"></i></button>
                             </div>
                             <div class="d-flex align-items-center gap-3 mb-2">
@@ -206,6 +220,7 @@ function loadDesignRecipe(recipe) {
                                     <input type="range" class="form-range rotation-range" min="0" max="360" value="${parseFloat(logo.rotation) || 0}">
                                 </div>
                             </div>
+                            <div class="tiny text-white-50 mt-2">Size sets the price: less below 1&times;, more above.</div>
                             ${flipControlsHtml(logo.flipH, logo.flipV)}
                         </div>`;
                     const $item = $(html);
@@ -235,7 +250,10 @@ function serializeDesign() {
     return JSON.stringify({
         base_style: activeShape,
         size: activeSize,
+        // Exactly one of these is set — the finish is either/or.
         texture_id: currentTextureId,
+        color_id: currentColorId,
+        color_hex: currentColorHex,
         features: {
             led_lighting: ledLighting
         },
@@ -267,11 +285,21 @@ function captureSnapshot() {
 function loadDesignRecipePreview(recipe) {
     if (!recipe) return;
 
-    // Resolve texture from recipe (preview mode skips DOM updates)
+    // Resolve the finish from the recipe (preview mode skips DOM updates).
+    // The recipe carries the colour's hex so an admin previewing an order does
+    // not need the colors table loaded into the page.
+    currentTextureId = null;
+    currentTextureImagePath = null;
+    currentColorId = null;
+    currentColorHex = null;
+
     if (recipe.texture_id) {
         currentTextureId = recipe.texture_id;
         const lookup = getTextureById(recipe.texture_id);
         if (lookup) currentTextureImagePath = lookup.image_path;
+    } else if (recipe.color_hex) {
+        currentColorId = recipe.color_id || null;
+        currentColorHex = recipe.color_hex;
     }
 
     textElements = [];

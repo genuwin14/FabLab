@@ -112,15 +112,48 @@
 
 
 
-        <!-- Step 2: Materials & Textures -->
+        <!-- Step 2: Materials & Finishes — a plain colour OR a patterned texture,
+             never both. Picking one clears the other. -->
         <div class="mb-5">
             <label class="text-accent small text-uppercase fw-bold tracking-wider mb-3 d-block">2. Materials &
                 Finishes</label>
-            @if($textures->isEmpty())
-                <div class="text-white-50 small text-center py-3 border border-white-10 rounded">
-                    <i class="bi bi-info-circle me-1"></i> No textures available for this product.
+
+            @if($colors->isNotEmpty())
+                <div class="finish-group-label tiny text-white-50 fw-bold mb-2">
+                    <i class="bi bi-palette me-1"></i>PLAIN COLORS
                 </div>
-            @else
+                <div class="row g-3 mb-4">
+                    @foreach($colors as $index => $color)
+                        {{-- A texture is the default finish when the product has any;
+                             otherwise the first colour stands in as the default. --}}
+                        <div class="col-3 text-center">
+                            <div class="color-option {{ $textures->isEmpty() && $index === 0 ? 'active' : '' }}"
+                                data-color-id="{{ $color->color_id }}"
+                                data-hex="{{ $color->hex_code }}"
+                                data-price-modifier="{{ $color->price_modifier ?? 0 }}"
+                                title="{{ $color->name }}{{ $color->price_modifier > 0 ? ' (+₱' . number_format($color->price_modifier, 2) . ')' : '' }}">
+                                <div class="color-preview" style="background-color: {{ $color->hex_code }};"></div>
+                            </div>
+                            <div class="texture-price tiny fw-bold mt-1 text-truncate"
+                                style="color: {{ $color->price_modifier > 0 ? '#ffc508' : 'rgba(255,255,255,0.5)' }};">
+                                {{ $color->price_modifier > 0 ? '+₱' . number_format($color->price_modifier, 2) : 'Free' }}
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+            @endif
+
+            @if($colors->isNotEmpty() && $textures->isNotEmpty())
+                <div class="finish-group-label tiny text-white-50 fw-bold mb-2">
+                    <i class="bi bi-layers me-1"></i>TEXTURES
+                </div>
+            @endif
+
+            @if($textures->isEmpty() && $colors->isEmpty())
+                <div class="text-white-50 small text-center py-3 border border-white-10 rounded">
+                    <i class="bi bi-info-circle me-1"></i> No finishes available for this product.
+                </div>
+            @elseif($textures->isNotEmpty())
                 <div class="row g-3">
                     @foreach($textures as $index => $texture)
                         <div class="col-3 text-center">
@@ -151,7 +184,7 @@
         <div class="mb-5">
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <label class="text-accent small text-uppercase fw-bold tracking-wider mb-0">3. Custom Text
-                    <span class="ms-1 fw-normal" style="font-size: 0.65rem; text-transform: none; color: rgba(255,255,255,0.6);">+₱50 each</span>
+                    <span class="ms-1 fw-normal" style="font-size: 0.65rem; text-transform: none; color: rgba(255,255,255,0.6);">+₱{{ number_format($rates['text'] ?? 50, 2) }} each</span>
                 </label>
                 <button type="button" id="addTextBtn"
                     class="btn btn-tiny btn-outline-accent rounded-pill px-2 py-1 small" style="font-size: 0.65rem;">
@@ -167,7 +200,7 @@
         <div class="mb-5">
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <label class="text-accent small text-uppercase fw-bold tracking-wider mb-0">4. Custom Shapes
-                    <span class="ms-1 fw-normal" style="font-size: 0.65rem; text-transform: none; color: rgba(255,255,255,0.6);">+₱30 each</span>
+                    <span class="ms-1 fw-normal" style="font-size: 0.65rem; text-transform: none; color: rgba(255,255,255,0.6);">+₱{{ number_format($rates['shape'] ?? 30, 2) }} each</span>
                 </label>
                 <button type="button" id="addShapeBtn"
                     class="btn btn-tiny btn-outline-accent rounded-pill px-2 py-1 small" style="font-size: 0.65rem;">
@@ -183,7 +216,7 @@
         <div class="mb-5">
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <label class="text-accent small text-uppercase fw-bold tracking-wider mb-0">5. Custom Logos
-                    <span class="ms-1 fw-normal" style="font-size: 0.65rem; text-transform: none; color: rgba(255,255,255,0.6);">+₱150 each</span>
+                    <span class="ms-1 fw-normal" style="font-size: 0.65rem; text-transform: none; color: rgba(255,255,255,0.6);">+₱{{ number_format($rates['logo'] ?? 150, 2) }} each at 1&times; size, priced by size</span>
                 </label>
                 <div>
                     <input type="file" id="logoInput" class="d-none" accept="image/*,.svg">
@@ -207,7 +240,7 @@
             <div class="feature-item">
                 <div class="form-check form-switch custom-switch p-0 d-flex justify-content-between align-items-center">
                     <label class="form-check-label text-white small" for="lighting">Internal LED Lighting
-                        <span class="ms-1 fw-bold" style="font-size: 0.7rem; color: #ffc508;">+₱500</span>
+                        <span class="ms-1 fw-bold" style="font-size: 0.7rem; color: #ffc508;">+₱{{ number_format($rates['led_lighting'] ?? 500, 2) }}</span>
                     </label>
                     <input class="form-check-input" type="checkbox" id="lighting">
                 </div>

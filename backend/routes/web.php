@@ -71,6 +71,8 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::post('/admin/products/{id}/suppliers', [\App\Http\Controllers\Admin\ProductController::class, 'storeSuppliers'])->name('admin.products.suppliers.store');
     Route::get('/admin/products/{id}/textures', [\App\Http\Controllers\Admin\ProductController::class, 'assignTextures'])->name('admin.products.textures.assign');
     Route::post('/admin/products/{id}/textures', [\App\Http\Controllers\Admin\ProductController::class, 'storeTextures'])->name('admin.products.textures.store');
+    Route::get('/admin/products/{id}/colors', [\App\Http\Controllers\Admin\ProductController::class, 'assignColors'])->name('admin.products.colors.assign');
+    Route::post('/admin/products/{id}/colors', [\App\Http\Controllers\Admin\ProductController::class, 'storeColors'])->name('admin.products.colors.store');
     // Admin Routes/Categories
     Route::get('/admin/categories', [\App\Http\Controllers\Admin\CategoryController::class, 'index'])->name('admin.categories.index');
     Route::post('/admin/categories', [\App\Http\Controllers\Admin\CategoryController::class, 'store'])->name('admin.categories.store');
@@ -89,6 +91,11 @@ Route::middleware(['auth:sanctum'])->group(function () {
     // Stock ledger: the only path that moves a material's stock by hand.
     Route::post('/admin/raw-materials/{id}/usage', [\App\Http\Controllers\Admin\RawMaterialController::class, 'storeUsage'])->name('admin.raw-materials.usage.store');
     Route::post('/admin/raw-material-movements/{movement}/reverse', [\App\Http\Controllers\Admin\RawMaterialController::class, 'reverseUsage'])->name('admin.raw-materials.usage.reverse');
+    // Admin Routes/Colors (plain finishes — the alternative to a texture)
+    Route::get('/admin/colors', [\App\Http\Controllers\Admin\ColorController::class, 'index'])->name('admin.colors.index');
+    Route::post('/admin/colors', [\App\Http\Controllers\Admin\ColorController::class, 'store'])->name('admin.colors.store');
+    Route::put('/admin/colors/{id}', [\App\Http\Controllers\Admin\ColorController::class, 'update'])->name('admin.colors.update');
+    Route::delete('/admin/colors/{id}', [\App\Http\Controllers\Admin\ColorController::class, 'destroy'])->name('admin.colors.destroy');
     // Admin Routes/Textures
     Route::get('/admin/textures', [\App\Http\Controllers\Admin\TextureController::class, 'index'])->name('admin.textures.index');
     Route::post('/admin/textures', [\App\Http\Controllers\Admin\TextureController::class, 'store'])->name('admin.textures.store');
@@ -137,6 +144,9 @@ Route::middleware(['auth:sanctum'])->group(function () {
     // Admin Routes/Users
     Route::get('/admin/users', [\App\Http\Controllers\Admin\UserController::class, 'index'])->name('admin.users.index');
     Route::post('/admin/users/{id}/status', [\App\Http\Controllers\Admin\UserController::class, 'updateStatus'])->name('admin.users.updateStatus');
+    // Admin Routes/Customization Pricing (what the 3D customizer charges per element)
+    Route::get('/admin/customization-pricing', [\App\Http\Controllers\Admin\CustomizationPricingController::class, 'index'])->name('admin.customization-pricing.index');
+    Route::put('/admin/customization-pricing', [\App\Http\Controllers\Admin\CustomizationPricingController::class, 'update'])->name('admin.customization-pricing.update');
     // Admin Routes/Settings
     Route::get('/admin/settings', [\App\Http\Controllers\Admin\SettingsController::class, 'index'])->name('admin.settings.index');
     Route::put('/admin/settings', [\App\Http\Controllers\Admin\SettingsController::class, 'update'])->name('admin.settings.update');

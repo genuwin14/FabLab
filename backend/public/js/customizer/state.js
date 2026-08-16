@@ -11,9 +11,14 @@ let textElements = [];
 let shapeElements = [];
 let logoElements = [];
 
-// Currently selected texture (DB-backed)
+/**
+ * The design's finish. A product is either plain or patterned, so exactly one
+ * of these two is set at a time — selecting either one clears the other.
+ */
 let currentTextureId = null;
 let currentTextureImagePath = null;
+let currentColorId = null;
+let currentColorHex = null;
 
 // Cached THREE.Texture instances by image_path so we don't reload on every click
 const textureCache = {};

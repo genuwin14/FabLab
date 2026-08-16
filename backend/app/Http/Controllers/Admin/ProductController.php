@@ -233,4 +233,27 @@ class ProductController extends Controller
         return redirect()->route('admin.products.index')
             ->with('success', 'Textures assigned successfully.');
     }
+
+    public function assignColors($id)
+    {
+        $product = Product::with('colors')->findOrFail($id);
+        $colors = \App\Models\Color::orderBy('name')->get();
+
+        return view('admin.product.assign-colors', compact('product', 'colors'));
+    }
+
+    public function storeColors(Request $request, $id)
+    {
+        $product = Product::findOrFail($id);
+
+        $request->validate([
+            'colors' => 'nullable|array',
+            'colors.*' => 'exists:colors,color_id',
+        ]);
+
+        $product->colors()->sync($request->input('colors', []));
+
+        return redirect()->route('admin.products.index')
+            ->with('success', 'Colors assigned successfully.');
+    }
 }

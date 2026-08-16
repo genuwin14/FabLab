@@ -132,9 +132,18 @@
                                 style="background-color: rgba(255, 197, 8, 0.15); color: #997404; font-size: 0.6rem;">ACTIVE</span>
                         </h6>
                         <div class="rounded-3 p-3 overflow-auto border design-recipe-box"
-                            style="height: 410px; background-color: #05111a;">
+                            style="height: 235px; background-color: #05111a;">
                             <pre id="detailPopupRecipe" class="mb-0"
                                 style="white-space: pre-wrap; font-family: 'Courier New', monospace; font-size: 0.7rem; color: #6ee7ff;"></pre>
+                        </div>
+
+                        <h6 class="order-section-title d-flex justify-content-between align-items-center mt-3">
+                            <span><i class="bi bi-receipt me-2"></i>Design Charges</span>
+                            <span class="text-muted fw-normal" style="font-size: 0.6rem;">ON TOP OF BASE PRICE</span>
+                        </h6>
+                        <div class="rounded-3 p-3 overflow-auto border design-charges-box"
+                            style="height: 143px; background-color: #f8f9fa;">
+                            <div id="detailPopupCharges" style="font-size: 0.75rem;"></div>
                         </div>
                     </div>
                 </div>

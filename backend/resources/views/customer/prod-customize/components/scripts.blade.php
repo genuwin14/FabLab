@@ -26,6 +26,9 @@
             designRecipe: @json($design?->recipe ?? null),
             requiresSelection: {{ $requiresSelection ? 'true' : 'false' }},
             textures: @json($texturesData),
+            // Admin → Customization Pricing. The live quote must use these and
+            // not its own numbers, or it stops matching what the cart charges.
+            rates: @json($rates ?? []),
             routes: {
                 save: "{{ route('customer.customize.save') }}",
                 addToCart: "{{ route('customer.cart.add') }}"

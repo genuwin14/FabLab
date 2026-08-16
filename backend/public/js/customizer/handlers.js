@@ -12,19 +12,47 @@ $(document).ready(function () {
     }
 
     // 2. Control Panel Listeners
-    // Initialize selected texture from the active swatch (rendered server-side).
+    // Initialize the finish from whichever swatch is active (rendered server-side).
     const $initialActiveTexture = $('.texture-option.active').first();
     if ($initialActiveTexture.length) {
         currentTextureId = $initialActiveTexture.data('texture-id');
         currentTextureImagePath = $initialActiveTexture.data('image-path');
+    } else {
+        const $initialActiveColor = $('.color-option.active').first();
+        if ($initialActiveColor.length) {
+            currentColorId = $initialActiveColor.data('color-id');
+            currentColorHex = $initialActiveColor.data('hex');
+        }
+    }
+
+    /**
+     * A design is either plain or patterned, so the two swatch groups are one
+     * either/or choice — picking in one clears the other on both the highlight
+     * and the state it drives.
+     */
+    function clearFinishSelection() {
+        $('.texture-option, .color-option').removeClass('active');
+        currentTextureId = null;
+        currentTextureImagePath = null;
+        currentColorId = null;
+        currentColorHex = null;
     }
 
     $(document).on('click', '.texture-option', function () {
-        $('.texture-option').removeClass('active');
+        clearFinishSelection();
         $(this).addClass('active');
         currentTextureId = $(this).data('texture-id');
         currentTextureImagePath = $(this).data('image-path');
         updateModelMaterial(currentTextureId);
+        if (typeof calculateCustomPrice === 'function') calculateCustomPrice();
+    });
+
+    $(document).on('click', '.color-option', function () {
+        clearFinishSelection();
+        $(this).addClass('active');
+        currentColorId = $(this).data('color-id');
+        currentColorHex = $(this).data('hex');
+        updateModelMaterial();
         if (typeof calculateCustomPrice === 'function') calculateCustomPrice();
     });
 
@@ -94,7 +122,7 @@ $(document).ready(function () {
                 const html = `
                     <div class="customizer-item p-3 border border-white-10 rounded bg-dark-glass mb-3">
                         <div class="d-flex justify-content-between align-items-center mb-2">
-                            <span class="tiny text-white-50 fw-bold">LOGO ELEMENT <span class="ms-1" style="color: #ffc508;">+₱150</span></span>
+                            <span class="tiny text-white-50 fw-bold">LOGO ELEMENT <span class="ms-1 logo-fee" style="color: #ffc508;">+${formatPeso(CustomizerPricing.rate('logo'))}</span></span>
                             <button type="button" class="btn btn-link text-danger p-0 delete-btn"><i class="bi bi-trash"></i></button>
                         </div>
                         <div class="d-flex align-items-center gap-3 mb-2">
@@ -121,6 +149,7 @@ $(document).ready(function () {
                                 <input type="range" class="form-range rotation-range" min="0" max="360" value="0">
                             </div>
                         </div>
+                        <div class="tiny text-white-50 mt-2">Size sets the price: less below 1&times;, more above.</div>
                         ${flipControlsHtml(false, false)}
                     </div>`;
                 const $item = $(html);
@@ -139,7 +168,7 @@ $(document).ready(function () {
         const html = `
             <div class="customizer-item p-3 border border-white-10 rounded bg-dark-glass mb-3">
                 <div class="d-flex justify-content-between align-items-center mb-2">
-                    <span class="tiny text-white-50 fw-bold">TEXT ELEMENT <span class="ms-1" style="color: #ffc508;">+₱50</span></span>
+                    <span class="tiny text-white-50 fw-bold">TEXT ELEMENT <span class="ms-1" style="color: #ffc508;">+${formatPeso(CustomizerPricing.rate('text'))}</span></span>
                     <button type="button" class="btn btn-link text-danger p-0 delete-btn"><i class="bi bi-trash"></i></button>
                 </div>
                 <input type="text" class="form-control form-control-sm bg-dark border-white-10 text-white text-input mb-2 shadow-none" placeholder="Enter text...">
@@ -185,7 +214,7 @@ $(document).ready(function () {
         const html = `
             <div class="customizer-item p-3 border border-white-10 rounded bg-dark-glass mb-3">
                 <div class="d-flex justify-content-between align-items-center mb-2">
-                    <span class="tiny text-white-50 fw-bold">SHAPE ELEMENT <span class="ms-1" style="color: #ffc508;">+₱30</span></span>
+                    <span class="tiny text-white-50 fw-bold">SHAPE ELEMENT <span class="ms-1" style="color: #ffc508;">+${formatPeso(CustomizerPricing.rate('shape'))}</span></span>
                     <button type="button" class="btn btn-link text-danger p-0 delete-btn"><i class="bi bi-trash"></i></button>
                 </div>
                 <div class="row g-2 mb-2">

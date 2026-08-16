@@ -8,11 +8,18 @@
  */
 
 /**
- * Compat shim used by the model loaders (mug.js, t-shirt.js, shorts.js,
- * umbrella.js) to set an initial mesh color before updateModelMaterial runs.
- * Always returns white because textures are now image maps that overlay this.
+ * Initial mesh color the model loaders (mug.js, t-shirt.js, shorts.js,
+ * umbrella.js, bag.js) paint on before updateModelMaterial runs.
+ *
+ * White under a texture, since a texture is an image map that covers it, but
+ * the selected plain colour when there is one — that way a model swapped
+ * mid-design comes in already the right colour instead of flashing white.
  */
 function getActiveColor() {
+    if (currentColorHex && !currentTextureId) {
+        const parsed = parseInt(currentColorHex.replace('#', ''), 16);
+        if (Number.isFinite(parsed)) return parsed;
+    }
     return 0xFFFFFF;
 }
 
@@ -34,13 +41,12 @@ function getDefaultTexture() {
 }
 
 /**
- * Returns a CSS color string for canvas overlay backgrounds. Used when we need
- * a flat fallback during overlay compositing (logos/text/shapes layered on top).
- * Since textures are now arbitrary images, we just use a neutral white/grey
- * fallback when an image_path is missing.
+ * The flat background an overlay canvas is painted on when there is no texture
+ * image to draw under the design elements — the selected plain colour, or white
+ * when nothing is selected.
  */
 function getOverlayBaseColor() {
-    return '#ffffff';
+    return (currentColorHex && !currentTextureId) ? currentColorHex : '#ffffff';
 }
 
 /**
@@ -197,12 +203,13 @@ function renderOverlayOnCanvas(ctx, baseImage) {
 }
 
 /**
- * Apply the active texture to the model. If a textureId is passed it overrides
- * `currentTextureId`. Otherwise uses the active state.
+ * Apply the active finish to the model. If a textureId is passed it overrides
+ * `currentTextureId`. Otherwise uses the active state — which may be a plain
+ * colour instead of a texture.
  *
  * Always re-renders: if there are overlay elements, composites them onto a
- * canvas above the base texture image; otherwise applies the texture directly
- * as material.map.
+ * canvas above the base texture image (or the plain colour); otherwise applies
+ * the texture, or the colour, directly to the material.
  */
 function updateModelMaterial(textureId) {
     if (!model_group) return;
@@ -242,18 +249,27 @@ function updateModelMaterial(textureId) {
         } else {
             applyOverlay();
         }
-    } else {
+    } else if (imagePath) {
         // Just apply the texture directly (cached after first load)
         loadThreeTextureFromPath(imagePath, (threeTex) => {
             applyMapToBaseMesh(threeTex);
         });
+    } else if (currentColorHex) {
+        // A plain finish: no image map at all, just tint the material. Drawing
+        // it as a 1024px canvas would cost memory for a single flat colour.
+        applyMapToBaseMesh(null, currentColorHex);
+    } else {
+        applyMapToBaseMesh(null);
     }
 }
 
 /**
- * Apply a THREE.Texture (or null) to the `base` mesh of the model.
+ * Apply a THREE.Texture to the `base` mesh of the model.
+ *
+ * With no texture, `tintHex` paints the mesh a plain colour; with neither, the
+ * mesh falls back to whatever map the GLB shipped with.
  */
-function applyMapToBaseMesh(threeTex) {
+function applyMapToBaseMesh(threeTex, tintHex) {
     if (!model_group) return;
     model_group.traverse((child) => {
         if (child.isMesh && (child.name === 'base' || (child.parent && child.parent.name === 'base'))) {
@@ -264,6 +280,9 @@ function applyMapToBaseMesh(threeTex) {
             if (threeTex) {
                 child.material.map = threeTex;
                 child.material.color.setHex(0xFFFFFF);
+            } else if (tintHex) {
+                child.material.map = null;
+                child.material.color.set(tintHex);
             } else {
                 child.material.map = child.userData.originalMap;
                 child.material.color.setHex(0xFFFFFF);

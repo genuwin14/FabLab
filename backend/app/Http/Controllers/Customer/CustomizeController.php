@@ -46,15 +46,22 @@ class CustomizeController extends Controller
             $requiresSelection = true;
         }
 
-        // Load textures: filtered by product if assignments exist, otherwise show all
+        // Finishes: filtered by product if assignments exist, otherwise show all.
+        // A design carries one or the other, never both.
         if ($product) {
-            $product->load('textures');
+            $product->load(['textures', 'colors']);
             $textures = $product->textures->isNotEmpty() ? $product->textures : Texture::all();
+            $colors = $product->colors->isNotEmpty() ? $product->colors : \App\Models\Color::orderBy('name')->get();
         } else {
             $textures = Texture::all();
+            $colors = \App\Models\Color::orderBy('name')->get();
         }
 
-        return view('customer.prod-customize.customize-product', compact('product', 'initialShape', 'design', 'requiresSelection', 'textures'));
+        // The studio quotes live in the browser, so it needs the same rates the
+        // cart will price the design with when it arrives.
+        $rates = \App\Models\CustomizationRate::amounts();
+
+        return view('customer.prod-customize.customize-product', compact('product', 'initialShape', 'design', 'requiresSelection', 'textures', 'colors', 'rates'));
     }
 
     public function save(Request $request)

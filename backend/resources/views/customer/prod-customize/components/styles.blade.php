@@ -88,6 +88,32 @@
         color: #ffc508;
     }
 
+    /**
+     * "Add Text" / "Add Shape" / "Upload Logo".
+     *
+     * These carry .btn-outline-accent, which nothing ever defined, so they fell
+     * back to a bare Bootstrap .btn — body-coloured text and a transparent
+     * border, i.e. near-black on a near-black panel. Set the button's own custom
+     * properties rather than plain rules so the hover, active and focus states
+     * stay legible too; Bootstrap's :active selector outranks a flat class rule.
+     */
+    .btn-outline-accent {
+        --bs-btn-color: #ffffff;
+        --bs-btn-bg: rgba(255, 255, 255, 0.05);
+        --bs-btn-border-color: rgba(255, 255, 255, 0.35);
+        --bs-btn-hover-color: #ffc508;
+        --bs-btn-hover-bg: rgba(255, 197, 8, 0.15);
+        --bs-btn-hover-border-color: #ffc508;
+        --bs-btn-active-color: #ffc508;
+        --bs-btn-active-bg: rgba(255, 197, 8, 0.25);
+        --bs-btn-active-border-color: #ffc508;
+        --bs-btn-focus-shadow-rgb: 255, 197, 8;
+        --bs-btn-disabled-color: rgba(255, 255, 255, 0.4);
+        --bs-btn-disabled-bg: transparent;
+        --bs-btn-disabled-border-color: rgba(255, 255, 255, 0.15);
+        transition: all 0.2s ease;
+    }
+
     .texture-option {
         border-radius: 50%;
         padding: 4px;
@@ -110,6 +136,38 @@
         aspect-ratio: 1/1;
         border-radius: 50%;
         width: 100%;
+    }
+
+    /* Plain colour swatches. Same affordance as a texture swatch — they sit in
+       one either/or group, so they have to read as the same kind of control. */
+    .color-option {
+        border-radius: 50%;
+        padding: 4px;
+        border: 2px solid transparent;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .color-option:hover {
+        border-color: rgba(255, 255, 255, 0.3);
+        transform: scale(1.1);
+    }
+
+    .color-option.active {
+        border-color: #ffc508;
+        box-shadow: 0 0 10px rgba(255, 197, 8, 0.3);
+    }
+
+    .color-preview {
+        aspect-ratio: 1/1;
+        border-radius: 50%;
+        width: 100%;
+        /* A near-white swatch would vanish against the panel without this. */
+        box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.15);
+    }
+
+    .finish-group-label {
+        letter-spacing: 0.08em;
     }
 
     /* Shape & Size Selection Styling */
