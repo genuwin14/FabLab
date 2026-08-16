@@ -165,6 +165,18 @@ class CustomDesign extends Model
             ];
         }
 
+        // The size the customer ordered. Only one applies, and it is free
+        // unless an admin has priced that size.
+        if ($sizeKey = CustomizationRate::keyForSize($this->recipe['size'] ?? null)) {
+            $sizeAmount = CustomizationRate::amountFor($sizeKey);
+            if ($sizeAmount) {
+                $lines[] = [
+                    'label' => 'Size: ' . CustomizationRate::DEFINITIONS[$sizeKey]['label'],
+                    'amount' => $sizeAmount,
+                ];
+            }
+        }
+
         if (!empty($this->recipe['features']['led_lighting'])) {
             $lines[] = [
                 'label' => 'Internal LED lighting',

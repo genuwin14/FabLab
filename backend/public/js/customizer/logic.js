@@ -15,7 +15,10 @@ const CustomizerPricing = {
         text: 50,
         shape: 30,
         logo: 150,
-        led_lighting: 500
+        led_lighting: 500,
+        size_small: 0,
+        size_medium: 0,
+        size_large: 0
     },
 
     // How far the Size slider goes. An uploaded image is billed for the print
@@ -194,6 +197,8 @@ function calculateCustomPrice() {
 
     refreshLogoFeeLabels();
 
+    extra += sizeSurcharge();
+
     if ($('#lighting').is(':checked')) {
         extra += CustomizerPricing.rate('led_lighting');
     }
@@ -221,16 +226,21 @@ function calculateCustomPrice() {
     }
 }
 
-function updateModelSize(size) {
-    if (!model_group) return;
-    let scale = 1.0;
-    if (size === 'small') scale = 0.85;
-    else if (size === 'medium') scale = 1.0;
-    else if (size === 'large') scale = 1.15;
+/**
+ * Size is a label, not a transform.
+ *
+ * Picking S/M/L used to shrink or grow the model, which told the customer
+ * nothing — the mouse already zooms, so a "small" shirt just looked like a
+ * shirt further away, and it made the design look like it had changed size when
+ * it hadn't. Size now records what was ordered and, if an admin has priced that
+ * size, what it adds.
+ */
+function updateModelSize() {
+    calculateCustomPrice();
+}
 
-    // Visual feedback: brief pop animation
-    model_group.scale.set(scale * 1.05, scale * 1.05, scale * 1.05);
-    setTimeout(() => {
-        model_group.scale.set(scale, scale, scale);
-    }, 100);
+/** What the selected size adds, from Admin → Customization Pricing. */
+function sizeSurcharge() {
+    const size = $('.btn-size.active').data('size');
+    return size ? CustomizerPricing.rate('size_' + size) : 0;
 }

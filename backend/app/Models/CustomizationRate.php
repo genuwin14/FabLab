@@ -24,6 +24,7 @@ class CustomizationRate extends Model
      */
     public const DEFINITIONS = [
         'text' => [
+            'group' => 'elements',
             'label' => 'Custom text',
             'description' => 'Charged once per line of text a customer adds to a design.',
             'icon' => 'bi-fonts',
@@ -31,6 +32,7 @@ class CustomizationRate extends Model
             'default' => 50,
         ],
         'shape' => [
+            'group' => 'elements',
             'label' => 'Custom shape',
             'description' => 'Charged once per circle or line a customer adds to a design.',
             'icon' => 'bi-circle-square',
@@ -38,6 +40,7 @@ class CustomizationRate extends Model
             'default' => 30,
         ],
         'logo' => [
+            'group' => 'elements',
             'label' => 'Uploaded image',
             'description' => 'Charged per uploaded image, in proportion to the size it is printed at. Half size costs half this, double size costs double.',
             'icon' => 'bi-image',
@@ -45,13 +48,49 @@ class CustomizationRate extends Model
             'default' => 150,
         ],
         'led_lighting' => [
+            'group' => 'elements',
             'label' => 'Internal LED lighting',
             'description' => 'Charged once when a customer switches the lighting feature on.',
             'icon' => 'bi-lightbulb',
             'suffix' => 'per item',
             'default' => 500,
         ],
+
+        // Sizes default to zero, so nothing reprices until someone sets them.
+        // Only one ever applies to an item — the size the customer picked.
+        'size_small' => [
+            'group' => 'sizes',
+            'label' => 'Small',
+            'description' => 'Added when the customer orders this size.',
+            'icon' => 'bi-dash-square',
+            'suffix' => 'per item',
+            'default' => 0,
+        ],
+        'size_medium' => [
+            'group' => 'sizes',
+            'label' => 'Medium',
+            'description' => 'Added when the customer orders this size.',
+            'icon' => 'bi-square',
+            'suffix' => 'per item',
+            'default' => 0,
+        ],
+        'size_large' => [
+            'group' => 'sizes',
+            'label' => 'Large',
+            'description' => 'Added when the customer orders this size.',
+            'icon' => 'bi-plus-square',
+            'suffix' => 'per item',
+            'default' => 0,
+        ],
     ];
+
+    /** The rate key for a recipe's size, or null if it names something unknown. */
+    public static function keyForSize(?string $size): ?string
+    {
+        $key = 'size_' . strtolower(trim((string) $size));
+
+        return isset(self::DEFINITIONS[$key]) ? $key : null;
+    }
 
     protected $primaryKey = 'customization_rate_id';
 
@@ -101,13 +140,23 @@ class CustomizationRate extends Model
         self::$cachedAmounts = null;
     }
 
-    /** The definitions with their live amounts merged in, for the admin screen. */
+    /**
+     * The definitions with their live amounts merged in, grouped for the admin
+     * screen — element fees and size surcharges are charged on different things
+     * and read better apart.
+     *
+     * @return array<string, array<string, array<string, mixed>>>
+     */
     public static function forDisplay(): array
     {
         $amounts = self::amounts();
 
         return collect(self::DEFINITIONS)
             ->map(fn($definition, $key) => $definition + ['key' => $key, 'amount' => $amounts[$key] ?? 0.0])
+            // preserveKeys: the rate key is the form field name, so losing it
+            // would post rates[0] instead of rates[logo].
+            ->groupBy('group', true)
+            ->map(fn($group) => $group->all())
             ->all();
     }
 }

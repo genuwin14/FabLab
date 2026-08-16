@@ -85,29 +85,32 @@
         </div>
         @endif
 
-        <!-- Step 1: Select Size -->
+        {{-- Step 1: Select Size — a label on the order, not a transform. The
+             model is not resized: the customer can already zoom, so scaling it
+             only made the design look like it had changed size when it hadn't. --}}
         <div class="mb-5">
             <label class="text-accent small text-uppercase fw-bold tracking-wider mb-3 d-block">1. Select Size</label>
             <div class="row g-2">
-                <div class="col-4">
-                    <button class="btn btn-size w-100" data-size="small" title="Small Size">
-                        <div class="shape-icon fw-bold">S</div>
-                        <div class="tiny mt-1 fw-bold">Small</div>
-                    </button>
-                </div>
-                <div class="col-4">
-                    <button class="btn btn-size active w-100" data-size="medium" title="Medium Size">
-                        <div class="shape-icon fw-bold">M</div>
-                        <div class="tiny mt-1 fw-bold">Medium</div>
-                    </button>
-                </div>
-                <div class="col-4">
-                    <button class="btn btn-size w-100" data-size="large" title="Large Size">
-                        <div class="shape-icon fw-bold">L</div>
-                        <div class="tiny mt-1 fw-bold">Large</div>
-                    </button>
-                </div>
+                @foreach([
+                    ['size' => 'small', 'initial' => 'S', 'label' => 'Small'],
+                    ['size' => 'medium', 'initial' => 'M', 'label' => 'Medium'],
+                    ['size' => 'large', 'initial' => 'L', 'label' => 'Large'],
+                ] as $option)
+                    @php $surcharge = $rates['size_' . $option['size']] ?? 0; @endphp
+                    <div class="col-4">
+                        <button class="btn btn-size {{ $option['size'] === 'medium' ? 'active' : '' }} w-100"
+                            data-size="{{ $option['size'] }}"
+                            title="{{ $option['label'] }}{{ $surcharge > 0 ? ' (+₱' . number_format($surcharge, 2) . ')' : '' }}">
+                            <div class="shape-icon fw-bold">{{ $option['initial'] }}</div>
+                            <div class="tiny mt-1 fw-bold">{{ $option['label'] }}</div>
+                            @if($surcharge > 0)
+                                <div class="tiny fw-bold" style="color: #ffc508;">+₱{{ number_format($surcharge, 2) }}</div>
+                            @endif
+                        </button>
+                    </div>
+                @endforeach
             </div>
+            <div class="tiny text-white-50 mt-2">Recorded on your order. It doesn't change the preview.</div>
         </div>
 
 

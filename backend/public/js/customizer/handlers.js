@@ -68,8 +68,7 @@ $(document).ready(function () {
     $('.btn-size').on('click', function () {
         $('.btn-size').removeClass('active');
         $(this).addClass('active');
-        const size = $(this).data('size');
-        updateModelSize(size);
+        updateModelSize();
     });
 
     $('.btn-shape').on('click', function () {
@@ -91,9 +90,6 @@ $(document).ready(function () {
         else if (shape === 'bag') createBagModel();
 
         if (currentTextureId) updateModelMaterial(currentTextureId);
-
-        const currentSize = $('.btn-size.active').data('size');
-        if (currentSize) updateModelSize(currentSize);
 
         // Each loader sets designZones synchronously before it starts fetching
         // the GLB, so the new panels are already known here.

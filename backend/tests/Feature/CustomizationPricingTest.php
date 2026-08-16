@@ -182,6 +182,80 @@ class CustomizationPricingTest extends TestCase
             ->assertSee('+₱250.00 each at 1&times; size', false);
     }
 
+    public function test_sizes_cost_nothing_until_an_admin_prices_them(): void
+    {
+        $this->assertSame(0.0, CustomizationRate::amountFor('size_small'));
+        $this->assertSame(0.0, CustomizationRate::amountFor('size_large'));
+
+        Sanctum::actingAs($this->customer());
+        $product = $this->product(1000);
+
+        $this->postJson(route('customer.cart.add'), [
+            'product_id' => $product->product_id,
+            'quantity' => 1,
+            'custom_recipe' => json_encode(['size' => 'large', 'elements' => []]),
+        ])->assertOk();
+
+        $this->assertSame(1000.0, (float) \App\Models\CartItem::first()->price);
+    }
+
+    public function test_a_priced_size_is_charged_and_itemised(): void
+    {
+        $this->actingAs($this->admin());
+        $this->put(route('admin.customization-pricing.update'), $this->payload([
+            'size_large' => 120,
+            'size_small' => 25,
+        ]))->assertRedirect();
+
+        CustomizationRate::flushCache();
+
+        Sanctum::actingAs($this->customer());
+        $product = $this->product(1000);
+
+        $response = $this->postJson(route('customer.cart.add'), [
+            'product_id' => $product->product_id,
+            'quantity' => 1,
+            'custom_recipe' => json_encode(['size' => 'large', 'elements' => []]),
+        ])->assertOk();
+
+        $this->assertSame(1120.0, (float) \App\Models\CartItem::first()->price);
+
+        $design = CustomDesign::findOrFail($response->json('design_id'));
+        $this->assertSame(
+            [['label' => 'Size: Large', 'amount' => 120.0]],
+            $design->price_breakdown,
+            'Only the ordered size is charged, never all three.'
+        );
+    }
+
+    public function test_an_unknown_size_is_charged_nothing_rather_than_guessed_at(): void
+    {
+        $this->actingAs($this->admin());
+        $this->put(route('admin.customization-pricing.update'), $this->payload(['size_large' => 120]))->assertRedirect();
+
+        CustomizationRate::flushCache();
+
+        $design = new CustomDesign(['recipe' => ['size' => 'enormous', 'elements' => []]]);
+        $this->assertSame([], $design->price_breakdown);
+    }
+
+    public function test_the_size_buttons_show_their_surcharge_to_the_customer(): void
+    {
+        $this->actingAs($this->admin());
+        $this->put(route('admin.customization-pricing.update'), $this->payload(['size_large' => 120]))->assertRedirect();
+
+        CustomizationRate::flushCache();
+
+        $product = $this->product(1000);
+        Sanctum::actingAs($this->customer());
+
+        $this->get(route('customer.customize.index', ['product_id' => $product->product_id]))
+            ->assertOk()
+            ->assertSee('data-size="large"', false)
+            ->assertSee('+₱120.00', false)
+            ->assertSee('"size_large":120', false);
+    }
+
     public function test_a_missing_row_falls_back_to_the_shipped_default(): void
     {
         CustomizationRate::where('key', 'shape')->delete();

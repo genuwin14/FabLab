@@ -58,7 +58,7 @@ function loadDesignRecipe(recipe) {
     if (recipe.size) {
         $('.btn-size').removeClass('active');
         $(`.btn-size[data-size="${recipe.size}"]`).addClass('active');
-        updateModelSize(recipe.size);
+        updateModelSize();
     }
     if (recipe.features && recipe.features.led_lighting) {
         $('#lighting').prop('checked', true).trigger('change');

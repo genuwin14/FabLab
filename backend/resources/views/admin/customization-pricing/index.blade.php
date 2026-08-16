@@ -69,7 +69,7 @@
                                 </div>
                             </div>
                             <div class="card-body px-3 px-md-4 pb-3 pb-md-4">
-                                @foreach($rates as $key => $rate)
+                                @foreach($rates['elements'] ?? [] as $key => $rate)
                                     <div class="pricing-row d-flex justify-content-between align-items-start gap-3 py-3 border-top">
                                         <div class="flex-grow-1">
                                             <div class="fw-semibold text-dark">
@@ -87,6 +87,45 @@
                                                     data-rate-key="{{ $key }}"
                                                     value="{{ old('rates.' . $key, number_format($rate['amount'], 2, '.', '')) }}"
                                                     aria-label="{{ $rate['label'] }} rate">
+                                            </div>
+                                            <small class="text-muted d-block text-end mt-1">{{ $rate['suffix'] }}</small>
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
+
+                        <div class="card border-0 shadow-sm pricing-card mt-3 mt-md-4">
+                            <div class="card-header bg-white border-0 pt-3 pt-md-4 pb-2 px-3 px-md-4">
+                                <div class="d-flex align-items-center gap-2">
+                                    <span class="pricing-section-icon"><i class="bi bi-rulers"></i></span>
+                                    <div>
+                                        <h6 class="fw-bold mb-0 text-dark">Size surcharges</h6>
+                                        <small class="text-muted">
+                                            Added on top when a customer orders that size. Only one ever applies to an
+                                            item. Leave a size at 0 to charge nothing extra for it.
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-body px-3 px-md-4 pb-3 pb-md-4">
+                                @foreach($rates['sizes'] ?? [] as $key => $rate)
+                                    <div class="pricing-row d-flex justify-content-between align-items-start gap-3 py-3 border-top">
+                                        <div class="flex-grow-1">
+                                            <div class="fw-semibold text-dark">
+                                                <i class="bi {{ $rate['icon'] }} me-1 text-muted"></i>{{ $rate['label'] }}
+                                            </div>
+                                            <small class="text-muted">{{ $rate['description'] }}</small>
+                                        </div>
+                                        <div class="pricing-input flex-shrink-0">
+                                            <div class="input-group">
+                                                <span class="input-group-text bg-white text-muted fw-semibold">₱</span>
+                                                <input type="number" step="0.01" min="0" max="999999.99"
+                                                    class="form-control text-end fw-semibold @error('rates.' . $key) is-invalid @enderror"
+                                                    name="rates[{{ $key }}]"
+                                                    id="rate-{{ $key }}"
+                                                    value="{{ old('rates.' . $key, number_format($rate['amount'], 2, '.', '')) }}"
+                                                    aria-label="{{ $rate['label'] }} surcharge">
                                             </div>
                                             <small class="text-muted d-block text-end mt-1">{{ $rate['suffix'] }}</small>
                                         </div>
@@ -126,7 +165,7 @@
                                                 @foreach([$logoMinScale, 0.5, 1, 2, $logoMaxScale] as $sample)
                                                     <td class="text-end fw-semibold text-dark scale-preview-cell"
                                                         data-scale="{{ $sample }}">
-                                                        ₱{{ number_format($rates['logo']['amount'] * $sample, 2) }}
+                                                        ₱{{ number_format(($rates['elements']['logo']['amount'] ?? 0) * $sample, 2) }}
                                                     </td>
                                                 @endforeach
                                             </tr>
