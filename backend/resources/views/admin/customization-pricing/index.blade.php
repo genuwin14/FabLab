@@ -30,12 +30,20 @@
                      side by side from lg up so the whole price list is on screen
                      at once, instead of size surcharges hiding below the fold. --}}
                 <div class="container-fluid">
-                    <div class="mb-4">
-                        <h4 class="fw-bold text-dark mb-1">Customization Pricing</h4>
-                        <p class="text-muted small mb-0">
-                            What the 3D customizer adds on top of a product's own price. These apply the moment you
-                            save — to the live quote customers see and to what the cart charges.
-                        </p>
+                    {{-- Save sits with the title. It is outside the form, so it
+                         carries form="pricingForm" to submit it from up here. --}}
+                    <div class="d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center gap-2 gap-sm-3 mb-4">
+                        <div>
+                            <h4 class="fw-bold text-dark mb-1">Customization Pricing</h4>
+                            <p class="text-muted small mb-0">
+                                What the 3D customizer adds on top of a product's own price. These apply the moment you
+                                save — to the live quote customers see and to what the cart charges.
+                            </p>
+                        </div>
+                        <button type="submit" form="pricingForm"
+                            class="btn btn-primary fw-semibold px-4 flex-shrink-0 text-nowrap pricing-save-btn">
+                            <i class="bi bi-check2-circle me-1"></i>Save Pricing
+                        </button>
                     </div>
 
                     @if(session('success'))
@@ -57,7 +65,7 @@
                         </div>
                     @endif
 
-                    <form method="POST" action="{{ route('admin.customization-pricing.update') }}" class="pricing-form">
+                    <form id="pricingForm" method="POST" action="{{ route('admin.customization-pricing.update') }}" class="pricing-form">
                         @csrf
                         @method('PUT')
 
@@ -200,12 +208,6 @@
                             <a href="{{ route('admin.products.index') }}" class="fw-semibold">Products</a>, and per-texture
                             surcharges under <a href="{{ route('admin.textures.index') }}" class="fw-semibold">Textures</a>.
                         </div>
-
-                        <div class="d-flex justify-content-end mt-4">
-                            <button type="submit" class="btn btn-primary fw-semibold px-4">
-                                <i class="bi bi-check2-circle me-1"></i>Save Pricing
-                            </button>
-                        </div>
                     </form>
                 </div>
             </main>
@@ -252,8 +254,9 @@
             .pricing-input { width: 100%; }
             .pricing-input small { text-align: left !important; }
 
-            .pricing-form .d-flex.justify-content-end { justify-content: stretch !important; }
-            .pricing-form .d-flex.justify-content-end .btn { width: 100%; }
+            /* The header stacks at this width, so Save gets its own full-width
+               row under the title rather than a stub button beside it. */
+            .pricing-save-btn { width: 100%; }
         }
     </style>
 

@@ -81,7 +81,11 @@ class CustomizationPricingTest extends TestCase
             ->assertOk()
             ->assertSee('Customization Pricing')
             ->assertSee('name="rates[logo]"', false)
-            ->assertSee('value="150.00"', false);
+            ->assertSee('value="150.00"', false)
+            // Save sits up by the title, outside the form, so it only works
+            // while these two agree. Detached, it would silently do nothing.
+            ->assertSee('id="pricingForm"', false)
+            ->assertSee('form="pricingForm"', false);
     }
 
     public function test_an_admin_can_reprice_every_element(): void
