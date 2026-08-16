@@ -17,10 +17,17 @@
  * entirely, in the gap before the back panel — and pushing X walked designs
  * onto a neighbouring island, where they render mirrored and cut at the seam.
  *
+ * The two axes are judged differently, and must be. u comes from the strictly
+ * square-on core because that is where wrapping bites. v is measured loosely,
+ * because nothing wraps vertically — above the chest is the collar and below it
+ * the hem, both the same island. Holding v to the same strict threshold cut the
+ * band to v 0.509..0.858 and lopped the top off tall artwork.
+ *
  * Unmirrored on both axes (corr(u,worldX) +0.99, corr(v,worldY) -1.00), so no
- * flips. v starts below the collar because the shoulders curve away too.
+ * flips. Widening v costs nothing in element size: sizeScale follows the
+ * narrower side, which is u either way.
  */
-const TSHIRT_PRINT_AREA = { u0: 0.159, v0: 0.509, u1: 0.392, v1: 0.858 };
+const TSHIRT_PRINT_AREA = { u0: 0.159, v0: 0.446, u1: 0.392, v1: 0.878 };
 
 function createTshirtModel() {
     // Clear existing children from model_group

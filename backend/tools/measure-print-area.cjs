@@ -290,7 +290,21 @@ function describe(island) {
 
 const FACING = 0.5; // normal.z above this = pointing at the camera at (4,3,8)
 const WRAPPED = 0.9; // an island covering this much of u is a wrap, not a panel
-const FLAT = 0.95;   // and above this, the surface is square-on enough to print
+/*
+ * How square-on a triangle must be to count as printable — and the two axes
+ * want different answers.
+ *
+ * u is strict, because a garment curves *around* the body: the outer edges of
+ * the front island are fabric heading for the side seams, and a design sized to
+ * them wraps onto the side and shows as a sliver at the silhouette.
+ *
+ * v is looser, because nothing wraps vertically. Above the chest is the collar
+ * and below it the hem, both on the same island. Judging v by the same strict
+ * threshold discards perfectly printable chest near the shoulders and clips the
+ * top off tall artwork.
+ */
+const FLAT_U = 0.95;
+const FLAT_V = 0.70;
 
 /** Trimmed UV bounds of a set of triangles, ignoring 2% of strays at each end. */
 function boundsOf(tris) {
@@ -320,7 +334,8 @@ for (const path of process.argv.slice(2)) {
         .map(island => ({
             ...describe(island),
             facing: island.filter(t => t.normal[2] > FACING),
-            flat: island.filter(t => t.normal[2] > FLAT),
+            flatU: island.filter(t => t.normal[2] > FLAT_U),
+            flatV: island.filter(t => t.normal[2] > FLAT_V),
         }))
         .filter(island => island.facing.length)
         .sort((a, b) => b.uvArea - a.uvArea)
@@ -363,22 +378,22 @@ for (const path of process.argv.slice(2)) {
              * body — it shows up as a stray sliver at the silhouette. This
              * mistake shipped once. The square-on core is the printable bit.
              */
-            const flat = island.flat.length > island.facing.length * 0.1
-                ? boundsOf(island.flat)
-                : p02;
+            const enough = island.facing.length * 0.1;
+            const coreU = island.flatU.length > enough ? boundsOf(island.flatU) : p02;
+            const coreV = island.flatV.length > enough ? boundsOf(island.flatV) : p02;
 
-            if (flat !== p02) {
-                console.log(`    flat core       u ${f(flat.u0)}..${f(flat.u1)}   v ${f(flat.v0)}..${f(flat.v1)}`
-                    + `   (${island.flat.length} tris square-on)`);
+            if (coreU !== p02) {
+                console.log(`    square-on core  u ${f(coreU.u0)}..${f(coreU.u1)}  (${island.flatU.length} tris)`);
+                console.log(`    printable band  v ${f(coreV.v0)}..${f(coreV.v1)}  (${island.flatV.length} tris)`);
             } else {
-                console.log('    flat core       too little square-on geometry; falling back to island bounds');
+                console.log('    core            too little square-on geometry; falling back to island bounds');
             }
 
             const s = {
-                u0: flat.u0 + (flat.u1 - flat.u0) * 0.02,
-                u1: flat.u1 - (flat.u1 - flat.u0) * 0.02,
-                v0: flat.v0 + (flat.v1 - flat.v0) * 0.02,
-                v1: flat.v1 - (flat.v1 - flat.v0) * 0.02,
+                u0: coreU.u0 + (coreU.u1 - coreU.u0) * 0.02,
+                u1: coreU.u1 - (coreU.u1 - coreU.u0) * 0.02,
+                v0: coreV.v0 + (coreV.v1 - coreV.v0) * 0.02,
+                v1: coreV.v1 - (coreV.v1 - coreV.v0) * 0.02,
             };
             console.log(`    SUGGESTED { u0: ${f(s.u0)}, v0: ${f(s.v0)}, u1: ${f(s.u1)}, v1: ${f(s.v1)}`
                 + `${island.corrUX < 0 ? ', flipU: true' : ''}${island.corrVY > 0 ? ', flipV: true' : ''} }`);
