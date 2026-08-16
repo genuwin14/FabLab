@@ -146,6 +146,9 @@
                                                             <h6 class="fw-bold text-dark mb-0">{{ $product->name }}</h6>
                                                             <small
                                                                 class="text-muted">{{ Str::limit($product->description, 30) }}</small>
+                                                            <div class="mt-1">
+                                                                @include('shared.customizable-badge', ['product' => $product])
+                                                            </div>
                                                         </div>
                                                     </div>
                                                 </td>
