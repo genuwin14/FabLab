@@ -86,6 +86,7 @@ $(document).ready(function () {
 
         if (shape === 'mug') createMugModel();
         else if (shape === 't-shirt') createTshirtModel();
+        else if (shape === 'polo') createPoloModel();
         else if (shape === 'umbrella') createUmbrellaModel();
         else if (shape === 'bag') createBagModel();
 

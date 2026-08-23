@@ -34,6 +34,26 @@
                 </div>
 
                 <div class="col-6">
+                    <button class="btn btn-shape {{ ($initialShape ?? 't-shirt') === 'polo' ? 'active' : '' }} w-100"
+                        data-shape="polo" title="Piqué Polo Shirt">
+                        <div class="shape-icon">
+                            {{-- The tee's outline with a collar and placket cut
+                                 into the neckline, so the two garments are told
+                                 apart at icon size rather than by their label. --}}
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                                style="width: 24px; height: 24px;">
+                                <path
+                                    d="M20.38 3.46L16 2l-4 3-4-3-4.38 1.46a2 2 0 0 0-1.34 2.23l.58 3.47a1 1 0 0 0 .99.84H6v10c0 1.1.9 2 2 2h8a2 2 0 0 0 2-2V10h2.15a1 1 0 0 0 .99-.84l.58-3.47a2 2 0 0 0-1.34-2.23z">
+                                </path>
+                                <path d="M12 5v5"></path>
+                            </svg>
+                        </div>
+                        <div class="tiny mt-1 fw-bold">Polo Shirt</div>
+                    </button>
+                </div>
+
+                <div class="col-6">
                     <button class="btn btn-shape {{ ($initialShape ?? 't-shirt') === 'mug' ? 'active' : '' }} w-100"
                         data-shape="mug" title="Ceramic Mug">
                         <div class="shape-icon">

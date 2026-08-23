@@ -45,6 +45,7 @@
     <!-- Model Loaders -->
     <script src="{{ asset('js/customizer/models/mug.js') }}"></script>
     <script src="{{ asset('js/customizer/models/t-shirt.js') }}"></script>
+    <script src="{{ asset('js/customizer/models/polo.js') }}"></script>
     <script src="{{ asset('js/customizer/models/shorts.js') }}"></script>
     <script src="{{ asset('js/customizer/models/umbrella.js') }}"></script>
     <script src="{{ asset('js/customizer/models/bag.js') }}"></script>

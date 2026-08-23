@@ -48,8 +48,12 @@ class Product extends Model
      * One entry per GLB in public/gbl — mug is cup.glb, umbrella is
      * umbreella_open.glb. Shorts is deliberately absent: models/shorts.js loads
      * a file that was never shipped and falls through to a placeholder box.
+     *
+     * Order matters, because these are substring matches against the product
+     * name and the first hit wins. 'polo' sits ahead of 't-shirt' so a "Polo
+     * T-Shirt" opens in the polo model rather than the tee.
      */
-    private const CUSTOMIZER_SHAPES = ['mug', 't-shirt', 'umbrella', 'bag'];
+    private const CUSTOMIZER_SHAPES = ['mug', 'polo', 't-shirt', 'umbrella', 'bag'];
 
     /**
      * Which model the studio opens this product in, or null if none fits.

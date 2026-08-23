@@ -21,8 +21,8 @@ use App\Models\Supplier;
  * attached, an asset, and several customisable items.
  *
  * `is_customizable` is only set on items the studio has a 3D model for — the
- * mugs and the t-shirt. See Product::customizerShape(); marking anything else
- * customizable opens it in the studio as a t-shirt.
+ * mugs, the t-shirt and the polos. See Product::customizerShape(); marking
+ * anything else customizable opens it in the studio as a t-shirt.
  */
 class ProductSeeder extends Seeder
 {
@@ -133,6 +133,55 @@ class ProductSeeder extends Seeder
                 'status' => 'active',
                 'suppliers' => [
                     ['id' => $genMerch->supplier_id, 'cost' => 110.00, 'moq' => 20, 'lead' => 5, 'default' => true]
+                ]
+            ],
+            // Polo shirts — the newest shape in the studio, and the one most
+            // often ordered as uniform: a chest crest on the front, a batch or
+            // department name across the back. Both panels are printable, which
+            // is why these are seeded as a pair rather than one sample: the
+            // white is the sublimation blank, the navy the dyed stock that only
+            // takes a light-coloured print.
+            [
+                'sku' => 'PL-PQE-WHT',
+                'name' => 'White Piqué Polo Shirt',
+                'description' => 'Classic-fit cotton piqué polo with a ribbed collar, blank for sublimation or DTF printing.',
+                'brand' => 'BlueCorner',
+                'price' => 320.00,
+                'stock' => 120,
+                'units_on_display' => 4,
+                'units_sponsored' => 8,
+                'units_damaged' => 2,
+                'units_consumed' => 0,
+                'department' => $dcc,
+                'category_id' => $merchandiseId,
+                'unit' => 'pcs',
+                'low_stock_threshold' => 30,
+                'is_customizable' => true,
+                'status' => 'active',
+                'suppliers' => [
+                    ['id' => $genMerch->supplier_id, 'cost' => 195.00, 'moq' => 24, 'lead' => 7, 'default' => true],
+                    ['id' => $techSupply->supplier_id, 'cost' => 210.00, 'moq' => 12, 'lead' => 3, 'default' => false]
+                ]
+            ],
+            [
+                'sku' => 'PL-PQE-NVY',
+                'name' => 'Navy Piqué Polo Shirt',
+                'description' => 'Classic-fit cotton piqué polo in navy, for vinyl or embroidered chest and back prints.',
+                'brand' => 'BlueCorner',
+                'price' => 340.00,
+                'stock' => 90,
+                'units_on_display' => 3,
+                'units_sponsored' => 0,
+                'units_damaged' => 1,
+                'units_consumed' => 0,
+                'department' => $dcc,
+                'category_id' => $merchandiseId,
+                'unit' => 'pcs',
+                'low_stock_threshold' => 30,
+                'is_customizable' => true,
+                'status' => 'active',
+                'suppliers' => [
+                    ['id' => $genMerch->supplier_id, 'cost' => 205.00, 'moq' => 24, 'lead' => 7, 'default' => true]
                 ]
             ],
             // Book Production output.

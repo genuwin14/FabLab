@@ -34,6 +34,14 @@ class BOMSeeder extends Seeder
             'TS-CTN-WHT' => [
                 'Sublimation Transfer Paper (A4)' => 2,
             ],
+            // Three sheets rather than the tee's two: the polo is printed front
+            // and back, and the collar takes a sheet of its own.
+            'PL-PQE-WHT' => [
+                'Sublimation Transfer Paper (A4)' => 3,
+            ],
+            'PL-PQE-NVY' => [
+                'Sublimation Transfer Paper (A4)' => 3,
+            ],
             'BK-BKLT-A5' => [
                 'Bond Paper (A4, 80gsm)' => 6,   // 24 pages, 4 up per sheet
                 'Vellum Board (220gsm)' => 1,

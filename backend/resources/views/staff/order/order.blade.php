@@ -516,6 +516,7 @@
         <script src="{{ asset('js/customizer/core.js') }}"></script>
         <script src="{{ asset('js/customizer/models/mug.js') }}"></script>
         <script src="{{ asset('js/customizer/models/t-shirt.js') }}"></script>
+        <script src="{{ asset('js/customizer/models/polo.js') }}"></script>
         <script src="{{ asset('js/customizer/models/shorts.js') }}"></script>
         <script src="{{ asset('js/customizer/models/umbrella.js') }}"></script>
         <script src="{{ asset('js/customizer/models/bag.js') }}"></script>
@@ -627,7 +628,11 @@
                             const itemName = (design.product_name || '').toLowerCase();
                             let baseShape = 't-shirt';
 
-                            if (itemName.includes('mug')) baseShape = 'mug';
+                            // Polo before any shirt match: a polo is its own
+                            // model, and falling through would preview it as a
+                            // t-shirt.
+                            if (itemName.includes('polo')) baseShape = 'polo';
+                            else if (itemName.includes('mug')) baseShape = 'mug';
                             else if (itemName.includes('umbrella')) baseShape = 'umbrella';
                             else if (itemName.includes('bag')) baseShape = 'bag';
                             else if (itemName.includes('shorts')) baseShape = 'shorts';

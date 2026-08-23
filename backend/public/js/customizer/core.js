@@ -70,6 +70,9 @@ function init(containerId = 'three-container') {
     } else if (initialShape === 'bag') {
         createBagModel();
         $('.btn-shape[data-shape="bag"]').addClass('active');
+    } else if (initialShape === 'polo') {
+        createPoloModel();
+        $('.btn-shape[data-shape="polo"]').addClass('active');
     }
 
     // 7. Event Listeners - Remove old listener if exists before adding new one
@@ -160,6 +163,68 @@ function applyPlanarUVs(mesh, bounds) {
         point.fromBufferAttribute(position, i).applyMatrix4(mesh.matrixWorld);
         uv[i * 2] = (point.x - box.min.x) / spanX;
         uv[i * 2 + 1] = (point.z - box.min.z) / spanZ;
+    }
+
+    mesh.geometry.setAttribute('uv', new THREE.BufferAttribute(uv, 2));
+    return true;
+}
+
+/**
+ * Re-unwrap a garment by projecting its front half and back half into opposite
+ * halves of the design tile.
+ *
+ * applyPlanarUVs() flattens one dome from above, which suits an umbrella but not
+ * a shirt: a single projection gives the front and the back the same UVs, so a
+ * logo placed on the chest also prints on the back, reversed. This splits them
+ * on the sign of the vertex normal instead — front-facing geometry lands in
+ * u 0..0.5, back-facing in u 0.5..1 — which is what a real garment atlas does
+ * and what lets a model offer separate front and back panels.
+ *
+ * The two halves are mapped to meet at the +x side seam and part at the -x one,
+ * so a triangle straddling the silhouette stays continuous everywhere except
+ * that single seam, rather than being stretched across the whole tile at both.
+ *
+ * Both halves are scaled by the SAME factor, so the weave of a texture stays
+ * square instead of being stretched to whatever aspect the model happens to
+ * have. The scale normally comes from the width, since each half only has half
+ * the tile to fit into; a model more than twice as tall as it is wide would run
+ * off the top and bottom, so the height caps it.
+ *
+ * Pass `bounds` to project several meshes through one shared box — a garment
+ * exported in chunks needs that, or the design steps at every chunk boundary.
+ *
+ * Returns false if the mesh has no normals or no width to project.
+ */
+function applyFrontBackUVs(mesh, bounds) {
+    const position = mesh.geometry ? mesh.geometry.attributes.position : null;
+    const normal = mesh.geometry ? mesh.geometry.attributes.normal : null;
+    if (!position || !normal) return false;
+
+    const box = bounds || getMeshBounds(mesh);
+    const spanX = box.max.x - box.min.x;
+    const spanY = box.max.y - box.min.y;
+    if (!(spanX > 0) || !(spanY > 0)) return false;
+
+    const scale = Math.min(0.5 / spanX, 1 / spanY);
+    const centerY = (box.min.y + box.max.y) / 2;
+
+    mesh.updateWorldMatrix(true, false);
+    const normalMatrix = new THREE.Matrix3().getNormalMatrix(mesh.matrixWorld);
+    const point = new THREE.Vector3();
+    const facing = new THREE.Vector3();
+    const uv = new Float32Array(position.count * 2);
+
+    for (let i = 0; i < position.count; i++) {
+        point.fromBufferAttribute(position, i).applyMatrix4(mesh.matrixWorld);
+        facing.fromBufferAttribute(normal, i).applyMatrix3(normalMatrix);
+
+        // 0 at the -x seam, 0.5 at the +x seam, for both halves.
+        const across = (point.x - box.min.x) * scale;
+
+        uv[i * 2] = facing.z >= 0 ? across : 1 - across;
+        // Canvas v grows downward while world y grows up, so this subtraction is
+        // what keeps artwork the right way up without a flipV on every zone.
+        uv[i * 2 + 1] = 0.5 + (centerY - point.y) * scale;
     }
 
     mesh.geometry.setAttribute('uv', new THREE.BufferAttribute(uv, 2));

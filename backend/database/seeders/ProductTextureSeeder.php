@@ -24,8 +24,14 @@ class ProductTextureSeeder extends Seeder
             'MG-WHT-11' => ['Fabric083', 'Leather037', 'Fabric062'],
             'MG-BLK-11' => ['Fabric083', 'Leather037', 'Fabric062'],
 
-            // Garment: cloth only.
+            // Garments: cloth only.
             'TS-CTN-WHT' => ['Fabric077', 'Fabric080', 'Fabric083', 'Fabric062'],
+
+            // The white polo is the blank, so it takes the full cloth range.
+            // The navy one is already dyed — a patterned finish over it would
+            // only ever read as the dark stock it is printed on, so it is
+            // offered plain colours instead and left out of this list.
+            'PL-PQE-WHT' => ['Fabric077', 'Fabric080', 'Fabric083', 'Fabric062'],
         ];
 
         foreach ($assignments as $sku => $textureNames) {
