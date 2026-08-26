@@ -56,7 +56,7 @@ class OrderReceipt extends Mailable
      */
     public function attachments(): array
     {
-        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('emails.orders.transaction-slip', ['order' => $this->order]);
+        $pdf = \App\Support\TransactionSlip::pdf($this->order);
 
         return [
             \Illuminate\Mail\Mailables\Attachment::fromData(fn() => $pdf->output(), 'Transaction-Slip-' . $this->order->order_number . '.pdf')

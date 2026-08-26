@@ -169,6 +169,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     // Staff Routes/Orders
     Route::get('/staff/orders', [\App\Http\Controllers\Staff\OrderController::class, 'index'])->name('staff.orders.index');
     Route::post('/staff/orders/{id}/update-status', [\App\Http\Controllers\Staff\OrderController::class, 'updateStatus'])->name('staff.orders.updateStatus');
+    Route::get('/staff/orders/{id}/receipt', [\App\Http\Controllers\Staff\OrderController::class, 'receipt'])->name('staff.orders.receipt');
     // Staff Routes/Sales
     Route::get('/staff/sales', [\App\Http\Controllers\Staff\SalesController::class, 'index'])->name('staff.sales.index');
     // Staff Routes/Products (read + edit only)

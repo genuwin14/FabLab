@@ -593,6 +593,19 @@
 
                     $('#viewOrderTotal').text('₱' + parseFloat(order.total_amount).toLocaleString('en-US', { minimumFractionDigits: 2 }));
 
+                    // The slip only exists once the order is approved; before that
+                    // there is nothing for the cashier to be handed.
+                    const slipStatuses = @json(\App\Support\TransactionSlip::PRINTABLE_STATUSES);
+                    const $printSlip = $('#viewPrintSlip');
+
+                    if (slipStatuses.includes(order.status)) {
+                        $printSlip
+                            .attr('href', '{{ route('staff.orders.receipt', ['id' => '__ORDER_ID__']) }}'.replace('__ORDER_ID__', order.order_id))
+                            .removeClass('d-none');
+                    } else {
+                        $printSlip.attr('href', '#').addClass('d-none');
+                    }
+
                     const modal = new bootstrap.Modal(document.getElementById('orderDetailModal'));
                     modal.show();
                 });

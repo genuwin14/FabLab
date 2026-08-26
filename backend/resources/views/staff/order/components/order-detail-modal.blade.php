@@ -101,9 +101,13 @@
                 <button type="button" class="btn order-btn-cancel rounded-pill px-4" data-bs-dismiss="modal">
                     Close
                 </button>
-                <button type="button" class="btn order-btn-save rounded-pill px-4" onclick="window.print()">
+                {{-- Opens the same 80mm slip PDF the customer gets, rather than
+                     printing this whole page. Hidden until the order is approved,
+                     since that is when the slip starts existing. --}}
+                <a id="viewPrintSlip" href="#" target="_blank" rel="noopener"
+                    class="btn order-btn-save rounded-pill px-4 d-none">
                     <i class="bi bi-printer me-1"></i>Print Slip
-                </button>
+                </a>
             </div>
         </div>
     </div>

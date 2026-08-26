@@ -58,11 +58,11 @@ class OrderController extends Controller
             ->with(['orderItems.product', 'user'])
             ->firstOrFail();
 
-        if (!in_array($order->status, ['approved', 'processing', 'ready_for_pickup', 'completed'])) {
+        if (!in_array($order->status, \App\Support\TransactionSlip::PRINTABLE_STATUSES)) {
             abort(404);
         }
 
-        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('emails.orders.transaction-slip', ['order' => $order]);
+        $pdf = \App\Support\TransactionSlip::pdf($order);
 
         return $pdf->stream('Transaction-Slip-' . $order->order_number . '.pdf');
     }

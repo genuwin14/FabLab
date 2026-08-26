@@ -104,4 +104,21 @@ class OrderController extends Controller
 
         return redirect()->back()->with('success', 'Order status updated successfully.');
     }
+
+    /**
+     * Stream the same transaction-slip PDF the customer gets. Staff reach any
+     * order, not just their own, so this skips the ownership check the
+     * customer route applies — the staff middleware is the gate here.
+     */
+    public function receipt($id)
+    {
+        $order = Order::with(['orderItems.product', 'user'])->findOrFail($id);
+
+        if (!in_array($order->status, \App\Support\TransactionSlip::PRINTABLE_STATUSES)) {
+            abort(404);
+        }
+
+        return \App\Support\TransactionSlip::pdf($order)
+            ->stream('Transaction-Slip-' . $order->order_number . '.pdf');
+    }
 }

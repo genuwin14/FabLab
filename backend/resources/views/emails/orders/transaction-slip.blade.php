@@ -3,20 +3,23 @@
 
 <head>
     <style>
+        /* The page itself is the receipt, so the slip fills it edge to edge and
+           carries its own padding instead of floating on a backdrop. */
+        @page {
+            margin: 0;
+        }
+
         body {
             font-family: 'Courier New', Courier, monospace;
-            background-color: #f4f4f4;
-            padding: 20px;
+            font-size: 8pt;
+            line-height: 1.35;
+            margin: 0;
+            padding: 0;
+            background-color: #ffffff;
         }
 
         .receipt-container {
-            background-color: #ffffff;
-            width: 100%;
-            max-width: 380px;
-            margin: 0 auto;
-            padding: 20px;
-            border-radius: 5px;
-            border: 1px solid #dddddd;
+            padding: 10pt;
         }
 
         .text-center {
@@ -36,25 +39,27 @@
         }
 
         .small {
-            font-size: 0.875rem;
+            font-size: 7.5pt;
         }
 
         .border-dashed {
-            border-bottom: 2px dashed #000;
-            margin: 15px 0;
+            border-bottom: 1.5pt dashed #000;
+            margin: 8pt 0;
         }
 
         .table {
             width: 100%;
-            width: 100%;
             border-collapse: collapse;
-            margin-bottom: 15px;
+            margin-bottom: 8pt;
         }
 
         .table th,
         .table td {
             text-align: left;
-            padding: 4px 0;
+            padding: 2pt 0;
+            /* A product name with no spaces would otherwise run into the Qty
+               column instead of wrapping inside the narrow roll. */
+            word-break: break-word;
         }
 
         .text-end {
@@ -66,7 +71,16 @@
         }
 
         .mb-4 {
-            margin-bottom: 1.5rem;
+            margin-bottom: 10pt;
+        }
+
+        p {
+            margin: 2pt 0;
+        }
+
+        h2,
+        h3 {
+            margin: 0;
         }
     </style>
 </head>
@@ -89,10 +103,10 @@
                 style="width: 60px; height: 60px; margin-bottom: 5px; filter: grayscale(100%);">
             @endif
             --}}
-            <h2 class="fw-bold text-uppercase mb-0" style="letter-spacing: 2px;">CSPC FABLAB</h2>
+            <h2 class="fw-bold text-uppercase mb-0" style="font-size: 13pt; letter-spacing: 1pt;">CSPC FABLAB</h2>
             <p class="text-muted small mb-0">Camarines Sur Polytechnic Colleges</p>
             <div class="border-dashed"></div>
-            <h3 class="fw-bold text-uppercase mb-0">Transaction Slip</h3>
+            <h3 class="fw-bold text-uppercase mb-0" style="font-size: 10pt;">Transaction Slip</h3>
             <p class="text-muted small">{{ $order->created_at->format('M d, Y h:i A') }}</p>
             <p class="small">Order #: {{ $order->order_number }}</p>
         </div>
@@ -106,9 +120,9 @@
         <table class="table small">
             <thead>
                 <tr>
-                    <th>Product</th>
-                    <th class="text-center">Qty</th>
-                    <th class="text-end">Total</th>
+                    <th style="width: 55%;">Product</th>
+                    <th class="text-center" style="width: 15%;">Qty</th>
+                    <th class="text-end" style="width: 30%;">Total</th>
                 </tr>
             </thead>
             <tbody>
@@ -124,29 +138,33 @@
 
         <div class="border-dashed"></div>
 
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-            <span class="fw-bold text-uppercase small">Total Amount</span>
-            <span class="fw-bold fs-5">P{{ number_format($order->total_amount, 2) }}</span>
-        </div>
+        {{-- A table, not flexbox: DomPDF ignores flex, which would leave the
+             amount hugging the label instead of the right edge. --}}
+        <table class="table" style="margin-bottom: 0;">
+            <tr>
+                <td class="fw-bold text-uppercase small">Total Amount</td>
+                <td class="fw-bold text-end" style="font-size: 9.5pt;">P{{ number_format($order->total_amount, 2) }}</td>
+            </tr>
+        </table>
 
         <div class="border-dashed"></div>
 
         <div class="text-center mb-4">
-            <p class="small fw-bold mb-1">PAYMENT INSTRUCTION</p>
+            <p class="small fw-bold mb-0">PAYMENT INSTRUCTION</p>
             <p class="small text-muted mb-0">Please present this receipt at the<br><strong>CSPC Cashier</strong> for
                 payment.</p>
         </div>
 
-        <div class="text-center" style="margin-top: 15px;">
+        <div class="text-center">
             @php
                 $generator = new \Picqer\Barcode\BarcodeGeneratorHTML();
                 // widthFactor: 1 (thinner bars), height: 30
                 $barcode = $generator->getBarcode($order->order_number, $generator::TYPE_CODE_128, 1, 30);
             @endphp
-            <div style="margin: 0 auto; display: inline-block; padding: 5px; background: white;">
+            <div style="margin: 0 auto; display: inline-block; background: white;">
                 {!! $barcode !!}
             </div>
-            <p class="text-muted small mt-1" style="font-size: 0.7rem; margin-top: 5px;">SYSTEM GENERATED RECEIPT</p>
+            <p class="text-muted" style="font-size: 6pt; margin: 3pt 0 0 0;">SYSTEM GENERATED RECEIPT</p>
         </div>
     </div>
 </body>
