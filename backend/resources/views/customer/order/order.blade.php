@@ -505,7 +505,7 @@
                                                             target="_blank"
                                                             class="btn btn-sm rounded-pill flex-grow-1 d-flex align-items-center justify-content-center fw-bold"
                                                             style="background-color: #0e2e45; color: #ffffff;">
-                                                            <i class="bi bi-receipt me-1"></i> View Receipt
+                                                            <i class="bi bi-receipt me-1"></i> View Slip
                                                         </a>
                                                     @endif
                                                 </div>
@@ -582,7 +582,7 @@
                                                                     target="_blank"
                                                                     class="btn btn-sm rounded-pill px-3 fw-bold"
                                                                     style="background-color: #0e2e45; color: #ffffff;">
-                                                                    <i class="bi bi-receipt me-1"></i>Receipt
+                                                                    <i class="bi bi-receipt me-1"></i>Slip
                                                                 </a>
                                                             @endif
                                                         </div>

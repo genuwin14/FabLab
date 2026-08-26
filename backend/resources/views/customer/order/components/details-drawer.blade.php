@@ -97,7 +97,7 @@
             <a href="{{ route('customer.orders.receipt', $order->order_id) }}" target="_blank"
                 class="btn w-100 rounded-pill fw-bold mt-3 d-flex align-items-center justify-content-center"
                 style="background-color: #0e2e45; color: #ffffff;">
-                <i class="bi bi-receipt me-2"></i> View Receipt
+                <i class="bi bi-receipt me-2"></i> View Slip
             </a>
         @endif
     </div>

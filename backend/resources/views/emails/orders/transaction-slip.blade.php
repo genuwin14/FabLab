@@ -3,7 +3,7 @@
 
 <head>
     <style>
-        /* The page itself is the receipt, so the slip fills it edge to edge and
+        /* The page itself is the slip, so it fills the page edge to edge and
            carries its own padding instead of floating on a backdrop. */
         @page {
             margin: 0;
@@ -18,7 +18,7 @@
             background-color: #ffffff;
         }
 
-        .receipt-container {
+        .slip-container {
             padding: 10pt;
         }
 
@@ -86,7 +86,7 @@
 </head>
 
 <body>
-    <div class="receipt-container">
+    <div class="slip-container">
         <div class="text-center mb-4">
             {{-- Logo temporarily disabled due to GD extension issues
             @php
@@ -151,7 +151,7 @@
 
         <div class="text-center mb-4">
             <p class="small fw-bold mb-0">PAYMENT INSTRUCTION</p>
-            <p class="small text-muted mb-0">Please present this receipt at the<br><strong>CSPC Cashier</strong> for
+            <p class="small text-muted mb-0">Please present this slip at the<br><strong>CSPC Cashier</strong> for
                 payment.</p>
         </div>
 
@@ -164,7 +164,7 @@
             <div style="margin: 0 auto; display: inline-block; background: white;">
                 {!! $barcode !!}
             </div>
-            <p class="text-muted" style="font-size: 6pt; margin: 3pt 0 0 0;">SYSTEM GENERATED RECEIPT</p>
+            <p class="text-muted" style="font-size: 6pt; margin: 3pt 0 0 0;">SYSTEM GENERATED SLIP</p>
         </div>
     </div>
 </body>

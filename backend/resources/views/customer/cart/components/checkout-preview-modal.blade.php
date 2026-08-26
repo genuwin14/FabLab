@@ -53,7 +53,7 @@
                 <!-- Payment Info -->
                 <div class="text-center mb-4">
                     <p class="small fw-bold mb-1">PAYMENT INSTRUCTION</p>
-                    <p class="small text-muted mb-0">Please present this receipt at the<br><strong>CSPC Cashier</strong>
+                    <p class="small text-muted mb-0">Please present this slip at the<br><strong>CSPC Cashier</strong>
                         for payment.</p>
                 </div>
 

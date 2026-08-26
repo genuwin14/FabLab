@@ -161,7 +161,7 @@
                                         <i class="bi bi-info-circle-fill me-2 fs-5 mt-1"></i>
                                         <div class="small">
                                             <strong>Payment Notice:</strong><br>
-                                            After placing your order, a receipt will be generated. Please present this receipt at the <strong>CSPC Cashier</strong> for payment.
+                                            After placing your order, a transaction slip will be generated. Please present this slip at the <strong>CSPC Cashier</strong> for payment.
                                         </div>
                                     </div>
 
