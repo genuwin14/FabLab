@@ -11,7 +11,9 @@ class SupplierController extends Controller
 {
     public function index(Request $request)
     {
-        $search = $request->input('search', '');
+        // Cleared search fields arrive as null, not '', once
+        // ConvertEmptyStringsToNull has been through them.
+        $search = (string) $request->input('search', '');
         $perPage = (int) $request->input('per_page', 10);
 
         $query = Supplier::latest();

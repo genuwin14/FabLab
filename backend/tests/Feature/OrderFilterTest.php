@@ -3,6 +3,8 @@
 namespace Tests\Feature;
 
 use App\Models\Order;
+use App\Models\PurchaseOrder;
+use App\Models\Supplier;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
@@ -97,6 +99,60 @@ class OrderFilterTest extends TestCase
 
         $response->assertOk();
         $this->assertSame(5, $response->viewData('orders')->total());
+    }
+
+    // ---------------------------------------------------- purchase orders
+
+    public static function purchaseOrderScreens(): array
+    {
+        return [
+            'admin' => ['admin', 'admin.purchase.index'],
+            'staff' => ['staff', 'staff.purchase.index'],
+        ];
+    }
+
+    /** The purchase order lists filter through the same shape, so they had it too. */
+    #[\PHPUnit\Framework\Attributes\DataProvider('purchaseOrderScreens')]
+    public function test_an_empty_status_shows_every_purchase_order(string $role, string $route): void
+    {
+        $this->purchaseOrders();
+
+        Sanctum::actingAs($this->{$role});
+
+        $response = $this->get(route($route, [
+            'per_page' => 10, 'search' => '', 'status' => '', 'date' => '',
+        ]));
+
+        $response->assertOk();
+        $this->assertSame(3, $response->viewData('purchaseOrders')->total());
+    }
+
+    #[\PHPUnit\Framework\Attributes\DataProvider('purchaseOrderScreens')]
+    public function test_a_chosen_purchase_order_status_still_narrows_the_list(string $role, string $route): void
+    {
+        $this->purchaseOrders();
+
+        Sanctum::actingAs($this->{$role});
+
+        $response = $this->get(route($route, ['status' => 'sent']));
+
+        $response->assertOk();
+        $this->assertSame(1, $response->viewData('purchaseOrders')->total());
+    }
+
+    private function purchaseOrders(): void
+    {
+        $supplier = Supplier::create(['name' => 'Supplier', 'email' => 'sup@example.test']);
+
+        foreach (['draft', 'sent', 'delivered'] as $i => $status) {
+            PurchaseOrder::create([
+                'po_number' => 'PO-FILTER-' . $i,
+                'supplier_id' => $supplier->supplier_id,
+                'status' => $status,
+                'total_cost' => 100,
+                'created_by' => $this->admin->id,
+            ]);
+        }
     }
 
     private function user(string $role, string $email): User
