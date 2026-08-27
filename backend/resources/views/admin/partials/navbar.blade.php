@@ -213,24 +213,40 @@
 
     .action-badge {
         position: absolute;
-        top: 6px;
-        right: 6px;
-        font-size: 0.6rem;
+        /* Pinned to the circle's top-right, then nudged out so the pill sits on
+           the 38px border rather than inside the bell or off past the corner.
+           Nudged in px, not %, so a wider "99+" grows leftward and stays put. */
+        top: 0;
+        right: 0;
+        transform: translate(4px, -4px);
+        /* Flex centres the digit; the old line-height couldn't, because the 2px
+           border eats into the height once box-sizing is border-box. */
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        box-sizing: border-box;
+        min-width: 18px;
+        height: 18px;
+        padding: 0 5px;
+        font-size: 0.65rem;
         font-weight: 700;
+        line-height: 1;
         border-radius: 999px;
-        min-width: 16px;
-        height: 16px;
-        padding: 0 4px;
-        line-height: 16px;
-        text-align: center;
         color: #fff;
         border: 2px solid #05111a;
+    }
+    /* The bell hides its badge with the hidden attribute, which the display
+       above would otherwise override into view showing a nought. */
+    .action-badge[hidden] {
+        display: none;
     }
     .action-badge-dot {
         width: 9px;
         height: 9px;
         min-width: 9px;
         padding: 0;
+        transform: translate(-1px, 1px);
+        color: transparent;
     }
 
     /* User dropdown trigger */
