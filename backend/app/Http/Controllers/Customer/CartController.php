@@ -211,13 +211,27 @@ class CartController extends Controller
                 }
             }
 
-            // Create Order
-            $order = \App\Models\Order::create([
-                'order_number' => 'ORDR-' . strtoupper(uniqid()),
-                'user_id' => auth()->id(),
-                'status' => 'pending',
-                'total_amount' => $total,
-            ]);
+            // Create Order. Two customers checking out in the same moment can
+            // read the same daily sequence, so let the unique index settle it
+            // and take the next number on the retry.
+            $order = null;
+
+            for ($attempt = 1; $attempt <= 5; $attempt++) {
+                try {
+                    $order = \App\Models\Order::create([
+                        'order_number' => \App\Models\Order::nextOrderNumber(),
+                        'user_id' => auth()->id(),
+                        'status' => 'pending',
+                        'total_amount' => $total,
+                    ]);
+
+                    break;
+                } catch (\Illuminate\Database\UniqueConstraintViolationException $e) {
+                    if ($attempt === 5) {
+                        throw $e;
+                    }
+                }
+            }
 
             // Create Order Items
             foreach ($checkoutLines as $line) {

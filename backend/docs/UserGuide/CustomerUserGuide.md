@@ -128,7 +128,7 @@ From here you can:
 
 1. Tick the lines you want to buy. You can check out part of your cart and leave the rest.
 2. Review the preview slip, then confirm.
-3. The system re-verifies stock for every selected line, creates the order under a number beginning `ORDR-`, deducts the stock, and clears just those lines from your cart.
+3. The system re-verifies stock for every selected line, creates the order under a number like `ORDR-20260827-0001` (the date it was placed plus that day’s sequence), deducts the stock, and clears just those lines from your cart.
 4. You land on **My Orders**, and the order starts at **Pending**.
 
 If anything sold out between adding and checking out, the whole checkout stops with a message naming the product, and nothing is charged or reserved.

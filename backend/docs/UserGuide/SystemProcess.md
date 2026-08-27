@@ -349,7 +349,7 @@ flowchart TD
 
 1. Tick the lines to buy — part of a cart is fine, the rest stays.
 2. Review the **preview slip**, then confirm.
-3. The system re-verifies stock for every selected line, creates the order with a number beginning **`ORDR-`**, **deducts product stock**, and clears only those lines from the cart.
+3. The system re-verifies stock for every selected line, creates the order with a number of the form **`ORDR-YYYYMMDD-NNNN`** (the sequence restarts each day), **deducts product stock**, and clears only those lines from the cart.
 4. The customer lands on **My Orders** with the order at **Pending**.
 
 If anything sold out between adding and checking out, the **whole checkout stops** with a message naming the product — nothing is charged or reserved.
@@ -728,7 +728,7 @@ To force the refused approval: edit the raw material and drop its stock below wh
 
 | Thing | Format | Example |
 | :--- | :--- | :--- |
-| Order number | `ORDR-` + unique suffix | `ORDR-68A1F3C2D4E5` |
+| Order number | `ORDR-YYYYMMDD-NNNN` | `ORDR-20260827-0001` |
 | Purchase order number | `PO-YYYYMMDD-XXXX` | `PO-20260804-A1B2` |
 | Payment reference | Whatever the CSPC Cashier issued | recorded by staff at Processing |
 

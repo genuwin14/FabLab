@@ -12,7 +12,7 @@ return new class extends Migration {
     {
         Schema::create('orders', function (Blueprint $table) {
             $table->id('order_id'); // Custom primary key name
-            $table->string('order_number')->unique(); // e.g., ORDR-2024-001
+            $table->string('order_number')->unique(); // e.g., ORDR-20260827-0001
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade'); // The buyer
             $table->enum('status', ['pending', 'approved', 'processing', 'ready_for_pickup', 'completed', 'cancelled'])->default('pending');
             $table->string('payment_reference')->nullable();

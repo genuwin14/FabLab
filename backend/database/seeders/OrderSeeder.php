@@ -31,7 +31,7 @@ class OrderSeeder extends Seeder
 
         // Order 1: PENDING (Awaiting admin approval)
         $o1 = Order::create([
-            'order_number' => 'ORDR-' . now()->format('Ymd') . '-PEND',
+            'order_number' => Order::nextOrderNumber(),
             'user_id' => $customer->id,
             'status' => 'pending',
             'total_amount' => 540.00,
@@ -45,7 +45,7 @@ class OrderSeeder extends Seeder
 
         // Order 2: APPROVED (Approved, awaiting payment / processing)
         $o2 = Order::create([
-            'order_number' => 'ORDR-' . now()->format('Ymd') . '-APRV',
+            'order_number' => Order::nextOrderNumber(),
             'user_id' => $customer->id,
             'status' => 'approved',
             'total_amount' => 850.00,
@@ -59,7 +59,7 @@ class OrderSeeder extends Seeder
 
         // Order 3: PROCESSING (Payment received, being prepared)
         $o3 = Order::create([
-            'order_number' => 'ORDR-' . now()->format('Ymd') . '-PROC',
+            'order_number' => Order::nextOrderNumber(),
             'user_id' => $customer->id,
             'status' => 'processing',
             'payment_reference' => 'GCASH-REF-' . rand(100000, 999999),
@@ -80,7 +80,7 @@ class OrderSeeder extends Seeder
 
         // Order 4: READY FOR PICKUP
         $o4 = Order::create([
-            'order_number' => 'ORDR-' . now()->format('Ymd') . '-RDY',
+            'order_number' => Order::nextOrderNumber(),
             'user_id' => $customer->id,
             'status' => 'ready_for_pickup',
             'payment_reference' => 'GCASH-REF-' . rand(100000, 999999),
@@ -95,7 +95,7 @@ class OrderSeeder extends Seeder
 
         // Order 5: COMPLETED (Historical, picked up last month)
         $o5 = Order::create([
-            'order_number' => 'ORDR-20260401-DONE',
+            'order_number' => 'ORDR-' . now()->subMonth()->format('Ymd') . '-0001',
             'user_id' => $customer->id,
             'status' => 'completed',
             'payment_reference' => 'GCASH-REF-' . rand(100000, 999999),
@@ -112,7 +112,7 @@ class OrderSeeder extends Seeder
 
         // Order 6: CANCELLED (Customer changed their mind)
         $o6 = Order::create([
-            'order_number' => 'ORDR-' . now()->format('Ymd') . '-CXL',
+            'order_number' => Order::nextOrderNumber(),
             'user_id' => $customer->id,
             'status' => 'cancelled',
             'reason' => 'Customer requested cancellation before approval.',
