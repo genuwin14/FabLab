@@ -31,7 +31,8 @@ class ProductSeeder extends Seeder
         $finishedGoodsId = Category::where('name', 'Finished Goods')->first()->category_id;
         $machineryId = Category::where('name', 'Machinery & Equipment')->first()->category_id;
         $merchandiseId = Category::where('name', 'Merchandise')->first()->category_id;
-        $furnitureId = Category::where('name', 'Furniture')->first()->category_id;
+        // Furniture has no seeded product: the one that lived there was cut
+        // from plywood, which the shop doesn't stock.
 
         $suppliers = Supplier::all();
         $techSupply = $suppliers->firstWhere('name', 'Tech Supply Co.');
@@ -228,25 +229,8 @@ class ProductSeeder extends Seeder
                     ['id' => $ecoMaterials->supplier_id, 'cost' => 890.00, 'moq' => 5, 'lead' => 10, 'default' => true]
                 ]
             ],
-            // Low stock AND no supplier attached — exercises the monitoring warning.
-            [
-                'sku' => 'WD-STL-PINE',
-                'name' => 'Pine Study Stool',
-                'description' => 'Flat-pack stool cut on the laser bed and hand-finished.',
-                'brand' => 'FabLab',
-                'price' => 1650.00,
-                'stock' => 3,
-                'units_on_display' => 1,
-                'units_sponsored' => 0,
-                'units_damaged' => 0,
-                'units_consumed' => 0,
-                // No department assigned — demonstrates "Uncategorized" in the report.
-                'category_id' => $furnitureId,
-                'unit' => 'pcs',
-                'low_stock_threshold' => 5,
-                'status' => 'active',
-                'suppliers' => [] // No suppliers assigned yet
-            ],
+            // The Pine Study Stool used to sit here. It was cut from plywood,
+            // which the shop doesn't stock, so both went at once.
             // Asset rather than stock-for-sale.
             [
                 'sku' => 'MC-LSR-6090',

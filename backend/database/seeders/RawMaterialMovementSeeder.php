@@ -37,6 +37,8 @@ class RawMaterialMovementSeeder extends Seeder
             // Mug and shirt printing.
             ['Sublimation Transfer Paper (A4)', StockMovementReason::Consumed, 220, 'Mug and shirt orders'],
             ['Sublimation Transfer Paper (A4)', StockMovementReason::Damaged, 25, 'Misfeed on the L1800'],
+            ['Sublimation Ink (CMYK Set)', StockMovementReason::Consumed, 3, 'Mug and shirt printing — semester run'],
+            ['Sublimation Ink (CMYK Set)', StockMovementReason::Damaged, 1, 'Magenta bottle split in storage'],
 
             // Book Production.
             ['Bond Paper (A4, 80gsm)', StockMovementReason::Consumed, 2400, 'Booklet run — 400 copies'],
@@ -46,8 +48,6 @@ class RawMaterialMovementSeeder extends Seeder
             // Woodworks.
             ['Solid Oak Wood Planks', StockMovementReason::Consumed, 88, 'Recognition plaques — recognition day'],
             ['Solid Oak Wood Planks', StockMovementReason::Damaged, 12, 'Split along the grain during planing'],
-            ['Plywood 4x8 1/4 inch', StockMovementReason::Consumed, 20, 'Stool seats and backs'],
-            ['Plywood 4x8 1/4 inch', StockMovementReason::Damaged, 4, 'Scorched on the laser bed'],
             ['Wood Varnish (Gloss)', StockMovementReason::Consumed, 2, 'Finishing the plaque batch'],
 
             // Uncategorised material.

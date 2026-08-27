@@ -12,8 +12,8 @@ use App\Models\Supplier;
  *
  * Two rules this file follows on purpose:
  *
- * 1. Nothing here is also a product. Plywood, filament and acrylic used to be
- *    seeded on both screens with two stock figures that never agreed.
+ * 1. Nothing here is also a product. Filament and acrylic used to be seeded on
+ *    both screens with two stock figures that never agreed.
  * 2. No `units_consumed` / `units_damaged` / `units_sponsored` /
  *    `units_on_display` values. Those counters belong to the usage ledger and
  *    every material starts at zero on all four; RawMaterialMovementSeeder then
@@ -74,6 +74,21 @@ class RawMaterialSeeder extends Seeder
                 'department' => $dcc,
             ],
             [
+                'name' => 'Sublimation Ink (CMYK Set)',
+                'supplier_id' => $techSupplier->supplier_id ?? 1,
+                'cost_per_unit' => 1850.00,
+                // Starts at 10; the seeded usage ledger consumes 3 and writes
+                // off 1, leaving it sitting exactly on its threshold. That is
+                // the material to watch on a demo — low enough to be flagged
+                // for reorder, with a purchase order waiting to top it up, and
+                // still deep enough that approving orders keeps working.
+                'stock_quantity' => 10,
+                'low_stock_threshold' => 6,
+                'unit' => 'set',
+                'description' => 'Four-bottle CMYK ink set for the sublimation printer.',
+                'department' => $dcc,
+            ],
+            [
                 'name' => 'PLA Filament Red 1.75mm',
                 'supplier_id' => $techSupplier->supplier_id ?? 1,
                 'cost_per_unit' => 600.00,
@@ -108,16 +123,7 @@ class RawMaterialSeeder extends Seeder
             ],
 
             // ---- Woodworks ----
-            [
-                'name' => 'Plywood 4x8 1/4 inch',
-                'supplier_id' => $ecoSupplier->supplier_id ?? 3,
-                'cost_per_unit' => 380.00,
-                'stock_quantity' => 50,
-                'low_stock_threshold' => 10,
-                'unit' => 'pcs',
-                'description' => 'Marine plywood for laser cutting and stool seats.',
-                'department' => $wood,
-            ],
+            // No plywood: the shop doesn't stock it.
             [
                 'name' => 'Solid Oak Wood Planks',
                 'supplier_id' => $ecoSupplier->supplier_id ?? 3,

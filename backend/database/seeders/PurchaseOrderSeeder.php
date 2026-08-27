@@ -36,6 +36,7 @@ class PurchaseOrderSeeder extends Seeder
         // Filament is a raw material, not a product — a purchase order line
         // points at it through raw_material_id.
         $filament = RawMaterial::where('name', 'PLA Filament Red 1.75mm')->first();
+        $ink = RawMaterial::where('name', 'Sublimation Ink (CMYK Set)')->first();
 
         // IF data is missing (e.g. partial seed), skip
         if (!$techSupply || !$genMerch || !$filament || !$mugWhite)
@@ -94,5 +95,29 @@ class PurchaseOrderSeeder extends Seeder
             'quantity' => 100,
             'cost' => 55.00
         ]);
+
+        // PO 4: SENT (Tech Supply — ink restock)
+        //
+        // The ink is sitting on its low-stock threshold, and this is the order
+        // that answers it. Left at `sent` so it is one step from delivered:
+        // marking it so puts 6 sets back on the shelf, which is the other half
+        // of the story the usage ledger tells.
+        if ($ink) {
+            $po4 = PurchaseOrder::create([
+                'po_number' => 'PO-' . now()->format('Ymd') . '-INK1',
+                'supplier_id' => $techSupply->supplier_id,
+                'status' => 'sent',
+                'expected_delivery_date' => now()->addDays(3),
+                'total_cost' => 11100.00,
+                'created_by' => $admin->id
+            ]);
+
+            PurchaseOrderItem::create([
+                'purchase_order_id' => $po4->purchase_order_id,
+                'raw_material_id' => $ink->raw_material_id,
+                'quantity' => 6,
+                'cost' => 1850.00
+            ]);
+        }
     }
 }
