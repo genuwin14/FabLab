@@ -99,16 +99,19 @@ class Order extends Model
     }
 
     /**
-     * Build the next order number for today, e.g. ORDR-20260827-0001.
+     * Build the next order number for a day, e.g. ORDR-20260827-0001.
      *
      * The sequence restarts each day. Suffixes that aren't a plain number are
      * skipped, so the seeded demo orders (ORDR-20260827-PEND and friends) never
      * get read as a counter. Two checkouts racing can land on the same
      * candidate, so callers retry on the order_number unique index.
+     *
+     * Pass a date to number a backdated order — seeded history, mainly, which
+     * must not collide when the seeder is run more than once.
      */
-    public static function nextOrderNumber(): string
+    public static function nextOrderNumber(?\DateTimeInterface $date = null): string
     {
-        $prefix = 'ORDR-' . now()->format('Ymd') . '-';
+        $prefix = 'ORDR-' . ($date ? \Illuminate\Support\Carbon::instance($date) : now())->format('Ymd') . '-';
 
         $highest = static::where('order_number', 'like', $prefix . '%')
             ->pluck('order_number')

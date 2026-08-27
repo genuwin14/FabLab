@@ -95,7 +95,7 @@ class OrderSeeder extends Seeder
 
         // Order 5: COMPLETED (Historical, picked up last month)
         $o5 = Order::create([
-            'order_number' => 'ORDR-' . now()->subMonth()->format('Ymd') . '-0001',
+            'order_number' => Order::nextOrderNumber(now()->subMonth()),
             'user_id' => $customer->id,
             'status' => 'completed',
             'payment_reference' => 'GCASH-REF-' . rand(100000, 999999),

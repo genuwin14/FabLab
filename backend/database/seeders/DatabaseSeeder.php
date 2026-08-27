@@ -31,6 +31,7 @@ class DatabaseSeeder extends Seeder
             ProductTextureSeeder::class,
             PurchaseOrderSeeder::class,
             OrderSeeder::class,
+            PurchaseRequestOrderSeeder::class,
         ]);
     }
 }

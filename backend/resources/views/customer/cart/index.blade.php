@@ -187,7 +187,10 @@
                                         </div>
                                     </div>
 
-                                    <div class="alert alert-warning border-0 rounded-3 mb-4 d-flex align-items-start" data-notice="pr" hidden>
+                                    {{-- Hidden with d-none rather than the hidden attribute: these alerts carry
+                                         d-flex, and Bootstrap's display utilities are !important, so they would
+                                         win over the browser's default for [hidden] and show both notices. --}}
+                                    <div class="alert alert-warning border-0 rounded-3 mb-4 d-none align-items-start" data-notice="pr">
                                         <i class="bi bi-clock-history me-2 fs-5 mt-1"></i>
                                         <div class="small">
                                             <strong>Purchase Request:</strong><br>
@@ -418,7 +421,10 @@
             $('input[name="payment_method"]').on('change', function () {
                 const method = $('input[name="payment_method"]:checked').val();
                 $('[data-notice]').each(function () {
-                    this.hidden = $(this).data('notice') !== method;
+                    // Swap both classes explicitly — leaving d-flex on a hidden
+                    // alert pits two !important display rules against each other.
+                    const show = $(this).data('notice') === method;
+                    $(this).toggleClass('d-none', !show).toggleClass('d-flex', show);
                 });
             });
 

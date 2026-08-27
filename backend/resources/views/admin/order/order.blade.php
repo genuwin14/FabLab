@@ -276,6 +276,16 @@
                                                                 <i class="bi bi-upload me-1"></i>Upload {{ strtoupper($docType) }}
                                                             </button>
                                                         @endif
+                                                        @foreach(['noa' => $order->noa_path, 'po' => $order->po_path] as $type => $path)
+                                                            @if($path)
+                                                                {{-- Served through the admin route, never a public URL. --}}
+                                                                <a href="{{ route('admin.orders.documents.show', [$order->order_id, $type]) }}"
+                                                                    target="_blank"
+                                                                    class="btn btn-light btn-sm rounded-pill px-3 fw-bold shadow-sm border me-1">
+                                                                    <i class="bi bi-file-earmark-text me-1 text-primary"></i>{{ strtoupper($type) }}
+                                                                </a>
+                                                            @endif
+                                                        @endforeach
                                                         @if(in_array($order->status, ['approved', 'processing', 'ready_for_pickup', 'for_delivery']))
                                                             {{-- Past review but not yet handed over: cancelling here
                                                                  returns the stock and the materials it consumed. --}}

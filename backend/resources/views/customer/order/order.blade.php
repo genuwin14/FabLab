@@ -251,7 +251,10 @@
                         $orderStats = [
                             ['label' => 'Total',     'count' => $orders->count(),                                  'icon' => 'bi-receipt',           'color' => '#0e2e45'],
                             ['label' => 'Pending',   'count' => $orders->where('status', 'pending')->count(),      'icon' => 'bi-hourglass-split',   'color' => '#997404'],
+                            // The one state that is waiting on the customer rather than on FabLab.
+                            ['label' => 'Awaiting PR', 'count' => $orders->where('status', 'awaiting_pr')->count(), 'icon' => 'bi-file-earmark-text', 'color' => '#5c636a'],
                             ['label' => 'For Pickup','count' => $orders->where('status', 'ready_for_pickup')->count(), 'icon' => 'bi-bag-check',     'color' => '#b95900'],
+                            ['label' => 'For Delivery', 'count' => $orders->where('status', 'for_delivery')->count(), 'icon' => 'bi-truck',          'color' => '#6f42c1'],
                             ['label' => 'Completed', 'count' => $orders->where('status', 'completed')->count(),    'icon' => 'bi-check-circle-fill', 'color' => '#198754'],
                             ['label' => 'Cancelled', 'count' => $orders->where('status', 'cancelled')->count(),    'icon' => 'bi-x-circle-fill',     'color' => '#dc3545'],
                         ];
@@ -569,7 +572,7 @@
                                                         <span class="d-inline-flex align-items-center gap-1 px-2 py-1 rounded-pill small fw-semibold"
                                                             style="background-color: {{ $rowStatusBg }}; color: {{ $rowStatusColor }};">
                                                             <i class="bi {{ $rowStatusIcon }}" style="font-size: 0.75rem;"></i>
-                                                            {{ ucwords(str_replace('_', ' ', $order->status)) }}
+                                                            {{ \App\Models\Order::statusLabel($order->status) }}
                                                         </span>
                                                     </td>
                                                     <td class="text-end pe-4">
