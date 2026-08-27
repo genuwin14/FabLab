@@ -191,11 +191,25 @@ class CartController extends Controller
             return redirect()->back()->with('error', 'Please select at least one item to checkout.');
         }
 
+        $request->validate([
+            'payment_method' => 'nullable|in:' . implode(',', \App\Models\Order::METHODS),
+        ]);
+
+        $method = $request->input('payment_method', \App\Models\Order::METHOD_CASH);
+
         $checkoutLines = $this->linesForKeys($selectedItems);
 
         if ($checkoutLines->isEmpty()) {
             return redirect()->back()->with('error', 'Selected items are no longer available in cart.');
         }
+
+        // A Purchase Request order can't be reviewed until procurement issues a
+        // PR number, so it parks short of pending and starts its clock.
+        $isPurchaseRequest = $method === \App\Models\Order::METHOD_PR;
+        $status = $isPurchaseRequest ? 'awaiting_pr' : 'pending';
+        $prDeadline = $isPurchaseRequest
+            ? now()->addDays((int) config('fablab.pr_deadline_days'))->endOfDay()
+            : null;
 
         try {
             \Illuminate\Support\Facades\DB::beginTransaction();
@@ -221,7 +235,9 @@ class CartController extends Controller
                     $order = \App\Models\Order::create([
                         'order_number' => \App\Models\Order::nextOrderNumber(),
                         'user_id' => auth()->id(),
-                        'status' => 'pending',
+                        'status' => $status,
+                        'payment_method' => $method,
+                        'pr_deadline' => $prDeadline,
                         'total_amount' => $total,
                     ]);
 
@@ -252,18 +268,31 @@ class CartController extends Controller
 
             \Illuminate\Support\Facades\DB::commit();
 
-            // Notify staff & admins about the new order
             $order->loadMissing('user');
-            \App\Support\Notifier::staffAndAdmins(new \App\Notifications\NewOrderPlaced($order));
+
+            // A PR order isn't reviewable yet, so there is nothing for staff to
+            // act on. They hear about it when the PR number lands.
+            if (! $isPurchaseRequest) {
+                \App\Support\Notifier::staffAndAdmins(new \App\Notifications\NewOrderPlaced($order));
+            }
+
+            $message = $isPurchaseRequest
+                ? sprintf(
+                    'Order placed. File your Purchase Request with %s and enter the PR number here by %s — the order is held until then.',
+                    config('fablab.procurement_email'),
+                    $order->pr_deadline->format('j M Y')
+                )
+                : 'Order placed successfully!';
 
             if ($request->ajax()) {
                 return response()->json([
                     'success' => true,
-                    'message' => 'Order placed successfully!'
+                    'message' => $message,
+                    'awaiting_pr' => $isPurchaseRequest,
                 ]);
             }
 
-            return redirect()->route('customer.orders.index')->with('success', 'Order placed successfully!');
+            return redirect()->route('customer.orders.index')->with('success', $message);
 
         } catch (\Exception $e) {
             \Illuminate\Support\Facades\DB::rollBack();

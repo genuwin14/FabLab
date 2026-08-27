@@ -36,7 +36,9 @@
                             'pending'          => ['label' => 'Pending',          'icon' => 'bi-hourglass-split',   'bg' => 'rgba(255, 193, 7, 0.15)',  'color' => '#997404'],
                             'approved'         => ['label' => 'Approved',         'icon' => 'bi-clipboard-check',   'bg' => 'rgba(13, 110, 253, 0.12)', 'color' => '#0d6efd'],
                             'processing'       => ['label' => 'Processing',       'icon' => 'bi-arrow-repeat',      'bg' => 'rgba(13, 202, 240, 0.15)', 'color' => '#087990'],
+                            'awaiting_pr'      => ['label' => 'Awaiting PR',       'icon' => 'bi-file-earmark-text', 'bg' => 'rgba(108, 117, 125, 0.15)','color' => '#5c636a'],
                             'ready_for_pickup' => ['label' => 'Ready for Pickup', 'icon' => 'bi-bag-check',         'bg' => 'rgba(255, 153, 0, 0.15)',  'color' => '#b95900'],
+                            'for_delivery'     => ['label' => 'For Delivery',     'icon' => 'bi-truck',             'bg' => 'rgba(111, 66, 193, 0.14)', 'color' => '#6f42c1'],
                             'completed'        => ['label' => 'Completed',        'icon' => 'bi-check-circle-fill', 'bg' => 'rgba(25, 135, 84, 0.12)',  'color' => '#198754'],
                             'cancelled'        => ['label' => 'Cancelled',        'icon' => 'bi-x-circle-fill',     'bg' => 'rgba(220, 53, 69, 0.12)',  'color' => '#dc3545'],
                         ];
@@ -119,9 +121,9 @@
                                             <select name="status" class="form-select rounded-2 w-100"
                                                 onchange="document.getElementById('orderFilterForm').submit()">
                                                 <option value="">All Statuses</option>
-                                                @foreach(['pending', 'approved', 'processing', 'ready_for_pickup', 'completed', 'cancelled'] as $s)
+                                                @foreach(['pending', 'awaiting_pr', 'approved', 'processing', 'ready_for_pickup', 'for_delivery', 'completed', 'cancelled'] as $s)
                                                     <option value="{{ $s }}" {{ $status === $s ? 'selected' : '' }}>
-                                                        {{ ucwords(str_replace('_', ' ', $s)) }}
+                                                        {{ \App\Models\Order::statusLabel($s) }}
                                                     </option>
                                                 @endforeach
                                             </select>
@@ -223,7 +225,9 @@
                                                             'completed' => ['rgba(25, 135, 84, 0.12)', '#198754', 'bi-check-circle-fill'],
                                                             'approved' => ['rgba(13, 110, 253, 0.12)', '#0d6efd', 'bi-clipboard-check'],
                                                             'processing' => ['rgba(13, 202, 240, 0.15)', '#087990', 'bi-arrow-repeat'],
+                                                            'awaiting_pr' => ['rgba(108, 117, 125, 0.15)', '#5c636a', 'bi-file-earmark-text'],
                                                             'ready_for_pickup' => ['rgba(255, 193, 7, 0.18)', '#997404', 'bi-bag-check'],
+                                                            'for_delivery' => ['rgba(111, 66, 193, 0.14)', '#6f42c1', 'bi-truck'],
                                                             'cancelled' => ['rgba(220, 53, 69, 0.12)', '#dc3545', 'bi-x-circle-fill'],
                                                             default => ['rgba(255, 193, 7, 0.18)', '#997404', 'bi-hourglass-split'],
                                                         };
@@ -232,29 +236,35 @@
                                                         class="d-inline-flex align-items-center gap-1 px-2 py-1 rounded-pill small fw-semibold"
                                                         style="background-color: {{ $statusBg }}; color: {{ $statusColor }};">
                                                         <i class="bi {{ $statusIcon }}" style="font-size: 0.75rem;"></i>
-                                                        {{ ucwords(str_replace('_', ' ', $order->status)) }}
+                                                        {{ \App\Models\Order::statusLabel($order->status) }}
                                                     </span>
                                                 </td>
                                                 <td class="text-end pe-4">
                                                     @php
-                                                        $nextStatus = match ($order->status) {
-                                                            'approved' => 'processing',
-                                                            'processing' => 'ready_for_pickup',
-                                                            'ready_for_pickup' => 'completed',
+                                                        // A PR order is driven by the admin's paperwork; the only
+                                                        // step staff take is handing it over after delivery.
+                                                        $isPr = $order->isPurchaseRequest();
+
+                                                        $nextStatus = $isPr
+                                                            ? ($order->status === 'for_delivery' ? 'completed' : null)
+                                                            : match ($order->status) {
+                                                                'approved' => 'processing',
+                                                                'processing' => 'ready_for_pickup',
+                                                                'ready_for_pickup' => 'completed',
+                                                                default => null,
+                                                            };
+
+                                                        $btnLabel = match ($nextStatus) {
+                                                            'processing' => 'Process',
+                                                            'ready_for_pickup' => 'Ready',
+                                                            'completed' => 'Complete',
                                                             default => null,
                                                         };
 
-                                                        $btnLabel = match ($order->status) {
-                                                            'approved' => 'Process',
-                                                            'processing' => 'Ready',
-                                                            'ready_for_pickup' => 'Complete',
-                                                            default => null,
-                                                        };
-
-                                                        $btnClass = match ($order->status) {
-                                                            'approved' => 'btn-primary',
+                                                        $btnClass = match ($nextStatus) {
                                                             'processing' => 'btn-info text-white',
-                                                            'ready_for_pickup' => 'btn-success text-white',
+                                                            'ready_for_pickup' => 'btn-primary',
+                                                            'completed' => 'btn-success text-white',
                                                             default => '',
                                                         };
                                                     @endphp
@@ -262,6 +272,14 @@
                                                     @if($order->status === 'pending')
                                                         <span class="badge bg-light text-muted border rounded-pill px-3 py-2 me-1 fw-semibold small">
                                                             <i class="bi bi-hourglass-split me-1"></i>Awaiting admin
+                                                        </span>
+                                                    @elseif($order->status === 'awaiting_pr')
+                                                        <span class="badge bg-light text-muted border rounded-pill px-3 py-2 me-1 fw-semibold small">
+                                                            <i class="bi bi-file-earmark-text me-1"></i>Awaiting PR number
+                                                        </span>
+                                                    @elseif($isPr && in_array($order->status, ['approved', 'processing']))
+                                                        <span class="badge bg-light text-muted border rounded-pill px-3 py-2 me-1 fw-semibold small">
+                                                            <i class="bi bi-hourglass-split me-1"></i>Awaiting {{ $order->status === 'approved' ? 'NOA' : 'PO' }}
                                                         </span>
                                                     @elseif($nextStatus)
                                                         <button class="btn {{ $btnClass }} btn-sm rounded-pill px-3 fw-bold shadow-sm btn-update-status me-1"

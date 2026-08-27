@@ -89,7 +89,24 @@ Orders that are `approved`, `processing`, or `ready_for_pickup` carry a **Cancel
 
 A `completed` order can't be cancelled: it's already in the customer's hands.
 
-**Hand-off:** approving hands the order to staff, who take it through `processing` → `ready_for_pickup` → `completed` ([Staff Guide §4](StaffUserGuide.md#4-processing-orders)). The customer watches the same statuses ([Customer Guide §9](CustomerUserGuide.md#9-tracking-your-orders)).
+### Purchase Request orders
+
+An order placed on a **Purchase Request** doesn't reach you straight away. It waits at **Awaiting PR** until the customer returns the number CSPC procurement issued — that number is the only proof the request was approved, and FabLab can't accept the order without it. You'll see it appear for review once the number lands.
+
+While it waits, the row shows the PR deadline and a **Close** button. Closing asks for a reason and returns the product stock. You don't have to: the deadline does the same thing on its own.
+
+Once you've approved one, **you** move it through the middle rather than staff, because each document is an approval in effect:
+
+| Upload | On an order that is | Moves it to | Meaning |
+| :--- | :--- | :--- | :--- |
+| **Notice of Award** | `approved` | `processing` | Production starts |
+| **Purchase Order** | `processing` | `for_delivery` | Released for delivery |
+
+The **Upload** button in the orders list always offers whichever document is next; the PO can't jump ahead of the NOA. Files accept PDF or image up to 5 MB, and are stored privately — only admins can open them.
+
+Staff take it from `for_delivery` with the usual **Complete**. A PR order is *delivered*, not collected, so it never passes through `ready_for_pickup`.
+
+**Hand-off:** approving a cashier order hands it to staff, who take it through `processing` → `ready_for_pickup` → `completed` ([Staff Guide §4](StaffUserGuide.md#4-processing-orders)). The customer watches the same statuses ([Customer Guide §9](CustomerUserGuide.md#9-tracking-your-orders)).
 
 ---
 

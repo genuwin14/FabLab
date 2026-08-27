@@ -334,9 +334,9 @@
                                                 <select id="orderStatusFilter"
                                                     class="form-select rounded-2 w-100">
                                                     <option value="">All Statuses</option>
-                                                    @foreach(['pending', 'approved', 'processing', 'ready_for_pickup', 'completed', 'cancelled'] as $s)
+                                                    @foreach(['pending', 'awaiting_pr', 'approved', 'processing', 'ready_for_pickup', 'for_delivery', 'completed', 'cancelled'] as $s)
                                                         <option value="{{ $s }}">
-                                                            {{ ucwords(str_replace('_', ' ', $s)) }}
+                                                            {{ \App\Models\Order::statusLabel($s) }}
                                                         </option>
                                                     @endforeach
                                                 </select>
@@ -385,11 +385,13 @@
                                                     $statusColors = [
                                                         'pending' => 'bg-warning text-dark',
                                                         'processing' => 'bg-info text-white',
+                                                        'awaiting_pr' => 'bg-secondary text-white',
                                                         'ready_for_pickup' => 'bg-primary text-white',
+                                                        'for_delivery' => 'bg-primary text-white',
                                                         'completed' => 'bg-success text-white',
                                                         'cancelled' => 'bg-danger text-white',
                                                     ];
-                                                    $statusLabel = ucwords(str_replace('_', ' ', $order->status));
+                                                    $statusLabel = \App\Models\Order::statusLabel($order->status);
                                                     $badgeClass = $statusColors[$order->status] ?? 'bg-secondary text-white';
                                                 @endphp
                                                 <span
@@ -491,7 +493,17 @@
                                                         Details <i class="bi bi-arrow-right-short ms-1"></i>
                                                     </button>
 
-                                                    @if($order->status == 'pending')
+                                                    @if($order->status == 'awaiting_pr')
+                                                        {{-- The number from procurement is what releases this. --}}
+                                                        <button type="button"
+                                                            class="btn btn-warning btn-sm rounded-pill flex-grow-1 fw-bold"
+                                                            data-bs-toggle="modal" data-bs-target="#prNumberModal"
+                                                            data-order-number="{{ $order->order_number }}"
+                                                            data-deadline="{{ $order->pr_deadline?->format('j M Y') }}"
+                                                            data-url="{{ route('customer.orders.prNumber', $order->order_id) }}">
+                                                            <i class="bi bi-file-earmark-text me-1"></i>Enter PR Number
+                                                        </button>
+                                                    @elseif($order->status == 'pending')
                                                         <button type="button"
                                                             class="btn btn-outline-danger btn-sm rounded-pill flex-grow-1"
                                                             data-bs-toggle="modal" data-bs-target="#cancelOrderModal"
@@ -500,7 +512,7 @@
                                                             data-url="{{ route('customer.orders.cancel', $order->order_id) }}">
                                                             Cancel
                                                         </button>
-                                                    @elseif(in_array($order->status, ['approved', 'processing', 'ready_for_pickup', 'completed']))
+                                                    @elseif(in_array($order->status, ['approved', 'processing', 'ready_for_pickup', 'for_delivery', 'completed']))
                                                         <a href="{{ route('customer.orders.receipt', $order->order_id) }}"
                                                             target="_blank"
                                                             class="btn btn-sm rounded-pill flex-grow-1 d-flex align-items-center justify-content-center fw-bold"
@@ -538,7 +550,9 @@
                                                         'completed' => ['rgba(25, 135, 84, 0.12)', '#198754', 'bi-check-circle-fill'],
                                                         'approved' => ['rgba(13, 110, 253, 0.12)', '#0d6efd', 'bi-clipboard-check'],
                                                         'processing' => ['rgba(13, 202, 240, 0.15)', '#087990', 'bi-arrow-repeat'],
+                                                        'awaiting_pr' => ['rgba(108, 117, 125, 0.15)', '#5c636a', 'bi-file-earmark-text'],
                                                         'ready_for_pickup' => ['rgba(255, 193, 7, 0.18)', '#997404', 'bi-bag-check'],
+                                                        'for_delivery' => ['rgba(111, 66, 193, 0.14)', '#6f42c1', 'bi-truck'],
                                                         'cancelled' => ['rgba(220, 53, 69, 0.12)', '#dc3545', 'bi-x-circle-fill'],
                                                         default => ['rgba(255, 193, 7, 0.18)', '#997404', 'bi-hourglass-split'],
                                                     };
@@ -566,7 +580,16 @@
                                                                 aria-controls="orderDetails-{{ $order->order_id }}">
                                                                 <i class="bi bi-eye me-1 text-primary"></i>Details
                                                             </button>
-                                                            @if($order->status == 'pending')
+                                                            @if($order->status == 'awaiting_pr')
+                                                                <button type="button"
+                                                                    class="btn btn-warning btn-sm rounded-pill px-3 fw-bold"
+                                                                    data-bs-toggle="modal" data-bs-target="#prNumberModal"
+                                                                    data-order-number="{{ $order->order_number }}"
+                                                                    data-deadline="{{ $order->pr_deadline?->format('j M Y') }}"
+                                                                    data-url="{{ route('customer.orders.prNumber', $order->order_id) }}">
+                                                                    <i class="bi bi-file-earmark-text me-1"></i>PR Number
+                                                                </button>
+                                                            @elseif($order->status == 'pending')
                                                                 <button type="button"
                                                                     class="btn btn-outline-danger btn-sm rounded-pill px-3"
                                                                     data-bs-toggle="modal" data-bs-target="#cancelOrderModal"
@@ -575,7 +598,7 @@
                                                                     data-url="{{ route('customer.orders.cancel', $order->order_id) }}">
                                                                     <i class="bi bi-x-lg me-1"></i>Cancel
                                                                 </button>
-                                                            @elseif(in_array($order->status, ['approved', 'processing', 'ready_for_pickup', 'completed']))
+                                                            @elseif(in_array($order->status, ['approved', 'processing', 'ready_for_pickup', 'for_delivery', 'completed']))
                                                                 {{-- Same action the card view offers, so the two
                                                                      layouts of this page stay in step. --}}
                                                                 <a href="{{ route('customer.orders.receipt', $order->order_id) }}"
@@ -620,6 +643,7 @@
     @endif
 
     @include('customer.order.components.cancel-modal')
+    @include('customer.order.components.pr-number-modal')
 
     @push('scripts')
         <script>

@@ -127,13 +127,28 @@ From here you can:
 ## 8. Checking out
 
 1. Tick the lines you want to buy. You can check out part of your cart and leave the rest.
-2. Review the preview slip, then confirm.
-3. The system re-verifies stock for every selected line, creates the order under a number like `ORDR-20260827-0001` (the date it was placed plus that day’s sequence), deducts the stock, and clears just those lines from your cart.
-4. You land on **My Orders**, and the order starts at **Pending**.
+2. Choose **how you're paying** — see below.
+3. Review the preview slip, then confirm.
+4. The system re-verifies stock for every selected line, creates the order under a number like `ORDR-20260827-0001` (the date it was placed plus that day’s sequence), deducts the stock, and clears just those lines from your cart.
+5. You land on **My Orders**.
 
 If anything sold out between adding and checking out, the whole checkout stops with a message naming the product, and nothing is charged or reserved.
 
-**Hand-off:** your new order notifies staff and admins straight away. An admin reviews it next — [Admin Guide §4](AdminUserGuide.md#4-reviewing-orders).
+### Paying at the CSPC Cashier
+
+The order starts at **Pending**, and staff and admins are notified straight away. An admin reviews it next — [Admin Guide §4](AdminUserGuide.md#4-reviewing-orders). Present your transaction slip at the cashier to pay.
+
+### Paying by Purchase Request
+
+For departments buying through CSPC procurement. The order starts at **Awaiting PR** and **nothing happens until you come back with a PR number** — FabLab isn't allowed to accept the order before procurement has approved the request.
+
+1. File your Purchase Request with **procurement@cspc.edu.ph**.
+2. When procurement issues your **PR number**, open the order in **My Orders** and press **Enter PR Number**.
+3. The order moves to **Pending** and an admin reviews it from there.
+
+Your items are held for **7 days** while you do this. If no PR number arrives by the deadline, the order closes on its own and the stock is released — you can place it again. You can also cancel it yourself while it's waiting.
+
+Once approved, a PR order is driven by paperwork rather than by the workshop queue: FabLab uploads the **Notice of Award** to start production, then the **Purchase Order** to send it out. Your order will show **For Delivery** rather than Ready for Pickup — a PR order is delivered, not collected.
 
 ---
 

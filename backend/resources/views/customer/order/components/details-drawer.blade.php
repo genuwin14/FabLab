@@ -4,11 +4,13 @@
         'pending' => 'bg-warning text-dark',
         'approved' => 'bg-info text-white',
         'processing' => 'bg-info text-white',
+        'awaiting_pr' => 'bg-secondary text-white',
         'ready_for_pickup' => 'bg-primary text-white',
+        'for_delivery' => 'bg-primary text-white',
         'completed' => 'bg-success text-white',
         'cancelled' => 'bg-danger text-white',
     ];
-    $statusLabel = ucwords(str_replace('_', ' ', $order->status));
+    $statusLabel = \App\Models\Order::statusLabel($order->status);
     $badgeClass = $statusColors[$order->status] ?? 'bg-secondary text-white';
 @endphp
 <div class="offcanvas offcanvas-end customer-order-details-drawer" tabindex="-1"
@@ -42,6 +44,26 @@
                 <span class="text-muted small font-monospace">{{ $order->payment_reference }}</span>
             @endif
         </div>
+
+        @if($order->isPurchaseRequest())
+            <div class="customer-order-details-summary mb-3">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="text-muted small">Paid by</span>
+                    <span class="fw-medium">Purchase Request</span>
+                </div>
+                @if($order->pr_number)
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="text-muted small">PR Number</span>
+                        <span class="fw-medium font-monospace">{{ $order->pr_number }}</span>
+                    </div>
+                @elseif($order->isAwaitingPr())
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="text-muted small">PR due by</span>
+                        <span class="fw-medium">{{ $order->pr_deadline?->format('j M Y') ?? '—' }}</span>
+                    </div>
+                @endif
+            </div>
+        @endif
 
         <div class="customer-order-details-summary mb-3">
             <div class="d-flex justify-content-between align-items-center mb-2">
@@ -93,7 +115,7 @@
 
         {{-- The transaction slip exists from approval onwards; this is where a
              customer looking at the order expects to find it. --}}
-        @if(in_array($order->status, ['approved', 'processing', 'ready_for_pickup', 'completed']))
+        @if(in_array($order->status, ['approved', 'processing', 'ready_for_pickup', 'for_delivery', 'completed']))
             <a href="{{ route('customer.orders.receipt', $order->order_id) }}" target="_blank"
                 class="btn w-100 rounded-pill fw-bold mt-3 d-flex align-items-center justify-content-center"
                 style="background-color: #0e2e45; color: #ffffff;">

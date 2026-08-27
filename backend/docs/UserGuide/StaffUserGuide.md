@@ -84,6 +84,18 @@ The pipeline is enforced, not just suggested: an order can only take its next st
 
 > Cancelling isn't part of the staff screens. If an order has to be stopped, ask an admin — they can reject it at review, or cancel it any time before hand-over, and the stock and materials come back automatically ([Admin Guide §4](AdminUserGuide.md#4-reviewing-orders)).
 
+### Purchase Request orders
+
+Some orders are bought through CSPC procurement instead of the cashier. These run on paperwork, and an admin drives the middle of them — so where you'd normally see a button, you'll see what the order is waiting on:
+
+| Shows | Meaning |
+| :--- | :--- |
+| **Awaiting PR number** | The customer hasn't returned their PR number yet. Nothing to do. |
+| **Awaiting NOA** | An admin needs to upload the Notice of Award to start production. |
+| **Awaiting PO** | An admin needs to upload the Purchase Order to release delivery. |
+
+Your one step is at the end: an order at **For Delivery** carries the usual **Complete** button. `for_delivery` is the PR path's version of `ready_for_pickup` — these orders are delivered rather than collected, so they never show as ready for pickup.
+
 **Hand-off:** the customer sees each of these statuses on their orders page and is told when to collect — [Customer Guide §9](CustomerUserGuide.md#9-tracking-your-orders).
 
 ---

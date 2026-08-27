@@ -134,6 +134,10 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/admin/orders', [\App\Http\Controllers\Admin\OrderController::class, 'index'])->name('admin.orders.index');
     Route::post('/admin/orders/{id}/review', [\App\Http\Controllers\Admin\OrderController::class, 'review'])->name('admin.orders.review');
     Route::post('/admin/orders/{id}/cancel', [\App\Http\Controllers\Admin\OrderController::class, 'cancel'])->name('admin.orders.cancel');
+    // Purchase Request paperwork: the NOA releases production, the PO delivery.
+    Route::post('/admin/orders/{id}/documents/{type}', [\App\Http\Controllers\Admin\OrderController::class, 'uploadDocument'])->name('admin.orders.documents.upload');
+    Route::get('/admin/orders/{id}/documents/{type}', [\App\Http\Controllers\Admin\OrderController::class, 'document'])->name('admin.orders.documents.show');
+    Route::post('/admin/orders/{id}/close-pr', [\App\Http\Controllers\Admin\OrderController::class, 'closePurchaseRequest'])->name('admin.orders.closePr');
     // Admin Routes/Sales
     Route::get('/admin/sales', [\App\Http\Controllers\Admin\SalesController::class, 'index'])->name('admin.sales.index');
     Route::get('/admin/sales/preview', [\App\Http\Controllers\Admin\SalesController::class, 'preview'])->name('admin.sales.preview');
@@ -228,6 +232,8 @@ Route::middleware(['auth:sanctum'])->group(function () {
     // Customer Routes/Orders
     Route::get('/customer/orders', [\App\Http\Controllers\Customer\OrderController::class, 'index'])->name('customer.orders.index');
     Route::post('/customer/orders/{id}/cancel', [\App\Http\Controllers\Customer\OrderController::class, 'cancel'])->name('customer.orders.cancel');
+    // Procurement's PR number is what releases a held order for review.
+    Route::post('/customer/orders/{id}/pr-number', [\App\Http\Controllers\Customer\OrderController::class, 'submitPrNumber'])->name('customer.orders.prNumber');
     Route::get('/customer/orders/{id}/receipt', [\App\Http\Controllers\Customer\OrderController::class, 'receipt'])->name('customer.orders.receipt');
     // Customer Routes/Customize
     Route::get('/customer/customize', [\App\Http\Controllers\Customer\CustomizeController::class, 'index'])->name('customer.customize.index');

@@ -37,7 +37,7 @@ class TransactionSlip
      * Statuses a slip exists for. An order only earns one once it is approved,
      * because the slip is what the customer hands the cashier.
      */
-    public const PRINTABLE_STATUSES = ["approved", "processing", "ready_for_pickup", "completed"];
+    public const PRINTABLE_STATUSES = ["approved", "processing", "ready_for_pickup", "for_delivery", "completed"];
 
     public static function pdf($order)
     {

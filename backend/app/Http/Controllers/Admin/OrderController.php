@@ -130,12 +130,14 @@ class OrderController extends Controller
 
         $order = Order::with(['user', 'orderItems.product.rawMaterials', 'orderItems.customDesign'])->findOrFail($id);
 
-        $cancellable = ['approved', 'processing', 'ready_for_pickup'];
+        $cancellable = ['approved', 'processing', 'ready_for_pickup', 'for_delivery'];
 
         if (! in_array($order->status, $cancellable, true)) {
-            $message = $order->status === 'pending'
-                ? "Order {$order->order_number} hasn't been reviewed yet — reject it from the review screen instead."
-                : "Order {$order->order_number} is {$this->label($order->status)} and can no longer be cancelled.";
+            $message = match ($order->status) {
+                'pending' => "Order {$order->order_number} hasn't been reviewed yet — reject it from the review screen instead.",
+                'awaiting_pr' => "Order {$order->order_number} is still waiting on its PR number — close it instead, which returns the stock.",
+                default => "Order {$order->order_number} is {$this->label($order->status)} and can no longer be cancelled.",
+            };
 
             return back()->with('error', $message);
         }
@@ -155,6 +157,114 @@ class OrderController extends Controller
         $this->notifyCustomer($order, $oldStatus, 'cancelled');
 
         return back()->with('success', "Order {$order->order_number} cancelled and stock returned.");
+    }
+
+    /**
+     * The two procurement documents a Purchase Request order needs, and what
+     * each one releases. Uploading is the act that moves the order, so these
+     * stay with the admin alongside review — staff never approve anything.
+     */
+    private const DOCUMENTS = [
+        'noa' => [
+            'column' => 'noa_path',
+            'label' => 'Notice of Award',
+            'from' => 'approved',
+            'to' => 'processing',
+            'unlocks' => 'production',
+        ],
+        'po' => [
+            'column' => 'po_path',
+            'label' => 'Purchase Order',
+            'from' => 'processing',
+            'to' => 'for_delivery',
+            'unlocks' => 'delivery',
+        ],
+    ];
+
+    /**
+     * Attach a Notice of Award or Purchase Order and advance the order.
+     */
+    public function uploadDocument(Request $request, $id, string $type)
+    {
+        abort_unless(isset(self::DOCUMENTS[$type]), 404);
+
+        $spec = self::DOCUMENTS[$type];
+
+        $request->validate([
+            'document' => 'required|file|mimes:pdf,jpg,jpeg,png|max:5120',
+        ]);
+
+        $order = Order::with('user')->findOrFail($id);
+
+        if (! $order->isPurchaseRequest()) {
+            return back()->with('error', "Order {$order->order_number} was paid at the cashier, so it has no {$spec['label']} step.");
+        }
+
+        if ($order->status !== $spec['from']) {
+            return back()->with('error', sprintf(
+                'The %s can only be uploaded while an order is %s. Order %s is %s.',
+                $spec['label'],
+                $this->label($spec['from']),
+                $order->order_number,
+                $this->label($order->status)
+            ));
+        }
+
+        // Procurement paperwork is not for the whole internet, so it goes to
+        // the private disk and is served through an authenticated route —
+        // unlike profile photos, which live on the public one.
+        $previous = $order->{$spec['column']};
+        $path = $request->file('document')->store("orders/{$order->order_id}", 'local');
+
+        $oldStatus = $order->status;
+
+        $order->update([
+            $spec['column'] => $path,
+            'status' => $spec['to'],
+        ]);
+
+        if ($previous) {
+            \Illuminate\Support\Facades\Storage::disk('local')->delete($previous);
+        }
+
+        $this->notifyCustomer($order, $oldStatus, $spec['to']);
+
+        return back()->with('success', "{$spec['label']} uploaded — order {$order->order_number} released for {$spec['unlocks']}.");
+    }
+
+    /**
+     * Stream a stored NOA or PO back. The admin middleware is the gate; the
+     * file never sits on a publicly reachable path.
+     */
+    public function document($id, string $type)
+    {
+        abort_unless(isset(self::DOCUMENTS[$type]), 404);
+
+        $order = Order::findOrFail($id);
+        $path = $order->{self::DOCUMENTS[$type]['column']};
+
+        abort_if(! $path || ! \Illuminate\Support\Facades\Storage::disk('local')->exists($path), 404);
+
+        return \Illuminate\Support\Facades\Storage::disk('local')->response($path);
+    }
+
+    /**
+     * Close an order that is still waiting on its PR number, before the
+     * deadline does it automatically.
+     */
+    public function closePurchaseRequest(Request $request, $id, \App\Services\PurchaseRequestService $purchaseRequests)
+    {
+        $request->validate([
+            'reason' => 'required|string',
+        ]);
+
+        $order = Order::with(['user', 'orderItems.product'])->findOrFail($id);
+
+        if (! $purchaseRequests->close($order, $request->reason)) {
+            return back()->with('error', "Order {$order->order_number} is {$this->label($order->status)}, not waiting on a PR number.");
+        }
+
+        return back()->with('success', "Order {$order->order_number} closed and stock returned.");
     }
 
     private function notifyCustomer(Order $order, string $oldStatus, string $newStatus): void

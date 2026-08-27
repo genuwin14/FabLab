@@ -70,6 +70,15 @@ class OrderController extends Controller
         'ready_for_pickup' => 'completed',
     ];
 
+    /**
+     * A Purchase Request order runs on paperwork instead. The admin's Notice
+     * of Award starts production and the Purchase Order releases it for
+     * delivery, so the only step left for staff is handing it over at the end.
+     */
+    private const PR_TRANSITIONS = [
+        'for_delivery' => 'completed',
+    ];
+
     public function updateStatus(Request $request, $id)
     {
         $request->validate([
@@ -80,14 +89,19 @@ class OrderController extends Controller
         $order = Order::with('user')->findOrFail($id);
         $oldStatus = $order->status;
 
-        $next = self::TRANSITIONS[$oldStatus] ?? null;
+        $transitions = $order->isPurchaseRequest() ? self::PR_TRANSITIONS : self::TRANSITIONS;
+        $next = $transitions[$oldStatus] ?? null;
 
         if ($request->status !== $next) {
             $readable = str_replace('_', ' ', $oldStatus);
 
-            return back()->with('error', $next === null
-                ? "Order {$order->order_number} is {$readable}; there is no next step for staff to take."
-                : "Order {$order->order_number} is {$readable} — the next step is " . str_replace('_', ' ', $next) . '.');
+            if ($next === null) {
+                return back()->with('error', $order->isPurchaseRequest() && in_array($oldStatus, ['approved', 'processing'], true)
+                    ? "Order {$order->order_number} is {$readable} and waiting on procurement paperwork — an admin uploads the next document."
+                    : "Order {$order->order_number} is {$readable}; there is no next step for staff to take.");
+            }
+
+            return back()->with('error', "Order {$order->order_number} is {$readable} — the next step is " . str_replace('_', ' ', $next) . '.');
         }
 
         $order->status = $request->status;

@@ -329,6 +329,11 @@ The first time a customer saves a **brand-new** design, staff and admins are not
 
 This is the spine of the system. Three roles touch one order, in a fixed sequence, and **no step can be skipped or reversed**.
 
+There are **two payment paths**, chosen by the customer at checkout, and they differ in who moves the order through the middle:
+
+- **CSPC Cashier** — the customer pays over the counter. Staff drive production.
+- **Purchase Request** — a department buys through CSPC procurement. The order is held until procurement issues a PR number, and the admin's paperwork drives production. See [Part C-PR](#part-c-pr--the-purchase-request-path).
+
 ```mermaid
 flowchart TD
     A["C · Checkout<br/>status: pending<br/>product stock ↓"] --> B{"A · Review"}
@@ -390,13 +395,78 @@ Each row offers **exactly one forward step**:
 | `ready_for_pickup` | **Complete** | `completed` | — |
 | `completed` / `cancelled` | *(none)* | — | — |
 
+**On a Purchase Request order this table does not apply.** The admin's paperwork drives the middle, so staff see "Awaiting NOA" / "Awaiting PO" instead of a button, and their only step is:
+
+| Current status | Button | Becomes | Requires |
+| :--- | :--- | :--- | :--- |
+| `for_delivery` | **Complete** | `completed` | — |
+
 Two things staff never do: **approve an order** (admin only) and **cancel one** (ask an admin). Materials were already deducted at approval — staff make what was approved, and correct stock figures if real consumption differed.
 
 Every transition notifies the customer.
 
 ## C4. What the customer sees
 
-**My Orders** shows each status as it changes, plus a notification per change. **Details** opens every line with its design preview, the payment reference, the total, and the receipt. The customer can cancel **only while Pending**.
+**My Orders** shows each status as it changes, plus a notification per change. **Details** opens every line with its design preview, the payment reference, the total, and the receipt. The customer can cancel **only while Pending** — or while **Awaiting PR**, before the request is pursued.
+
+---
+
+# Part C-PR — The Purchase Request path
+
+For departments buying through CSPC procurement rather than paying at the cashier. Money never changes hands at checkout; **paperwork moves the order instead**, and each document releases the next stage.
+
+```mermaid
+flowchart TD
+    A["C · Checkout, method: PR<br/>status: awaiting_pr<br/>product stock ↓ · clock starts"] --> P["C · Enter PR number<br/>status: pending"]
+    A -. "window runs out, or closed by hand" .-> X["status: cancelled<br/>product stock ↑"]
+    P --> B{"A · Review"}
+    B -- "Approve" --> C["status: approved<br/>materials + textures ↓"]
+    B -- "Reject + reason" --> X
+    C --> N["A · Upload NOA<br/>status: processing<br/>production starts"]
+    N --> O["A · Upload PO<br/>status: for_delivery"]
+    O --> F["S · Complete<br/>status: completed"]
+```
+
+**The rule that shapes everything else:** FabLab may not accept the order until procurement has approved the request, and a PR number is the only proof of that. So the order parks at `awaiting_pr` — *before* review — and no admin can approve it from there.
+
+## CPR1. Checkout — Customer
+
+Picking **Purchase Request** at `/customer/cart` holds the order at `awaiting_pr`. Product stock is deducted as normal, so the items are reserved while the request is processed. Staff and admins are **not** notified yet: there is nothing they can act on.
+
+The customer is sent to **procurement@cspc.edu.ph** to file the PR, with a deadline stamped on the order.
+
+## CPR2. The PR number — Customer
+
+The customer enters the number from **My Orders**. That moves the order to `pending`, and *this* is when staff and admins are notified. From here the order behaves like any other up to approval.
+
+A number submitted after the window has closed is refused.
+
+## CPR3. Notice of Award — Admin
+
+Uploading the **NOA** against an `approved` order moves it to `processing`: production starts. Staff cannot make this move — uploading is an approval in effect, so it sits with the admin next to review.
+
+## CPR4. Purchase Order — Admin
+
+Uploading the **PO** against a `processing` order moves it to `for_delivery`. The PO cannot be uploaded before the NOA.
+
+`for_delivery` is the PR path's counterpart to `ready_for_pickup` — a PR order is **delivered**, not collected. Staff take it from there with the usual **Complete**.
+
+## CPR5. When the window runs out
+
+| | |
+| :--- | :--- |
+| **Deadline** | `FABLAB_PR_DEADLINE_DAYS`, default **7 days**, stamped on each order at checkout |
+| **Automatic** | `orders:close-expired-prs`, scheduled daily at 00:15 |
+| **By hand** | Admin **Close** button on any order still `awaiting_pr` |
+| **Either way** | Order becomes `cancelled` and **product stock is returned** |
+
+Changing the config only affects orders placed afterwards — it never moves the goalposts on a customer who has already started. Run the sweep with `--dry-run` to see what would close without touching anything.
+
+Only finished-goods stock comes back. An order this early was never approved, so it never consumed raw materials or textures.
+
+## CPR6. Where the documents live
+
+NOA and PO files are stored on the **private** disk and served through an admin-only route — unlike profile photos, which sit on the public one. Procurement paperwork should not be reachable by URL alone.
 
 ---
 
@@ -731,6 +801,7 @@ To force the refused approval: edit the raw material and drop its stock below wh
 | Order number | `ORDR-YYYYMMDD-NNNN` | `ORDR-20260827-0001` |
 | Purchase order number | `PO-YYYYMMDD-XXXX` | `PO-20260804-A1B2` |
 | Payment reference | Whatever the CSPC Cashier issued | recorded by staff at Processing |
+| PR number | Whatever CSPC procurement issued | entered by the customer to release the order |
 
 ## K6. Who can do what
 

@@ -157,11 +157,42 @@
                                         <span class="fw-medium">₱0.00</span>
                                     </div>
 
-                                    <div class="alert alert-info border-0 rounded-3 mb-4 d-flex align-items-start">
+                                    <div class="mb-3">
+                                        <label class="form-label fw-semibold small text-uppercase text-muted">How are you paying?</label>
+
+                                        <div class="payment-method-option mb-2">
+                                            <input class="form-check-input" type="radio" name="payment_method"
+                                                id="paymentMethodCash" value="cash" checked>
+                                            <label class="form-check-label" for="paymentMethodCash">
+                                                <span class="fw-semibold">CSPC Cashier</span>
+                                                <span class="d-block text-muted">Pay over the counter against your transaction slip.</span>
+                                            </label>
+                                        </div>
+
+                                        <div class="payment-method-option">
+                                            <input class="form-check-input" type="radio" name="payment_method"
+                                                id="paymentMethodPr" value="pr">
+                                            <label class="form-check-label" for="paymentMethodPr">
+                                                <span class="fw-semibold">Purchase Request (PR)</span>
+                                                <span class="d-block text-muted">For departments buying through CSPC procurement.</span>
+                                            </label>
+                                        </div>
+                                    </div>
+
+                                    <div class="alert alert-info border-0 rounded-3 mb-4 d-flex align-items-start" data-notice="cash">
                                         <i class="bi bi-info-circle-fill me-2 fs-5 mt-1"></i>
                                         <div class="small">
                                             <strong>Payment Notice:</strong><br>
                                             After placing your order, a transaction slip will be generated. Please present this slip at the <strong>CSPC Cashier</strong> for payment.
+                                        </div>
+                                    </div>
+
+                                    <div class="alert alert-warning border-0 rounded-3 mb-4 d-flex align-items-start" data-notice="pr" hidden>
+                                        <i class="bi bi-clock-history me-2 fs-5 mt-1"></i>
+                                        <div class="small">
+                                            <strong>Purchase Request:</strong><br>
+                                            File your PR with <strong>{{ config('fablab.procurement_email') }}</strong>, then enter the PR number on your order.
+                                            You have <strong>{{ config('fablab.pr_deadline_days') }} days</strong> — the order is held until the number arrives, and closes if it doesn't.
                                         </div>
                                     </div>
 
@@ -195,6 +226,25 @@
     @include('customer.cart.components.approval-modal')
 
     <style>
+        .payment-method-option {
+            display: flex;
+            gap: 10px;
+            align-items: flex-start;
+            padding: 12px 14px;
+            border: 1px solid #dee2e6;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: border-color 0.15s ease, background-color 0.15s ease;
+        }
+        .payment-method-option:hover { background-color: #f8f9fa; }
+        .payment-method-option:has(input:checked) {
+            border-color: var(--bs-primary, #0e2e45);
+            background-color: rgba(14, 46, 69, 0.04);
+        }
+        .payment-method-option .form-check-input { margin-top: 0.15rem; flex-shrink: 0; }
+        .payment-method-option .form-check-label { cursor: pointer; font-size: 0.875rem; }
+        .payment-method-option .form-check-label .text-muted { font-size: 0.78rem; line-height: 1.3; }
+
         /* Hide spin buttons */
         .cart-quantity::-webkit-outer-spin-button,
         .cart-quantity::-webkit-inner-spin-button {
@@ -364,6 +414,14 @@
                 previewModal.show();
             });
 
+            // Swap the payment notice to match the chosen method.
+            $('input[name="payment_method"]').on('change', function () {
+                const method = $('input[name="payment_method"]:checked').val();
+                $('[data-notice]').each(function () {
+                    this.hidden = $(this).data('notice') !== method;
+                });
+            });
+
             // Confirm Place Order
             $('#confirmPlaceOrderBtn').on('click', function() {
                 const btn = $(this);
@@ -380,7 +438,8 @@
                     method: "POST",
                     data: {
                         _token: "{{ csrf_token() }}",
-                        selected_items: selectedItems
+                        selected_items: selectedItems,
+                        payment_method: $('input[name="payment_method"]:checked').val() || 'cash'
                     },
                     success: function(response) {
                         if (response.success) {
@@ -391,7 +450,13 @@
                                 previewModal.hide();
                             }
 
-                            // Show approval modal
+                            // Show approval modal, with the copy that matches
+                            // what the order is actually waiting on.
+                            const outcome = response.awaiting_pr ? 'pr' : 'cash';
+                            $('[data-checkout-outcome]').each(function () {
+                                this.hidden = $(this).data('checkout-outcome') !== outcome;
+                            });
+
                             const approvalModal = new bootstrap.Modal(document.getElementById('approvalModal'));
                             approvalModal.show();
                         } else {
