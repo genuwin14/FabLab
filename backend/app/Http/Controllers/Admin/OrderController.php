@@ -13,9 +13,14 @@ class OrderController extends Controller
 {
     public function index(Request $request)
     {
-        $search = $request->input('search', '');
-        $status = $request->input('status', '');
-        $date = $request->input('date', '');
+        // Cast rather than lean on input()'s default: submitting the filter form
+        // with a field cleared sends `status=`, which ConvertEmptyStringsToNull
+        // turns into null. The key is present, so the default never applies, and
+        // an un-cast null would sail past the !== '' guard into a
+        // `where status is null` that matches no order at all.
+        $search = (string) $request->input('search', '');
+        $status = (string) $request->input('status', '');
+        $date = (string) $request->input('date', '');
         $perPage = (int) $request->input('per_page', 10);
 
         $query = Order::with(['user', 'orderItems'])->latest();

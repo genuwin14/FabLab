@@ -43,40 +43,30 @@
                             'cancelled'        => ['label' => 'Cancelled',        'icon' => 'bi-x-circle-fill',     'bg' => 'rgba(220, 53, 69, 0.12)',  'color' => '#dc3545'],
                         ];
                     @endphp
-                    <div class="row g-3 mb-4">
+                    {{-- One row of eight: a count per status, read-only. Filtering
+                         is the dropdown's job, so these only report. --}}
+                    <div class="order-stat-grid mb-4">
                         @foreach($statusMeta as $key => $meta)
                             @php
                                 $isActive = $status === $key;
                                 $count = $statusCounts[$key] ?? 0;
-                                $cardUrl = $isActive
-                                    ? route('staff.orders.index')
-                                    : route('staff.orders.index', ['status' => $key]);
                             @endphp
-                            <div class="col-6 col-md-4 col-xl-2">
-                                <a href="{{ $cardUrl }}" class="text-decoration-none">
-                                    <div class="card border-0 shadow-sm rounded-4 h-100 order-stat-card {{ $isActive ? 'order-stat-card-active' : '' }}"
-                                        style="--stat-color: {{ $meta['color'] }};">
-                                        <div class="card-body p-3 position-relative">
-                                            <div class="d-flex align-items-center gap-2">
-                                                <div class="rounded-3 d-none d-lg-flex align-items-center justify-content-center flex-shrink-0"
-                                                    style="width: 42px; height: 42px; background-color: {{ $meta['bg'] }}; color: {{ $meta['color'] }};">
-                                                    <i class="bi {{ $meta['icon'] }}"></i>
-                                                </div>
-                                                <div class="d-flex flex-column lh-1">
-                                                    <span class="text-uppercase fw-bold text-muted"
-                                                        style="font-size: 0.65rem; letter-spacing: 0.04em;">
-                                                        {{ $meta['label'] }}
-                                                    </span>
-                                                    <h5 class="fw-bold text-dark mb-0 mt-1">{{ $count }}</h5>
-                                                </div>
-                                            </div>
-                                            <small class="text-muted position-absolute"
-                                                style="font-size: 0.65rem; bottom: 6px; right: 10px;">
-                                                {{ $isActive ? 'Filtered' : 'Click to filter' }}
-                                            </small>
+                            <div class="card border-0 shadow-sm rounded-4 order-stat-card {{ $isActive ? 'order-stat-card-active' : '' }}"
+                                style="--stat-color: {{ $meta['color'] }};">
+                                <div class="card-body p-3">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <div class="rounded-3 d-none d-xxl-flex align-items-center justify-content-center flex-shrink-0"
+                                            style="width: 38px; height: 38px; background-color: {{ $meta['bg'] }}; color: {{ $meta['color'] }};">
+                                            <i class="bi {{ $meta['icon'] }}"></i>
+                                        </div>
+                                        <div class="d-flex flex-column lh-1 flex-grow-1 min-w-0">
+                                            <span class="text-uppercase fw-bold text-muted order-stat-label">
+                                                {{ $meta['label'] }}
+                                            </span>
+                                            <h5 class="fw-bold text-dark mb-0 mt-1 order-stat-count">{{ $count }}</h5>
                                         </div>
                                     </div>
-                                </a>
+                                </div>
                             </div>
                         @endforeach
                     </div>
@@ -101,7 +91,7 @@
                                             <span class="input-group-text bg-white border-end-0 rounded-start-2 ps-3">
                                                 <i class="bi bi-search text-muted"></i>
                                             </span>
-                                            <input type="text" name="search" value="{{ $search }}"
+                                            <input type="text" name="search" value="{{ $search }}" autocomplete="off"
                                                 class="form-control border-start-0 rounded-end-2 ps-0"
                                                 placeholder="Search by Order ID, Ref No, or Customer...">
                                         </div>
@@ -118,7 +108,7 @@
                                     </button>
                                     <div class="dropdown-menu filter-menu border-0 shadow p-2 p-lg-0">
                                         <div class="d-flex flex-column flex-lg-row gap-2">
-                                            <select name="status" class="form-select rounded-2 w-100"
+                                            <select name="status" autocomplete="off" class="form-select rounded-2 w-100"
                                                 onchange="document.getElementById('orderFilterForm').submit()">
                                                 <option value="">All Statuses</option>
                                                 @foreach(['pending', 'awaiting_pr', 'approved', 'processing', 'ready_for_pickup', 'for_delivery', 'completed', 'cancelled'] as $s)
@@ -127,7 +117,7 @@
                                                     </option>
                                                 @endforeach
                                             </select>
-                                            <select name="date" class="form-select rounded-2 w-100"
+                                            <select name="date" autocomplete="off" class="form-select rounded-2 w-100"
                                                 onchange="document.getElementById('orderFilterForm').submit()">
                                                 <option value="">All Time</option>
                                                 <option value="today" {{ $date === 'today' ? 'selected' : '' }}>Today</option>
@@ -346,21 +336,37 @@
         /* ============================================
            Order Status Stat Cards
            ============================================ */
-        .order-stat-card {
-            transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
-            border: 1px solid transparent;
-            cursor: pointer;
+        /* Eight statuses across one row. Bootstrap's 12-column grid can't
+           divide by 8, so these lay out on their own grid. */
+        .order-stat-grid {
+            display: grid;
+            gap: 0.75rem;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
         }
-        .order-stat-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.08) !important;
-            border-color: var(--stat-color);
+        @media (min-width: 576px) {
+            .order-stat-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+        }
+        @media (min-width: 1200px) {
+            .order-stat-grid { grid-template-columns: repeat(8, minmax(0, 1fr)); }
+        }
+
+        /* Read-only now — filtering moved to the dropdown, so there's no hover
+           lift and no pointer. The ring stays: it shows which status the
+           dropdown is currently filtering by. */
+        .order-stat-card {
+            border: 1px solid transparent;
+            transition: border-color 0.15s ease, box-shadow 0.15s ease;
         }
         .order-stat-card-active {
             border-color: var(--stat-color) !important;
             box-shadow: 0 0 0 2px var(--stat-color) inset, 0 0.25rem 0.75rem rgba(0, 0, 0, 0.06) !important;
         }
-        .order-stat-card-active h5 { color: var(--stat-color) !important; }
+        .order-stat-card-active .order-stat-count { color: var(--stat-color) !important; }
+        .order-stat-label {
+            font-size: 0.62rem;
+            letter-spacing: 0.03em;
+            line-height: 1.15;
+        }
 
         /* ============================================
            Order Modal Theme
