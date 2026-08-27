@@ -73,21 +73,22 @@ class RawMaterialSeeder extends Seeder
                 'description' => 'Heat transfer paper for mugs, shirts and lanyard straps.',
                 'department' => $dcc,
             ],
-            [
-                'name' => 'Sublimation Ink (CMYK Set)',
+            // The four sublimation inks, stocked and reordered per colour
+            // rather than as a set — a print uses a different amount of each,
+            // so they empty at different rates and only the short one needs
+            // buying. Each starts at 800ml; the usage ledger then draws them
+            // down by different amounts, leaving magenta under its threshold
+            // and the other three comfortable.
+            ...array_map(fn (string $colour) => [
+                'name' => "Sublimation Ink ({$colour})",
                 'supplier_id' => $techSupplier->supplier_id ?? 1,
-                'cost_per_unit' => 1850.00,
-                // Starts at 10; the seeded usage ledger consumes 3 and writes
-                // off 1, leaving it sitting exactly on its threshold. That is
-                // the material to watch on a demo — low enough to be flagged
-                // for reorder, with a purchase order waiting to top it up, and
-                // still deep enough that approving orders keeps working.
-                'stock_quantity' => 10,
-                'low_stock_threshold' => 6,
-                'unit' => 'set',
-                'description' => 'Four-bottle CMYK ink set for the sublimation printer.',
+                'cost_per_unit' => 4.50,
+                'stock_quantity' => 800,
+                'low_stock_threshold' => 200,
+                'unit' => 'ml',
+                'description' => "Dye-sublimation {$colour} ink for the Epson L1800.",
                 'department' => $dcc,
-            ],
+            ], ['Cyan', 'Magenta', 'Yellow', 'Black']),
             [
                 'name' => 'PLA Filament Red 1.75mm',
                 'supplier_id' => $techSupplier->supplier_id ?? 1,

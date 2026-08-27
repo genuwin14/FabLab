@@ -15,42 +15,56 @@ use App\Models\RawMaterial;
  */
 class BOMSeeder extends Seeder
 {
+    /**
+     * Split a print's total ink across the four bottles, in millilitres.
+     *
+     * Not an even quarter each: the shop's artwork leans on cyan and magenta,
+     * uses a little less yellow and least black. That's what makes one colour
+     * reach its reorder point well before the others — which is the whole
+     * reason the inks are stocked separately rather than as a set.
+     */
+    private static function ink(float $millilitres): array
+    {
+        return [
+            'Sublimation Ink (Cyan)' => round($millilitres * 0.30, 2),
+            'Sublimation Ink (Magenta)' => round($millilitres * 0.30, 2),
+            'Sublimation Ink (Yellow)' => round($millilitres * 0.25, 2),
+            'Sublimation Ink (Black)' => round($millilitres * 0.15, 2),
+        ];
+    }
+
     public function run(): void
     {
         // quantity_required is per single unit of the product.
         $recipes = [
-            // Ink is measured in sets, so a single print is a small fraction of
-            // one. The quantities below are what it actually takes to print a
-            // piece — small enough that stock falls gradually rather than a set
-            // vanishing per mug.
             'IDL-LACE-STD' => [
                 'Lanyard Metal Clip' => 1,
                 'Woven Polyester Strap (16mm)' => 0.9,
                 'PVC ID Card Holder' => 1,
                 'Sublimation Transfer Paper (A4)' => 1,
-                'Sublimation Ink (CMYK Set)' => 0.002,
+                ...self::ink(2),
             ],
             'MG-WHT-11' => [
                 'Sublimation Transfer Paper (A4)' => 1,
-                'Sublimation Ink (CMYK Set)' => 0.004,
+                ...self::ink(4),
             ],
             'MG-BLK-11' => [
                 'Sublimation Transfer Paper (A4)' => 1,
-                'Sublimation Ink (CMYK Set)' => 0.004,
+                ...self::ink(4),
             ],
             'TS-CTN-WHT' => [
                 'Sublimation Transfer Paper (A4)' => 2,
-                'Sublimation Ink (CMYK Set)' => 0.008,
+                ...self::ink(8),
             ],
             // Three sheets rather than the tee's two: the polo is printed front
             // and back, and the collar takes a sheet of its own.
             'PL-PQE-WHT' => [
                 'Sublimation Transfer Paper (A4)' => 3,
-                'Sublimation Ink (CMYK Set)' => 0.012,
+                ...self::ink(12),
             ],
             'PL-PQE-NVY' => [
                 'Sublimation Transfer Paper (A4)' => 3,
-                'Sublimation Ink (CMYK Set)' => 0.012,
+                ...self::ink(12),
             ],
             'BK-BKLT-A5' => [
                 'Bond Paper (A4, 80gsm)' => 6,   // 24 pages, 4 up per sheet

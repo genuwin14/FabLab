@@ -37,8 +37,14 @@ class RawMaterialMovementSeeder extends Seeder
             // Mug and shirt printing.
             ['Sublimation Transfer Paper (A4)', StockMovementReason::Consumed, 220, 'Mug and shirt orders'],
             ['Sublimation Transfer Paper (A4)', StockMovementReason::Damaged, 25, 'Misfeed on the L1800'],
-            ['Sublimation Ink (CMYK Set)', StockMovementReason::Consumed, 3, 'Mug and shirt printing — semester run'],
-            ['Sublimation Ink (CMYK Set)', StockMovementReason::Damaged, 1, 'Magenta bottle split in storage'],
+            // Each ink empties at its own rate. Magenta gets the heaviest use
+            // and lost a bottle besides, so it is the one under its reorder
+            // point — and the only one the open purchase order is buying.
+            ['Sublimation Ink (Cyan)', StockMovementReason::Consumed, 320, 'Mug and shirt printing — semester run'],
+            ['Sublimation Ink (Magenta)', StockMovementReason::Consumed, 520, 'Mug and shirt printing — semester run'],
+            ['Sublimation Ink (Magenta)', StockMovementReason::Damaged, 100, 'Bottle split in storage'],
+            ['Sublimation Ink (Yellow)', StockMovementReason::Consumed, 280, 'Mug and shirt printing — semester run'],
+            ['Sublimation Ink (Black)', StockMovementReason::Consumed, 160, 'Mug and shirt printing — semester run'],
 
             // Book Production.
             ['Bond Paper (A4, 80gsm)', StockMovementReason::Consumed, 2400, 'Booklet run — 400 copies'],
