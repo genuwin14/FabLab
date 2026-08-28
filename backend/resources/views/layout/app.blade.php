@@ -110,8 +110,12 @@
             color: #0e2e45 !important;
         }
 
+        /* Through rgba, not a flat hex: a flat background-color would outrank
+           --bs-bg-opacity and paint every `bg-primary bg-opacity-10` tint solid
+           navy — which is how a badge ended up navy-on-navy. Untinted callers
+           still get #0e2e45, since Bootstrap leaves --bs-bg-opacity at 1. */
         .bg-primary {
-            background-color: #0e2e45 !important;
+            background-color: rgba(var(--bs-primary-rgb), var(--bs-bg-opacity, 1)) !important;
         }
 
         /* Accent/Gold Classes */

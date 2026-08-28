@@ -217,12 +217,19 @@
                                                         <td class="fw-bold text-dark small">{{ $order->user->fullname ?? 'N/A' }}</td>
                                                         <td>
                                                             @php
-                                                                $statusClass = 'bg-secondary text-secondary';
-                                                                if($order->status === 'pending') $statusClass = 'bg-warning text-warning';
-                                                                if($order->status === 'approved') $statusClass = 'bg-info text-info';
-                                                                if($order->status === 'processing') $statusClass = 'bg-primary text-primary';
+                                                                // Written out rather than built from bg-* + text-*
+                                                                // utilities: Bootstrap's .text-primary and .bg-primary
+                                                                // are the same navy, so that pairing hid the label on
+                                                                // its own background. These are the orders table's
+                                                                // colours, so a status reads the same on both screens.
+                                                                [$statusBg, $statusColor] = match ($order->status) {
+                                                                    'approved' => ['rgba(13, 110, 253, 0.12)', '#0d6efd'],
+                                                                    'processing' => ['rgba(13, 202, 240, 0.15)', '#087990'],
+                                                                    default => ['rgba(255, 193, 7, 0.18)', '#997404'],
+                                                                };
                                                             @endphp
-                                                            <span class="badge {{ $statusClass }} bg-opacity-10 rounded-pill px-2 py-1 text-uppercase" style="font-size: 0.65rem;">
+                                                            <span class="badge rounded-pill px-2 py-1 text-uppercase"
+                                                                style="font-size: 0.65rem; background-color: {{ $statusBg }}; color: {{ $statusColor }};">
                                                                 {{ str_replace('_', ' ', ucfirst($order->status)) }}
                                                             </span>
                                                         </td>

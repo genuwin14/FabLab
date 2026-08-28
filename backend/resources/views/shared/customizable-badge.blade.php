@@ -8,11 +8,11 @@
       $product  the row's product
 
     The colours are written out rather than built from bg-primary / bg-secondary
-    + bg-opacity-10 like the badges beside them. The layout overrides
-    `.bg-primary` with a flat `background-color … !important`, which outranks the
-    opacity variable and painted this badge solid navy with navy text on it —
-    unreadable. And `--bs-secondary` is the gold accent here, so the off state
-    came out looking like a warning rather than a neutral "no".
+    + bg-opacity-10 like the badges beside them. `--bs-secondary` is the gold
+    accent here, so an off state built that way came out looking like a warning
+    rather than a neutral "no". (The layout used to flatten `.bg-primary` with a
+    hex `!important` too, which outranked the opacity variable and painted this
+    badge navy-on-navy; it goes through rgba now, but the gold still stands.)
 --}}
 @if($product->is_customizable)
     <span class="badge rounded-pill fw-normal d-inline-flex align-items-center gap-1"
