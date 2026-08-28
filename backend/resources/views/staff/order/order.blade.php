@@ -366,6 +366,17 @@
            a light 5px corner instead of the full pill. */
         .order-action-btn { border-radius: 5px !important; }
 
+        /* Laravel's paginator spreads its summary and page links apart with
+           justify-content-between, stranding a gap inside our own bar. Sit
+           them side by side instead. */
+        .pagination-bar nav > div[class*="d-sm-flex"] {
+            flex: 0 0 auto !important;
+            justify-content: flex-end !important;
+            gap: 0.75rem;
+        }
+        .pagination-bar nav p { margin-bottom: 0; }
+        .pagination-bar .pagination { margin-bottom: 0; }
+
         .order-stat-label {
             font-size: 0.62rem;
             letter-spacing: 0.03em;
