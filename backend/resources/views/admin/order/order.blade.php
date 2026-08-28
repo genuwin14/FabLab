@@ -235,7 +235,7 @@
                                                         $orderJson = json_encode($order);
                                                     @endphp
                                                     @if($order->status == 'pending')
-                                                        <button class="btn btn-primary btn-sm rounded-pill px-3 fw-bold shadow-sm btn-review-order"
+                                                        <button class="btn btn-primary btn-sm order-action-btn px-3 fw-bold shadow-sm btn-review-order"
                                                             data-bs-toggle="modal" data-bs-target="#reviewOrderModal"
                                                             data-order="{{ $orderJson }}"
                                                             data-items="{{ $orderItemsJson }}">
@@ -244,10 +244,10 @@
                                                     @elseif($order->status == 'awaiting_pr')
                                                         {{-- Nothing to review yet. Closing it early is the only
                                                              call an admin can make before the window runs out. --}}
-                                                        <span class="badge bg-light text-muted border rounded-pill px-3 py-2 me-1 fw-semibold small">
+                                                        <span class="badge bg-light text-muted border order-action-btn px-3 py-2 me-1 fw-semibold small">
                                                             <i class="bi bi-clock-history me-1"></i>PR due {{ $order->pr_deadline?->format('j M') ?? '—' }}
                                                         </span>
-                                                        <button class="btn btn-outline-danger btn-sm rounded-pill px-3 fw-bold shadow-sm btn-close-pr me-1"
+                                                        <button class="btn btn-outline-danger btn-sm order-action-btn px-3 fw-bold shadow-sm btn-close-pr me-1"
                                                             data-bs-toggle="modal" data-bs-target="#closePrModal"
                                                             data-order-number="{{ $order->order_number }}"
                                                             data-url="{{ route('admin.orders.closePr', $order->order_id) }}">
@@ -258,7 +258,7 @@
                                                             {{-- The paperwork is what moves a PR order: the NOA
                                                                  starts production, the PO releases delivery. --}}
                                                             @php $docType = $order->status === 'approved' ? 'noa' : 'po'; @endphp
-                                                            <button class="btn btn-warning btn-sm rounded-pill px-3 fw-bold shadow-sm btn-upload-doc me-1"
+                                                            <button class="btn btn-warning btn-sm order-action-btn px-3 fw-bold shadow-sm btn-upload-doc me-1"
                                                                 data-bs-toggle="modal" data-bs-target="#uploadDocModal"
                                                                 data-order-number="{{ $order->order_number }}"
                                                                 data-doc-type="{{ $docType }}"
@@ -271,7 +271,7 @@
                                                                 {{-- Served through the admin route, never a public URL. --}}
                                                                 <a href="{{ route('admin.orders.documents.show', [$order->order_id, $type]) }}"
                                                                     target="_blank"
-                                                                    class="btn btn-light btn-sm rounded-pill px-3 fw-bold shadow-sm border me-1">
+                                                                    class="btn btn-light btn-sm order-action-btn px-3 fw-bold shadow-sm border me-1">
                                                                     <i class="bi bi-file-earmark-text me-1 text-primary"></i>{{ strtoupper($type) }}
                                                                 </a>
                                                             @endif
@@ -279,7 +279,7 @@
                                                         @if(in_array($order->status, ['approved', 'processing', 'ready_for_pickup', 'for_delivery']))
                                                             {{-- Past review but not yet handed over: cancelling here
                                                                  returns the stock and the materials it consumed. --}}
-                                                            <button class="btn btn-outline-danger btn-sm rounded-pill px-3 fw-bold shadow-sm btn-review-order me-1"
+                                                            <button class="btn btn-outline-danger btn-sm order-action-btn px-3 fw-bold shadow-sm btn-review-order me-1"
                                                                 data-bs-toggle="modal" data-bs-target="#reviewOrderModal"
                                                                 data-mode="cancel"
                                                                 data-order="{{ $orderJson }}"
@@ -287,7 +287,7 @@
                                                                 <i class="bi bi-x-lg me-1"></i>Cancel
                                                             </button>
                                                         @endif
-                                                        <button class="btn btn-light btn-sm rounded-pill px-3 fw-bold shadow-sm border"
+                                                        <button class="btn btn-light btn-sm order-action-btn px-3 fw-bold shadow-sm border"
                                                             data-bs-toggle="modal" data-bs-target="#viewOrderModal"
                                                             data-order="{{ $orderJson }}"
                                                             data-items="{{ $orderItemsJson }}">
@@ -373,6 +373,10 @@
             box-shadow: 0 0 0 2px var(--stat-color) inset, 0 0.25rem 0.75rem rgba(0, 0, 0, 0.06) !important;
         }
         .order-stat-card-active .order-stat-count { color: var(--stat-color) !important; }
+        /* The Actions column reads as a toolbar, not a row of tags:
+           a light 5px corner instead of the full pill. */
+        .order-action-btn { border-radius: 5px !important; }
+
         .order-stat-label {
             font-size: 0.62rem;
             letter-spacing: 0.03em;

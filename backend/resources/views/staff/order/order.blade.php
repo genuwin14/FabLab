@@ -260,26 +260,26 @@
                                                     @endphp
 
                                                     @if($order->status === 'pending')
-                                                        <span class="badge bg-light text-muted border rounded-pill px-3 py-2 me-1 fw-semibold small">
+                                                        <span class="badge bg-light text-muted border order-action-btn px-3 py-2 me-1 fw-semibold small">
                                                             <i class="bi bi-hourglass-split me-1"></i>Awaiting admin
                                                         </span>
                                                     @elseif($order->status === 'awaiting_pr')
-                                                        <span class="badge bg-light text-muted border rounded-pill px-3 py-2 me-1 fw-semibold small">
+                                                        <span class="badge bg-light text-muted border order-action-btn px-3 py-2 me-1 fw-semibold small">
                                                             <i class="bi bi-file-earmark-text me-1"></i>Awaiting PR number
                                                         </span>
                                                     @elseif($isPr && in_array($order->status, ['approved', 'processing']))
-                                                        <span class="badge bg-light text-muted border rounded-pill px-3 py-2 me-1 fw-semibold small">
+                                                        <span class="badge bg-light text-muted border order-action-btn px-3 py-2 me-1 fw-semibold small">
                                                             <i class="bi bi-hourglass-split me-1"></i>Awaiting {{ $order->status === 'approved' ? 'NOA' : 'PO' }}
                                                         </span>
                                                     @elseif($nextStatus)
-                                                        <button class="btn {{ $btnClass }} btn-sm rounded-pill px-3 fw-bold shadow-sm btn-update-status me-1"
+                                                        <button class="btn {{ $btnClass }} btn-sm order-action-btn px-3 fw-bold shadow-sm btn-update-status me-1"
                                                             data-id="{{ $order->order_id }}" data-status="{{ $order->status }}"
                                                             data-next-status="{{ $nextStatus }}">
                                                             <i class="bi bi-arrow-right-circle me-1"></i>{{ $btnLabel }}
                                                         </button>
                                                     @endif
 
-                                                    <button class="btn btn-light btn-sm rounded-pill px-3 fw-bold shadow-sm border btn-view-order"
+                                                    <button class="btn btn-light btn-sm order-action-btn px-3 fw-bold shadow-sm border btn-view-order"
                                                         data-order='@json($order)'
                                                         data-items='@json($order->orderItems)'>
                                                         <i class="bi bi-eye me-1 text-primary"></i>View
@@ -362,6 +362,10 @@
             box-shadow: 0 0 0 2px var(--stat-color) inset, 0 0.25rem 0.75rem rgba(0, 0, 0, 0.06) !important;
         }
         .order-stat-card-active .order-stat-count { color: var(--stat-color) !important; }
+        /* The Actions column reads as a toolbar, not a row of tags:
+           a light 5px corner instead of the full pill. */
+        .order-action-btn { border-radius: 5px !important; }
+
         .order-stat-label {
             font-size: 0.62rem;
             letter-spacing: 0.03em;
