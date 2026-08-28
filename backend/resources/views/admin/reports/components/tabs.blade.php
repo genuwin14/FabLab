@@ -185,6 +185,15 @@
 
         <div class="d-flex align-items-stretch gap-2 flex-shrink-0 report-section-tabs-actions mb-2">
             <span class="report-section-tabs-divider"></span>
+            {{-- The reverse of the two exports beside it: reads an old report
+                 back in. Word only — see the modal for why. --}}
+            <button type="button"
+                class="btn btn-light border d-flex align-items-center gap-2 rounded-2 px-3"
+                data-bs-toggle="modal" data-bs-target="#importReportModal"
+                title="Import an old Inventory of Materials report">
+                <i class="bi bi-upload text-primary"></i>
+                <span class="small fw-bold d-none d-lg-inline">Import Report</span>
+            </button>
             <a href="{{ route('admin.reports.materials.pdf', request()->query()) }}"
                 class="btn btn-danger d-flex align-items-center gap-2 rounded-2 px-3"
                 data-bs-toggle="tooltip" data-bs-placement="bottom"

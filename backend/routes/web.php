@@ -118,6 +118,11 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/admin/reports/materials/preview', [\App\Http\Controllers\Admin\ReportController::class, 'previewMaterials'])->name('admin.reports.materials.preview');
     Route::get('/admin/reports/materials/pdf', [\App\Http\Controllers\Admin\ReportController::class, 'exportMaterialsPdf'])->name('admin.reports.materials.pdf');
     Route::get('/admin/reports/materials/docx', [\App\Http\Controllers\Admin\ReportController::class, 'exportMaterialsDocx'])->name('admin.reports.materials.docx');
+    // Importing an old report back in: upload, review, confirm.
+    Route::post('/admin/reports/materials/import', [\App\Http\Controllers\Admin\MaterialsImportController::class, 'store'])->name('admin.reports.materials.import');
+    Route::get('/admin/reports/materials/import/preview', [\App\Http\Controllers\Admin\MaterialsImportController::class, 'preview'])->name('admin.reports.materials.import.preview');
+    Route::post('/admin/reports/materials/import/confirm', [\App\Http\Controllers\Admin\MaterialsImportController::class, 'confirm'])->name('admin.reports.materials.import.confirm');
+    Route::post('/admin/reports/materials/import/discard', [\App\Http\Controllers\Admin\MaterialsImportController::class, 'discard'])->name('admin.reports.materials.import.discard');
     Route::get('/admin/reports/equipment', [\App\Http\Controllers\Admin\ReportController::class, 'equipment'])->name('admin.reports.equipment');
     Route::get('/admin/reports/equipment/preview', [\App\Http\Controllers\Admin\ReportController::class, 'previewEquipment'])->name('admin.reports.equipment.preview');
     Route::get('/admin/reports/equipment/pdf', [\App\Http\Controllers\Admin\ReportController::class, 'exportEquipmentPdf'])->name('admin.reports.equipment.pdf');

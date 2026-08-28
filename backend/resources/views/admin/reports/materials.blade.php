@@ -238,6 +238,7 @@
     </div>
 
     @include('admin.reports.components.export-confirm-modal')
+    @include('admin.reports.components.import-modal')
 
     <script>
         (function () {

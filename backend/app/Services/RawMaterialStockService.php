@@ -171,6 +171,75 @@ class RawMaterialStockService
     }
 
     /**
+     * Restate a material's figures from an imported historical report.
+     *
+     * An old report is a snapshot, not an event: its Consumed column is the
+     * running total as of that date, and its Available column is already net of
+     * everything beside it. So this does not re-consume anything — it writes the
+     * difference between what the report says and what the row currently holds,
+     * and leaves stock alone until the final correction sets it to the reported
+     * figure. Recording the counters as ordinary usage instead would take the
+     * consumed quantity off the shelf a second time.
+     *
+     * It still goes through the ledger rather than updating the columns, because
+     * the counters having exactly one source is the whole point of this class.
+     * A restatement that lowers a counter is written as a reversal, the same
+     * shape reverse() uses, so the Usage Log never shows a decrease dressed up
+     * as consumption.
+     *
+     * @param  array<string, float>  $counters  keyed on_display|sponsored|damaged|consumed
+     * @param  array{note?: string|null, user_id?: int|null}  $context
+     * @return list<RawMaterialMovement>  every row written, in the order written
+     */
+    public function openingBalance(RawMaterial $material, array $counters, float $available, array $context = []): array
+    {
+        if ($available < 0) {
+            throw new RuntimeException('An imported report cannot leave stock below zero.');
+        }
+
+        return DB::transaction(function () use ($material, $counters, $available, $context) {
+            $material = $this->lock($material);
+            $written = [];
+
+            foreach ($counters as $key => $reported) {
+                $reason = StockMovementReason::from($key);
+                $column = $reason->bucketColumn();
+                $delta = round($reported - (float) $material->{$column}, 2);
+
+                if ($delta == 0.0) {
+                    continue;
+                }
+
+                $written[] = $this->write(
+                    material: $material,
+                    reason: $delta > 0 ? $reason : StockMovementReason::Reversal,
+                    quantity: abs($delta),
+                    stockDelta: 0.0,
+                    bucketColumn: $column,
+                    bucketDelta: $delta,
+                    context: $context,
+                );
+            }
+
+            $stockDelta = round($available - (float) $material->stock_quantity, 2);
+
+            if ($stockDelta != 0.0) {
+                $written[] = $this->write(
+                    material: $material,
+                    reason: StockMovementReason::Correction,
+                    quantity: abs($stockDelta),
+                    stockDelta: $stockDelta,
+                    bucketColumn: null,
+                    bucketDelta: 0.0,
+                    context: $context,
+                );
+            }
+
+            return $written;
+        });
+    }
+
+    /**
      * Apply the movement and write its ledger row. Callers have already
      * validated; this just does the arithmetic in one place.
      *
