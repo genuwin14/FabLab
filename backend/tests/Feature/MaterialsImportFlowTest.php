@@ -127,6 +127,37 @@ class MaterialsImportFlowTest extends TestCase
         unlink($path);
     }
 
+    /**
+     * The first real import matched nothing at all, and the screen reported
+     * every row as "No change" — hiding the only information it had.
+     */
+    public function test_an_unmatched_row_shows_the_figures_the_report_carried(): void
+    {
+        $path = (new MaterialsDocxGenerator([
+            'Woodworks' => [
+                ['name' => '3/4 MARINE PLYWOOD', 'unit' => 'sheet', 'on_display' => 0.0, 'sponsored' => 0.0,
+                 'damaged' => 0.0, 'consumed' => 7.0, 'available' => 23.0],
+            ],
+        ], 'all', now()))->save();
+
+        $this->actingAs($this->admin)->post(route('admin.reports.materials.import'), [
+            'report' => new UploadedFile($path, 'inventory-2019.docx', null, null, true),
+        ]);
+
+        $response = $this->actingAs($this->admin)->get(route('admin.reports.materials.import.preview'));
+
+        $response->assertOk()
+            ->assertSee('3/4 MARINE PLYWOOD')
+            ->assertSee('Not found')
+            // The report said 23 available and 7 consumed; both must be legible.
+            ->assertSee('import-change-reported-value')
+            ->assertSeeInOrder(['Consumed', '7', 'Available', '23'], false)
+            ->assertDontSee('No change')
+            // And the footer must not call an import that matched nothing clean.
+            ->assertDontSee('Every item in this report already matches')
+            ->assertSee('None of these 1 rows matched an existing item');
+    }
+
     public function test_the_preview_is_not_reachable_without_an_upload(): void
     {
         $this->actingAs($this->admin)

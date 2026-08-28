@@ -49,6 +49,10 @@
                             'consumed' => 'Consumed',
                             'available' => 'Available',
                         ];
+
+                        // Quantities are held to two decimals but are usually
+                        // whole, so trim the zeros rather than print "1,008.00".
+                        $fmt = fn ($value) => rtrim(rtrim(number_format((float) $value, 2), '0'), '.');
                     @endphp
 
                     <div class="d-flex align-items-end justify-content-between flex-wrap gap-3 mb-3 pb-2 border-bottom">
@@ -165,14 +169,27 @@
                                                         @foreach($item['changes'] as $field => $change)
                                                             <span class="import-change" title="{{ $labels[$field] ?? $field }}">
                                                                 <span class="import-change-label">{{ $shortLabels[$field] ?? $field }}</span>
-                                                                <span class="import-change-from">{{ rtrim(rtrim(number_format($change['from'], 2), '0'), '.') }}</span>
+                                                                <span class="import-change-from">{{ $fmt($change['from']) }}</span>
                                                                 <i class="bi bi-arrow-right"></i>
-                                                                <span class="import-change-to">{{ rtrim(rtrim(number_format($change['to'], 2), '0'), '.') }}</span>
+                                                                <span class="import-change-to">{{ $fmt($change['to']) }}</span>
                                                             </span>
                                                         @endforeach
                                                     </div>
-                                                @else
+                                                @elseif($item['status'] === 'update' || $item['status'] === 'unchanged')
                                                     <span class="text-muted">No change</span>
+                                                @else
+                                                    {{-- Nothing to compare against, so show what the report itself
+                                                         said. Without this a row that matched nothing reads as
+                                                         "No change" and hides the very figures being asked about. --}}
+                                                    <div class="d-flex flex-wrap gap-1">
+                                                        @foreach($shortLabels as $field => $short)
+                                                            <span class="import-change import-change-reported"
+                                                                title="{{ $labels[$field] ?? $field }} — as printed in the report">
+                                                                <span class="import-change-label">{{ $short }}</span>
+                                                                <span class="import-change-reported-value">{{ $fmt($item['values'][$field] ?? 0) }}</span>
+                                                            </span>
+                                                        @endforeach
+                                                    </div>
                                                 @endif
 
                                                 @foreach($item['notes'] as $note)
@@ -209,9 +226,16 @@
                                     Applying writes {{ $summary['update'] }}
                                     {{ $summary['update'] === 1 ? 'item' : 'items' }}. Raw materials are
                                     written through the usage ledger, so the change stays visible in the Usage Log.
-                                @else
+                                @elseif($summary['unchanged'] === $summary['total'])
                                     <i class="bi bi-check-circle me-1 text-success"></i>
-                                    Nothing in this report differs from what is already held.
+                                    Every item in this report already matches what is held. Nothing to apply.
+                                @else
+                                    {{-- Zero updates because nothing matched is a different situation from
+                                         zero updates because everything agreed, and saying "nothing differs"
+                                         for both would report an empty import as a clean one. --}}
+                                    <i class="bi bi-exclamation-triangle me-1" style="color: #997404;"></i>
+                                    None of these {{ $summary['total'] }} rows matched an existing item, so there is
+                                    nothing to apply. The report names inventory this system does not hold yet.
                                 @endif
                             </div>
                             <div class="d-flex gap-2">
@@ -269,6 +293,14 @@
         .import-change-from { color: #6c757d; text-decoration: line-through; }
         .import-change-to { color: #0e2e45; font-weight: 700; }
         .import-change i { font-size: 0.6rem; color: #adb5bd; }
+
+        /* A figure read off the report with nothing to compare it to. Dashed,
+           so it does not read as a change that is going to be written. */
+        .import-change-reported {
+            background-color: #fff;
+            border-style: dashed;
+        }
+        .import-change-reported-value { color: #6c757d; font-weight: 700; }
 
         .import-apply-btn {
             background-color: #0e2e45;
