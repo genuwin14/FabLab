@@ -145,12 +145,12 @@ class MaterialsDocxParser
 
             $rows[] = [
                 'name' => $name,
-                'unit' => isset($map['unit']) ? trim($cells[$map['unit']]) : '',
-                'on_display' => $this->number($cells, $map, 'on_display'),
-                'sponsored' => $this->number($cells, $map, 'sponsored'),
-                'damaged' => $this->number($cells, $map, 'damaged'),
-                'consumed' => $this->number($cells, $map, 'consumed'),
-                'available' => $this->number($cells, $map, 'available'),
+                'unit' => $this->unit($cells, $map),
+                'on_display' => $this->number($cells, $map, 'on_display', $name, $warnings),
+                'sponsored' => $this->number($cells, $map, 'sponsored', $name, $warnings),
+                'damaged' => $this->number($cells, $map, 'damaged', $name, $warnings),
+                'consumed' => $this->number($cells, $map, 'consumed', $name, $warnings),
+                'available' => $this->number($cells, $map, 'available', $name, $warnings),
                 'department' => $department,
             ];
         }
@@ -210,20 +210,79 @@ class MaterialsDocxParser
     }
 
     /**
+     * The unit an item is measured in.
+     *
+     * The two shapes seen in real reports: a Unit column of its own, or — in the
+     * Book Production and Woodworks sections, which are six columns wide rather
+     * than seven — no such column, with the unit written into the quantity cells
+     * instead ("55 pcs", "70 yards"). The first quantity that carries one wins.
+     *
      * @param  list<string>  $cells
      * @param  array<string, int>  $map
      */
-    private function number(array $cells, array $map, string $field): float
+    private function unit(array $cells, array $map): string
+    {
+        if (isset($map['unit']) && ($declared = trim($cells[$map['unit']])) !== '') {
+            return $declared;
+        }
+
+        foreach (['available', 'consumed', 'damaged', 'sponsored', 'on_display'] as $field) {
+            if (! isset($map[$field])) {
+                continue;
+            }
+
+            // Either a figure or a dash can carry the unit: an item that is out
+            // of everything still says what it is out of ("- gal").
+            if (preg_match('/^(?:[\d,]+(?:\.\d+)?|[-–—])\s*([A-Za-z][A-Za-z.\/]*)\.?$/u', trim($cells[$map[$field]]), $match)) {
+                return $match[1];
+            }
+        }
+
+        return '';
+    }
+
+    /**
+     * Read a quantity out of a cell.
+     *
+     * Real reports do not hold bare numbers. A figure arrives as "516 pcs" or
+     * "70 yards", with the unit inside the cell; over 999 it carries a thousands
+     * separator; and "none" is written as a dash, which the report's own footnote
+     * says may equally mean "no data available". So the leading number is taken
+     * and the rest discarded — requiring the whole cell to be numeric read every
+     * "516 pcs" in the file as zero, which would have emptied the inventory
+     * rather than filled it.
+     *
+     * A cell that is neither empty, a dash, nor led by a number is reported
+     * instead of quietly becoming zero.
+     *
+     * @param  list<string>  $cells
+     * @param  array<string, int>  $map
+     * @param  list<string>  $warnings
+     */
+    private function number(array $cells, array $map, string $field, string $itemName, array &$warnings): float
     {
         if (! isset($map[$field])) {
             return 0.0;
         }
 
-        // The report prints an em dash for "none" and a thousands separator on
-        // anything over 999, so neither survives as a number on its own.
-        $cleaned = str_replace([',', ' ', "\u{00A0}"], '', trim($cells[$map[$field]]));
+        $raw = trim($cells[$map[$field]]);
 
-        return is_numeric($cleaned) ? (float) $cleaned : 0.0;
+        // Empty, or a dash — any of the ones Word substitutes as you type. The
+        // unit may still be spelled out beside it ("- gal"), which is none of
+        // something rather than an unreadable cell.
+        if ($raw === '' || preg_match('/^[-–—]\s*[A-Za-z.\/]*\.?$/u', $raw)) {
+            return 0.0;
+        }
+
+        $cleaned = str_replace([',', ' ', "\u{00A0}"], '', $raw);
+
+        if (preg_match('/^\d+(?:\.\d+)?/', $cleaned, $match)) {
+            return (float) $match[0];
+        }
+
+        $warnings[] = sprintf('Could not read a number from "%s" for %s — treated as 0.', $raw, $itemName);
+
+        return 0.0;
     }
 
     /**

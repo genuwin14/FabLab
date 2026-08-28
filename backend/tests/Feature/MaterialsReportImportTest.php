@@ -81,6 +81,155 @@ class MaterialsReportImportTest extends TestCase
         $this->assertSame(45.5, $planks['available']);
     }
 
+    /**
+     * The client's own January 2024 report, whose cells are the reason these
+     * cases exist. Nothing in it is a bare number: a figure arrives as "516 pcs"
+     * or "70 yards", and requiring the whole cell to be numeric read every one
+     * of them as zero — an import that would have emptied the inventory while
+     * reporting success.
+     */
+    public function test_it_reads_a_quantity_that_carries_its_unit_inside_the_cell(): void
+    {
+        $parser = new MaterialsDocxParser();
+        $read = fn (array $cells) => $this->invokeNumber($parser, $cells);
+
+        $this->assertSame(516.0, $read(['available' => '516 pcs']));
+        $this->assertSame(4050.0, $read(['available' => '4,050']));
+        $this->assertSame(70.0, $read(['available' => '70 yards']));
+        $this->assertSame(2850.0, $read(['available' => '2850 pcs']));
+        $this->assertSame(0.5, $read(['available' => '0.5 gal']));
+
+        // Nothing, in each of the shapes the report writes it.
+        $this->assertSame(0.0, $read(['available' => '']));
+        $this->assertSame(0.0, $read(['available' => '-']));
+        $this->assertSame(0.0, $read(['available' => '—']));
+        // A dash still names its unit when an item is out of everything.
+        $this->assertSame(0.0, $read(['available' => '- gal']));
+    }
+
+    /**
+     * The Book Production and Woodworks sections are six columns wide, not
+     * seven — they have no Unit column at all, and say "55 pcs" instead.
+     */
+    public function test_it_takes_the_unit_from_the_quantity_when_there_is_no_unit_column(): void
+    {
+        $path = tempnam(sys_get_temp_dir(), 'sixcol') . '.docx';
+        $this->buildSixColumnReport($path);
+
+        $rows = (new MaterialsDocxParser())->parse($path)['rows'];
+        unlink($path);
+
+        $this->assertSame('Woodworks', $rows[0]['department']);
+        $this->assertSame('pcs', $rows[0]['unit']);
+        $this->assertSame(45.0, $rows[0]['consumed']);
+        $this->assertSame(55.0, $rows[0]['available']);
+
+        $this->assertSame('gal', $rows[1]['unit'], 'a dash still names the unit');
+        $this->assertSame(0.0, $rows[1]['available']);
+    }
+
+    /**
+     * The real file carries its Machinery and Equipment inventory in the same
+     * document. Those are a different report with different columns, and must
+     * not be read in as materials belonging to the last department heading.
+     */
+    public function test_it_ignores_a_table_that_is_not_an_inventory_of_materials(): void
+    {
+        $word = new \PhpOffice\PhpWord\PhpWord();
+        $section = $word->addSection();
+
+        $section->addText('PEDS Woodworks');
+        $materials = $section->addTable();
+        foreach ([
+            ['Item', 'No. of Units on Display', 'No. of Sponsored Units', 'No. of Damaged Units', 'No. of Units Consumed', 'Available Units for Production'],
+            ['CONCEALED HINGES', '', '', '', '12 pcs', '87 pcs'],
+        ] as $cells) {
+            $materials->addRow();
+            foreach ($cells as $cell) {
+                $materials->addCell(1500)->addText($cell);
+            }
+        }
+
+        $section->addText('INVENTORY OF MACHINERY AND EQUIPMENT');
+        $equipment = $section->addTable();
+        foreach ([
+            ['Machinery and Equipment', 'Brand', 'Property No.', 'Date Acquired', 'Cost', 'Status'],
+            ['Mug Press', 'CUYI', 'ICS-06-01-21', 'June 1, 2021', 'P3,750.00', 'Non-Serviceable'],
+        ] as $cells) {
+            $equipment->addRow();
+            foreach ($cells as $cell) {
+                $equipment->addCell(1500)->addText($cell);
+            }
+        }
+
+        $path = tempnam(sys_get_temp_dir(), 'mixed') . '.docx';
+        \PhpOffice\PhpWord\IOFactory::createWriter($word, 'Word2007')->save($path);
+
+        $rows = (new MaterialsDocxParser())->parse($path)['rows'];
+        unlink($path);
+
+        $this->assertCount(1, $rows);
+        $this->assertSame('CONCEALED HINGES', $rows[0]['name']);
+    }
+
+    public function test_a_cell_it_cannot_read_is_reported_rather_than_silently_zeroed(): void
+    {
+        $path = tempnam(sys_get_temp_dir(), 'odd') . '.docx';
+        $this->buildSixColumnReport($path, third: ['MYSTERY ITEM', '', '', '', 'see attached', 'ask Ma\'am']);
+
+        $result = (new MaterialsDocxParser())->parse($path);
+        unlink($path);
+
+        $this->assertSame(0.0, $result['rows'][2]['available']);
+        $this->assertNotEmpty($result['warnings']);
+        $this->assertStringContainsString('MYSTERY ITEM', implode(' ', $result['warnings']));
+    }
+
+    /**
+     * Builds the six-column shape used by Book Production and Woodworks.
+     */
+    private function buildSixColumnReport(string $path, ?array $third = null): void
+    {
+        $word = new \PhpOffice\PhpWord\PhpWord();
+        $section = $word->addSection();
+        $section->addText('PEDS Woodworks');
+
+        $rows = [
+            ['Item', 'No. of Units on Display', 'No. of Sponsored Units', 'No. of Damaged Units', 'No. of Units Consumed', 'Available Units for Production'],
+            ['3/4 MARINE PLYWOOD', '', '', '', '45 pcs', '55 pcs'],
+            ['BOYSEN SANDING SEALER', '', '', '', '1 gal', '- gal'],
+        ];
+
+        if ($third !== null) {
+            $rows[] = $third;
+        }
+
+        $table = $section->addTable();
+        foreach ($rows as $cells) {
+            $table->addRow();
+            foreach ($cells as $cell) {
+                $table->addCell(1500)->addText($cell);
+            }
+        }
+
+        \PhpOffice\PhpWord\IOFactory::createWriter($word, 'Word2007')->save($path);
+    }
+
+    /**
+     * number() is private and takes the cell list positionally; this drives it
+     * through a one-row document so the cases above read as data, not plumbing.
+     */
+    private function invokeNumber(MaterialsDocxParser $parser, array $values): float
+    {
+        $path = tempnam(sys_get_temp_dir(), 'cell') . '.docx';
+        $this->buildSixColumnReport($path, third: ['PROBE', '', '', '', '', $values['available']]);
+
+        $rows = $parser->parse($path)['rows'];
+        unlink($path);
+
+        return $rows[2]['available'];
+    }
+
     public function test_it_rejects_a_file_that_is_not_a_docx(): void
     {
         $path = tempnam(sys_get_temp_dir(), 'fake') . '.docx';
