@@ -40,7 +40,7 @@ class MaterialsImportPlanner
 
         $items = [];
 
-        foreach ($rows as $row) {
+        foreach ($rows as $index => $row) {
             $key = $this->key($row['name']);
 
             $matches = array_values(array_filter([
@@ -49,11 +49,18 @@ class MaterialsImportPlanner
                 $textures[$key] ?? null,
             ]));
 
-            $items[] = match (count($matches)) {
+            $item = match (count($matches)) {
                 0 => $this->unmatched($row),
                 1 => $this->matched($row, $matches[0]),
                 default => $this->ambiguous($row, $matches),
             };
+
+            // The row's position in the file, so the preview's checkboxes and
+            // the apply step are talking about the same row. Names are not
+            // usable as keys here — a report may print one twice.
+            $item['index'] = $index;
+
+            $items[] = $item;
         }
 
         return ['items' => $items, 'summary' => $this->summarise($items)];

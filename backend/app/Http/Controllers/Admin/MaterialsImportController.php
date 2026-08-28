@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Supplier;
 use App\Services\Reports\Import\MaterialsDocxParser;
 use App\Services\Reports\Import\MaterialsImportApplier;
 use App\Services\Reports\Import\MaterialsImportPlanner;
@@ -99,6 +100,9 @@ class MaterialsImportController extends Controller
             'summary' => $plan['summary'],
             'filename' => $request->session()->get(self::FILENAME_KEY, 'report.docx'),
             'warnings' => $request->session()->get('parse_warnings', []),
+            // Creating an item needs a supplier: the column is a required
+            // foreign key and the materials list reads through it unguarded.
+            'suppliers' => Supplier::orderBy('name')->get(),
         ]);
     }
 
@@ -117,10 +121,34 @@ class MaterialsImportController extends Controller
 
         $filename = $request->session()->get(self::FILENAME_KEY, 'report.docx');
 
-        $result = $this->applier->apply($this->planner->plan($rows), [
-            'user_id' => Auth::id(),
-            'note' => 'Imported from ' . $filename,
+        $validator = Validator::make($request->all(), [
+            'create' => ['sometimes', 'array'],
+            'create.*' => ['integer', 'min:0'],
+            // Required only when something is actually being created, so an
+            // import that just updates existing items never asks for one.
+            'supplier_id' => ['required_with:create', 'nullable', 'integer', 'exists:suppliers,supplier_id'],
+        ], [
+            'supplier_id.required_with' => 'Choose which supplier the new items should be filed under.',
+            'supplier_id.exists' => 'That supplier no longer exists.',
         ]);
+
+        if ($validator->fails()) {
+            return back()->with('error', $validator->errors()->first());
+        }
+
+        $indexes = array_map('intval', $request->input('create', []));
+
+        $result = $this->applier->apply(
+            plan: $this->planner->plan($rows),
+            context: [
+                'user_id' => Auth::id(),
+                'note' => 'Imported from ' . $filename,
+            ],
+            create: $indexes === [] ? null : [
+                'indexes' => $indexes,
+                'supplier_id' => (int) $request->input('supplier_id'),
+            ],
+        );
 
         $request->session()->forget([self::SESSION_KEY, self::FILENAME_KEY]);
 
@@ -141,15 +169,23 @@ class MaterialsImportController extends Controller
     }
 
     /**
-     * @param  array{applied: int, skipped: int, failed: list<array{name: string, reason: string}>}  $result
+     * @param  array{applied: int, created: int, skipped: int, failed: list<array{name: string, reason: string}>}  $result
      */
     private function summaryLine(array $result): string
     {
-        $line = sprintf(
-            '%d %s updated from the report.',
-            $result['applied'],
-            $result['applied'] === 1 ? 'item' : 'items'
-        );
+        $parts = [];
+
+        if ($result['applied'] > 0) {
+            $parts[] = sprintf('%d %s updated', $result['applied'], $result['applied'] === 1 ? 'item' : 'items');
+        }
+
+        if ($result['created'] > 0) {
+            $parts[] = sprintf('%d %s created', $result['created'], $result['created'] === 1 ? 'item' : 'items');
+        }
+
+        $line = $parts === []
+            ? 'Nothing was changed by that report.'
+            : ucfirst(implode(' and ', $parts)) . ' from the report.';
 
         if ($result['failed'] !== []) {
             $line .= sprintf(' %d could not be applied.', count($result['failed']));

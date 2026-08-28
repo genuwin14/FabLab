@@ -155,7 +155,97 @@ class MaterialsImportFlowTest extends TestCase
             ->assertDontSee('No change')
             // And the footer must not call an import that matched nothing clean.
             ->assertDontSee('Every item in this report already matches')
-            ->assertSee('None of these 1 rows matched an existing item');
+            ->assertSee('Nothing here matches an existing item, so applying creates the ticked rows.');
+    }
+
+    /**
+     * The client's real report matched none of its 91 rows, so an import that
+     * can only update existing items does nothing at all with it.
+     */
+    public function test_ticked_rows_are_created_as_raw_materials(): void
+    {
+        $supplier = Supplier::create([
+            'name' => 'Test Supplier', 'contact_person' => 'Someone',
+            'email' => 'supplier@example.test', 'phone' => '09000000000', 'address' => 'Nabua',
+        ]);
+
+        $path = (new MaterialsDocxGenerator([
+            'Woodworks' => [
+                ['name' => 'SPHERO CATALYST', 'unit' => 'liters', 'on_display' => 0.0, 'sponsored' => 0.0,
+                 'damaged' => 0.0, 'consumed' => 2.0, 'available' => 8.0],
+                ['name' => 'DRAWER LOCK', 'unit' => 'pcs', 'on_display' => 0.0, 'sponsored' => 0.0,
+                 'damaged' => 0.0, 'consumed' => 39.0, 'available' => 58.0],
+            ],
+        ], 'all', now()))->save();
+
+        $this->actingAs($this->admin)->post(route('admin.reports.materials.import'), [
+            'report' => new UploadedFile($path, 'inventory-2024.docx', null, null, true),
+        ]);
+
+        // Only the first row is ticked; the second is left out on purpose.
+        $this->actingAs($this->admin)
+            ->post(route('admin.reports.materials.import.confirm'), [
+                'create' => [0],
+                'supplier_id' => $supplier->supplier_id,
+            ])
+            ->assertRedirect(route('admin.reports.materials'))
+            ->assertSessionHas('success');
+
+        $this->assertNull(RawMaterial::where('name', 'DRAWER LOCK')->first());
+
+        $created = RawMaterial::where('name', 'SPHERO CATALYST')->first();
+        $this->assertNotNull($created);
+        $this->assertSame('liters', $created->unit);
+        $this->assertSame('Woodworks', $created->department);
+        $this->assertSame(8.0, (float) $created->stock_quantity);
+        $this->assertSame(2.0, (float) $created->units_consumed);
+        // Not in the report, so left visibly unset rather than guessed.
+        $this->assertSame(0.0, (float) $created->cost_per_unit);
+
+        // Its opening position is on the ledger like any later movement.
+        $this->assertGreaterThan(0, $created->movements()->count());
+    }
+
+    public function test_creating_without_a_supplier_is_refused(): void
+    {
+        $path = (new MaterialsDocxGenerator([
+            'Woodworks' => [
+                ['name' => 'RUGBY', 'unit' => 'Liters', 'on_display' => 0.0, 'sponsored' => 0.0,
+                 'damaged' => 0.0, 'consumed' => 0.0, 'available' => 9.0],
+            ],
+        ], 'all', now()))->save();
+
+        $this->actingAs($this->admin)->post(route('admin.reports.materials.import'), [
+            'report' => new UploadedFile($path, 'inventory-2024.docx', null, null, true),
+        ]);
+
+        $this->actingAs($this->admin)
+            ->post(route('admin.reports.materials.import.confirm'), ['create' => [0]])
+            ->assertSessionHas('error');
+
+        $this->assertSame(0, RawMaterial::count());
+    }
+
+    public function test_the_preview_offers_a_way_to_create_what_it_could_not_match(): void
+    {
+        $path = (new MaterialsDocxGenerator([
+            'Woodworks' => [
+                ['name' => 'POLITUFF', 'unit' => 'gal', 'on_display' => 0.0, 'sponsored' => 0.0,
+                 'damaged' => 0.0, 'consumed' => 5.0, 'available' => 0.0],
+            ],
+        ], 'all', now()))->save();
+
+        $this->actingAs($this->admin)->post(route('admin.reports.materials.import'), [
+            'report' => new UploadedFile($path, 'inventory-2024.docx', null, null, true),
+        ]);
+
+        $this->actingAs($this->admin)
+            ->get(route('admin.reports.materials.import.preview'))
+            ->assertOk()
+            ->assertSee('Create the items that were not found')
+            ->assertSee('name="create[]"', false)
+            // The Apply button must not be disabled just because nothing matched.
+            ->assertDontSee('nothing to apply');
     }
 
     public function test_the_preview_is_not_reachable_without_an_upload(): void

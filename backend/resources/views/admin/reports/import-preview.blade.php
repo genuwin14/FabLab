@@ -126,7 +126,13 @@
                             <table class="table table-hover align-middle mb-0 import-preview-table">
                                 <thead class="bg-light bg-opacity-50">
                                     <tr>
-                                        <th class="ps-4 border-0 small text-uppercase text-muted">Item</th>
+                                        <th class="ps-4 border-0 small text-uppercase text-muted" style="width: 42px;">
+                                            @if($summary['unmatched'] > 0)
+                                                <input type="checkbox" class="form-check-input" id="createAll" checked
+                                                    title="Create all the items that were not found">
+                                            @endif
+                                        </th>
+                                        <th class="border-0 small text-uppercase text-muted">Item</th>
                                         <th class="border-0 small text-uppercase text-muted">Matched</th>
                                         <th class="border-0 small text-uppercase text-muted">Department</th>
                                         <th class="border-0 small text-uppercase text-muted">Changes</th>
@@ -145,6 +151,16 @@
                                         @endphp
                                         <tr>
                                             <td class="ps-4 py-3">
+                                                @if($item['status'] === 'unmatched')
+                                                    {{-- Named for the confirm form, which lives further down the
+                                                         page; the form attribute is what lets it sit in this table. --}}
+                                                    <input type="checkbox" class="form-check-input create-row"
+                                                        form="importConfirmForm" name="create[]"
+                                                        value="{{ $item['index'] }}" checked
+                                                        aria-label="Create {{ $item['name'] }}">
+                                                @endif
+                                            </td>
+                                            <td class="py-3">
                                                 <div class="fw-bold text-dark small">{{ $item['name'] }}</div>
                                                 @if($item['unit'])
                                                     <div class="text-muted" style="font-size: 0.7rem;">
@@ -207,7 +223,7 @@
                                         </tr>
                                     @empty
                                         <tr>
-                                            <td colspan="5" class="text-center py-5 text-muted">
+                                            <td colspan="6" class="text-center py-5 text-muted">
                                                 <i class="bi bi-inbox display-6 d-block mb-3 opacity-50"></i>
                                                 No rows were read from that report.
                                             </td>
@@ -218,43 +234,100 @@
                         </div>
                     </div>
 
-                    <div class="card border-0 shadow-sm rounded-4 mb-4">
-                        <div class="card-body p-3 d-flex align-items-center justify-content-between flex-wrap gap-2">
-                            <div class="small text-muted">
-                                @if($summary['update'] > 0)
-                                    <i class="bi bi-info-circle me-1"></i>
-                                    Applying writes {{ $summary['update'] }}
-                                    {{ $summary['update'] === 1 ? 'item' : 'items' }}. Raw materials are
-                                    written through the usage ledger, so the change stays visible in the Usage Log.
-                                @elseif($summary['unchanged'] === $summary['total'])
-                                    <i class="bi bi-check-circle me-1 text-success"></i>
-                                    Every item in this report already matches what is held. Nothing to apply.
-                                @else
-                                    {{-- Zero updates because nothing matched is a different situation from
-                                         zero updates because everything agreed, and saying "nothing differs"
-                                         for both would report an empty import as a clean one. --}}
-                                    <i class="bi bi-exclamation-triangle me-1" style="color: #997404;"></i>
-                                    None of these {{ $summary['total'] }} rows matched an existing item, so there is
-                                    nothing to apply. The report names inventory this system does not hold yet.
-                                @endif
+                    {{-- The row checkboxes above post into this form by id, so the
+                         decision and the button that acts on it stay one submit. --}}
+                    <form method="POST" action="{{ route('admin.reports.materials.import.confirm') }}"
+                        id="importConfirmForm">
+                        @csrf
+
+                        @if($summary['unmatched'] > 0)
+                            <div class="card border-0 shadow-sm rounded-4 mb-3">
+                                <div class="card-body p-3">
+                                    <h6 class="fw-bold text-dark mb-1">
+                                        <i class="bi bi-plus-circle text-warning me-2"></i>Create the items that were not found
+                                    </h6>
+                                    <p class="text-muted small mb-3">
+                                        {{ $summary['unmatched'] }} of these rows name inventory this system has never
+                                        held. Ticked rows are created as raw materials, with the units and figures the
+                                        report gives them. Untick any you would rather leave out.
+                                    </p>
+
+                                    <div class="row g-3 align-items-end">
+                                        <div class="col-12 col-md-5">
+                                            <label for="supplierId" class="form-label fw-semibold text-uppercase text-muted"
+                                                style="letter-spacing: 0.04em; font-size: 0.7rem;">
+                                                File them under supplier
+                                            </label>
+                                            <select name="supplier_id" id="supplierId" class="form-select rounded-2">
+                                                <option value="">Choose a supplier…</option>
+                                                @foreach($suppliers as $supplier)
+                                                    <option value="{{ $supplier->supplier_id }}">{{ $supplier->name }}</option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+                                        <div class="col-12 col-md-7">
+                                            <div class="d-flex gap-2 p-3 rounded-3"
+                                                style="background-color: rgba(255, 193, 7, 0.10);">
+                                                <i class="bi bi-info-circle flex-shrink-0" style="color: #997404;"></i>
+                                                <div class="small" style="color: #6c5200;">
+                                                    A report carries no price or supplier, so new items start at a cost
+                                                    of <strong>0.00</strong> under the supplier chosen here — both
+                                                    editable per item afterwards. Anything that is really a sellable
+                                                    product needs a SKU, price and category, so add those on the
+                                                    Products screen rather than here.
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
-                            <div class="d-flex gap-2">
-                                <form method="POST" action="{{ route('admin.reports.materials.import.discard') }}">
-                                    @csrf
-                                    <button type="submit" class="btn btn-light border fw-semibold rounded-2 px-4">
+                        @endif
+
+                        <div class="card border-0 shadow-sm rounded-4 mb-4">
+                            <div class="card-body p-3 d-flex align-items-center justify-content-between flex-wrap gap-2">
+                                <div class="small text-muted">
+                                    @if($summary['update'] > 0 && $summary['unmatched'] > 0)
+                                        <i class="bi bi-info-circle me-1"></i>
+                                        Applying updates {{ $summary['update'] }}
+                                        {{ $summary['update'] === 1 ? 'item' : 'items' }} and creates the ticked ones.
+                                    @elseif($summary['update'] > 0)
+                                        <i class="bi bi-info-circle me-1"></i>
+                                        Applying writes {{ $summary['update'] }}
+                                        {{ $summary['update'] === 1 ? 'item' : 'items' }}.
+                                    @elseif($summary['unmatched'] > 0)
+                                        <i class="bi bi-info-circle me-1"></i>
+                                        Nothing here matches an existing item, so applying creates the ticked rows.
+                                    @elseif($summary['unchanged'] === $summary['total'])
+                                        <i class="bi bi-check-circle me-1 text-success"></i>
+                                        Every item in this report already matches what is held. Nothing to apply.
+                                    @else
+                                        <i class="bi bi-exclamation-triangle me-1" style="color: #997404;"></i>
+                                        There is nothing in this report that can be applied.
+                                    @endif
+                                    <span class="d-block mt-1">
+                                        Raw materials are written through the usage ledger, so every figure stays
+                                        visible in the Usage Log.
+                                    </span>
+                                </div>
+                                <div class="d-flex gap-2">
+                                    <button type="submit" form="importDiscardForm"
+                                        class="btn btn-light border fw-semibold rounded-2 px-4">
                                         Discard
                                     </button>
-                                </form>
-                                <form method="POST" action="{{ route('admin.reports.materials.import.confirm') }}">
-                                    @csrf
                                     <button type="submit" class="btn fw-semibold rounded-2 px-4 import-apply-btn"
-                                        {{ $summary['update'] === 0 ? 'disabled' : '' }}>
+                                        {{ $summary['update'] === 0 && $summary['unmatched'] === 0 ? 'disabled' : '' }}>
                                         <i class="bi bi-check2-circle me-2"></i>Apply to Inventory
                                     </button>
-                                </form>
+                                </div>
                             </div>
                         </div>
-                    </div>
+                    </form>
+
+                    {{-- Separate, so Discard never carries the create selection. --}}
+                    <form method="POST" action="{{ route('admin.reports.materials.import.discard') }}"
+                        id="importDiscardForm" class="d-none">
+                        @csrf
+                    </form>
 
                 </div>
             </main>
@@ -316,9 +389,47 @@
         .import-apply-btn:disabled { opacity: 0.5; }
 
         @media (max-width: 991.98px) {
-            .import-preview-table { min-width: 820px; }
+            .import-preview-table { min-width: 860px; }
             .import-preview-table th,
             .import-preview-table td { white-space: nowrap; }
         }
     </style>
+
+    <script>
+        (function () {
+            const all = document.getElementById('createAll');
+            const rows = Array.from(document.querySelectorAll('.create-row'));
+
+            if (!all || rows.length === 0) return;
+
+            all.addEventListener('change', () => {
+                rows.forEach(row => { row.checked = all.checked; });
+            });
+
+            // Reflect the rows back into the header box, so it never claims
+            // "all" while some are unticked.
+            rows.forEach(row => row.addEventListener('change', () => {
+                const ticked = rows.filter(r => r.checked).length;
+                all.checked = ticked === rows.length;
+                all.indeterminate = ticked > 0 && ticked < rows.length;
+            }));
+
+            // A supplier is only needed if something is actually being created.
+            const form = document.getElementById('importConfirmForm');
+            const supplier = document.getElementById('supplierId');
+
+            if (form && supplier) {
+                form.addEventListener('submit', event => {
+                    const creating = rows.some(r => r.checked);
+                    supplier.required = creating;
+
+                    if (creating && !supplier.value) {
+                        event.preventDefault();
+                        supplier.focus();
+                        supplier.reportValidity();
+                    }
+                });
+            }
+        })();
+    </script>
 @endsection
