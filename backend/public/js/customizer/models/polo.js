@@ -14,19 +14,28 @@
  * describe: the front half of the shirt occupies u 0..0.5 and the back half
  * u 0.5..1, both sharing the same vertical band.
  *
- * Within that, the bounds are the square-on core rather than the full panel, for
- * the reason t-shirt.js records: this torso is nearly as deep (5.3) as it is wide
- * (6.0), so only a narrow strip is really facing the customer. Square-on
- * geometry (normal.z > 0.9) holds to about x ±1.8 through the chest, and sizing
- * to the panel's full width instead would let a wide design wrap round to the
- * side seams and show as a sliver at the silhouette.
+ * Front and back are the whole panel — seam to seam, collar to hem — not a
+ * patch on it. Earlier revisions sized them to the square-on core, which is
+ * the right instinct for a chest logo and the wrong one for a garment: it
+ * left a customer who picked "Front" printing on a slice of the belly. The
+ * panel is what the label promises, so the panel is what the zone covers, and
+ * a small design is a small design because it was scaled that way.
  *
- * Vertically the band sits between the placket and the waist: y 1.4 down to
- * y -2.2. The armpit is at y 0.0, so a band hung below that line — as this one
- * was — prints on the belly rather than the chest, which is what it looked
- * like on the garment. The top is set just under where the placket and its
- * last button stop, at y 1.75, because artwork any higher rides the button
- * strip. 0.179 tall against 0.179 wide, so a square logo arrives square.
+ * Measured at normal.z > 0.9 the front runs x -2.99..2.96, which is the torso
+ * at its full width: the side seams sit at 3.05 and nothing but hem flare goes
+ * past them. Vertically it runs y 4.8 down to -6.9, from the collar seam to
+ * the bottom hem. The back is the same panel read on the other side of the
+ * unwrap.
+ *
+ * Both are held a hair inside that — x ±2.9 rather than ±3.0. Front and back
+ * meet at the side seam, and a zone taken right up to it showed a thread of
+ * the front print down the silhouette when you turned the shirt round. Five
+ * thousandths of the tile buys that back and costs nothing anyone can see.
+ *
+ * Artwork does now reach the silhouette, and near the seams it foreshortens
+ * the way any print on a curved side does. That is the trade the full panel
+ * asks for and it is the right one here — cutting the width back to keep the
+ * edges flat is what produced the belly patch.
  *
  * The sleeves are the same projection read further out. Past |x| 3.2 the mesh
  * is sleeve and nothing else — the torso, hem flare included, stops at 3.05 —
@@ -65,13 +74,13 @@ const POLO_ZONES = [
     {
         id: 'front',
         label: 'Front',
-        area: { u0: 0.162, v0: 0.405, u1: 0.341, v1: 0.584 },
+        area: { u0: 0.107, v0: 0.236, u1: 0.396, v1: 0.820 },
         camera: { x: 4, y: 3, z: 8 },
     },
     {
         id: 'back',
         label: 'Back',
-        area: { u0: 0.659, v0: 0.405, u1: 0.838, v1: 0.584 },
+        area: { u0: 0.605, v0: 0.236, u1: 0.893, v1: 0.820 },
         camera: { x: -4, y: 3, z: -8 },
     },
     {
