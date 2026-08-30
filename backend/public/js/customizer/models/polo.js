@@ -136,7 +136,9 @@ function createPoloModel() {
         const sleeves = planSleeveUVs(shellMeshes, shellBounds, POLO_SLEEVE_SPLIT);
 
         shellMeshes.forEach((mesh) => {
-            applyFrontBackUVs(mesh, shellBounds, sleeves);
+            // Cut the seam before unwrapping: a triangle with a foot in each
+            // projection sweeps the canvas between them.
+            applyFrontBackUVs(mesh, shellBounds, sleeves, splitGarmentSeam(mesh, sleeves));
             mesh.name = 'base';
             mesh.material.color.setHex(getActiveColor());
             mesh.material.roughness = 0.85;

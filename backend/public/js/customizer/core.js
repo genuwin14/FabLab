@@ -195,7 +195,7 @@ function applyPlanarUVs(mesh, bounds) {
  *
  * Returns false if the mesh has no normals or no width to project.
  */
-function applyFrontBackUVs(mesh, bounds, sleeves) {
+function applyFrontBackUVs(mesh, bounds, sleeves, sides) {
     const position = mesh.geometry ? mesh.geometry.attributes.position : null;
     const normal = mesh.geometry ? mesh.geometry.attributes.normal : null;
     if (!position || !normal) return false;
@@ -218,7 +218,15 @@ function applyFrontBackUVs(mesh, bounds, sleeves) {
         point.fromBufferAttribute(position, i).applyMatrix4(mesh.matrixWorld);
         facing.fromBufferAttribute(normal, i).applyMatrix3(normalMatrix);
 
-        if (sleeves && Math.abs(point.x - sleeves.centerX) > sleeves.splitX) {
+        // Read the side off splitGarmentSeam()'s verdict where there is one.
+        // A vertex it duplicated sits on the body but belongs to a sleeve
+        // triangle, or the reverse, and asking its position again here would
+        // hand the triangle back the split it was just rescued from.
+        const onSleeve = sides
+            ? sides[i] === 1
+            : sleeves && Math.abs(point.x - sleeves.centerX) > sleeves.splitX;
+
+        if (sleeves && onSleeve) {
             // Flattened along x instead: see planSleeveUVs().
             const left = point.x < sleeves.centerX;
             const round = left ? point.z - sleeves.zMin : sleeves.zMax - point.z;
@@ -268,15 +276,122 @@ function applyFrontBackUVs(mesh, bounds, sleeves) {
  * on the left sleeve and -z on the right, which is screen-right from a camera
  * on that side.
  *
- * Triangles that straddle the split get one end of each projection and stretch
- * between them. That is one triangle wide on a mesh of 780,000 — a hairline at
- * the armhole, where a garment has a seam anyway — and it is the price of the
- * sleeves being right everywhere else.
+ * Triangles that straddle the split would get one end of each projection and
+ * stretch between them, which draws a torn line round the armhole rather than
+ * the hairline it sounds like: a triangle spanning the two rectangles sweeps
+ * the canvas between them and drags whatever it crosses along the seam.
+ * splitGarmentSeam() below gives those triangles their own vertices first, so
+ * every one of them lands wholly on one side and none of them sweeps anything.
  *
  * Pass the same meshes and bounds as applyFrontBackUVs(). Returns null when the
  * model has nothing past the split, which leaves the caller unwrapping a plain
  * front and back.
  */
+/**
+ * Give every triangle that straddles the sleeve split its own vertices, so
+ * each one lands wholly on the body side or wholly on the sleeve side.
+ *
+ * The two projections send neighbouring points to opposite ends of the tile.
+ * A triangle with a vertex in each therefore does not merely stretch — it
+ * sweeps the canvas between them, picking up every design it crosses and
+ * smearing them along the seam. On the polo that read as a torn white line
+ * round the armhole.
+ *
+ * The fix is the one a modelling tool would use: a UV seam needs duplicate
+ * vertices, one set for each side, and a projected unwrap has to make its own
+ * because the mesh was never split there. Only the triangles actually spanning
+ * the boundary need them — a single ring around each armhole, a few hundred
+ * out of hundreds of thousands — so this costs almost nothing, unlike
+ * un-indexing the whole mesh to get the same guarantee.
+ *
+ * A duplicated vertex keeps its position. What changes is which projection
+ * reads it: the whole triangle is assigned to the side that already holds two
+ * of its corners, and the odd corner is unwrapped there too, a fraction past
+ * where that projection was measured. Better a triangle slightly overshooting
+ * its own panel than one straddling both.
+ *
+ * Returns the per-vertex side for applyFrontBackUVs() to use in place of
+ * re-reading position, or null if the mesh is unindexed — every triangle
+ * already owns its vertices then, and there is nothing to split.
+ */
+function splitGarmentSeam(mesh, sleeves) {
+    const geometry = mesh.geometry;
+    const position = geometry && geometry.attributes.position;
+    if (!position || !sleeves) return null;
+
+    mesh.updateWorldMatrix(true, false);
+    const point = new THREE.Vector3();
+    const sideOf = (i) => {
+        point.fromBufferAttribute(position, i).applyMatrix4(mesh.matrixWorld);
+        return Math.abs(point.x - sleeves.centerX) > sleeves.splitX ? 1 : 0;
+    };
+
+    let sides = new Uint8Array(position.count);
+    for (let i = 0; i < position.count; i++) sides[i] = sideOf(i);
+
+    const index = geometry.index;
+    if (!index) return sides;
+
+    // Pass one: which vertices need a copy, and on which side.
+    const indices = index.array;
+    const copies = new Map();   // original index * 2 + side -> new index
+    const source = [];          // original index for each copy, in order
+    let next = position.count;
+
+    for (let t = 0; t < indices.length; t += 3) {
+        const a = indices[t], b = indices[t + 1], c = indices[t + 2];
+        const total = sides[a] + sides[b] + sides[c];
+        if (total === 0 || total === 3) continue;
+
+        const want = total >= 2 ? 1 : 0;
+        for (const v of [a, b, c]) {
+            if (sides[v] === want) continue;
+            const key = v * 2 + want;
+            if (copies.has(key)) continue;
+            copies.set(key, next++);
+            source.push(v);
+        }
+    }
+
+    if (!copies.size) return sides;
+
+    // Pass two: grow every attribute by the copies, then point the straddling
+    // triangles at them.
+    const grown = next;
+    for (const name of Object.keys(geometry.attributes)) {
+        const attribute = geometry.attributes[name];
+        const size = attribute.itemSize;
+        const array = new attribute.array.constructor(grown * size);
+        array.set(attribute.array.subarray(0, position.count * size));
+        source.forEach((from, n) => {
+            const to = position.count + n;
+            for (let c = 0; c < size; c++) array[to * size + c] = attribute.array[from * size + c];
+        });
+        geometry.setAttribute(name, new THREE.BufferAttribute(array, size, attribute.normalized));
+    }
+
+    const sidesGrown = new Uint8Array(grown);
+    sidesGrown.set(sides);
+    source.forEach((from, n) => {
+        // The copy exists precisely to sit on the other side from its original.
+        sidesGrown[position.count + n] = sides[from] === 1 ? 0 : 1;
+    });
+
+    for (let t = 0; t < indices.length; t += 3) {
+        const a = indices[t], b = indices[t + 1], c = indices[t + 2];
+        const total = sides[a] + sides[b] + sides[c];
+        if (total === 0 || total === 3) continue;
+
+        const want = total >= 2 ? 1 : 0;
+        [a, b, c].forEach((v, n) => {
+            if (sides[v] !== want) indices[t + n] = copies.get(v * 2 + want);
+        });
+    }
+    index.needsUpdate = true;
+
+    return sidesGrown;
+}
+
 function planSleeveUVs(meshes, bounds, splitX, band) {
     const centerX = (bounds.min.x + bounds.max.x) / 2;
     const top = band && band.top !== undefined ? band.top : 0.005;
