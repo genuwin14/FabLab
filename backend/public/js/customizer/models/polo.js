@@ -42,31 +42,23 @@
  * so the strip beyond that is a panel in its own right, and giving it a zone
  * costs no change to the unwrap the front and back already rely on.
  *
- * Their bounds are the whole sleeve, for the same reason the torso's are the
- * whole panel. Earlier revisions held them to the flat middle — the strip that
- * never foreshortens, x -4.3..-3.4 — and that is a quarter of a sleeve, so
- * "Left Sleeve" bought a badge on part of one.
+ * The sleeves are not on that projection at all — see planSleeveUVs(), which
+ * flattens them along x instead. Squeezed into the body's z-flattening a sleeve
+ * has no depth left: every point on the front of the tube at a given x collapses
+ * onto one u, and a design put there smeared around the arm and pinched where
+ * the surface turned. Every set of bounds tried against that projection was
+ * choosing which part of the smear to show. Flattened sideways the tube unwraps
+ * properly, and these are simply its rectangle, whole.
  *
- * So: the full tube. Across, x -5.04..-3.13, from the outer edge in to the
- * armhole. Down, y 4.5 to 0.0, shoulder cap to cuff. The inboard end stops at
- * 3.13 rather than running into the torso's 2.9, which leaves a narrow unprinted
- * ring at the armhole — that is the seam, and a garment has one there anyway.
- * The right sleeve is the same tube read on its side of the unwrap, and stops
- * at u 0.497 rather than 0.500 because that is where its front and back halves
- * meet and artwork taken to the line shows as a thread down the silhouette.
+ * The rectangles sit in the strip above the torso, which the body projection
+ * leaves empty, and each is 0.100 of the tile across against 0.289 for the
+ * front. Sleeve artwork therefore lands about a third the size of a front
+ * print — about the ratio the real panels have.
  *
- * u is 0.094 of the tile now against 0.289 for the torso, so sleeve artwork
- * lands about a third the size of a front print, which is about the ratio of
- * the real panels.
- *
- * What this cannot do is straighten out a hard side-on view. A design projected
- * along z has no width left when you look along x, so from dead side the sleeve
- * print squeezes to a sliver, and it foreshortens toward both edges of the tube
- * for the same reason. Fixing that means giving the sleeve a projection along
- * its own axis, which needs a UV seam at the armhole that this mesh has no
- * vertices for — a re-export of polo.glb with a real atlas, not a number in
- * this file. The zone camera opens on the front-quarter, which is where it
- * reads best.
+ * The cameras are square onto each sleeve, x ±8, the same arrangement
+ * t-shirt.js uses and the same 9.4 out as the front and back, so switching
+ * panels reframes rather than zooms. A sleeve print is looked at from the side
+ * and now unwraps for that view, so that is where the studio opens.
  *
  * No flips on any zone: the projection is built to land unmirrored. u grows
  * with world x on the front and against it on the back, which is screen-right in
@@ -74,6 +66,9 @@
  * world y, which is the direction the canvas grows. Both sleeves print on their
  * front-facing surface, so both follow the front's convention.
  */
+/** Beyond this |x| the mesh is sleeve; the torso stops at 3.05. */
+const POLO_SLEEVE_SPLIT = 3.2;
+
 const POLO_ZONES = [
     {
         id: 'front',
@@ -88,19 +83,16 @@ const POLO_ZONES = [
         camera: { x: -4, y: 3, z: -8 },
     },
     {
-        // x -5.04..-3.2. The camera swings out to the left but stays in front,
-        // because this face is front-facing: viewed from the side it is edge-on
-        // and the design vanishes into the silhouette.
         id: 'left-sleeve',
         label: 'Left Sleeve',
-        area: { u0: 0.000, v0: 0.248, u1: 0.094, v1: 0.476 },
-        camera: { x: -5.6, y: 2, z: 7.3 },
+        area: { u0: 0.026, v0: 0.014, u1: 0.126, v1: 0.170 },
+        camera: { x: -8, y: 3, z: 4 },
     },
     {
         id: 'right-sleeve',
         label: 'Right Sleeve',
-        area: { u0: 0.407, v0: 0.248, u1: 0.497, v1: 0.476 },
-        camera: { x: 5.6, y: 2, z: 7.3 },
+        area: { u0: 0.195, v0: 0.013, u1: 0.296, v1: 0.166 },
+        camera: { x: 8, y: 3, z: 4 },
     },
 ];
 
@@ -137,8 +129,14 @@ function createPoloModel() {
         const shellBounds = new THREE.Box3();
         shellMeshes.forEach((mesh) => getMeshBounds(mesh, shellBounds));
 
+        // Past |x| 3.2 the mesh is sleeve and nothing else: the torso, hem
+        // flare included, stops at 3.05. That makes the split clean, and the
+        // sleeves get the sideways projection planSleeveUVs() explains rather
+        // than being flattened along z with the body.
+        const sleeves = planSleeveUVs(shellMeshes, shellBounds, POLO_SLEEVE_SPLIT);
+
         shellMeshes.forEach((mesh) => {
-            applyFrontBackUVs(mesh, shellBounds);
+            applyFrontBackUVs(mesh, shellBounds, sleeves);
             mesh.name = 'base';
             mesh.material.color.setHex(getActiveColor());
             mesh.material.roughness = 0.85;

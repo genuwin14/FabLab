@@ -195,7 +195,7 @@ function applyPlanarUVs(mesh, bounds) {
  *
  * Returns false if the mesh has no normals or no width to project.
  */
-function applyFrontBackUVs(mesh, bounds) {
+function applyFrontBackUVs(mesh, bounds, sleeves) {
     const position = mesh.geometry ? mesh.geometry.attributes.position : null;
     const normal = mesh.geometry ? mesh.geometry.attributes.normal : null;
     if (!position || !normal) return false;
@@ -218,6 +218,15 @@ function applyFrontBackUVs(mesh, bounds) {
         point.fromBufferAttribute(position, i).applyMatrix4(mesh.matrixWorld);
         facing.fromBufferAttribute(normal, i).applyMatrix3(normalMatrix);
 
+        if (sleeves && Math.abs(point.x - sleeves.centerX) > sleeves.splitX) {
+            // Flattened along x instead: see planSleeveUVs().
+            const left = point.x < sleeves.centerX;
+            const round = left ? point.z - sleeves.zMin : sleeves.zMax - point.z;
+            uv[i * 2] = (left ? sleeves.leftU : sleeves.rightU) + round * sleeves.scale;
+            uv[i * 2 + 1] = sleeves.topV + (sleeves.yMax - point.y) * sleeves.scale;
+            continue;
+        }
+
         // 0 at the -x seam, 0.5 at the +x seam, for both halves.
         const across = (point.x - box.min.x) * scale;
 
@@ -229,6 +238,81 @@ function applyFrontBackUVs(mesh, bounds) {
 
     mesh.geometry.setAttribute('uv', new THREE.BufferAttribute(uv, 2));
     return true;
+}
+
+/**
+ * Work out where a garment's sleeves go in the tile, for applyFrontBackUVs()
+ * to unwrap them apart from the body.
+ *
+ * The front/back projection flattens the garment along z, which a torso can
+ * afford: its two faces are broadly flat, so throwing depth away costs almost
+ * nothing. A sleeve is a tube, and it cannot. Flattened along z, every point
+ * on the front of the tube at a given x collapses onto ONE u — so a design put
+ * there is smeared around the arm, pinching where the surface turns. No zone
+ * rectangle can fix that; the projection has to change.
+ *
+ * So sleeves are flattened along x instead: u from z, v from y. That is the
+ * view from the side, which is both where a sleeve print is looked at and the
+ * one direction a sleeve does not wrap. The outer surface — the half anyone
+ * sees — comes through undistorted, and what compresses instead is the front
+ * and back of the arm, which is the right thing to give up.
+ *
+ * They are packed into the strip above the torso. The body projection maps
+ * y to v about the model's middle at a scale set by its full width, so on a
+ * garment wider than half its height it never reaches the top of the tile —
+ * on the polo it stops at v 0.179, and that empty strip is what these two
+ * rectangles sit in, side by side with a gap between them.
+ *
+ * Both sleeves share one scale, so the weave of a texture stays the same size
+ * across the garment, and both are unmirrored by construction: u grows with +z
+ * on the left sleeve and -z on the right, which is screen-right from a camera
+ * on that side.
+ *
+ * Triangles that straddle the split get one end of each projection and stretch
+ * between them. That is one triangle wide on a mesh of 780,000 — a hairline at
+ * the armhole, where a garment has a seam anyway — and it is the price of the
+ * sleeves being right everywhere else.
+ *
+ * Pass the same meshes and bounds as applyFrontBackUVs(). Returns null when the
+ * model has nothing past the split, which leaves the caller unwrapping a plain
+ * front and back.
+ */
+function planSleeveUVs(meshes, bounds, splitX, band) {
+    const centerX = (bounds.min.x + bounds.max.x) / 2;
+    const top = band && band.top !== undefined ? band.top : 0.005;
+    const height = band && band.height !== undefined ? band.height : 0.169;
+    const width = band && band.width !== undefined ? band.width : 0.24;
+
+    let zMin = Infinity, zMax = -Infinity, yMin = Infinity, yMax = -Infinity;
+    const point = new THREE.Vector3();
+
+    for (const mesh of meshes) {
+        const position = mesh.geometry && mesh.geometry.attributes.position;
+        if (!position) continue;
+        mesh.updateWorldMatrix(true, false);
+        for (let i = 0; i < position.count; i++) {
+            point.fromBufferAttribute(position, i).applyMatrix4(mesh.matrixWorld);
+            if (Math.abs(point.x - centerX) <= splitX) continue;
+            if (point.z < zMin) zMin = point.z;
+            if (point.z > zMax) zMax = point.z;
+            if (point.y < yMin) yMin = point.y;
+            if (point.y > yMax) yMax = point.y;
+        }
+    }
+
+    const zSpan = zMax - zMin;
+    const ySpan = yMax - yMin;
+    if (!(zSpan > 0) || !(ySpan > 0)) return null;
+
+    const scale = Math.min(width / zSpan, height / ySpan);
+    const leftU = 0.02;
+
+    return {
+        centerX, splitX, scale, zMin, zMax, yMax,
+        topV: top,
+        leftU,
+        rightU: leftU + zSpan * scale + 0.06,
+    };
 }
 
 /**
