@@ -42,27 +42,31 @@
  * so the strip beyond that is a panel in its own right, and giving it a zone
  * costs no change to the unwrap the front and back already rely on.
  *
- * Their bounds are the flat middle of the sleeve, and deliberately not all of
- * it. This projection flattens along z and a sleeve is a tube, so the fabric
- * turns away from the projection at both ends of its width: inboard it creases
- * into the armhole, outboard it rolls under the arm. Artwork taken all the way
- * out to either came out ragged along that edge. Sweeping the sleeve at
- * normal.z > 0.9 in half-unit slices, the strip that stays flat the whole way
- * down is x -4.3..-3.4, and these bounds are that with a little margin.
+ * Their bounds are the whole sleeve, for the same reason the torso's are the
+ * whole panel. Earlier revisions held them to the flat middle — the strip that
+ * never foreshortens, x -4.3..-3.4 — and that is a quarter of a sleeve, so
+ * "Left Sleeve" bought a badge on part of one.
  *
- * That leaves u 0.056 of the tile against 0.179 for the chest, so sleeve
- * artwork lands about a third the size of a chest print — which is roughly
- * what a real sleeve print is. Vertically the band stops short of the shoulder
- * cap above (y 2.9) and the cuff hem below (y 0.5), the two places the tube
- * turns hardest.
+ * So: the full tube. Across, x -5.04..-3.13, from the outer edge in to the
+ * armhole. Down, y 4.5 to 0.0, shoulder cap to cuff. The inboard end stops at
+ * 3.13 rather than running into the torso's 2.9, which leaves a narrow unprinted
+ * ring at the armhole — that is the seam, and a garment has one there anyway.
+ * The right sleeve is the same tube read on its side of the unwrap, and stops
+ * at u 0.497 rather than 0.500 because that is where its front and back halves
+ * meet and artwork taken to the line shows as a thread down the silhouette.
  *
- * None of this straightens out a hard side-on view, and nothing here can. A
- * design projected along z has no width left when you look along x, so from
- * dead side the sleeve print squeezes to a sliver. Fixing that means giving
- * the sleeve a projection along its own axis, which needs a UV seam at the
- * armhole that this mesh has no vertices for — a re-export of polo.glb with a
- * real atlas, not a number in this file. The zone camera opens on the
- * front-quarter, which is where it reads.
+ * u is 0.094 of the tile now against 0.289 for the torso, so sleeve artwork
+ * lands about a third the size of a front print, which is about the ratio of
+ * the real panels.
+ *
+ * What this cannot do is straighten out a hard side-on view. A design projected
+ * along z has no width left when you look along x, so from dead side the sleeve
+ * print squeezes to a sliver, and it foreshortens toward both edges of the tube
+ * for the same reason. Fixing that means giving the sleeve a projection along
+ * its own axis, which needs a UV seam at the armhole that this mesh has no
+ * vertices for — a re-export of polo.glb with a real atlas, not a number in
+ * this file. The zone camera opens on the front-quarter, which is where it
+ * reads best.
  *
  * No flips on any zone: the projection is built to land unmirrored. u grows
  * with world x on the front and against it on the back, which is screen-right in
@@ -89,13 +93,13 @@ const POLO_ZONES = [
         // and the design vanishes into the silhouette.
         id: 'left-sleeve',
         label: 'Left Sleeve',
-        area: { u0: 0.032, v0: 0.330, u1: 0.088, v1: 0.450 },
+        area: { u0: 0.000, v0: 0.248, u1: 0.094, v1: 0.476 },
         camera: { x: -5.6, y: 2, z: 7.3 },
     },
     {
         id: 'right-sleeve',
         label: 'Right Sleeve',
-        area: { u0: 0.414, v0: 0.330, u1: 0.470, v1: 0.450 },
+        area: { u0: 0.407, v0: 0.248, u1: 0.497, v1: 0.476 },
         camera: { x: 5.6, y: 2, z: 7.3 },
     },
 ];
