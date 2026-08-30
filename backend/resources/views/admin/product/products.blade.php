@@ -217,30 +217,30 @@
                                                 <td class="text-end pe-4">
                                                     <div class="d-flex justify-content-end gap-2">
                                                         <a href="{{ route('admin.products.suppliers.assign', $product->product_id) }}"
-                                                            class="btn btn-light btn-sm rounded-circle"
+                                                            class="btn btn-light btn-sm table-action-btn px-3 fw-bold shadow-sm border"
                                                             title="Manage Suppliers">
-                                                            <i class="bi bi-truck text-primary"></i>
+                                                            <i class="bi bi-truck me-1 text-primary"></i>Suppliers
                                                         </a>
                                                         <a href="{{ route('admin.products.textures.assign', $product->product_id) }}"
-                                                            class="btn btn-light btn-sm rounded-circle"
+                                                            class="btn btn-light btn-sm table-action-btn px-3 fw-bold shadow-sm border"
                                                             title="Manage Textures">
-                                                            <i class="bi bi-layers text-info"></i>
+                                                            <i class="bi bi-layers me-1 text-info"></i>Textures
                                                         </a>
                                                         <a href="{{ route('admin.products.colors.assign', $product->product_id) }}"
-                                                            class="btn btn-light btn-sm rounded-circle"
+                                                            class="btn btn-light btn-sm table-action-btn px-3 fw-bold shadow-sm border"
                                                             title="Manage Colors">
-                                                            <i class="bi bi-palette text-success"></i>
+                                                            <i class="bi bi-palette me-1 text-success"></i>Colors
                                                         </a>
-                                                        <button class="btn btn-light btn-sm rounded-circle"
+                                                        <button class="btn btn-light btn-sm table-action-btn px-3 fw-bold shadow-sm border"
                                                             data-bs-toggle="modal" data-bs-target="#editProductModal"
-                                                            data-product="{{ json_encode($product) }}" title="Edit Product">
-                                                            <i class="bi bi-pencil text-warning"></i>
+                                                            data-product="{{ json_encode($product) }}">
+                                                            <i class="bi bi-pencil me-1 text-warning"></i>Edit
                                                         </button>
-                                                        <button class="btn btn-light btn-sm rounded-circle"
+                                                        <button class="btn btn-outline-danger btn-sm table-action-btn px-3 fw-bold shadow-sm"
                                                             data-bs-toggle="modal" data-bs-target="#deleteProductModal"
                                                             data-id="{{ $product->product_id }}"
-                                                            data-name="{{ $product->name }}" title="Delete Product">
-                                                            <i class="bi bi-trash text-danger"></i>
+                                                            data-name="{{ $product->name }}">
+                                                            <i class="bi bi-trash me-1"></i>Delete
                                                         </button>
                                                     </div>
                                                 </td>

@@ -221,6 +221,18 @@
             border-right: none !important;
             box-shadow: none !important;
         }
+
+        /* ==================================================================
+           Table action buttons (admin / staff / customer)
+
+           Every Actions column reads as one toolbar: an icon, a label, and
+           a light 5px corner instead of a pill or a circle. Set here rather
+           than per page so a new table inherits the shape just by naming
+           the class, and so the three roles never drift apart again.
+           ================================================================== */
+        .table-action-btn {
+            border-radius: 5px !important;
+        }
     </style>
 
     <script>

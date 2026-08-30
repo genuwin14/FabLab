@@ -489,7 +489,7 @@
                                             <div class="mt-auto">
                                                 <div class="d-flex gap-2">
                                                     <button
-                                                        class="btn btn-light text-primary fw-bold btn-sm rounded-pill flex-grow-1"
+                                                        class="btn btn-light text-primary fw-bold btn-sm table-action-btn border shadow-sm flex-grow-1"
                                                         type="button" data-bs-toggle="offcanvas"
                                                         data-bs-target="#orderDetails-{{ $order->order_id }}"
                                                         aria-controls="orderDetails-{{ $order->order_id }}">
@@ -499,7 +499,7 @@
                                                     @if($order->status == 'awaiting_pr')
                                                         {{-- The number from procurement is what releases this. --}}
                                                         <button type="button"
-                                                            class="btn btn-warning btn-sm rounded-pill flex-grow-1 fw-bold"
+                                                            class="btn btn-warning btn-sm table-action-btn shadow-sm flex-grow-1 fw-bold"
                                                             data-bs-toggle="modal" data-bs-target="#prNumberModal"
                                                             data-order-number="{{ $order->order_number }}"
                                                             data-deadline="{{ $order->pr_deadline?->format('j M Y') }}"
@@ -508,7 +508,7 @@
                                                         </button>
                                                     @elseif($order->status == 'pending')
                                                         <button type="button"
-                                                            class="btn btn-outline-danger btn-sm rounded-pill flex-grow-1"
+                                                            class="btn btn-outline-danger btn-sm table-action-btn shadow-sm flex-grow-1 fw-bold"
                                                             data-bs-toggle="modal" data-bs-target="#cancelOrderModal"
                                                             data-order-id="{{ $order->order_id }}"
                                                             data-order-number="{{ $order->order_number }}"
@@ -518,7 +518,7 @@
                                                     @elseif(in_array($order->status, ['approved', 'processing', 'ready_for_pickup', 'for_delivery', 'completed']))
                                                         <a href="{{ route('customer.orders.receipt', $order->order_id) }}"
                                                             target="_blank"
-                                                            class="btn btn-sm rounded-pill flex-grow-1 d-flex align-items-center justify-content-center fw-bold"
+                                                            class="btn btn-sm table-action-btn shadow-sm flex-grow-1 d-flex align-items-center justify-content-center fw-bold"
                                                             style="background-color: #0e2e45; color: #ffffff;">
                                                             <i class="bi bi-receipt me-1"></i> View Slip
                                                         </a>
@@ -577,7 +577,7 @@
                                                     </td>
                                                     <td class="text-end pe-4">
                                                         <div class="d-inline-flex gap-2">
-                                                            <button class="btn btn-light btn-sm rounded-pill px-3 fw-bold border" type="button"
+                                                            <button class="btn btn-light btn-sm table-action-btn px-3 fw-bold shadow-sm border" type="button"
                                                                 data-bs-toggle="offcanvas"
                                                                 data-bs-target="#orderDetails-{{ $order->order_id }}"
                                                                 aria-controls="orderDetails-{{ $order->order_id }}">
@@ -585,7 +585,7 @@
                                                             </button>
                                                             @if($order->status == 'awaiting_pr')
                                                                 <button type="button"
-                                                                    class="btn btn-warning btn-sm rounded-pill px-3 fw-bold"
+                                                                    class="btn btn-warning btn-sm table-action-btn px-3 fw-bold shadow-sm"
                                                                     data-bs-toggle="modal" data-bs-target="#prNumberModal"
                                                                     data-order-number="{{ $order->order_number }}"
                                                                     data-deadline="{{ $order->pr_deadline?->format('j M Y') }}"
@@ -594,7 +594,7 @@
                                                                 </button>
                                                             @elseif($order->status == 'pending')
                                                                 <button type="button"
-                                                                    class="btn btn-outline-danger btn-sm rounded-pill px-3"
+                                                                    class="btn btn-outline-danger btn-sm table-action-btn px-3 fw-bold shadow-sm"
                                                                     data-bs-toggle="modal" data-bs-target="#cancelOrderModal"
                                                                     data-order-id="{{ $order->order_id }}"
                                                                     data-order-number="{{ $order->order_number }}"
@@ -606,7 +606,7 @@
                                                                      layouts of this page stay in step. --}}
                                                                 <a href="{{ route('customer.orders.receipt', $order->order_id) }}"
                                                                     target="_blank"
-                                                                    class="btn btn-sm rounded-pill px-3 fw-bold"
+                                                                    class="btn btn-sm table-action-btn px-3 fw-bold shadow-sm"
                                                                     style="background-color: #0e2e45; color: #ffffff;">
                                                                     <i class="bi bi-receipt me-1"></i>Slip
                                                                 </a>

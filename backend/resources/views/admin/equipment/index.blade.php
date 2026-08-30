@@ -142,7 +142,7 @@
                                                     </span>
                                                 </td>
                                                 <td class="text-end pe-4">
-                                                    <button class="btn btn-light btn-sm rounded-circle me-1"
+                                                    <button class="btn btn-light btn-sm table-action-btn px-3 fw-bold shadow-sm border me-1"
                                                         data-bs-toggle="modal" data-bs-target="#editEquipmentModal"
                                                         data-id="{{ $item->equipment_id }}"
                                                         data-name="{{ $item->name }}"
@@ -151,14 +151,14 @@
                                                         data-date_acquired="{{ $item->date_acquired ? $item->date_acquired->format('Y-m-d') : '' }}"
                                                         data-cost="{{ $item->cost }}"
                                                         data-status="{{ $item->status }}"
-                                                        data-notes="{{ $item->notes }}" title="Edit">
-                                                        <i class="bi bi-pencil text-warning"></i>
+                                                        data-notes="{{ $item->notes }}">
+                                                        <i class="bi bi-pencil me-1 text-warning"></i>Edit
                                                     </button>
-                                                    <button class="btn btn-light btn-sm rounded-circle"
+                                                    <button class="btn btn-outline-danger btn-sm table-action-btn px-3 fw-bold shadow-sm"
                                                         data-bs-toggle="modal" data-bs-target="#deleteEquipmentModal"
                                                         data-id="{{ $item->equipment_id }}"
-                                                        data-name="{{ $item->name }}" title="Delete">
-                                                        <i class="bi bi-trash text-danger"></i>
+                                                        data-name="{{ $item->name }}">
+                                                        <i class="bi bi-trash me-1"></i>Delete
                                                     </button>
                                                 </td>
                                             </tr>

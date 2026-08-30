@@ -154,16 +154,15 @@
                                                 <td class="text-muted small">{{ number_format($material->low_stock_threshold, 2) }}</td>
                                                 <td class="text-muted small text-uppercase">{{ $material->unit }}</td>
                                                 <td class="text-end pe-4">
-                                                    <button class="btn btn-light btn-sm rounded-circle me-1"
+                                                    <button class="btn btn-light btn-sm table-action-btn px-3 fw-bold shadow-sm border me-1"
                                                         data-bs-toggle="modal" data-bs-target="#recordUsageModal"
                                                         data-id="{{ $material->raw_material_id }}"
                                                         data-name="{{ $material->name }}"
                                                         data-stock="{{ $material->stock_quantity }}"
-                                                        data-unit="{{ $material->unit }}"
-                                                        title="Record usage">
-                                                        <i class="bi bi-clipboard-check text-primary"></i>
+                                                        data-unit="{{ $material->unit }}">
+                                                        <i class="bi bi-clipboard-check me-1 text-primary"></i>Usage
                                                     </button>
-                                                    <button class="btn btn-light btn-sm rounded-circle"
+                                                    <button class="btn btn-light btn-sm table-action-btn px-3 fw-bold shadow-sm border"
                                                         data-bs-toggle="modal" data-bs-target="#editRawMaterialModal"
                                                         data-id="{{ $material->raw_material_id }}"
                                                         data-name="{{ $material->name }}"
@@ -172,8 +171,8 @@
                                                         data-stock="{{ $material->stock_quantity }}"
                                                         data-threshold="{{ $material->low_stock_threshold }}"
                                                         data-unit="{{ $material->unit }}"
-                                                        data-description="{{ $material->description }}" title="Edit">
-                                                        <i class="bi bi-pencil text-warning"></i>
+                                                        data-description="{{ $material->description }}">
+                                                        <i class="bi bi-pencil me-1 text-warning"></i>Edit
                                                     </button>
                                                 </td>
                                             </tr>

@@ -209,10 +209,10 @@
                                                 </td>
                                                 <td class="text-end pe-4">
                                                     <div class="d-flex justify-content-end gap-2">
-                                                        <button class="btn btn-light btn-sm rounded-circle"
+                                                        <button class="btn btn-light btn-sm table-action-btn px-3 fw-bold shadow-sm border"
                                                             data-bs-toggle="modal" data-bs-target="#editProductModal"
-                                                            data-product="{{ json_encode($product) }}" title="Edit Product">
-                                                            <i class="bi bi-pencil text-warning"></i>
+                                                            data-product="{{ json_encode($product) }}">
+                                                            <i class="bi bi-pencil me-1 text-warning"></i>Edit
                                                         </button>
                                                     </div>
                                                 </td>

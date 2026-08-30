@@ -201,7 +201,7 @@
                                                 </td>
                                                 <td class="text-end pe-4">
                                                     <a href="{{ route('admin.purchase.show', $po->purchase_order_id) }}"
-                                                        class="btn btn-light btn-sm rounded-pill px-3 fw-bold shadow-sm border">
+                                                        class="btn btn-light btn-sm table-action-btn px-3 fw-bold shadow-sm border">
                                                         <i class="bi bi-eye me-1 text-primary"></i>View
                                                     </a>
                                                 </td>

@@ -199,7 +199,7 @@
                                                 <td class="text-end pe-4">
                                                     @if($user->status === 'active')
                                                         <button type="button"
-                                                            class="btn btn-outline-danger btn-sm rounded-pill px-3 fw-bold"
+                                                            class="btn btn-outline-danger btn-sm table-action-btn px-3 fw-bold shadow-sm"
                                                             data-bs-toggle="modal" data-bs-target="#statusModal"
                                                             data-user-id="{{ $user->id }}"
                                                             data-user-name="{{ $user->fullname }}"
@@ -209,7 +209,7 @@
                                                         </button>
                                                     @else
                                                         <button type="button"
-                                                            class="btn btn-outline-success btn-sm rounded-pill px-3 fw-bold"
+                                                            class="btn btn-outline-success btn-sm table-action-btn px-3 fw-bold shadow-sm"
                                                             data-bs-toggle="modal" data-bs-target="#statusModal"
                                                             data-user-id="{{ $user->id }}"
                                                             data-user-name="{{ $user->fullname }}"

@@ -221,7 +221,7 @@
                                                                 </td>
                                                                 @if($supplierId === 'no_supplier')
                                                                     <td class="text-end pe-4">
-                                                                        <button type="button" class="btn btn-sm btn-outline-primary rounded-pill px-3 set-supplier-btn"
+                                                                        <button type="button" class="btn btn-sm btn-outline-primary table-action-btn px-3 fw-bold shadow-sm set-supplier-btn"
                                                                             data-bs-toggle="modal" data-bs-target="#setSupplierModal"
                                                                             data-item-id="{{ $item->type === 'Product' ? $item->product_id : ($item->type === 'Texture' ? $item->texture_id : $item->raw_material_id) }}"
                                                                             data-item-type="{{ $item->type }}"
