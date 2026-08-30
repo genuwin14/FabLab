@@ -21,28 +21,39 @@
  * to the panel's full width instead would let a wide design wrap round to the
  * side seams and show as a sliver at the silhouette.
  *
- * Vertically the band runs from the sleeve line (y 0.0) down 3.2 units, the
- * upper half of a torso whose hem is at y -6.4 — where a chest print actually
- * goes, and clear of the collar and placket above it.
+ * Vertically the band sits between the placket and the waist: y 1.4 down to
+ * y -2.2. The armpit is at y 0.0, so a band hung below that line — as this one
+ * was — prints on the belly rather than the chest, which is what it looked
+ * like on the garment. The top is set just under where the placket and its
+ * last button stop, at y 1.75, because artwork any higher rides the button
+ * strip. 0.179 tall against 0.179 wide, so a square logo arrives square.
  *
  * The sleeves are the same projection read further out. Past |x| 3.2 the mesh
  * is sleeve and nothing else — the torso, hem flare included, stops at 3.05 —
  * so the strip beyond that is a panel in its own right, and giving it a zone
  * costs no change to the unwrap the front and back already rely on.
  *
- * Their u is narrow, and unavoidably so. This projection flattens along z, and
- * a sleeve is a tube: only a thin strip of it faces the customer square-on, the
- * rest curving away to the outside of the arm. Measured at normal.z > 0.85 that
- * strip is 0.062 of the tile, against 0.179 for the chest, so sleeve artwork
- * lands about a third the size of a chest print — which is roughly what a real
- * sleeve print is. Widening u past the square-on core would only let a design
- * wrap round the arm and show as a sliver at the silhouette.
+ * Their bounds are the flat middle of the sleeve, and deliberately not all of
+ * it. This projection flattens along z and a sleeve is a tube, so the fabric
+ * turns away from the projection at both ends of its width: inboard it creases
+ * into the armhole, outboard it rolls under the arm. Artwork taken all the way
+ * out to either came out ragged along that edge. Sweeping the sleeve at
+ * normal.z > 0.9 in half-unit slices, the strip that stays flat the whole way
+ * down is x -4.3..-3.4, and these bounds are that with a little margin.
  *
- * v is measured loosely, the way t-shirt.js explains: nothing wraps vertically,
- * and sizeScale follows the narrower side, which is u here whatever v does. So
- * the band runs the sleeve's whole length, from the shoulder seam down to the
- * cuff, and costs nothing to leave that generous — it is room to slide a design
- * up or down the arm rather than room to make it bigger.
+ * That leaves u 0.056 of the tile against 0.179 for the chest, so sleeve
+ * artwork lands about a third the size of a chest print — which is roughly
+ * what a real sleeve print is. Vertically the band stops short of the shoulder
+ * cap above (y 2.9) and the cuff hem below (y 0.5), the two places the tube
+ * turns hardest.
+ *
+ * None of this straightens out a hard side-on view, and nothing here can. A
+ * design projected along z has no width left when you look along x, so from
+ * dead side the sleeve print squeezes to a sliver. Fixing that means giving
+ * the sleeve a projection along its own axis, which needs a UV seam at the
+ * armhole that this mesh has no vertices for — a re-export of polo.glb with a
+ * real atlas, not a number in this file. The zone camera opens on the
+ * front-quarter, which is where it reads.
  *
  * No flips on any zone: the projection is built to land unmirrored. u grows
  * with world x on the front and against it on the back, which is screen-right in
@@ -54,13 +65,13 @@ const POLO_ZONES = [
     {
         id: 'front',
         label: 'Front',
-        area: { u0: 0.162, v0: 0.474, u1: 0.341, v1: 0.634 },
+        area: { u0: 0.162, v0: 0.405, u1: 0.341, v1: 0.584 },
         camera: { x: 4, y: 3, z: 8 },
     },
     {
         id: 'back',
         label: 'Back',
-        area: { u0: 0.659, v0: 0.474, u1: 0.838, v1: 0.634 },
+        area: { u0: 0.659, v0: 0.405, u1: 0.838, v1: 0.584 },
         camera: { x: -4, y: 3, z: -8 },
     },
     {
@@ -69,13 +80,13 @@ const POLO_ZONES = [
         // and the design vanishes into the silhouette.
         id: 'left-sleeve',
         label: 'Left Sleeve',
-        area: { u0: 0.028, v0: 0.262, u1: 0.090, v1: 0.468 },
+        area: { u0: 0.032, v0: 0.330, u1: 0.088, v1: 0.450 },
         camera: { x: -5.6, y: 2, z: 7.3 },
     },
     {
         id: 'right-sleeve',
         label: 'Right Sleeve',
-        area: { u0: 0.413, v0: 0.262, u1: 0.477, v1: 0.462 },
+        area: { u0: 0.414, v0: 0.330, u1: 0.470, v1: 0.450 },
         camera: { x: 5.6, y: 2, z: 7.3 },
     },
 ];
