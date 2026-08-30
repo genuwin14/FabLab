@@ -29,7 +29,7 @@
             </header>
 
             <!-- Page Content -->
-            <main class="flex-grow-1 p-3 p-md-4" style="overflow-y: auto;">
+            <main class="flex-grow-1 p-3 p-md-4" style="overflow-y: auto;" id="shopScroll">
                 <div class="container-fluid">
                     
                     <!-- Search & Categories Header -->
@@ -63,8 +63,8 @@
                         @endforeach
                     </div>
 
-                    <!-- Products Grid (4 Columns) -->
-                    <div class="row g-3 g-md-4">
+                    <!-- Products Grid — 5 columns at rest, zooming out to 8 on scroll -->
+                    <div class="row g-3 g-md-4" id="shopGrid">
                         @forelse($products as $product)
                         <div class="col-6 col-md-4 col-lg-3 col-xl-2dot4">
                             <div class="card h-100 border-0 shadow-sm rounded-4 product-card overflow-hidden">
@@ -152,7 +152,7 @@
                             </div>
                         </div>
                         @empty
-                        <div class="col-12 text-center py-5">
+                        <div class="col-12 text-center py-5 shop-grid-empty">
                             <div class="mb-3">
                                 <i class="bi bi-bag-x text-muted display-1 opacity-25"></i>
                             </div>
@@ -254,6 +254,111 @@
             .col-xl-2dot4 {
                 flex: 0 0 auto;
                 width: 20%; /* 100% / 5 columns */
+            }
+        }
+
+        /* ============================================
+           Scroll-to-zoom-out grid ( >= xl / 1200px )
+
+           The catalogue starts at the 5-up layout the Bootstrap columns
+           describe and zooms out as you scroll, ending at 8 across. Two
+           things move together, both driven by shop.js through custom
+           properties set on the grid:
+
+             --shop-card  the track width, shrinking from the 5-column fit
+                          to the 8-column one. auto-fill turns that into
+                          more columns; 1fr keeps every row flush, so the
+                          count steps 5 -> 6 -> 7 -> 8 while the rows never
+                          go ragged.
+             --shop-zoom  the same shrink as a plain ratio (1 down to ~0.6),
+                          multiplied into every type size and pad below so
+                          a card's contents shrink with the card instead of
+                          staying big inside it. That continuous part is
+                          what reads as zooming rather than reflowing.
+
+           Below xl, and whenever the reader asked for reduced motion, the
+           script sets neither property and the Bootstrap columns are left
+           to lay the grid out on their own.
+           ============================================ */
+        @media (min-width: 1200px) {
+            #shopGrid {
+                --shop-zoom: 1;
+                display: grid;
+                grid-template-columns:
+                    repeat(auto-fill, minmax(var(--shop-card, calc((100% - 6rem) / 5)), 1fr));
+                gap: 1.5rem;
+                margin: 0;
+                /* Rows stretch to fill a grid by default; with the reserve
+                   below handing height back and forth, pack them at the top
+                   so a card is never blown up into a tall blank. */
+                align-content: start;
+            }
+
+            /* .row and .col-* still describe the small-screen layout, so
+               undo the width, gutter padding and gutter margin they carry
+               into the grid rather than dropping the classes. */
+            #shopGrid > * {
+                width: auto !important;
+                max-width: none !important;
+                flex: none !important;
+                margin-top: 0 !important;
+                padding-left: 0 !important;
+                padding-right: 0 !important;
+            }
+
+            #shopGrid .shop-grid-empty {
+                grid-column: 1 / -1;
+            }
+
+            /* Everything the card draws at a fixed rem size, restated as a
+               multiple of the zoom. */
+            #shopGrid .card-body {
+                padding: calc(1rem * var(--shop-zoom)) !important;
+            }
+            #shopGrid .card-body h6 {
+                font-size: calc(1rem * var(--shop-zoom));
+            }
+            #shopGrid .card-body h5 {
+                font-size: calc(1.25rem * var(--shop-zoom));
+            }
+            #shopGrid .card-body .small {
+                font-size: calc(0.875rem * var(--shop-zoom));
+            }
+            #shopGrid .card-body .mt-auto {
+                padding-top: calc(1rem * var(--shop-zoom)) !important;
+            }
+            #shopGrid .badge {
+                font-size: calc(0.75rem * var(--shop-zoom));
+            }
+            #shopGrid .position-absolute.m-3 {
+                margin: calc(1rem * var(--shop-zoom)) !important;
+            }
+            #shopGrid .product-overlay > div {
+                padding: calc(1rem * var(--shop-zoom)) !important;
+                gap: calc(0.5rem * var(--shop-zoom)) !important;
+            }
+            #shopGrid .product-overlay .btn {
+                font-size: calc(0.875rem * var(--shop-zoom));
+                padding: calc(0.5rem * var(--shop-zoom)) calc(0.75rem * var(--shop-zoom)) !important;
+            }
+
+            /* Past roughly 6 columns the labels stop fitting the buttons.
+               Same answer the phone tier already gives: one row of
+               equal-width icons. */
+            #shopGrid.shop-grid-tight .product-actions {
+                flex-direction: row !important;
+            }
+            #shopGrid.shop-grid-tight .product-actions .btn {
+                width: auto !important;
+                flex: 1 1 0;
+                padding-left: 0 !important;
+                padding-right: 0 !important;
+            }
+            #shopGrid.shop-grid-tight .product-actions .btn span {
+                display: none !important;
+            }
+            #shopGrid.shop-grid-tight .product-actions .btn i {
+                margin: 0 !important;
             }
         }
 
@@ -496,6 +601,121 @@
                 }
             });
         });
+    </script>
+
+    <script>
+        /**
+         * Scroll-to-zoom-out for the product grid.
+         *
+         * Turns downward scrolling into a track width, from the 5-column fit
+         * down to the 8-column one, published to the stylesheet as
+         * --shop-card plus the same shrink as a plain ratio in --shop-zoom.
+         * Scrolling back up runs it in reverse.
+         *
+         * What it deliberately does NOT read is scrollTop. Smaller cards need
+         * fewer pixels, so zooming out shortens the page — and a shorter page
+         * is one the browser answers by clamping scrollTop, which would wind
+         * back the very zoom that shortened it. Reading the scrolling instead
+         * of the scroll position breaks that circle: how far the reader has
+         * pushed is a fact about them, and nothing the layout does can revise
+         * it. The page is then free to be exactly as long as its cards need,
+         * with no reserved space standing in for the height the zoom gave
+         * back.
+         *
+         * Wheel is the input that always fires, scroll room or none, so it
+         * leads. Scroll deltas are read too — that is a scrollbar drag or a
+         * PageDown, which raise no wheel event — but only outside the quiet
+         * window after a wheel, since wheel scrolling raises both and would
+         * otherwise count twice. A reader who drives the page some third way
+         * simply keeps the 5-column grid.
+         *
+         * The page scrolls inside <main>, not the window, so that is what we
+         * listen to.
+         */
+        (function () {
+            const grid = document.getElementById('shopGrid');
+            const scroller = document.getElementById('shopScroll');
+            if (!grid || !scroller) return;
+
+            const MIN_COLS = 5;
+            const MAX_COLS = 8;
+            const RANGE = 420;      // px of scrolling that spends the whole zoom
+            const WHEEL_QUIET = 150; // ms a wheel keeps the scroll handler off
+            const LINE = 16;        // px per line, for deltaMode 1
+
+            const wide = window.matchMedia('(min-width: 1200px)');
+            const still = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+            let spent = 0;          // px of the range used so far, 0..RANGE
+            let lastTop = scroller.scrollTop;
+            let lastHeight = scroller.scrollHeight;
+            let lastWheel = 0;
+            let queued = false;
+
+            const live = () => wide.matches && !still.matches;
+            const trackFor = (cols, width, gap) => (width - (cols - 1) * gap) / cols;
+
+            function spend(delta) {
+                if (!live()) return;
+                const next = Math.min(Math.max(spent + delta, 0), RANGE);
+                if (next === spent) return;
+                spent = next;
+                if (!queued) {
+                    queued = true;
+                    requestAnimationFrame(apply);
+                }
+            }
+
+            function apply() {
+                queued = false;
+
+                if (!live()) {
+                    grid.style.removeProperty('--shop-card');
+                    grid.style.removeProperty('--shop-zoom');
+                    grid.classList.remove('shop-grid-tight');
+                    return;
+                }
+
+                const width = grid.clientWidth;
+                if (!width) return;
+                const gap = parseFloat(getComputedStyle(grid).columnGap) || 0;
+
+                const p = spent / RANGE;
+                const widest = trackFor(MIN_COLS, width, gap);
+                const tightest = trackFor(MAX_COLS, width, gap);
+                // Half a pixel under the exact fit, so a rounded-up track can
+                // never cost the row its last column.
+                const track = widest + (tightest - widest) * p - 0.5;
+                const zoom = track / widest;
+
+                grid.style.setProperty('--shop-card', track.toFixed(2) + 'px');
+                grid.style.setProperty('--shop-zoom', zoom.toFixed(4));
+                grid.classList.toggle('shop-grid-tight', zoom < 0.8);
+            }
+
+            scroller.addEventListener('wheel', (e) => {
+                lastWheel = e.timeStamp;
+                const unit = e.deltaMode === 1 ? LINE : e.deltaMode === 2 ? scroller.clientHeight : 1;
+                spend(e.deltaY * unit);
+            }, { passive: true });
+
+            scroller.addEventListener('scroll', (e) => {
+                const top = scroller.scrollTop;
+                const height = scroller.scrollHeight;
+                // A page that just changed length moved this scrollTop on its
+                // own. Adopt the new position, but read no intent into it.
+                const moved = height === lastHeight ? top - lastTop : 0;
+                lastTop = top;
+                lastHeight = height;
+                if (e.timeStamp - lastWheel > WHEEL_QUIET) spend(moved);
+            }, { passive: true });
+
+            const reset = () => { spent = 0; apply(); };
+            window.addEventListener('resize', apply);
+            wide.addEventListener('change', reset);
+            still.addEventListener('change', reset);
+            apply();
+        })();
     </script>
     @endpush
 @endsection

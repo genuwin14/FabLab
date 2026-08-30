@@ -30,7 +30,9 @@ class ShopController extends Controller
             });
         }
 
-        $products = $query->latest()->paginate(12);
+        // 24 rather than 12: the catalogue zooms out to an 8-wide grid on
+        // scroll, and a page of 12 is only a row and a half at that size.
+        $products = $query->latest()->paginate(24);
         $categories = \App\Models\Category::all();
 
         return view('customer.shop.shop', compact('products', 'categories'));
