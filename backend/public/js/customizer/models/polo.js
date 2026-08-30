@@ -3,8 +3,8 @@
  */
 
 /**
- * The chest and back panels, measured off the GLB with tools/measure-print-area.cjs
- * and the world-space sweep it prints.
+ * The four printable panels — chest, back and both sleeves — measured off the
+ * GLB with tools/measure-print-area.cjs and the world-space sweep it prints.
  *
  * Unlike the t-shirt, these are NOT the file's own UVs. polo.glb ships unwrapped
  * to u -135..376, v -329..354 — hundreds of tiles outside the 0..1 design canvas,
@@ -25,10 +25,30 @@
  * upper half of a torso whose hem is at y -6.4 — where a chest print actually
  * goes, and clear of the collar and placket above it.
  *
- * No flips on either axis: the projection is built to land unmirrored. u grows
+ * The sleeves are the same projection read further out. Past |x| 3.2 the mesh
+ * is sleeve and nothing else — the torso, hem flare included, stops at 3.05 —
+ * so the strip beyond that is a panel in its own right, and giving it a zone
+ * costs no change to the unwrap the front and back already rely on.
+ *
+ * Their u is narrow, and unavoidably so. This projection flattens along z, and
+ * a sleeve is a tube: only a thin strip of it faces the customer square-on, the
+ * rest curving away to the outside of the arm. Measured at normal.z > 0.85 that
+ * strip is 0.062 of the tile, against 0.179 for the chest, so sleeve artwork
+ * lands about a third the size of a chest print — which is roughly what a real
+ * sleeve print is. Widening u past the square-on core would only let a design
+ * wrap round the arm and show as a sliver at the silhouette.
+ *
+ * v is measured loosely, the way t-shirt.js explains: nothing wraps vertically,
+ * and sizeScale follows the narrower side, which is u here whatever v does. So
+ * the band runs the sleeve's whole length, from the shoulder seam down to the
+ * cuff, and costs nothing to leave that generous — it is room to slide a design
+ * up or down the arm rather than room to make it bigger.
+ *
+ * No flips on any zone: the projection is built to land unmirrored. u grows
  * with world x on the front and against it on the back, which is screen-right in
  * both cases because the back is viewed from behind; v grows downward against
- * world y, which is the direction the canvas grows.
+ * world y, which is the direction the canvas grows. Both sleeves print on their
+ * front-facing surface, so both follow the front's convention.
  */
 const POLO_ZONES = [
     {
@@ -42,6 +62,21 @@ const POLO_ZONES = [
         label: 'Back',
         area: { u0: 0.659, v0: 0.474, u1: 0.838, v1: 0.634 },
         camera: { x: -4, y: 3, z: -8 },
+    },
+    {
+        // x -5.04..-3.2. The camera swings out to the left but stays in front,
+        // because this face is front-facing: viewed from the side it is edge-on
+        // and the design vanishes into the silhouette.
+        id: 'left-sleeve',
+        label: 'Left Sleeve',
+        area: { u0: 0.028, v0: 0.262, u1: 0.090, v1: 0.468 },
+        camera: { x: -5.6, y: 2, z: 7.3 },
+    },
+    {
+        id: 'right-sleeve',
+        label: 'Right Sleeve',
+        area: { u0: 0.413, v0: 0.262, u1: 0.477, v1: 0.462 },
+        camera: { x: 5.6, y: 2, z: 7.3 },
     },
 ];
 
