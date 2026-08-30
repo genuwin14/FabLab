@@ -138,7 +138,7 @@
                                                 </td>
                                                 <td class="text-end pe-4">
                                                     <div class="d-flex justify-content-end gap-2">
-                                                        <button class="btn btn-light btn-sm table-action-btn px-3 fw-bold shadow-sm border"
+                                                        <button class="btn btn-light btn-sm table-action-btn"
                                                             data-bs-toggle="modal"
                                                             data-bs-target="#editSupplierModal"
                                                             data-id="{{ $supplier->supplier_id }}"
@@ -146,15 +146,17 @@
                                                             data-contact_person="{{ $supplier->contact_person }}"
                                                             data-email="{{ $supplier->email }}"
                                                             data-phone="{{ $supplier->phone }}"
-                                                            data-address="{{ $supplier->address }}">
-                                                            <i class="bi bi-pencil me-1 text-warning"></i>Edit
+                                                            data-address="{{ $supplier->address }}"
+                                                            title="Edit Supplier">
+                                                            <i class="bi bi-pencil text-warning"></i>
                                                         </button>
-                                                        <button class="btn btn-outline-danger btn-sm table-action-btn px-3 fw-bold shadow-sm"
+                                                        <button class="btn btn-light btn-sm table-action-btn"
                                                             data-bs-toggle="modal"
                                                             data-bs-target="#deleteSupplierModal"
                                                             data-id="{{ $supplier->supplier_id }}"
-                                                            data-name="{{ $supplier->name }}">
-                                                            <i class="bi bi-trash me-1"></i>Delete
+                                                            data-name="{{ $supplier->name }}"
+                                                            title="Delete Supplier">
+                                                            <i class="bi bi-trash text-danger"></i>
                                                         </button>
                                                     </div>
                                                 </td>

@@ -217,30 +217,30 @@
                                                 <td class="text-end pe-4">
                                                     <div class="d-flex justify-content-end gap-2">
                                                         <a href="{{ route('admin.products.suppliers.assign', $product->product_id) }}"
-                                                            class="btn btn-light btn-sm table-action-btn px-3 fw-bold shadow-sm border"
+                                                            class="btn btn-light btn-sm table-action-btn"
                                                             title="Manage Suppliers">
-                                                            <i class="bi bi-truck me-1 text-primary"></i>Suppliers
+                                                            <i class="bi bi-truck text-primary"></i>
                                                         </a>
                                                         <a href="{{ route('admin.products.textures.assign', $product->product_id) }}"
-                                                            class="btn btn-light btn-sm table-action-btn px-3 fw-bold shadow-sm border"
+                                                            class="btn btn-light btn-sm table-action-btn"
                                                             title="Manage Textures">
-                                                            <i class="bi bi-layers me-1 text-info"></i>Textures
+                                                            <i class="bi bi-layers text-info"></i>
                                                         </a>
                                                         <a href="{{ route('admin.products.colors.assign', $product->product_id) }}"
-                                                            class="btn btn-light btn-sm table-action-btn px-3 fw-bold shadow-sm border"
+                                                            class="btn btn-light btn-sm table-action-btn"
                                                             title="Manage Colors">
-                                                            <i class="bi bi-palette me-1 text-success"></i>Colors
+                                                            <i class="bi bi-palette text-success"></i>
                                                         </a>
-                                                        <button class="btn btn-light btn-sm table-action-btn px-3 fw-bold shadow-sm border"
+                                                        <button class="btn btn-light btn-sm table-action-btn"
                                                             data-bs-toggle="modal" data-bs-target="#editProductModal"
-                                                            data-product="{{ json_encode($product) }}">
-                                                            <i class="bi bi-pencil me-1 text-warning"></i>Edit
+                                                            data-product="{{ json_encode($product) }}" title="Edit Product">
+                                                            <i class="bi bi-pencil text-warning"></i>
                                                         </button>
-                                                        <button class="btn btn-outline-danger btn-sm table-action-btn px-3 fw-bold shadow-sm"
+                                                        <button class="btn btn-light btn-sm table-action-btn"
                                                             data-bs-toggle="modal" data-bs-target="#deleteProductModal"
                                                             data-id="{{ $product->product_id }}"
-                                                            data-name="{{ $product->name }}">
-                                                            <i class="bi bi-trash me-1"></i>Delete
+                                                            data-name="{{ $product->name }}" title="Delete Product">
+                                                            <i class="bi bi-trash text-danger"></i>
                                                         </button>
                                                     </div>
                                                 </td>

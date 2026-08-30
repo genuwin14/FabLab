@@ -97,16 +97,17 @@
                                                 <td><span class="fw-bold text-dark">{{ $category->name }}</span></td>
                                                 <td class="text-muted small cat-desc-cell">{{ $category->description }}</td>
                                                 <td class="text-end pe-4">
-                                                    <button class="btn btn-light btn-sm table-action-btn px-3 fw-bold shadow-sm border me-1"
+                                                    <button class="btn btn-light btn-sm table-action-btn me-1"
                                                         data-bs-toggle="modal" data-bs-target="#editCategoryModal"
                                                         data-id="{{ $category->category_id }}" data-name="{{ $category->name }}"
-                                                        data-description="{{ $category->description }}">
-                                                        <i class="bi bi-pencil me-1 text-warning"></i>Edit
+                                                        data-description="{{ $category->description }}" title="Edit">
+                                                        <i class="bi bi-pencil text-warning"></i>
                                                     </button>
-                                                    <button class="btn btn-outline-danger btn-sm table-action-btn px-3 fw-bold shadow-sm" data-bs-toggle="modal"
+                                                    <button class="btn btn-light btn-sm table-action-btn" data-bs-toggle="modal"
                                                         data-bs-target="#deleteCategoryModal"
-                                                        data-id="{{ $category->category_id }}" data-name="{{ $category->name }}">
-                                                        <i class="bi bi-trash me-1"></i>Delete
+                                                        data-id="{{ $category->category_id }}" data-name="{{ $category->name }}"
+                                                        title="Delete">
+                                                        <i class="bi bi-trash text-danger"></i>
                                                     </button>
                                                 </td>
                                             </tr>

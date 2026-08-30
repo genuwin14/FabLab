@@ -160,15 +160,16 @@
                                                 <td class="text-muted small">{{ number_format($material->low_stock_threshold, 2) }}</td>
                                                 <td class="text-muted small text-uppercase">{{ $material->unit }}</td>
                                                 <td class="text-end pe-4">
-                                                    <button class="btn btn-light btn-sm table-action-btn px-3 fw-bold shadow-sm border me-1"
+                                                    <button class="btn btn-light btn-sm table-action-btn me-1"
                                                         data-bs-toggle="modal" data-bs-target="#recordUsageModal"
                                                         data-id="{{ $material->raw_material_id }}"
                                                         data-name="{{ $material->name }}"
                                                         data-stock="{{ $material->stock_quantity }}"
-                                                        data-unit="{{ $material->unit }}">
-                                                        <i class="bi bi-clipboard-check me-1 text-primary"></i>Usage
+                                                        data-unit="{{ $material->unit }}"
+                                                        title="Record usage">
+                                                        <i class="bi bi-clipboard-check text-primary"></i>
                                                     </button>
-                                                    <button class="btn btn-light btn-sm table-action-btn px-3 fw-bold shadow-sm border me-1"
+                                                    <button class="btn btn-light btn-sm table-action-btn me-1"
                                                         data-bs-toggle="modal" data-bs-target="#editRawMaterialModal"
                                                         data-id="{{ $material->raw_material_id }}"
                                                         data-name="{{ $material->name }}"
@@ -183,14 +184,15 @@
                                                         data-units_damaged="{{ $material->units_damaged }}"
                                                         data-units_consumed="{{ $material->units_consumed }}"
                                                         data-department="{{ $material->department }}"
-                                                        data-image="{{ $material->image_url }}">
-                                                        <i class="bi bi-pencil me-1 text-warning"></i>Edit
+                                                        data-image="{{ $material->image_url }}" title="Edit">
+                                                        <i class="bi bi-pencil text-warning"></i>
                                                     </button>
-                                                    <button class="btn btn-outline-danger btn-sm table-action-btn px-3 fw-bold shadow-sm" data-bs-toggle="modal"
+                                                    <button class="btn btn-light btn-sm table-action-btn" data-bs-toggle="modal"
                                                         data-bs-target="#deleteRawMaterialModal"
-                                                        data-id="{{ $material->raw_material_id }}"
-                                                        data-name="{{ $material->name }}">
-                                                        <i class="bi bi-trash me-1"></i>Delete
+                                                        data-id="{{ $material->raw_material_id }}" 
+                                                        data-name="{{ $material->name }}"
+                                                        title="Delete">
+                                                        <i class="bi bi-trash text-danger"></i>
                                                     </button>
                                                 </td>
                                             </tr>

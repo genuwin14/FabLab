@@ -111,8 +111,8 @@
                                                             </td>
                                                             <td class="pe-4 py-4 border-bottom-0 text-end">
                                                                 <button
-                                                                    class="btn btn-outline-danger btn-sm table-action-btn px-3 fw-bold shadow-sm btn-remove-item">
-                                                                    <i class="bi bi-trash me-1"></i>Remove
+                                                                    class="btn btn-light text-danger btn-sm table-action-btn border-0 shadow-sm btn-remove-item">
+                                                                    <i class="bi bi-trash"></i>
                                                                 </button>
                                                             </td>
                                                         </tr>
