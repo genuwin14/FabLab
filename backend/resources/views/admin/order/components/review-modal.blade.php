@@ -67,24 +67,32 @@
                                 <i class="bi bi-x-lg"></i> Close
                             </button>
                         </div>
-                        <div class="border rounded-3 bg-light position-relative overflow-hidden">
+                        {{-- One fixed stage that all three layers sit inside,
+                             stacked in z rather than in flow. Laid out normally
+                             they queued up vertically instead — a 680px box
+                             showing the model, the spinner and the snapshot at
+                             the same time. --}}
+                        <div class="review-design-stage border rounded-3 bg-light">
                             {{-- The live model, so the reviewer can turn the
                                  design round. Judging how much ink a print takes
                                  off one fixed angle means never seeing the back
                                  of a mug. Uses the same init() and
                                  loadDesignRecipePreview() the design popout on
                                  this page already runs, so there is one 3D
-                                 pipeline rather than two. --}}
-                            <div id="reviewDesignViewer" hidden></div>
+                                 pipeline rather than two.
 
-                            {{-- The snapshot, shown while the scene builds and
-                                 left in place if it can't. A preview is not
-                                 worth failing an approval over. --}}
-                            <img id="reviewDesignPreviewImage" src="" alt="Design preview"
-                                class="img-fluid rounded d-block mx-auto">
+                                 Always in the document, never toggled: init()
+                                 measures this box to size the renderer, and
+                                 anything that hides it first makes that zero.
+                                 Empty, it draws nothing anyway. --}}
+                            <div id="reviewDesignViewer"></div>
 
-                            <div id="reviewDesignPreviewLoader"
-                                class="position-absolute top-50 start-50 translate-middle text-center" hidden>
+                            {{-- The snapshot, covering the model while the scene
+                                 builds and left in place if it can't start. A
+                                 preview is not worth failing an approval over. --}}
+                            <img id="reviewDesignPreviewImage" src="" alt="Design preview">
+
+                            <div id="reviewDesignPreviewLoader" hidden>
                                 <div class="spinner-border text-warning mb-2" role="status"></div>
                                 <div class="fw-bold text-uppercase text-muted"
                                     style="font-size: 0.65rem; letter-spacing: 0.06em;">Starting 3D preview…</div>
@@ -290,7 +298,7 @@
 
         document.getElementById('reviewDesignPreviewTitle').textContent = label || 'Design';
         image.src = src || '';
-        image.classList.remove('d-none');
+        image.hidden = false;
         panel.hidden = false;
         panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 
@@ -299,16 +307,11 @@
         if (!design || typeof init !== 'function' || typeof loadDesignRecipePreview !== 'function') {
             loader.hidden = true;
             hint.hidden = true;
-            document.getElementById('reviewDesignViewer').hidden = true;
             return;
         }
 
         loader.hidden = false;
         hint.hidden = false;
-
-        // Revealed before the scene is built, not after: init() measures this
-        // box to size the renderer, and a hidden box measures zero.
-        document.getElementById('reviewDesignViewer').hidden = false;
 
         // Let the panel lay out before measuring the container, or the canvas
         // is sized against a box that has not been given its height yet.
@@ -321,7 +324,6 @@
 
         try {
             disposeReviewDesignScene();
-            document.getElementById('reviewDesignViewer').hidden = false;
 
             let recipe = design.recipe;
             if (typeof recipe === 'string') {
@@ -352,14 +354,16 @@
             setTimeout(() => {
                 loadDesignRecipePreview(recipe);
                 loader.hidden = true;
-                image.classList.add('d-none');
+                // Uncover the model now there is something worth seeing.
+                image.hidden = true;
             }, 800);
         } catch (err) {
             console.error('Review 3D preview failed to initialize:', err);
             loader.hidden = true;
             document.getElementById('reviewDesignPreviewHint').hidden = true;
-            document.getElementById('reviewDesignViewer').hidden = true;
-            image.classList.remove('d-none');
+            // The snapshot is already covering the empty stage, so there is
+            // nothing to restore — just stop pretending a model is coming.
+            image.hidden = false;
         }
     }
 
@@ -373,7 +377,6 @@
         const canvas = container ? container.querySelector('canvas') : null;
 
         if (canvas) canvas.remove();
-        if (container) container.hidden = true;
 
         if (typeof renderer !== 'undefined' && renderer) {
             renderer.dispose();
@@ -392,7 +395,9 @@
         document.getElementById('reviewDesignPreviewHint').hidden = true;
         // Dropping the src releases the snapshot, which is a full-size data URI
         // and not something to keep decoded between reviews.
-        document.getElementById('reviewDesignPreviewImage').removeAttribute('src');
+        const image = document.getElementById('reviewDesignPreviewImage');
+        image.removeAttribute('src');
+        image.hidden = false;
     }
 </script>
 
@@ -401,22 +406,50 @@
 
     /* Tall enough to judge ink coverage on, capped so the modal still scrolls
        normally on a laptop. */
-    #reviewDesignPreviewImage { max-height: 340px; }
+    /* The stage owns the height. Every layer inside is absolutely positioned
+       so they overlap instead of queueing up, which is what made the box grow
+       to fit all three at once. Tall enough to turn a model round in without
+       the modal growing a second scrollbar. */
+    .review-design-stage {
+        position: relative;
+        height: 340px;
+        overflow: hidden;
+    }
 
-    /* Tall enough to turn a model round in without the modal growing a second
-       scrollbar. */
-    #reviewDesignViewer { height: 340px; }
+    .review-design-stage > #reviewDesignViewer {
+        position: absolute;
+        inset: 0;
+    }
 
-    /* Hidden through the attribute, never :empty. init() sizes the renderer
-       from the container's measured box, and an :empty rule hides it while it
-       is still empty — which is exactly when init() runs, so the canvas came
-       out 0x0 and drew nothing. */
-    #reviewDesignViewer[hidden] { display: none; }
     #reviewDesignViewer canvas { display: block; width: 100% !important; height: 100% !important; cursor: grab; }
     #reviewDesignViewer canvas:active { cursor: grabbing; }
 
+    /* The snapshot covers the model while it builds, so it sits above the
+       canvas and is removed once there is something better to look at. */
+    .review-design-stage > #reviewDesignPreviewImage {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        max-width: 100%;
+        max-height: 100%;
+        border-radius: 6px;
+    }
+
+    .review-design-stage > #reviewDesignPreviewLoader {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        text-align: center;
+        /* Above the snapshot it is spinning over. */
+        z-index: 2;
+    }
+
+    .review-design-stage > [hidden] { display: none !important; }
+
     @media (max-width: 575.98px) {
-        #reviewDesignViewer { height: 240px; }
+        .review-design-stage { height: 240px; }
     }
 
     /* The thumbnail is the affordance, so it has to look like one. */
@@ -441,7 +474,5 @@
     }
     #reviewItemsBody .review-item-thumb:hover::after { opacity: 1; }
 
-    @media (max-width: 575.98px) {
-        #reviewDesignPreviewImage { max-height: 220px; }
-    }
+
 </style>
