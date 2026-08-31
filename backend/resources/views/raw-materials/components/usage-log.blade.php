@@ -8,7 +8,15 @@
     use App\Enums\StockMovementReason;
 
     $canCorrect = $routePrefix === 'admin';
-    $logReasons = array_merge(StockMovementReason::selectable($canCorrect), [StockMovementReason::Reversal]);
+
+    // The filter lists everything the log can *contain*, which is wider than
+    // what a person can pick in the Record Usage form: reservations are written
+    // by order approvals and reversals by the Reverse button, but both show up
+    // here and are worth being able to narrow to.
+    $logReasons = array_merge(
+        StockMovementReason::selectable($canCorrect),
+        [StockMovementReason::Reserved, StockMovementReason::Reversal],
+    );
 @endphp
 
 <!-- Log filters -->
