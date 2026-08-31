@@ -62,8 +62,12 @@
                 <i class="bi bi-pencil-square me-1"></i>These are estimates. Correct any of them against the
                 design above — an all-red image uses little cyan, a dense photo uses more of everything.
             </small>
-            <button type="button" class="btn btn-sm btn-link p-0 text-decoration-none text-nowrap materials-reset-btn">
-                <i class="bi bi-arrow-counterclockwise"></i> Reset
+            {{-- Disabled until something has actually been changed. It used to
+                 sit there enabled with nothing to undo, so clicking it did
+                 nothing and read as broken. --}}
+            <button type="button" class="btn btn-sm btn-link p-0 text-decoration-none text-nowrap materials-reset-btn"
+                title="Put the calculated estimates back" disabled>
+                <i class="bi bi-arrow-counterclockwise"></i> Undo my changes
             </button>
         </div>
 
@@ -85,6 +89,16 @@
            hidden attribute this row is toggled with. */
         .order-materials .materials-adjust-hint { display: flex; }
         .order-materials .materials-adjust-hint[hidden] { display: none; }
+
+        /* A row the reviewer overrode, so the two kinds of number are told
+           apart at a glance. */
+        .order-materials .materials-edited td { background-color: rgba(13, 110, 253, 0.05); }
+        .order-materials .materials-edited .materials-input {
+            border-color: #0d6efd;
+            font-weight: 600;
+        }
+
+        .order-materials .materials-reset-btn:disabled { opacity: .4; }
 
         .order-materials .materials-input { width: 92px; }
     </style>
@@ -109,11 +123,13 @@
             const shortage = panel.querySelector('.materials-shortage');
             const list = panel.querySelector('.materials-shortage-list');
             const inputs = panel.querySelectorAll('.materials-input');
+            const resetBtn = panel.querySelector('.materials-reset-btn');
 
             const round = value => Math.round(value * 100) / 100;
 
             function recalculate() {
                 const problems = [];
+                let changed = 0;
 
                 inputs.forEach(input => {
                     const row = input.closest('tr');
@@ -126,6 +142,12 @@
                         remaining.textContent = '—';
                         return;
                     }
+
+                    // Mark the rows a person has overridden, so it is obvious
+                    // which figures are a judgement and which the formula's.
+                    const edited = Math.abs(wanted - parseFloat(input.dataset.calculated)) > 0.0001;
+                    row.classList.toggle('materials-edited', edited);
+                    if (edited) changed++;
 
                     const over = wanted > stock;
                     row.classList.toggle('materials-short', over);
@@ -145,11 +167,14 @@
                     li.textContent = text;
                     list.appendChild(li);
                 });
+
+                // Nothing changed means nothing to undo.
+                resetBtn.disabled = changed === 0;
             }
 
             inputs.forEach(input => input.addEventListener('input', recalculate));
 
-            panel.querySelector('.materials-reset-btn').onclick = () => {
+            resetBtn.onclick = () => {
                 inputs.forEach(input => { input.value = input.dataset.calculated; });
                 recalculate();
             };
