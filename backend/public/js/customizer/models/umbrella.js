@@ -67,7 +67,7 @@ function createUmbrellaModel() {
         });
 
         fitModelToView(model);
-        model_group.add(model);
+        setModel(model);
         console.log("Umbrella model loaded successfully.");
 
         // Trigger re-render with the currently selected texture
@@ -87,7 +87,7 @@ function createUmbrellaModel() {
         });
         const mesh = new THREE.Mesh(geometry, material);
         mesh.name = 'base';
-        model_group.add(mesh);
+        setModel(mesh);
         hideLoadingScreen();
     });
 }

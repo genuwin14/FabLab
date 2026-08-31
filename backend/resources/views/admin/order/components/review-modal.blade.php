@@ -352,10 +352,19 @@
             init('reviewDesignViewer');
 
             setTimeout(() => {
-                loadDesignRecipePreview(recipe);
-                loader.hidden = true;
-                // Uncover the model now there is something worth seeing.
-                image.hidden = true;
+                // finally, not a plain sequence: applying the recipe can throw
+                // on a design the renderer doesn't understand, and the spinner
+                // was left turning forever over a model that had already
+                // rendered behind it.
+                try {
+                    loadDesignRecipePreview(recipe);
+                } catch (err) {
+                    console.error('Applying the design to the preview failed:', err);
+                } finally {
+                    loader.hidden = true;
+                    // Uncover the model now there is something worth seeing.
+                    image.hidden = true;
+                }
             }, 800);
         } catch (err) {
             console.error('Review 3D preview failed to initialize:', err);

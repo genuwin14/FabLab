@@ -91,7 +91,7 @@ function createTshirtModel() {
             }
         });
 
-        model_group.add(model);
+        setModel(model);
         console.log("T-Shirt model loaded successfully.");
 
         // Trigger re-render with the currently selected texture
@@ -102,7 +102,7 @@ function createTshirtModel() {
         hideLoadingScreen();
     }, undefined, function(error) {
         console.error('An error happened while loading the T-shirt:', error);
-        model_group.add(mesh);
+        setModel(mesh);
         hideLoadingScreen();
     });
 }

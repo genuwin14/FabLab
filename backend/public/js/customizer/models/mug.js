@@ -49,7 +49,7 @@ function createMugModel() {
             }
         });
 
-        model_group.add(model);
+        setModel(model);
         console.log("Cup model loaded successfully.");
 
         // Trigger re-render with the currently selected texture
@@ -67,7 +67,7 @@ function createMugModel() {
             roughness: 0.1,
             metalness: 0.2
         });
-        model_group.add(mesh);
+        setModel(mesh);
         hideLoadingScreen();
     });
 }

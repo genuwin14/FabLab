@@ -147,7 +147,7 @@ function createPoloModel() {
         });
 
         fitModelToView(model);
-        model_group.add(model);
+        setModel(model);
         console.log("Polo model loaded successfully.");
 
         // Trigger re-render with the currently selected texture
@@ -167,7 +167,7 @@ function createPoloModel() {
         });
         const mesh = new THREE.Mesh(geometry, material);
         mesh.name = 'base';
-        model_group.add(mesh);
+        setModel(mesh);
         hideLoadingScreen();
     });
 }

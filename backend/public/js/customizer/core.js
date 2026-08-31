@@ -111,6 +111,29 @@ function fitModelToView(model, targetSize = 2.5) {
 }
 
 /**
+ * Put `object` in the model group as the only thing in it.
+ *
+ * Every model loads asynchronously but clears the group synchronously, before
+ * its load starts. Two loads that overlap therefore both clear an already-empty
+ * group and then both add, leaving two models stacked in the same place — a mug
+ * with a handle on each side. Overlapping loads happen whenever init() runs
+ * twice before the first GLB arrives, which a preview being opened, closed and
+ * reopened does easily.
+ *
+ * Clearing here instead makes the last load to arrive the one that wins,
+ * whatever order they were started in.
+ */
+function setModel(object) {
+    if (!model_group) return;
+
+    while (model_group.children.length > 0) {
+        model_group.remove(model_group.children[0]);
+    }
+
+    model_group.add(object);
+}
+
+/**
  * Grow `target` to cover a mesh's vertices, with the mesh's own transform
  * applied. Measured against the loaded model's root, so call it before the
  * model joins model_group.

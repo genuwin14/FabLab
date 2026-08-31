@@ -50,7 +50,7 @@ function createBagModel() {
         });
 
         fitModelToView(model);
-        model_group.add(model);
+        setModel(model);
         console.log("Bag model loaded successfully.");
 
         // Trigger re-render with the currently selected texture
@@ -70,7 +70,7 @@ function createBagModel() {
         });
         const mesh = new THREE.Mesh(geometry, material);
         mesh.name = 'base';
-        model_group.add(mesh);
+        setModel(mesh);
         hideLoadingScreen();
     });
 }

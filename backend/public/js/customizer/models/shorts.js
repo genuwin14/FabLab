@@ -34,7 +34,7 @@ function createShortsModel() {
             }
         });
 
-        model_group.add(model);
+        setModel(model);
         console.log("Shorts model loaded successfully.");
 
         // Trigger re-render with the currently selected texture
@@ -53,7 +53,7 @@ function createShortsModel() {
             metalness: 0.1
         });
         const mesh = new THREE.Mesh(geometry, material);
-        model_group.add(mesh);
+        setModel(mesh);
         hideLoadingScreen();
     });
 }
