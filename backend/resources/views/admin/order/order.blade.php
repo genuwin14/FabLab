@@ -661,7 +661,11 @@
                             <tr>
                                 <td class="ps-3 py-2">
                                     <div class="d-flex align-items-center">
-                                        <div class="rounded border bg-white p-1 me-2" style="width: 40px; height: 40px;">
+                                        <div class="rounded border bg-white p-1 me-2 review-item-thumb"
+                                            style="width: 40px; height: 40px;"
+                                            data-full-image="${imgSrc}"
+                                            data-item-label="${isCustom ? 'Design — ' : ''}${product.name ?? 'Item'}"
+                                            title="Click to view larger" role="button" tabindex="0">
                                             <img src="${imgSrc}" class="w-100 h-100 object-fit-cover rounded" alt="">
                                         </div>
                                         <div>
@@ -688,6 +692,9 @@
                     // and dye the product's own bill of materials never
                     // mentions. Only worth showing while approving; cancelling
                     // puts materials back rather than taking them.
+                    // A previous review's design must not linger behind this one.
+                    closeReviewDesignPreview();
+
                     const materialsPanel = document.getElementById('reviewMaterialsPanel');
                     if (mode === 'cancel') {
                         materialsPanel.classList.add('d-none');

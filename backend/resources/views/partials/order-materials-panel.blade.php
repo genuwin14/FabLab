@@ -51,8 +51,13 @@
         </div>
 
         {{-- Only shown when the panel is editable. The estimate is a formula's
-             best guess at coverage; the reviewer is looking at the artwork. --}}
-        <div class="materials-adjust-hint d-none d-flex justify-content-between align-items-start gap-2 mb-2">
+             best guess at coverage; the reviewer is looking at the artwork.
+
+             Shown and hidden through the hidden attribute rather than d-none,
+             because pairing it with d-flex pits two !important display
+             utilities against each other and d-flex wins — which left this row
+             and its Reset button on screens that never wired them up. --}}
+        <div class="materials-adjust-hint justify-content-between align-items-start gap-2 mb-2" hidden>
             <small class="text-muted">
                 <i class="bi bi-pencil-square me-1"></i>These are estimates. Correct any of them against the
                 design above — an all-red image uses little cyan, a dense photo uses more of everything.
@@ -75,6 +80,13 @@
         .order-materials .materials-short td { background-color: rgba(220, 53, 69, 0.06); }
         .order-materials .materials-qty { font-variant-numeric: tabular-nums; }
         .order-materials .materials-note { line-height: 1.4; }
+
+        /* Not a d-flex utility — those are !important and would beat the
+           hidden attribute this row is toggled with. */
+        .order-materials .materials-adjust-hint { display: flex; }
+        .order-materials .materials-adjust-hint[hidden] { display: none; }
+
+        .order-materials .materials-input { width: 92px; }
     </style>
 
     <script>
@@ -191,7 +203,7 @@
                     // moved yet, and only for the materials a reviewer can weigh
                     // up. The caller decides whether this screen allows it.
                     const canEdit = editable && data.stage === 'reserve';
-                    panel.querySelector('.materials-adjust-hint').classList.toggle('d-none', !canEdit);
+                    panel.querySelector('.materials-adjust-hint').hidden = !canEdit;
 
                     data.lines.forEach(line => {
                         const row = document.createElement('tr');
