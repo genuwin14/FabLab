@@ -646,7 +646,11 @@
                     const tbody = document.getElementById('reviewItemsBody');
                     tbody.innerHTML = '';
 
-                    items.forEach(item => {
+                    // Keyed by row so the enlarged preview can find the design
+                    // without threading a recipe through an HTML attribute.
+                    window.reviewDesignsByIndex = {};
+
+                    items.forEach((item, itemIndex) => {
                         const product = item.product || {};
                         const stock = product.stock ?? 0;
                         const isAvailable = stock >= item.quantity;
@@ -665,6 +669,7 @@
                                             style="width: 40px; height: 40px;"
                                             data-full-image="${imgSrc}"
                                             data-item-label="${isCustom ? 'Design — ' : ''}${product.name ?? 'Item'}"
+                                            data-item-index="${itemIndex}"
                                             title="Click to view larger" role="button" tabindex="0">
                                             <img src="${imgSrc}" class="w-100 h-100 object-fit-cover rounded" alt="">
                                         </div>
@@ -684,6 +689,13 @@
                             </tr>
                         `;
                         tbody.innerHTML += row;
+
+                        window.reviewDesignsByIndex[itemIndex] = {
+                            // Only a tailored line has a model to build; a plain
+                            // one falls back to the product photo.
+                            design: isCustom ? design : null,
+                            productName: product.name || ''
+                        };
                     });
 
                     // The finished-goods table above says whether there is a

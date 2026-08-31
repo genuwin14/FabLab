@@ -67,9 +67,32 @@
                                 <i class="bi bi-x-lg"></i> Close
                             </button>
                         </div>
-                        <div class="border rounded-3 bg-light text-center p-2">
-                            <img id="reviewDesignPreviewImage" src="" alt="Design preview" class="img-fluid rounded">
+                        <div class="border rounded-3 bg-light position-relative overflow-hidden">
+                            {{-- The live model, so the reviewer can turn the
+                                 design round. Judging how much ink a print takes
+                                 off one fixed angle means never seeing the back
+                                 of a mug. Uses the same init() and
+                                 loadDesignRecipePreview() the design popout on
+                                 this page already runs, so there is one 3D
+                                 pipeline rather than two. --}}
+                            <div id="reviewDesignViewer" hidden></div>
+
+                            {{-- The snapshot, shown while the scene builds and
+                                 left in place if it can't. A preview is not
+                                 worth failing an approval over. --}}
+                            <img id="reviewDesignPreviewImage" src="" alt="Design preview"
+                                class="img-fluid rounded d-block mx-auto">
+
+                            <div id="reviewDesignPreviewLoader"
+                                class="position-absolute top-50 start-50 translate-middle text-center" hidden>
+                                <div class="spinner-border text-warning mb-2" role="status"></div>
+                                <div class="fw-bold text-uppercase text-muted"
+                                    style="font-size: 0.65rem; letter-spacing: 0.06em;">Starting 3D preview…</div>
+                            </div>
                         </div>
+                        <small class="text-muted d-block mt-1" id="reviewDesignPreviewHint" hidden>
+                            <i class="bi bi-arrows-move me-1"></i>Drag to rotate, scroll to zoom.
+                        </small>
                     </div>
 
                     @include('partials.order-materials-panel', ['panelId' => 'reviewMaterialsPanel'])
@@ -235,26 +258,138 @@
                 const thumb = event.target.closest('.review-item-thumb');
                 if (!thumb) return;
 
-                openReviewDesignPreview(thumb.dataset.fullImage, thumb.dataset.itemLabel);
+                // The design is looked up rather than read off an attribute: a
+                // recipe is nested JSON, and round-tripping it through markup
+                // is a quoting problem with nothing to gain.
+                const entry = (window.reviewDesignsByIndex || {})[thumb.dataset.itemIndex];
+
+                openReviewDesignPreview(
+                    thumb.dataset.fullImage,
+                    thumb.dataset.itemLabel,
+                    entry ? entry.design : null,
+                    entry ? entry.productName : null
+                );
             });
         }
     });
 
-    function openReviewDesignPreview(src, label) {
+    /**
+     * Open the enlarged preview.
+     *
+     * `design` is the order line's custom design, or null for a plain item.
+     * With one, the model is built so the reviewer can turn it round; without,
+     * the product photo is all there is to show.
+     */
+    function openReviewDesignPreview(src, label, design, productName) {
         const panel = document.getElementById('reviewDesignPreview');
-        if (!panel || !src) return;
+        if (!panel || (!src && !design)) return;
 
-        document.getElementById('reviewDesignPreviewImage').src = src;
+        const image = document.getElementById('reviewDesignPreviewImage');
+        const loader = document.getElementById('reviewDesignPreviewLoader');
+        const hint = document.getElementById('reviewDesignPreviewHint');
+
         document.getElementById('reviewDesignPreviewTitle').textContent = label || 'Design';
+        image.src = src || '';
+        image.classList.remove('d-none');
         panel.hidden = false;
         panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+        // A plain item has no recipe to build a model from, and the 3D engine
+        // may not have loaded at all. Either way the snapshot stands in.
+        if (!design || typeof init !== 'function' || typeof loadDesignRecipePreview !== 'function') {
+            loader.hidden = true;
+            hint.hidden = true;
+            document.getElementById('reviewDesignViewer').hidden = true;
+            return;
+        }
+
+        loader.hidden = false;
+        hint.hidden = false;
+
+        // Revealed before the scene is built, not after: init() measures this
+        // box to size the renderer, and a hidden box measures zero.
+        document.getElementById('reviewDesignViewer').hidden = false;
+
+        // Let the panel lay out before measuring the container, or the canvas
+        // is sized against a box that has not been given its height yet.
+        setTimeout(() => buildReviewDesignScene(design, productName), 60);
+    }
+
+    function buildReviewDesignScene(design, productName) {
+        const image = document.getElementById('reviewDesignPreviewImage');
+        const loader = document.getElementById('reviewDesignPreviewLoader');
+
+        try {
+            disposeReviewDesignScene();
+            document.getElementById('reviewDesignViewer').hidden = false;
+
+            let recipe = design.recipe;
+            if (typeof recipe === 'string') {
+                try { recipe = JSON.parse(recipe); } catch (e) { recipe = {}; }
+            }
+            recipe = recipe || {};
+
+            // Same shape resolution the design popout on this page uses. Polo
+            // is checked before any shirt match, because a polo has its own
+            // model and would otherwise fall through to the t-shirt.
+            const name = (productName || '').toLowerCase();
+            let baseShape = 't-shirt';
+            if (name.includes('polo')) baseShape = 'polo';
+            else if (name.includes('mug')) baseShape = 'mug';
+            else if (name.includes('umbrella')) baseShape = 'umbrella';
+            else if (name.includes('bag')) baseShape = 'bag';
+            else if (name.includes('shorts')) baseShape = 'shorts';
+            else if (recipe.base_style) baseShape = recipe.base_style;
+
+            // Merge rather than replace: a wholesale assignment drops the
+            // texture catalogue and every previewed design renders blank white.
+            window.CustomizerConfig = Object.assign(window.CustomizerConfig || {}, {
+                initialShape: baseShape
+            });
+
+            init('reviewDesignViewer');
+
+            setTimeout(() => {
+                loadDesignRecipePreview(recipe);
+                loader.hidden = true;
+                image.classList.add('d-none');
+            }, 800);
+        } catch (err) {
+            console.error('Review 3D preview failed to initialize:', err);
+            loader.hidden = true;
+            document.getElementById('reviewDesignPreviewHint').hidden = true;
+            document.getElementById('reviewDesignViewer').hidden = true;
+            image.classList.remove('d-none');
+        }
+    }
+
+    /**
+     * Tear the scene down. There is one global renderer shared with the design
+     * popout on this page, so leaving ours running would have two modals
+     * fighting over it — and a WebGL context leaks until it is disposed.
+     */
+    function disposeReviewDesignScene() {
+        const container = document.getElementById('reviewDesignViewer');
+        const canvas = container ? container.querySelector('canvas') : null;
+
+        if (canvas) canvas.remove();
+        if (container) container.hidden = true;
+
+        if (typeof renderer !== 'undefined' && renderer) {
+            renderer.dispose();
+            renderer = null;
+        }
     }
 
     function closeReviewDesignPreview() {
         const panel = document.getElementById('reviewDesignPreview');
         if (!panel) return;
 
+        disposeReviewDesignScene();
+
         panel.hidden = true;
+        document.getElementById('reviewDesignPreviewLoader').hidden = true;
+        document.getElementById('reviewDesignPreviewHint').hidden = true;
         // Dropping the src releases the snapshot, which is a full-size data URI
         // and not something to keep decoded between reviews.
         document.getElementById('reviewDesignPreviewImage').removeAttribute('src');
@@ -267,6 +402,22 @@
     /* Tall enough to judge ink coverage on, capped so the modal still scrolls
        normally on a laptop. */
     #reviewDesignPreviewImage { max-height: 340px; }
+
+    /* Tall enough to turn a model round in without the modal growing a second
+       scrollbar. */
+    #reviewDesignViewer { height: 340px; }
+
+    /* Hidden through the attribute, never :empty. init() sizes the renderer
+       from the container's measured box, and an :empty rule hides it while it
+       is still empty — which is exactly when init() runs, so the canvas came
+       out 0x0 and drew nothing. */
+    #reviewDesignViewer[hidden] { display: none; }
+    #reviewDesignViewer canvas { display: block; width: 100% !important; height: 100% !important; cursor: grab; }
+    #reviewDesignViewer canvas:active { cursor: grabbing; }
+
+    @media (max-width: 575.98px) {
+        #reviewDesignViewer { height: 240px; }
+    }
 
     /* The thumbnail is the affordance, so it has to look like one. */
     #reviewItemsBody .review-item-thumb { cursor: zoom-in; position: relative; }
