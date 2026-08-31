@@ -104,7 +104,42 @@ class OrderMaterialsPanelTest extends TestCase
             ->assertJsonPath('lines.0.stock', '100')
             ->assertJsonPath('lines.0.remaining', '94')
             ->assertJsonPath('lines.0.short', false)
+            // The reviewer has to be able to correct this, which means the row
+            // has to say so and name the material the correction applies to.
+            // Both were silently dropped once by an array union that kept the
+            // left operand's keys, and the table rendered read-only with no
+            // error anywhere.
+            ->assertJsonPath('lines.0.editable', true)
+            ->assertJsonPath('lines.0.id', $this->fabric->raw_material_id)
             ->assertJsonPath('shortages', []);
+    }
+
+    public function test_a_material_line_carries_what_the_form_needs_to_correct_it(): void
+    {
+        $order = $this->order();
+        $this->asAdmin();
+
+        $lines = $this->get("/admin/orders/{$order->order_id}/materials")->assertOk()->json('lines');
+
+        $this->assertNotEmpty($lines);
+        foreach ($lines as $line) {
+            $this->assertTrue($line['editable'], 'A raw material line should be correctable at review.');
+            $this->assertIsInt($line['id']);
+        }
+    }
+
+    public function test_nothing_is_correctable_once_the_stock_has_moved(): void
+    {
+        $order = $this->order();
+        $this->asAdmin();
+        $this->post("/admin/orders/{$order->order_id}/review", ['status' => 'approved']);
+
+        // Past approval the figure is a fact off the ledger, not an estimate,
+        // so there is nothing left to weigh up.
+        $this->get("/staff/orders/{$order->order_id}/materials")
+            ->assertOk()
+            ->assertJsonPath('stage', 'consume')
+            ->assertJsonPath('lines.0.editable', false);
     }
 
     public function test_a_shortage_is_flagged_before_the_admin_approves(): void

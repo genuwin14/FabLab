@@ -221,13 +221,11 @@ class OrderStockService
                 // Only raw materials are correctable. A texture is one sheet per
                 // item — a count, not a judgement about coverage — so there is
                 // nothing for a reviewer to weigh up.
-                $lines[] = $this->line($entry['model']->name, $entry['model']->unit, $entry['quantity'], (float) $entry['model']->stock_quantity)
-                    + ['id' => $id, 'editable' => true];
+                $lines[] = $this->line($entry['model']->name, $entry['model']->unit, $entry['quantity'], (float) $entry['model']->stock_quantity, id: $id, editable: true);
             }
 
             foreach ($requirements['textures'] as $entry) {
-                $lines[] = $this->line($entry['model']->name, 'pcs', $entry['quantity'], (float) $entry['model']->stock_quantity)
-                    + ['id' => null, 'editable' => false];
+                $lines[] = $this->line($entry['model']->name, 'pcs', $entry['quantity'], (float) $entry['model']->stock_quantity);
             }
 
             return [
@@ -294,11 +292,22 @@ class OrderStockService
      *
      * @return array<string, mixed>
      */
-    private function line(string $name, ?string $unit, float $quantity, float $stock, bool $checkStock = true): array
-    {
+    private function line(
+        string $name,
+        ?string $unit,
+        float $quantity,
+        float $stock,
+        bool $checkStock = true,
+        ?int $id = null,
+        bool $editable = false,
+    ): array {
         return [
-            'id' => null,
-            'editable' => false,
+            // Named so the form can post a correction back against the right
+            // material. Passed in rather than merged over the result: array
+            // union keeps the left operand's keys, so merging onto a row that
+            // already carries these silently discarded them.
+            'id' => $id,
+            'editable' => $editable,
             'name' => $name,
             'unit' => $unit ?? '',
             'quantity' => $this->number($quantity),
