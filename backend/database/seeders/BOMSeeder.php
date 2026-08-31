@@ -14,9 +14,20 @@ use App\Models\RawMaterial;
  * strap and 40 card holders off the shelf, each through the usage ledger.
  *
  * A line can also be marked as spent only when there is something to print.
- * The transfer paper and the ink decorate an item rather than make it, so a
- * plain white mug ordered straight off the shop page draws neither — see
- * PRINT_CONSUMABLES below and the requires_design column they set.
+ * Transfer paper decorates an item rather than makes it, so a plain white mug
+ * ordered straight off the shop page draws none — see PRINT_CONSUMABLES below
+ * and the requires_design column it sets.
+ *
+ * Where the ink lives depends on whether the customer chose what goes on the
+ * item:
+ *
+ *   - A customizable product has no ink here at all. What is printed on it is
+ *     whatever the customer built in the studio, so its ink is billed per
+ *     element by CustomizationBOMSeeder. A fixed split on the product was
+ *     charging every design for black whether or not its artwork used any.
+ *   - Everything else keeps its ink here, because the print is part of making
+ *     the thing and nobody chose it: an ID lace comes printed or it isn't a
+ *     lace.
  */
 class BOMSeeder extends Seeder
 {
@@ -57,6 +68,10 @@ class BOMSeeder extends Seeder
      */
     private const PRINT_CONSUMABLES = [
         'Sublimation Transfer Paper (A4)',
+        // No customizable product carries these any more, so in practice only
+        // the paper above is ever flagged. They stay listed because the rule is
+        // "a print consumable on a designable product waits for a design", and
+        // that should hold if ink is ever put back on one.
         'Sublimation Ink (Cyan)',
         'Sublimation Ink (Magenta)',
         'Sublimation Ink (Yellow)',
@@ -74,27 +89,32 @@ class BOMSeeder extends Seeder
                 'Sublimation Transfer Paper (A4)' => 1,
                 ...self::ink(2),
             ],
+            // The five customizable products below carry no ink of their own.
+            // What gets printed on them is whatever the customer put in the
+            // studio, so their ink comes entirely from the customization BOM —
+            // see CustomizationBOMSeeder. A default split here was charging a
+            // design for black it may never use.
+            //
+            // The sheets stay, because how many a print takes is a property of
+            // the garment rather than of the artwork: a mug takes one whatever
+            // is on it, a polo takes three. They are flagged below so a plain
+            // order still draws none.
             'MG-WHT-11' => [
                 'Sublimation Transfer Paper (A4)' => 1,
-                ...self::ink(4),
             ],
             'MG-BLK-11' => [
                 'Sublimation Transfer Paper (A4)' => 1,
-                ...self::ink(4),
             ],
             'TS-CTN-WHT' => [
                 'Sublimation Transfer Paper (A4)' => 2,
-                ...self::ink(8),
             ],
             // Three sheets rather than the tee's two: the polo is printed front
             // and back, and the collar takes a sheet of its own.
             'PL-PQE-WHT' => [
                 'Sublimation Transfer Paper (A4)' => 3,
-                ...self::ink(12),
             ],
             'PL-PQE-NVY' => [
                 'Sublimation Transfer Paper (A4)' => 3,
-                ...self::ink(12),
             ],
             'BK-BKLT-A5' => [
                 'Bond Paper (A4, 80gsm)' => 6,   // 24 pages, 4 up per sheet

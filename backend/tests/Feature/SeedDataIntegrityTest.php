@@ -176,6 +176,28 @@ class SeedDataIntegrityTest extends TestCase
         }
     }
 
+    public function test_a_customizable_product_carries_no_ink_of_its_own(): void
+    {
+        // What gets printed on a designable product is the customer's choice,
+        // so its ink is billed per element rather than as a fixed split. A
+        // default here charged every design for black whether its artwork used
+        // any or not.
+        foreach (Product::with('rawMaterials')->where('is_customizable', true)->get() as $product) {
+            foreach ($product->rawMaterials as $material) {
+                $this->assertStringNotContainsString(
+                    'Ink',
+                    $material->name,
+                    "\"{$product->name}\" is customizable, so \"{$material->name}\" belongs to the customization BOM."
+                );
+            }
+        }
+
+        // And the converse: a lace is printed as part of being made, so its
+        // ink stays on the product.
+        $lace = Product::where('sku', 'IDL-LACE-STD')->firstOrFail();
+        $this->assertTrue($lace->rawMaterials->contains(fn ($m) => str_contains($m->name, 'Ink')));
+    }
+
     public function test_the_customizer_options_that_cost_something_are_mapped(): void
     {
         // Not every option: small and medium fit the blank's own sheet, so
