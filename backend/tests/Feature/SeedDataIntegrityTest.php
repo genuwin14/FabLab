@@ -4,6 +4,9 @@ namespace Tests\Feature;
 
 use App\Enums\StockMovementReason;
 use App\Models\Category;
+use App\Models\Color;
+use App\Models\CustomizationRate;
+use App\Models\CustomizationRateMaterial;
 use App\Models\Product;
 use App\Models\RawMaterial;
 use App\Models\RawMaterialMovement;
@@ -134,5 +137,56 @@ class SeedDataIntegrityTest extends TestCase
             $lace->rawMaterials->contains(fn ($m) => $m->name === 'Lanyard Metal Clip'),
             'The ID lace should draw on the metal clip.'
         );
+    }
+
+    public function test_the_customizer_options_that_cost_something_are_mapped(): void
+    {
+        // Not every option: small and medium fit the blank's own sheet, so
+        // they draw nothing on purpose. These four are the ones a customer is
+        // charged for, and each was collecting a fee against nothing before
+        // the customization BOM existed.
+        foreach (['text', 'shape', 'logo', 'led_lighting'] as $key) {
+            $this->assertNotEmpty(
+                CustomizationRate::materialsFor($key),
+                "The '{$key}' option is charged for but draws no materials."
+            );
+        }
+
+        $this->assertSame([], CustomizationRate::materialsFor('size_medium'));
+    }
+
+    public function test_every_seeded_option_material_resolves_to_a_real_material(): void
+    {
+        // The seeder maps by name, so a rename in RawMaterialSeeder would
+        // silently drop a line rather than fail.
+        $mapped = CustomizationRateMaterial::pluck('raw_material_id')->unique();
+
+        $this->assertSame(
+            $mapped->count(),
+            RawMaterial::whereIn('raw_material_id', $mapped)->count(),
+            'A customization option is mapped to a material that no longer exists.'
+        );
+    }
+
+    public function test_only_the_paid_finishes_draw_a_dye(): void
+    {
+        // The blank garment already is white, black, grey or navy — nothing is
+        // applied, which is why those four are free. The paid ones are dyed,
+        // and that dye is what the surcharge pays for.
+        $colors = Color::all();
+
+        foreach ($colors as $color) {
+            $paid = $color->price_modifier > 0;
+
+            $this->assertSame(
+                $paid,
+                $color->raw_material_id !== null,
+                $paid
+                    ? "{$color->name} charges a surcharge but draws no dye."
+                    : "{$color->name} is free but draws a dye."
+            );
+        }
+
+        $this->assertGreaterThan(0, $colors->where('price_modifier', '>', 0)->count());
     }
 }

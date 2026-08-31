@@ -147,6 +147,43 @@ class RawMaterialSeeder extends Seeder
                 'department' => $wood,
             ],
 
+            // ---- What the customizer's own options consume ----
+            // The product BOM above covers the blank item. These are what a
+            // customer adds to it in the studio, and they are stocked
+            // separately because that is how they are bought: a spot dye per
+            // colour, and lighting as a kit.
+            //
+            // The four dyes mirror the paid half of the palette — the free
+            // house colours are the blank's own colour and consume nothing,
+            // which is why there is no dye for white, black, grey or navy.
+            ...array_map(fn (array $dye) => [
+                'name' => "Textile Spot Dye ({$dye['colour']})",
+                'supplier_id' => $genSupplier->supplier_id ?? 2,
+                'cost_per_unit' => $dye['cost'],
+                'stock_quantity' => $dye['stock'],
+                'low_stock_threshold' => 250,
+                'unit' => 'ml',
+                'description' => "Spot dye for the {$dye['colour']} plain finish.",
+                'department' => $dcc,
+            ], [
+                ['colour' => 'Cherry Red', 'cost' => 3.20, 'stock' => 1800],
+                ['colour' => 'Forest Green', 'cost' => 3.20, 'stock' => 1450],
+                ['colour' => 'Sunset Orange', 'cost' => 4.10, 'stock' => 900],
+                // Under its threshold: the house accent is special-order, and a
+                // finish running dry is exactly what should block an approval.
+                ['colour' => 'FABLAB Gold', 'cost' => 9.80, 'stock' => 180],
+            ]),
+            [
+                'name' => 'LED Light Kit (USB, Warm White)',
+                'supplier_id' => $techSupplier->supplier_id ?? 1,
+                'cost_per_unit' => 145.00,
+                'stock_quantity' => 60,
+                'low_stock_threshold' => 15,
+                'unit' => 'pcs',
+                'description' => 'Strip, diffuser and USB driver for internally lit acrylic pieces.',
+                'department' => $dcc,
+            ],
+
             // ---- Deliberately unassigned: fills the report's Uncategorized section ----
             [
                 'name' => 'Acrylic Sheet Clear 3mm',
@@ -160,8 +197,15 @@ class RawMaterialSeeder extends Seeder
             ],
         ];
 
+        // firstOrCreate, like ColorSeeder: this seeder is normally run against
+        // an empty database, but it also has to be runnable on its own to add
+        // newly-introduced materials to an install that already has data —
+        // create() would give that install fourteen duplicates.
+        //
+        // Matching on name means an existing row keeps the stock it has drawn
+        // down to, rather than being reset to the demo figure.
         foreach ($materials as $material) {
-            RawMaterial::create($material);
+            RawMaterial::firstOrCreate(['name' => $material['name']], $material);
         }
     }
 }

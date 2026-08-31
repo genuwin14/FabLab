@@ -25,6 +25,10 @@ class DatabaseSeeder extends Seeder
             ColorSeeder::class,
             EquipmentSeeder::class,
             BOMSeeder::class,
+            // Must follow ColorSeeder and RawMaterialSeeder: it links the
+            // palette's paid finishes to their dyes, and maps the customizer's
+            // options onto the inks and the LED kit.
+            CustomizationBOMSeeder::class,
             // Must follow RawMaterialSeeder: it writes the usage ledger that
             // produces the units_* counters, rather than them being typed in.
             RawMaterialMovementSeeder::class,
