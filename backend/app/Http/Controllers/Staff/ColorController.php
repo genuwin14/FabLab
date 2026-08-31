@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Staff;
 
 use App\Http\Controllers\Controller;
 use App\Models\Color;
+use App\Models\RawMaterial;
 use Illuminate\Http\Request;
 
 /**
@@ -38,7 +39,9 @@ class ColorController extends Controller
 
         $colors = $query->orderBy('name')->paginate($perPage)->withQueryString();
 
-        return view('staff.colors.index', compact('colors', 'perPage', 'search'));
+        $materials = RawMaterial::orderBy('name')->get(['raw_material_id', 'name', 'unit']);
+
+        return view('staff.colors.index', compact('colors', 'perPage', 'search', 'materials'));
     }
 
     public function update(Request $request, $id)
@@ -49,6 +52,7 @@ class ColorController extends Controller
 
         $data['hex_code'] = strtolower($data['hex_code']);
         $data['price_modifier'] = $data['price_modifier'] ?? 0;
+        $data = Color::normaliseMaterial($data);
 
         $color->update($data);
 

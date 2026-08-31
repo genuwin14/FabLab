@@ -89,6 +89,8 @@
                                         placeholder="Extra cost when applied">
                                 </div>
                             </div>
+
+                            @include('partials.finish-material-fields', ['prefix' => 'editTexture', 'materials' => $materials, 'finish' => null, 'noun' => 'texture', 'inputClass' => 'texture-field-input'])
                             <div class="col-md-4">
                                 <label class="form-label small fw-bold text-muted text-uppercase">Stock Quantity</label>
                                 <input type="number" step="0.01" min="0" id="editTextureStock" name="stock_quantity"

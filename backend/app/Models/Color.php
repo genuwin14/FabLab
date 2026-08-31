@@ -14,6 +14,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class Color extends Model
 {
     use SoftDeletes;
+    use Concerns\ConsumesRawMaterial;
 
     /**
      * What the admin and staff screens accept. Shared so the two can't drift
@@ -25,11 +26,11 @@ class Color extends Model
         'hex_code' => ['required', 'string', 'regex:/^#[0-9A-Fa-f]{6}$/'],
         'description' => 'nullable|string|max:255',
         'price_modifier' => 'nullable|numeric|min:0|max:999999.99',
-    ];
+    ] + self::MATERIAL_VALIDATION_RULES;
 
     public const VALIDATION_MESSAGES = [
         'hex_code.regex' => 'Enter a colour as a 6-digit hex code, e.g. #1B2A4A.',
-    ];
+    ] + self::MATERIAL_VALIDATION_MESSAGES;
 
     protected $primaryKey = 'color_id';
 
@@ -50,17 +51,6 @@ class Color extends Model
     public function products()
     {
         return $this->belongsToMany(Product::class, 'product_colors', 'color_id', 'product_id');
-    }
-    /**
-     * What finishing one item in this colour takes off the shelf.
-     *
-     * Optional — a colour has no stock of its own, so with nothing linked here an
-     * ordered item in this colour consumes nothing, exactly as it did before
-     * finishes could carry materials.
-     */
-    public function rawMaterial(): \Illuminate\Database\Eloquent\Relations\BelongsTo
-    {
-        return $this->belongsTo(RawMaterial::class, 'raw_material_id', 'raw_material_id');
     }
 
     /**

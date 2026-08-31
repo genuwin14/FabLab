@@ -34,7 +34,9 @@ class TextureController extends Controller
 
         $textures = $query->latest()->paginate($perPage)->withQueryString();
         $suppliers = Supplier::all();
-        return view('staff.textures.index', compact('textures', 'suppliers', 'perPage', 'search'));
+        $materials = \App\Models\RawMaterial::orderBy('name')->get(['raw_material_id', 'name', 'unit']);
+
+        return view('staff.textures.index', compact('textures', 'suppliers', 'perPage', 'search', 'materials'));
     }
 
     public function update(Request $request, $id)
@@ -51,11 +53,11 @@ class TextureController extends Controller
             'low_stock_threshold' => 'nullable|numeric|min:0',
             'unit' => ['nullable', Rule::in(\App\Enums\MaterialUnit::allowedFor($texture->unit))],
             'price_modifier' => 'nullable|numeric|min:0',
-        ], [
+        ] + Texture::MATERIAL_VALIDATION_RULES, [
             'unit.in' => 'Pick a unit from the list.',
-        ]);
+        ] + Texture::MATERIAL_VALIDATION_MESSAGES);
 
-        $data = $request->except('image_file');
+        $data = Texture::normaliseMaterial($request->except('image_file'));
 
         // `textures.unit` is NOT NULL with a 'pcs' default, and Laravel turns an
         // empty form field into null — which would fail the update rather than

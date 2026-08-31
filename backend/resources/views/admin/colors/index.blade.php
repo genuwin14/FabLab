@@ -120,7 +120,9 @@
                                                             data-name="{{ $color->name }}"
                                                             data-hex="{{ $color->hex_code }}"
                                                             data-description="{{ $color->description }}"
-                                                            data-price_modifier="{{ $color->price_modifier }}">
+                                                            data-price_modifier="{{ $color->price_modifier }}"
+                                                            data-raw_material_id="{{ $color->raw_material_id }}"
+                                                            data-material_quantity="{{ $color->material_quantity > 0 ? rtrim(rtrim(number_format($color->material_quantity, 4, '.', ''), '0'), '.') : '' }}">
                                                             <i class="bi bi-pencil text-warning"></i> Edit
                                                         </a>
                                                     </li>
@@ -470,6 +472,11 @@
                     editModal.querySelector('#editColorHexPicker').value = hex;
                     editModal.querySelector('#editColorDescription').value = trigger.getAttribute('data-description') || '';
                     editModal.querySelector('#editColorPrice').value = trigger.getAttribute('data-price_modifier') || '0';
+                    // Empty string rather than 0 for the quantity: the field is
+                    // optional, and a 0 sitting in it reads as "deducts zero"
+                    // when the honest answer is "nothing linked".
+                    editModal.querySelector('#editColorMaterial').value = trigger.getAttribute('data-raw_material_id') || '';
+                    editModal.querySelector('#editColorMaterialQty').value = trigger.getAttribute('data-material_quantity') || '';
                 });
             }
 

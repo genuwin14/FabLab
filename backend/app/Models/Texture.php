@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class Texture extends Model
 {
     use SoftDeletes;
+    use Concerns\ConsumesRawMaterial;
     use Concerns\TracksStockLevel;
     use Concerns\HasStoredImage;
 
@@ -47,18 +48,6 @@ class Texture extends Model
     public function supplier()
     {
         return $this->belongsTo(Supplier::class, 'supplier_id', 'supplier_id');
-    }
-    /**
-     * What finishing one item in this texture takes off the shelf.
-     *
-     * Optional — a texture already moves its own stock when one is ordered, so a
-     * material linked here is drawn *in addition* to it. The texture row is
-     * the printed sheet; the material is what it was printed with. Leave it
-     * unset and only the texture's own stock moves, as before.
-     */
-    public function rawMaterial(): \Illuminate\Database\Eloquent\Relations\BelongsTo
-    {
-        return $this->belongsTo(RawMaterial::class, 'raw_material_id', 'raw_material_id');
     }
 
     public function products()

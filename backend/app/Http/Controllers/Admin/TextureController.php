@@ -34,7 +34,10 @@ class TextureController extends Controller
 
         $textures = $query->latest()->paginate($perPage)->withQueryString();
         $suppliers = Supplier::all();
-        return view('admin.textures.index', compact('textures', 'suppliers', 'perPage', 'search'));
+        // What a texture can be linked to consume on top of its own stock.
+        $materials = \App\Models\RawMaterial::orderBy('name')->get(['raw_material_id', 'name', 'unit']);
+
+        return view('admin.textures.index', compact('textures', 'suppliers', 'perPage', 'search', 'materials'));
     }
 
     public function store(Request $request)
@@ -54,11 +57,11 @@ class TextureController extends Controller
             'units_damaged' => 'nullable|numeric|min:0',
             'units_consumed' => 'nullable|numeric|min:0',
             'department' => 'nullable|in:' . implode(',', \App\Enums\Department::values()),
-        ], [
+        ] + Texture::MATERIAL_VALIDATION_RULES, [
             'unit.in' => 'Pick a unit from the list.',
-        ]);
+        ] + Texture::MATERIAL_VALIDATION_MESSAGES);
 
-        $data = $this->withoutEmptyUnit($request->except('image_file'));
+        $data = Texture::normaliseMaterial($this->withoutEmptyUnit($request->except('image_file')));
 
         // Images go to the public disk; the row keeps the path.
         if ($request->hasFile('image_file')) {
@@ -89,11 +92,11 @@ class TextureController extends Controller
             'units_damaged' => 'nullable|numeric|min:0',
             'units_consumed' => 'nullable|numeric|min:0',
             'department' => 'nullable|in:' . implode(',', \App\Enums\Department::values()),
-        ], [
+        ] + Texture::MATERIAL_VALIDATION_RULES, [
             'unit.in' => 'Pick a unit from the list.',
-        ]);
+        ] + Texture::MATERIAL_VALIDATION_MESSAGES);
 
-        $data = $this->withoutEmptyUnit($request->except('image_file'));
+        $data = Texture::normaliseMaterial($this->withoutEmptyUnit($request->except('image_file')));
 
         if ($request->hasFile('image_file')) {
             $data['image_path'] = $texture->storeImage($request->file('image_file'));

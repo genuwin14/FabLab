@@ -113,6 +113,8 @@
                                                            data-threshold="{{ $texture->low_stock_threshold }}"
                                                            data-unit="{{ $texture->unit }}"
                                                            data-price_modifier="{{ $texture->price_modifier }}"
+                                                           data-raw_material_id="{{ $texture->raw_material_id }}"
+                                                           data-material_quantity="{{ $texture->material_quantity > 0 ? rtrim(rtrim(number_format($texture->material_quantity, 4, '.', ''), '0'), '.') : '' }}"
                                                            data-units_on_display="{{ $texture->units_on_display }}"
                                                            data-units_sponsored="{{ $texture->units_sponsored }}"
                                                            data-units_damaged="{{ $texture->units_damaged }}"
@@ -526,6 +528,11 @@
                 document.getElementById('editTextureThreshold').value = button.getAttribute('data-threshold') || 0;
                 window.setMaterialUnit(document.getElementById('editTextureUnit'), button.getAttribute('data-unit') || 'pcs');
                 document.getElementById('editTexturePriceModifier').value = button.getAttribute('data-price_modifier') || 0;
+                // Empty string rather than 0 for the quantity: the field is
+                // optional, and a 0 sitting in it reads as "deducts zero" when
+                // the honest answer is "nothing linked".
+                document.getElementById('editTextureMaterial').value = button.getAttribute('data-raw_material_id') || '';
+                document.getElementById('editTextureMaterialQty').value = button.getAttribute('data-material_quantity') || '';
                 document.getElementById('editTextureDepartment').value = button.getAttribute('data-department') || '';
                 document.getElementById('editTextureDisplay').value = button.getAttribute('data-units_on_display') || 0;
                 document.getElementById('editTextureSponsored').value = button.getAttribute('data-units_sponsored') || 0;

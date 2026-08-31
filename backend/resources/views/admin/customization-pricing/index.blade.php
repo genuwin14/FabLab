@@ -85,26 +85,29 @@
                                 </div>
                                 <div class="card-body px-3 px-md-4 pb-3 pb-md-4">
                                     @foreach($rates['elements'] ?? [] as $key => $rate)
-                                        <div class="pricing-row d-flex justify-content-between align-items-start gap-3 py-3 border-top">
-                                            <div class="flex-grow-1">
-                                                <div class="fw-semibold text-dark">
-                                                    <i class="bi {{ $rate['icon'] }} me-1 text-muted"></i>{{ $rate['label'] }}
+                                        <div class="rate-entry py-3 border-top">
+                                            <div class="pricing-row d-flex justify-content-between align-items-start gap-3">
+                                                <div class="flex-grow-1">
+                                                    <div class="fw-semibold text-dark">
+                                                        <i class="bi {{ $rate['icon'] }} me-1 text-muted"></i>{{ $rate['label'] }}
+                                                    </div>
+                                                    <small class="text-muted">{{ $rate['description'] }}</small>
                                                 </div>
-                                                <small class="text-muted">{{ $rate['description'] }}</small>
-                                            </div>
-                                            <div class="pricing-input flex-shrink-0">
-                                                <div class="input-group">
-                                                    <span class="input-group-text bg-white text-muted fw-semibold">₱</span>
-                                                    <input type="number" step="0.01" min="0" max="999999.99"
-                                                        class="form-control text-end fw-semibold @error('rates.' . $key) is-invalid @enderror"
-                                                        name="rates[{{ $key }}]"
-                                                        id="rate-{{ $key }}"
-                                                        data-rate-key="{{ $key }}"
-                                                        value="{{ old('rates.' . $key, number_format($rate['amount'], 2, '.', '')) }}"
-                                                        aria-label="{{ $rate['label'] }} rate">
+                                                <div class="pricing-input flex-shrink-0">
+                                                    <div class="input-group">
+                                                        <span class="input-group-text bg-white text-muted fw-semibold">₱</span>
+                                                        <input type="number" step="0.01" min="0" max="999999.99"
+                                                            class="form-control text-end fw-semibold @error('rates.' . $key) is-invalid @enderror"
+                                                            name="rates[{{ $key }}]"
+                                                            id="rate-{{ $key }}"
+                                                            data-rate-key="{{ $key }}"
+                                                            value="{{ old('rates.' . $key, number_format($rate['amount'], 2, '.', '')) }}"
+                                                            aria-label="{{ $rate['label'] }} rate">
+                                                    </div>
+                                                    <small class="text-muted d-block text-end mt-1">{{ $rate['suffix'] }}</small>
                                                 </div>
-                                                <small class="text-muted d-block text-end mt-1">{{ $rate['suffix'] }}</small>
                                             </div>
+                                            @include('admin.customization-pricing.partials.materials', ['key' => $key, 'rate' => $rate, 'materials' => $materials])
                                         </div>
                                     @endforeach
                                 </div>
@@ -129,25 +132,28 @@
                                 </div>
                                 <div class="card-body px-3 px-md-4 pb-3 pb-md-4">
                                     @foreach($rates['sizes'] ?? [] as $key => $rate)
-                                        <div class="pricing-row d-flex justify-content-between align-items-start gap-3 py-3 border-top">
-                                            <div class="flex-grow-1">
-                                                <div class="fw-semibold text-dark">
-                                                    <i class="bi {{ $rate['icon'] }} me-1 text-muted"></i>{{ $rate['label'] }}
+                                        <div class="rate-entry py-3 border-top">
+                                            <div class="pricing-row d-flex justify-content-between align-items-start gap-3">
+                                                <div class="flex-grow-1">
+                                                    <div class="fw-semibold text-dark">
+                                                        <i class="bi {{ $rate['icon'] }} me-1 text-muted"></i>{{ $rate['label'] }}
+                                                    </div>
+                                                    <small class="text-muted">{{ $rate['description'] }}</small>
                                                 </div>
-                                                <small class="text-muted">{{ $rate['description'] }}</small>
-                                            </div>
-                                            <div class="pricing-input flex-shrink-0">
-                                                <div class="input-group">
-                                                    <span class="input-group-text bg-white text-muted fw-semibold">₱</span>
-                                                    <input type="number" step="0.01" min="0" max="999999.99"
-                                                        class="form-control text-end fw-semibold @error('rates.' . $key) is-invalid @enderror"
-                                                        name="rates[{{ $key }}]"
-                                                        id="rate-{{ $key }}"
-                                                        value="{{ old('rates.' . $key, number_format($rate['amount'], 2, '.', '')) }}"
-                                                        aria-label="{{ $rate['label'] }} surcharge">
+                                                <div class="pricing-input flex-shrink-0">
+                                                    <div class="input-group">
+                                                        <span class="input-group-text bg-white text-muted fw-semibold">₱</span>
+                                                        <input type="number" step="0.01" min="0" max="999999.99"
+                                                            class="form-control text-end fw-semibold @error('rates.' . $key) is-invalid @enderror"
+                                                            name="rates[{{ $key }}]"
+                                                            id="rate-{{ $key }}"
+                                                            value="{{ old('rates.' . $key, number_format($rate['amount'], 2, '.', '')) }}"
+                                                            aria-label="{{ $rate['label'] }} surcharge">
+                                                    </div>
+                                                    <small class="text-muted d-block text-end mt-1">{{ $rate['suffix'] }}</small>
                                                 </div>
-                                                <small class="text-muted d-block text-end mt-1">{{ $rate['suffix'] }}</small>
                                             </div>
+                                            @include('admin.customization-pricing.partials.materials', ['key' => $key, 'rate' => $rate, 'materials' => $materials])
                                         </div>
                                     @endforeach
                                 </div>
@@ -233,9 +239,23 @@
             font-size: 1.05rem;
         }
 
-        .pricing-row:first-of-type { border-top: 0 !important; }
+        /* The border moved to .rate-entry when each option grew a materials
+           list beneath its price, so the divider sits between options rather
+           than between a price and its own materials. */
+        .rate-entry:first-of-type { border-top: 0 !important; }
 
         .pricing-input { width: 190px; }
+
+        .text-muted-2 { color: #9aa4b2; font-size: 0.78rem; }
+
+        .rate-materials .material-row .form-select,
+        .rate-materials .material-row .form-control { font-size: 0.82rem; }
+
+        /* The quantity is narrow on purpose — four decimals of ink still fits,
+           and the material name is the part worth the width. */
+        .rate-materials .material-qty { width: 110px; flex-shrink: 0; }
+
+        .rate-materials .add-material-btn { font-size: 0.78rem; }
 
         .pricing-input .form-control:focus {
             border-color: rgba(14, 46, 69, 0.4);
@@ -287,6 +307,55 @@
 
             input.addEventListener('input', refresh);
             refresh();
+        })();
+
+        // Add and remove rows in an option's bill of materials.
+        //
+        // Row indexes only have to be unique within an option — the controller
+        // reads the posted rows as a list and re-keys them on the material id —
+        // so a counter that only ever goes up is enough, and removing a row
+        // doesn't need the survivors renumbered.
+        (function () {
+            document.querySelectorAll('.rate-materials').forEach(block => {
+                const key = block.dataset.rateKey;
+                const rows = block.querySelector('.material-rows');
+                const empty = block.querySelector('.material-empty');
+                const addBtn = block.querySelector('.add-material-btn');
+                let nextIndex = rows.querySelectorAll('.material-row').length;
+
+                const syncEmpty = () => {
+                    empty.hidden = rows.querySelectorAll('.material-row').length > 0;
+                };
+
+                const template = block.querySelector('.material-row-template');
+
+                addBtn?.addEventListener('click', () => {
+                    if (!template) return;
+
+                    const row = template.content.firstElementChild.cloneNode(true);
+                    const index = nextIndex++;
+
+                    // The template's fields are unnamed, so they can't post
+                    // from inside the <template>. Naming them is what puts the
+                    // new row into the form.
+                    row.querySelector('select').name = `materials[${key}][${index}][raw_material_id]`;
+                    row.querySelector('.material-qty').name = `materials[${key}][${index}][quantity]`;
+
+                    rows.appendChild(row);
+                    syncEmpty();
+                    row.querySelector('select').focus();
+                });
+
+                rows.addEventListener('click', event => {
+                    const remove = event.target.closest('.remove-material-btn');
+                    if (!remove) return;
+
+                    remove.closest('.material-row').remove();
+                    syncEmpty();
+                });
+
+                syncEmpty();
+            });
         })();
     </script>
 @endsection

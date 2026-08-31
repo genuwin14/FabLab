@@ -24,9 +24,10 @@ class CustomizationPricingController extends Controller
             'rates' => CustomizationRate::forDisplay(),
             'logoMinScale' => \App\Models\CustomDesign::LOGO_MIN_SCALE,
             'logoMaxScale' => \App\Models\CustomDesign::LOGO_MAX_SCALE,
-            // Named so the read-only view can resolve the material ids the
-            // rates carry; staff never pick from this, they just read it.
-            'materials' => RawMaterial::orderBy('name')->get(['raw_material_id', 'name', 'unit']),
+            // Keyed on the id, because the view resolves the ids each rate
+            // carries rather than offering a list to pick from — staff read
+            // this screen, they don't edit it.
+            'materialLookup' => RawMaterial::get(['raw_material_id', 'name', 'unit'])->keyBy('raw_material_id'),
         ]);
     }
 }

@@ -60,19 +60,22 @@
                                 </div>
                                 <div class="card-body px-3 px-md-4 pb-3 pb-md-4">
                                     @foreach($rates['elements'] ?? [] as $key => $rate)
-                                        <div class="pricing-row d-flex justify-content-between align-items-start gap-3 py-3 border-top">
-                                            <div class="flex-grow-1">
-                                                <div class="fw-semibold text-dark">
-                                                    <i class="bi {{ $rate['icon'] }} me-1 text-muted"></i>{{ $rate['label'] }}
+                                        <div class="rate-entry py-3 border-top">
+                                            <div class="pricing-row d-flex justify-content-between align-items-start gap-3">
+                                                <div class="flex-grow-1">
+                                                    <div class="fw-semibold text-dark">
+                                                        <i class="bi {{ $rate['icon'] }} me-1 text-muted"></i>{{ $rate['label'] }}
+                                                    </div>
+                                                    <small class="text-muted">{{ $rate['description'] }}</small>
                                                 </div>
-                                                <small class="text-muted">{{ $rate['description'] }}</small>
-                                            </div>
-                                            <div class="pricing-amount flex-shrink-0 text-end">
-                                                <div class="fw-bold text-dark pricing-amount-value">
-                                                    ₱{{ number_format($rate['amount'], 2) }}
+                                                <div class="pricing-amount flex-shrink-0 text-end">
+                                                    <div class="fw-bold text-dark pricing-amount-value">
+                                                        ₱{{ number_format($rate['amount'], 2) }}
+                                                    </div>
+                                                    <small class="text-muted d-block mt-1">{{ $rate['suffix'] }}</small>
                                                 </div>
-                                                <small class="text-muted d-block mt-1">{{ $rate['suffix'] }}</small>
                                             </div>
+                                            @include('staff.customization-pricing.partials.materials', ['key' => $key, 'rate' => $rate, 'materials' => $materialLookup])
                                         </div>
                                     @endforeach
                                 </div>
@@ -97,19 +100,22 @@
                                 </div>
                                 <div class="card-body px-3 px-md-4 pb-3 pb-md-4">
                                     @foreach($rates['sizes'] ?? [] as $key => $rate)
-                                        <div class="pricing-row d-flex justify-content-between align-items-start gap-3 py-3 border-top">
-                                            <div class="flex-grow-1">
-                                                <div class="fw-semibold text-dark">
-                                                    <i class="bi {{ $rate['icon'] }} me-1 text-muted"></i>{{ $rate['label'] }}
+                                        <div class="rate-entry py-3 border-top">
+                                            <div class="pricing-row d-flex justify-content-between align-items-start gap-3">
+                                                <div class="flex-grow-1">
+                                                    <div class="fw-semibold text-dark">
+                                                        <i class="bi {{ $rate['icon'] }} me-1 text-muted"></i>{{ $rate['label'] }}
+                                                    </div>
+                                                    <small class="text-muted">{{ $rate['description'] }}</small>
                                                 </div>
-                                                <small class="text-muted">{{ $rate['description'] }}</small>
-                                            </div>
-                                            <div class="pricing-amount flex-shrink-0 text-end">
-                                                <div class="fw-bold text-dark pricing-amount-value">
-                                                    ₱{{ number_format($rate['amount'], 2) }}
+                                                <div class="pricing-amount flex-shrink-0 text-end">
+                                                    <div class="fw-bold text-dark pricing-amount-value">
+                                                        ₱{{ number_format($rate['amount'], 2) }}
+                                                    </div>
+                                                    <small class="text-muted d-block mt-1">{{ $rate['suffix'] }}</small>
                                                 </div>
-                                                <small class="text-muted d-block mt-1">{{ $rate['suffix'] }}</small>
                                             </div>
+                                            @include('staff.customization-pricing.partials.materials', ['key' => $key, 'rate' => $rate, 'materials' => $materialLookup])
                                         </div>
                                     @endforeach
                                 </div>
@@ -193,7 +199,15 @@
             font-size: 1.05rem;
         }
 
-        .pricing-row:first-of-type { border-top: 0 !important; }
+        /* The border moved to .rate-entry when each option grew a materials
+           list beneath its price, so the divider sits between options rather
+           than between a price and its own materials. */
+        .rate-entry:first-of-type { border-top: 0 !important; }
+
+        .text-muted-2 { color: #9aa4b2; font-size: 0.78rem; }
+
+        .rate-materials .material-list { font-size: 0.8rem; }
+        .rate-materials .material-list li + li { margin-top: 0.15rem; }
 
         .pricing-amount { min-width: 120px; }
         .pricing-amount-value { font-size: 1.05rem; }

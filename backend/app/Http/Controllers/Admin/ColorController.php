@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Color;
+use App\Models\RawMaterial;
 use Illuminate\Http\Request;
 
 /**
@@ -33,7 +34,12 @@ class ColorController extends Controller
 
         $colors = $query->orderBy('name')->paginate($perPage)->withQueryString();
 
-        return view('admin.colors.index', compact('colors', 'perPage', 'search'));
+        // What a colour can be linked to consume. Retired materials are left
+        // out: they can't be deducted, so offering one would build a link that
+        // silently does nothing.
+        $materials = RawMaterial::orderBy('name')->get(['raw_material_id', 'name', 'unit']);
+
+        return view('admin.colors.index', compact('colors', 'perPage', 'search', 'materials'));
     }
 
     public function store(Request $request)
@@ -42,6 +48,7 @@ class ColorController extends Controller
 
         $data['hex_code'] = strtolower($data['hex_code']);
         $data['price_modifier'] = $data['price_modifier'] ?? 0;
+        $data = Color::normaliseMaterial($data);
 
         Color::create($data);
 
@@ -56,6 +63,7 @@ class ColorController extends Controller
 
         $data['hex_code'] = strtolower($data['hex_code']);
         $data['price_modifier'] = $data['price_modifier'] ?? 0;
+        $data = Color::normaliseMaterial($data);
 
         $color->update($data);
 

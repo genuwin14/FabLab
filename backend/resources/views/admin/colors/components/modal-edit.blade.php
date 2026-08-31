@@ -70,6 +70,8 @@
                                     Repricing a colour does not change designs already in a cart or on an order.
                                 </small>
                             </div>
+
+                            @include('partials.finish-material-fields', ['prefix' => 'editColor', 'materials' => $materials, 'finish' => null, 'noun' => 'colour'])
                         </div>
                     </div>
 

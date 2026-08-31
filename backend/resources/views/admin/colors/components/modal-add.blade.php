@@ -72,6 +72,8 @@
                                 </div>
                                 <small class="text-muted">Added on top of the product price. Leave at 0 for a free colour.</small>
                             </div>
+
+                            @include('partials.finish-material-fields', ['prefix' => 'addColor', 'materials' => $materials, 'finish' => null, 'noun' => 'colour'])
                         </div>
                     </div>
 
