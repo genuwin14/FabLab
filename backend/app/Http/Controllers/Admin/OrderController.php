@@ -78,7 +78,12 @@ class OrderController extends Controller
     {
         $request->validate([
             'status' => 'required|in:approved,cancelled',
-            'reason' => 'nullable|string|required_if:status,cancelled'
+            'reason' => 'nullable|string|required_if:status,cancelled',
+            // What the reviewer corrected the ink estimate to, keyed on the
+            // material. The service ignores anything the order doesn't already
+            // draw, so this only ever narrows or adjusts an existing line.
+            'material_quantities' => 'nullable|array',
+            'material_quantities.*' => 'nullable|numeric|min:0|max:99999999.99'
         ]);
 
         $order = Order::with(['user', 'orderItems.product.rawMaterials', 'orderItems.customDesign'])->findOrFail($id);
@@ -89,15 +94,19 @@ class OrderController extends Controller
 
         // Approving commits the shop to producing this, so refuse to do it on
         // materials that aren't there — otherwise stock silently goes negative.
+        $overrides = $request->status === 'approved'
+            ? array_filter((array) $request->input('material_quantities', []), fn ($value) => $value !== null && $value !== '')
+            : [];
+
         if ($request->status === 'approved') {
-            $shortages = $stock->shortages($order);
+            $shortages = $stock->shortages($order, $overrides);
 
             if ($shortages !== []) {
                 return back()->with('error', 'Not enough stock to approve this order: ' . implode('; ', $shortages) . '.');
             }
         }
 
-        DB::transaction(function () use ($order, $request, $stock) {
+        DB::transaction(function () use ($order, $request, $stock, $overrides) {
             $order->update([
                 'status' => $request->status,
                 'reason' => $request->reason,
@@ -107,7 +116,7 @@ class OrderController extends Controller
                 // Reserved, not consumed: the shop has committed the material
                 // but nobody has made anything yet. Staff starting production
                 // turns each reservation into consumption.
-                $stock->reserve($order);
+                $stock->reserve($order, $overrides);
             } else {
                 // Checkout took the product stock; a rejected order never got
                 // as far as consuming materials.

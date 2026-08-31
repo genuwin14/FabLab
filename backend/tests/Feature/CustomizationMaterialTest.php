@@ -468,6 +468,123 @@ class CustomizationMaterialTest extends TestCase
         $this->assertSame('approved', $order->refresh()->status);
     }
 
+    // ------------------------------- the reviewer correcting the estimate
+
+    /** Approve, correcting the calculated figures to the ones given. */
+    private function approveWith(Order $order, array $quantities)
+    {
+        $this->asAdmin();
+
+        return $this->post("/admin/orders/{$order->order_id}/review", [
+            'status' => 'approved',
+            'material_quantities' => $quantities,
+        ]);
+    }
+
+    public function test_the_reviewer_can_correct_what_a_design_costs_in_ink(): void
+    {
+        $this->optionCosts('logo', $this->ink, 10);
+        $design = $this->design(['elements' => ['text' => [], 'shapes' => [], 'logos' => [['scale' => 1]]]]);
+
+        // The formula says 10ml. The reviewer can see the artwork is a thin
+        // outline and says 3.
+        $this->approveWith($this->order('pending', 1, $design), [$this->ink->raw_material_id => 3])
+            ->assertRedirect()
+            ->assertSessionMissing('error');
+
+        $this->assertEquals(97, $this->ink->refresh()->stock_quantity);
+    }
+
+    public function test_a_corrected_figure_says_so_in_the_ledger(): void
+    {
+        $this->optionCosts('logo', $this->ink, 10);
+        $design = $this->design(['elements' => ['text' => [], 'shapes' => [], 'logos' => [['scale' => 1]]]]);
+
+        $this->approveWith($this->order('pending', 1, $design), [$this->ink->raw_material_id => 3]);
+
+        $ink = RawMaterialMovement::where('raw_material_id', $this->ink->raw_material_id)->sole();
+        $this->assertStringContainsString('set by reviewer', $ink->note);
+
+        // The fabric was left alone, so its row must not claim a person chose it.
+        $fabric = RawMaterialMovement::where('raw_material_id', $this->fabric->raw_material_id)->sole();
+        $this->assertStringNotContainsString('set by reviewer', $fabric->note);
+    }
+
+    public function test_posting_the_calculated_figure_back_is_not_an_adjustment(): void
+    {
+        // An untouched form posts every input as it was rendered. That is the
+        // formula's number, and the ledger should say so.
+        $this->approveWith($this->order('pending', 2), [$this->fabric->raw_material_id => 6]);
+
+        $movement = RawMaterialMovement::where('raw_material_id', $this->fabric->raw_material_id)->sole();
+        $this->assertStringNotContainsString('set by reviewer', $movement->note);
+        $this->assertEquals(94, $this->fabric->refresh()->stock_quantity);
+    }
+
+    public function test_zero_means_this_artwork_uses_none_of_it(): void
+    {
+        $this->optionCosts('logo', $this->ink, 10);
+        $design = $this->design(['elements' => ['text' => [], 'shapes' => [], 'logos' => [['scale' => 1]]]]);
+
+        // An all-red image uses no cyan at all.
+        $this->approveWith($this->order('pending', 1, $design), [$this->ink->raw_material_id => 0]);
+
+        $this->assertEquals(100, $this->ink->refresh()->stock_quantity);
+        $this->assertSame(0, RawMaterialMovement::where('raw_material_id', $this->ink->raw_material_id)->count());
+    }
+
+    public function test_a_correction_cannot_be_raised_past_the_shelf(): void
+    {
+        $order = $this->order('pending', 2);
+
+        $this->approveWith($order, [$this->fabric->raw_material_id => 500])
+            ->assertRedirect()
+            ->assertSessionHas('error');
+
+        $this->assertSame('pending', $order->refresh()->status);
+        $this->assertEquals(100, $this->fabric->refresh()->stock_quantity);
+    }
+
+    public function test_a_correction_cannot_invent_a_draw_on_an_unrelated_material(): void
+    {
+        // The LED kit has nothing to do with this order. A crafted post naming
+        // it must be ignored rather than deducted.
+        $this->approveWith($this->order('pending', 2), [$this->led->raw_material_id => 25]);
+
+        $this->assertEquals(100, $this->led->refresh()->stock_quantity);
+        $this->assertSame(0, RawMaterialMovement::where('raw_material_id', $this->led->raw_material_id)->count());
+    }
+
+    public function test_a_correction_survives_into_production(): void
+    {
+        $this->optionCosts('logo', $this->ink, 10);
+        $design = $this->design(['elements' => ['text' => [], 'shapes' => [], 'logos' => [['scale' => 1]]]]);
+        $order = $this->order('pending', 1, $design);
+
+        $this->approveWith($order, [$this->ink->raw_material_id => 3]);
+        $this->startProduction($order);
+
+        $this->ink->refresh();
+        // The reviewer's figure is what the bench consumes, not the formula's.
+        $this->assertEquals(97, $this->ink->stock_quantity);
+        $this->assertEquals(3, $this->ink->units_consumed);
+    }
+
+    public function test_cancelling_gives_back_the_corrected_figure(): void
+    {
+        $this->optionCosts('logo', $this->ink, 10);
+        $design = $this->design(['elements' => ['text' => [], 'shapes' => [], 'logos' => [['scale' => 1]]]]);
+        $order = $this->order('pending', 1, $design);
+
+        $this->approveWith($order, [$this->ink->raw_material_id => 3]);
+
+        $this->asAdmin();
+        $this->post("/admin/orders/{$order->order_id}/cancel", ['reason' => 'Changed their mind']);
+
+        // 3 back, not the 10 the formula would have said.
+        $this->assertEquals(100, $this->ink->refresh()->stock_quantity);
+    }
+
     public function test_requirements_ignores_options_with_no_materials_mapped(): void
     {
         $design = $this->design([

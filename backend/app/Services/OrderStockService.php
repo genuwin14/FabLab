@@ -51,9 +51,22 @@ class OrderStockService
     /**
      * What this order draws on, aggregated.
      *
-     * @return array{materials: array<int, array{model: RawMaterial, quantity: float}>, textures: array<int, array{model: Texture, quantity: float}>}
+     * The bills of materials can only estimate what a design costs in ink: a
+     * fixed split has no idea whether the artwork is a thin red outline or a
+     * dense photograph. So an admin reviewing an order can correct the figures
+     * against the design in front of them, and `$overrides` is what they set —
+     * `raw_material_id => quantity`, replacing the calculated figure.
+     *
+     * Only materials the order already reaches can be overridden. An override
+     * naming anything else is ignored rather than honoured, so a crafted form
+     * post can't invent a draw against a material this order has nothing to do
+     * with. Zero is a valid answer — "this artwork uses no cyan at all" — and
+     * drops the line entirely.
+     *
+     * @param  array<int|string, mixed>  $overrides
+     * @return array{materials: array<int, array{model: RawMaterial, quantity: float, adjusted: bool}>, textures: array<int, array{model: Texture, quantity: float}>}
      */
-    public function requirements(Order $order): array
+    public function requirements(Order $order, array $overrides = []): array
     {
         $order->loadMissing(['orderItems.product.rawMaterials', 'orderItems.customDesign']);
 
@@ -129,18 +142,27 @@ class OrderStockService
             }
         }
 
-        return ['materials' => $this->resolveMaterials($quantities), 'textures' => $textures];
+        return [
+            'materials' => $this->applyOverrides($this->resolveMaterials($quantities), $overrides),
+            'textures' => $textures,
+        ];
     }
 
     /**
      * Anything this order needs more of than the shop holds, described for a
      * human. An empty array means approval is safe.
      *
+     * Takes the same overrides as requirements(), because the check has to run
+     * against the figures actually being reserved: an admin raising a line has
+     * to be told it no longer fits, and one lowering a line should not be
+     * blocked by an estimate they have already corrected.
+     *
+     * @param  array<int|string, mixed>  $overrides
      * @return array<int, string>
      */
-    public function shortages(Order $order): array
+    public function shortages(Order $order, array $overrides = []): array
     {
-        $requirements = $this->requirements($order);
+        $requirements = $this->requirements($order, $overrides);
         $shortages = [];
 
         foreach ($requirements['materials'] as $entry) {
@@ -195,12 +217,17 @@ class OrderStockService
             $requirements = $this->requirements($order);
 
             $lines = [];
-            foreach ($requirements['materials'] as $entry) {
-                $lines[] = $this->line($entry['model']->name, $entry['model']->unit, $entry['quantity'], (float) $entry['model']->stock_quantity);
+            foreach ($requirements['materials'] as $id => $entry) {
+                // Only raw materials are correctable. A texture is one sheet per
+                // item — a count, not a judgement about coverage — so there is
+                // nothing for a reviewer to weigh up.
+                $lines[] = $this->line($entry['model']->name, $entry['model']->unit, $entry['quantity'], (float) $entry['model']->stock_quantity)
+                    + ['id' => $id, 'editable' => true];
             }
 
             foreach ($requirements['textures'] as $entry) {
-                $lines[] = $this->line($entry['model']->name, 'pcs', $entry['quantity'], (float) $entry['model']->stock_quantity);
+                $lines[] = $this->line($entry['model']->name, 'pcs', $entry['quantity'], (float) $entry['model']->stock_quantity)
+                    + ['id' => null, 'editable' => false];
             }
 
             return [
@@ -270,6 +297,8 @@ class OrderStockService
     private function line(string $name, ?string $unit, float $quantity, float $stock, bool $checkStock = true): array
     {
         return [
+            'id' => null,
+            'editable' => false,
             'name' => $name,
             'unit' => $unit ?? '',
             'quantity' => $this->number($quantity),
@@ -287,16 +316,24 @@ class OrderStockService
      * Stock drops now, so the next order to be approved sees a shelf that no
      * longer counts this one's materials. Nothing is marked consumed — see
      * startProduction() for that half.
+     *
+     * @param  array<int|string, mixed>  $overrides  quantities the reviewer corrected
      */
-    public function reserve(Order $order): void
+    public function reserve(Order $order, array $overrides = []): void
     {
-        $requirements = $this->requirements($order);
+        $requirements = $this->requirements($order, $overrides);
 
         foreach ($requirements['materials'] as $entry) {
             $this->materialStock->record($entry['model'], StockMovementReason::Reserved, $entry['quantity'], [
                 'user_id' => Auth::id(),
                 'order_id' => $order->order_id,
-                'note' => "Reserved for approved order {$order->order_number}",
+                // The note says where the figure came from. A quantity a person
+                // judged against the artwork and one a formula produced are
+                // different kinds of number, and the usage log should not
+                // present them as the same.
+                'note' => $entry['adjusted']
+                    ? "Reserved for approved order {$order->order_number} — quantity set by reviewer"
+                    : "Reserved for approved order {$order->order_number}",
             ]);
         }
 
@@ -393,6 +430,44 @@ class OrderStockService
         foreach ($order->orderItems as $item) {
             $item->product?->increment('stock', $item->quantity);
         }
+    }
+
+    /**
+     * Replace calculated quantities with the ones a reviewer set.
+     *
+     * Keyed on the material rather than positionally, so a line appearing or
+     * disappearing between the form being rendered and submitted can't shift
+     * an override onto the wrong material. Anything the order doesn't already
+     * draw is dropped — this corrects an estimate, it does not add materials.
+     *
+     * @param  array<int, array{model: RawMaterial, quantity: float}>  $materials
+     * @param  array<int|string, mixed>  $overrides
+     * @return array<int, array{model: RawMaterial, quantity: float, adjusted: bool}>
+     */
+    private function applyOverrides(array $materials, array $overrides): array
+    {
+        $applied = [];
+
+        foreach ($materials as $id => $entry) {
+            $entry['adjusted'] = false;
+
+            if (array_key_exists($id, $overrides) && is_numeric($overrides[$id])) {
+                $quantity = round(max(0, (float) $overrides[$id]), 2);
+
+                // Only count it as adjusted if it actually differs. Posting the
+                // figure back unchanged is what an untouched form does, and
+                // that should read as the formula's number in the ledger.
+                $entry['adjusted'] = abs($quantity - $entry['quantity']) > 0.0001;
+                $entry['quantity'] = $quantity;
+            }
+
+            // Zero means the reviewer decided this artwork uses none of it.
+            if ($entry['quantity'] > 0) {
+                $applied[$id] = $entry;
+            }
+        }
+
+        return $applied;
     }
 
     /**

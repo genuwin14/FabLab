@@ -692,9 +692,12 @@
                     if (mode === 'cancel') {
                         materialsPanel.classList.add('d-none');
                     } else {
+                        // Editable: the admin is looking at the design and is
+                        // the only person who gets to correct the estimate.
                         fetchOrderMaterials(
                             'reviewMaterialsPanel',
-                            @json(route('admin.orders.materials', ':id')).replace(':id', order.order_id)
+                            @json(route('admin.orders.materials', ':id')).replace(':id', order.order_id),
+                            true
                         );
                     }
                 });

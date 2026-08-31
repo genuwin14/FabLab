@@ -50,6 +50,18 @@
             </table>
         </div>
 
+        {{-- Only shown when the panel is editable. The estimate is a formula's
+             best guess at coverage; the reviewer is looking at the artwork. --}}
+        <div class="materials-adjust-hint d-none d-flex justify-content-between align-items-start gap-2 mb-2">
+            <small class="text-muted">
+                <i class="bi bi-pencil-square me-1"></i>These are estimates. Correct any of them against the
+                design above — an all-red image uses little cyan, a dense photo uses more of everything.
+            </small>
+            <button type="button" class="btn btn-sm btn-link p-0 text-decoration-none text-nowrap materials-reset-btn">
+                <i class="bi bi-arrow-counterclockwise"></i> Reset
+            </button>
+        </div>
+
         <p class="materials-note text-muted small mb-0"></p>
     </div>
 
@@ -73,7 +85,67 @@
          * re-checks stock server-side before writing anything. A panel that
          * fails to load must not stop an admin approving an order.
          */
-        function fetchOrderMaterials(panelId, url) {
+        /**
+         * Keep Remaining and the shortage warning honest while the reviewer
+         * types.
+         *
+         * Recalculated in the browser rather than round-tripping: the server
+         * re-checks every figure on submit anyway, so this only has to be good
+         * enough to steer someone away from a number that won't fit.
+         */
+        function wireAdjustments(panel) {
+            const shortage = panel.querySelector('.materials-shortage');
+            const list = panel.querySelector('.materials-shortage-list');
+            const inputs = panel.querySelectorAll('.materials-input');
+
+            const round = value => Math.round(value * 100) / 100;
+
+            function recalculate() {
+                const problems = [];
+
+                inputs.forEach(input => {
+                    const row = input.closest('tr');
+                    const stock = parseFloat(input.dataset.stock);
+                    const wanted = parseFloat(input.value);
+                    const remaining = row.querySelector('.col-remaining');
+                    const unit = row.querySelector('td:nth-child(3)').textContent.replace(/^[\d.,]+\s*/, '');
+
+                    if (!Number.isFinite(wanted) || wanted < 0) {
+                        remaining.textContent = '—';
+                        return;
+                    }
+
+                    const over = wanted > stock;
+                    row.classList.toggle('materials-short', over);
+                    input.classList.toggle('is-invalid', over);
+                    remaining.textContent = round(Math.max(0, stock - wanted)) + (unit ? ' ' + unit : '');
+
+                    if (over) {
+                        const name = row.querySelector('td').textContent;
+                        problems.push(`${name} (needs ${round(wanted)}${unit ? ' ' + unit : ''}, ${round(stock)} in stock)`);
+                    }
+                });
+
+                list.innerHTML = '';
+                shortage.classList.toggle('d-none', !problems.length);
+                problems.forEach(text => {
+                    const li = document.createElement('li');
+                    li.textContent = text;
+                    list.appendChild(li);
+                });
+            }
+
+            inputs.forEach(input => input.addEventListener('input', recalculate));
+
+            panel.querySelector('.materials-reset-btn').onclick = () => {
+                inputs.forEach(input => { input.value = input.dataset.calculated; });
+                recalculate();
+            };
+
+            recalculate();
+        }
+
+        function fetchOrderMaterials(panelId, url, editable = false) {
             const panel = document.getElementById(panelId);
             if (!panel) return;
 
@@ -84,6 +156,7 @@
             const body = panel.querySelector('.materials-body');
 
             panel.classList.remove('d-none');
+            panel.dataset.editable = editable ? '1' : '';
             loading.classList.remove('d-none');
             error.classList.add('d-none');
             content.classList.add('d-none');
@@ -114,11 +187,17 @@
                         return;
                     }
 
+                    // Correcting the estimate only makes sense while nothing has
+                    // moved yet, and only for the materials a reviewer can weigh
+                    // up. The caller decides whether this screen allows it.
+                    const canEdit = editable && data.stage === 'reserve';
+                    panel.querySelector('.materials-adjust-hint').classList.toggle('d-none', !canEdit);
+
                     data.lines.forEach(line => {
                         const row = document.createElement('tr');
-                        if (line.short) row.className = 'materials-short';
-
                         const unit = line.unit ? ' ' + line.unit : '';
+                        const editThis = canEdit && line.editable && line.id !== null;
+
                         row.innerHTML = `
                             <td class="ps-3 fw-semibold text-dark"></td>
                             <td class="text-center materials-qty fw-bold"></td>
@@ -127,11 +206,39 @@
 
                         const cells = row.querySelectorAll('td');
                         cells[0].textContent = line.name;
-                        cells[1].textContent = '−' + line.quantity + unit;
-                        cells[1].classList.add(line.short ? 'text-danger' : 'text-dark');
                         cells[2].textContent = line.stock + unit;
-                        cells[3].textContent = line.remaining === null ? '—' : line.remaining + unit;
 
+                        if (editThis) {
+                            const input = document.createElement('input');
+                            input.type = 'number';
+                            input.step = '0.01';
+                            input.min = '0';
+                            input.className = 'form-control form-control-sm text-end materials-input';
+                            input.name = `material_quantities[${line.id}]`;
+                            input.value = line.quantity;
+                            input.dataset.calculated = line.quantity;
+                            input.dataset.stock = line.stock;
+                            input.setAttribute('aria-label', 'Quantity of ' + line.name + ' to deduct');
+
+                            const wrap = document.createElement('div');
+                            wrap.className = 'd-flex align-items-center justify-content-center gap-1';
+                            wrap.appendChild(input);
+                            if (line.unit) {
+                                const suffix = document.createElement('span');
+                                suffix.className = 'text-muted small';
+                                suffix.textContent = line.unit;
+                                wrap.appendChild(suffix);
+                            }
+
+                            cells[1].classList.remove('fw-bold');
+                            cells[1].appendChild(wrap);
+                        } else {
+                            cells[1].textContent = '−' + line.quantity + unit;
+                            cells[1].classList.add(line.short ? 'text-danger' : 'text-dark');
+                            if (line.short) row.classList.add('materials-short');
+                        }
+
+                        cells[3].textContent = line.remaining === null ? '—' : line.remaining + unit;
                         body.appendChild(row);
                     });
 
@@ -147,6 +254,8 @@
 
                     panel.querySelector('.materials-note').textContent = data.note;
                     content.classList.remove('d-none');
+
+                    if (canEdit) wireAdjustments(panel);
                 })
                 .catch(() => {
                     loading.classList.add('d-none');
