@@ -101,12 +101,15 @@ class CustomizationRate extends Model
     /** Per-request memo. One small query serves every design priced in a request. */
     private static ?array $cachedAmounts = null;
 
+    /** The same memo for the material side. See materials(). */
+    private static ?array $cachedMaterials = null;
+
     protected static function booted(): void
     {
         // Any write invalidates the memo, so a save and a re-price in the same
         // request can't disagree.
-        static::saved(fn() => self::$cachedAmounts = null);
-        static::deleted(fn() => self::$cachedAmounts = null);
+        static::saved(fn() => self::flushCache());
+        static::deleted(fn() => self::flushCache());
     }
 
     /** Every rate as key => amount, with shipped defaults filling any gaps. */
@@ -134,25 +137,79 @@ class CustomizationRate extends Model
         return self::amounts()[$key] ?? 0.0;
     }
 
-    /** Drop the memo — for tests and long-running workers. */
-    public static function flushCache(): void
+    /**
+     * What one unit of each option takes off the shelf, as
+     * `rate_key => [raw_material_id => quantity_required]`.
+     *
+     * Options with nothing mapped are absent rather than empty, so a caller
+     * can ask `$materials[$key] ?? []` and get the "consumes nothing" answer
+     * without a second lookup. Same swallowed-throwable guard as amounts():
+     * a console command running before migrate must not fatal on a table that
+     * isn't there yet.
+     *
+     * @return array<string, array<int, float>>
+     */
+    public static function materials(): array
     {
-        self::$cachedAmounts = null;
+        if (self::$cachedMaterials !== null) return self::$cachedMaterials;
+
+        try {
+            $rows = CustomizationRateMaterial::query()
+                ->whereIn('rate_key', array_keys(self::DEFINITIONS))
+                ->get(['rate_key', 'raw_material_id', 'quantity_required']);
+        } catch (\Throwable) {
+            $rows = collect();
+        }
+
+        $materials = [];
+        foreach ($rows as $row) {
+            // A zero requirement is the same as no requirement, and letting it
+            // through would write ledger rows for nothing.
+            if ((float) $row->quantity_required <= 0) continue;
+
+            $materials[$row->rate_key][(int) $row->raw_material_id] = (float) $row->quantity_required;
+        }
+
+        return self::$cachedMaterials = $materials;
     }
 
     /**
-     * The definitions with their live amounts merged in, grouped for the admin
-     * screen — element fees and size surcharges are charged on different things
-     * and read better apart.
+     * The BOM for one option: `[raw_material_id => quantity_required]`.
+     *
+     * @return array<int, float>
+     */
+    public static function materialsFor(string $key): array
+    {
+        return self::materials()[$key] ?? [];
+    }
+
+    /** Drop both memos — for tests and long-running workers. */
+    public static function flushCache(): void
+    {
+        self::$cachedAmounts = null;
+        self::$cachedMaterials = null;
+    }
+
+    /**
+     * The definitions with their live amounts and bills of materials merged
+     * in, grouped for the admin screen — element fees and size surcharges are
+     * charged on different things and read better apart.
      *
      * @return array<string, array<string, array<string, mixed>>>
      */
     public static function forDisplay(): array
     {
         $amounts = self::amounts();
+        $materials = self::materials();
 
         return collect(self::DEFINITIONS)
-            ->map(fn($definition, $key) => $definition + ['key' => $key, 'amount' => $amounts[$key] ?? 0.0])
+            ->map(fn($definition, $key) => $definition + [
+                'key' => $key,
+                'amount' => $amounts[$key] ?? 0.0,
+                // What the shop spends on the option, alongside what it
+                // charges for it. `raw_material_id => quantity_required`.
+                'materials' => $materials[$key] ?? [],
+            ])
             // preserveKeys: the rate key is the form field name, so losing it
             // would post rates[0] instead of rates[logo].
             ->groupBy('group', true)

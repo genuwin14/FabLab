@@ -130,6 +130,54 @@ class CustomDesign extends Model
     }
 
     /**
+     * How many units of each customization option this design uses, as
+     * `rate_key => units`.
+     *
+     * The same tally the price breakdown works from, in the one shape both the
+     * money side and the material side can use: multiply by the option's rate
+     * for a charge, or by its bill of materials for a draw on the shelf.
+     * Options the design doesn't use are absent rather than zero.
+     *
+     * Uploaded images count as their Size slider value rather than as one
+     * each, because that is what they actually cost in ink — and it keeps the
+     * material draw in step with the fee, which already scales the same way.
+     *
+     * @return array<string, float>
+     */
+    public function customizationUnits(): array
+    {
+        $elements = $this->recipe['elements'] ?? [];
+        $units = [];
+
+        if ($textCount = count($elements['text'] ?? [])) {
+            $units['text'] = (float) $textCount;
+        }
+
+        if ($shapeCount = count($elements['shapes'] ?? [])) {
+            $units['shape'] = (float) $shapeCount;
+        }
+
+        $logoScale = 0.0;
+        foreach ($elements['logos'] ?? [] as $logo) {
+            $logoScale += self::normalisedLogoScale($logo['scale'] ?? null);
+        }
+        if ($logoScale > 0) {
+            $units['logo'] = round($logoScale, 4);
+        }
+
+        if (!empty($this->recipe['features']['led_lighting'])) {
+            $units['led_lighting'] = 1.0;
+        }
+
+        // Only one size ever applies — the one the customer ordered.
+        if ($sizeKey = CustomizationRate::keyForSize($this->recipe['size'] ?? null)) {
+            $units[$sizeKey] = 1.0;
+        }
+
+        return $units;
+    }
+
+    /**
      * Every charge this design adds on top of the product's own price, itemised.
      * Deliberately free of the product relation so serialising a design doesn't
      * pull one in.

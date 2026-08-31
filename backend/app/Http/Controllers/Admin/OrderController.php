@@ -102,7 +102,10 @@ class OrderController extends Controller
             ]);
 
             if ($request->status === 'approved') {
-                $stock->consume($order);
+                // Reserved, not consumed: the shop has committed the material
+                // but nobody has made anything yet. Staff starting production
+                // turns each reservation into consumption.
+                $stock->reserve($order);
             } else {
                 // Checkout took the product stock; a rejected order never got
                 // as far as consuming materials.
@@ -189,7 +192,7 @@ class OrderController extends Controller
     /**
      * Attach a Notice of Award or Purchase Order and advance the order.
      */
-    public function uploadDocument(Request $request, $id, string $type)
+    public function uploadDocument(Request $request, $id, string $type, OrderStockService $stock)
     {
         abort_unless(isset(self::DOCUMENTS[$type]), 404);
 
@@ -227,6 +230,14 @@ class OrderController extends Controller
             $spec['column'] => $path,
             'status' => $spec['to'],
         ]);
+
+        // A Purchase Request order reaches production through this upload
+        // rather than through the staff button, so its reservations have to be
+        // converted here too. Without this, PR orders would never consume
+        // anything and the materials report would only ever see cash orders.
+        if ($spec['to'] === 'processing') {
+            $stock->startProduction($order);
+        }
 
         if ($previous) {
             \Illuminate\Support\Facades\Storage::disk('local')->delete($previous);

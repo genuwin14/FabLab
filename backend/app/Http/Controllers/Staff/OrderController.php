@@ -4,7 +4,9 @@ namespace App\Http\Controllers\Staff;
 
 use App\Http\Controllers\Controller;
 use App\Models\Order;
+use App\Services\OrderStockService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class OrderController extends Controller
 {
@@ -84,7 +86,7 @@ class OrderController extends Controller
         'for_delivery' => 'completed',
     ];
 
-    public function updateStatus(Request $request, $id)
+    public function updateStatus(Request $request, $id, OrderStockService $stock)
     {
         $request->validate([
             'status' => 'required|in:processing,ready_for_pickup,completed',
@@ -115,7 +117,21 @@ class OrderController extends Controller
             $order->payment_reference = $request->payment_reference;
         }
 
-        $order->save();
+        // Starting production is the point the shop actually cuts into its
+        // materials. Approval only reserved them — see OrderStockService — so
+        // this is where the reservations become consumption and the materials
+        // report starts counting them as used.
+        //
+        // Both halves in one transaction: an order that says it is processing
+        // while its materials still read as reserved would have staff at the
+        // bench and the report disagreeing about whether the job had started.
+        DB::transaction(function () use ($order, $stock) {
+            $order->save();
+
+            if ($order->status === 'processing') {
+                $stock->startProduction($order);
+            }
+        });
 
         if ($oldStatus !== $order->status && $order->user && $order->user->notifications_enabled) {
             $order->user->notify(new \App\Notifications\OrderStatusChanged($order, $oldStatus, $order->status));

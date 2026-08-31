@@ -311,7 +311,7 @@ class RawMaterialUsageTest extends TestCase
 
     // ---------------------------------------------------------- order wiring
 
-    public function test_approving_an_order_writes_a_ledger_row_and_raises_units_consumed(): void
+    public function test_approving_an_order_writes_a_ledger_row_reserving_the_material(): void
     {
         $order = $this->orderFor(quantity: 4, perUnit: 3);
         $this->asAdmin();
@@ -321,13 +321,36 @@ class RawMaterialUsageTest extends TestCase
 
         $this->material->refresh();
         $this->assertEquals(88, $this->material->stock_quantity);   // 100 - (4 x 3)
-        // The gap this whole feature closes: approvals used to move stock and
-        // leave this counter untouched.
-        $this->assertEquals(12, $this->material->units_consumed);
+        // Approval commits the material but doesn't spend it. The counter the
+        // materials report prints waits for someone to start the job — see
+        // the production test below.
+        $this->assertEquals(0, $this->material->units_consumed);
 
         $movement = RawMaterialMovement::firstOrFail();
         $this->assertSame($order->order_id, $movement->order_id);
-        $this->assertSame(StockMovementReason::Consumed, $movement->reason);
+        $this->assertSame(StockMovementReason::Reserved, $movement->reason);
+    }
+
+    public function test_starting_production_raises_units_consumed(): void
+    {
+        $order = $this->orderFor(quantity: 4, perUnit: 3);
+        $this->asAdmin();
+        $this->post("/admin/orders/{$order->order_id}/review", ['status' => 'approved']);
+
+        $this->asStaff();
+        $this->post("/staff/orders/{$order->order_id}/update-status", [
+            'status' => 'processing', 'payment_reference' => 'OR-9',
+        ])->assertRedirect();
+
+        $this->material->refresh();
+        // Stock is unchanged from the reservation — the material only ever
+        // left the shelf once.
+        $this->assertEquals(88, $this->material->stock_quantity);
+        // The gap this whole feature closes: production used to move nothing,
+        // so a made job never showed up in the report's Consumed column.
+        $this->assertEquals(12, $this->material->units_consumed);
+
+        $this->assertSame(StockMovementReason::Consumed, RawMaterialMovement::latest('movement_id')->firstOrFail()->reason);
     }
 
     public function test_cancelling_an_approved_order_reverses_its_ledger_rows(): void
@@ -341,6 +364,7 @@ class RawMaterialUsageTest extends TestCase
         $this->material->refresh();
         $this->assertEquals(100, $this->material->stock_quantity);
         $this->assertEquals(0, $this->material->units_consumed);
+        // The reservation and the reversal that undid it.
         $this->assertSame(2, RawMaterialMovement::count());
     }
 

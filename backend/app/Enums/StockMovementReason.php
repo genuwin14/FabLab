@@ -7,12 +7,18 @@ namespace App\Enums;
  *
  * The first four mirror the columns the materials report prints, which is the
  * point: recording a movement is now the only thing that touches those
- * counters, so the report and the shelf can't drift apart. The last two are
- * bookkeeping — `Correction` reconciles a physical count, `Reversal` undoes an
- * earlier entry.
+ * counters, so the report and the shelf can't drift apart. `Correction`
+ * reconciles a physical count and `Reversal` undoes an earlier entry.
+ *
+ * `Reserved` is the odd one out. Approving an order takes its materials off
+ * the shelf so a second order can't be promised the same stock, but nothing
+ * has been made yet — so it moves stock without filling a bucket. Staff
+ * starting production turns it into `Consumed`, which is the point the
+ * materials report should start saying it was used up.
  */
 enum StockMovementReason: string
 {
+    case Reserved = 'reserved';
     case Consumed = 'consumed';
     case Damaged = 'damaged';
     case Sponsored = 'sponsored';
@@ -23,6 +29,7 @@ enum StockMovementReason: string
     public function label(): string
     {
         return match ($this) {
+            self::Reserved => 'Reserved for an approved order',
             self::Consumed => 'Consumed in production',
             self::Damaged => 'Damaged / spoiled',
             self::Sponsored => 'Sponsored / given away',
@@ -38,6 +45,7 @@ enum StockMovementReason: string
     public function shortLabel(): string
     {
         return match ($this) {
+            self::Reserved => 'Reserved',
             self::Consumed => 'Consumed',
             self::Damaged => 'Damaged',
             self::Sponsored => 'Sponsored',
@@ -50,6 +58,7 @@ enum StockMovementReason: string
     public function hint(): string
     {
         return match ($this) {
+            self::Reserved => 'Set aside for an approved order. Off the shelf, but not used up until production starts.',
             self::Consumed => 'Used up making something. Leaves the shelf for good.',
             self::Damaged => 'Spoiled, broken or unusable. Leaves the shelf for good.',
             self::Sponsored => 'Donated or handed to a sponsor. Leaves the shelf for good.',
@@ -62,6 +71,7 @@ enum StockMovementReason: string
     public function icon(): string
     {
         return match ($this) {
+            self::Reserved => 'bi-bookmark-check',
             self::Consumed => 'bi-scissors',
             self::Damaged => 'bi-exclamation-triangle',
             self::Sponsored => 'bi-gift',
@@ -74,6 +84,7 @@ enum StockMovementReason: string
     public function color(): string
     {
         return match ($this) {
+            self::Reserved => '#0dcaf0',
             self::Consumed => '#0d6efd',
             self::Damaged => '#dc3545',
             self::Sponsored => '#fd7e14',
@@ -84,12 +95,16 @@ enum StockMovementReason: string
     }
 
     /**
-     * The `units_*` counter this movement adds to, if any. Correction and
-     * reversal move stock without belonging to a bucket.
+     * The `units_*` counter this movement adds to, if any. Reservation,
+     * correction and reversal move stock without belonging to a bucket.
      */
     public function bucketColumn(): ?string
     {
         return match ($this) {
+            // Reservation deliberately has none. The material is spoken for,
+            // not spent, and the report's Consumed column would be a lie until
+            // someone actually starts making the thing.
+            self::Reserved => null,
             self::Consumed => 'units_consumed',
             self::Damaged => 'units_damaged',
             self::Sponsored => 'units_sponsored',
@@ -106,15 +121,16 @@ enum StockMovementReason: string
     public function reducesStock(): bool
     {
         return match ($this) {
-            self::Consumed, self::Damaged, self::Sponsored => true,
+            self::Reserved, self::Consumed, self::Damaged, self::Sponsored => true,
             self::OnDisplay, self::Correction, self::Reversal => false,
         };
     }
 
     /**
      * Reasons a person can pick in the Record Usage form. Correction is
-     * admin-only, and reversal is never chosen — it comes from the Reverse
-     * button on an existing entry.
+     * admin-only; reversal is never chosen, it comes from the Reverse button
+     * on an existing entry; and reservation is only ever written by an order
+     * approval.
      *
      * @return array<int, self>
      */

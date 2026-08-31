@@ -38,15 +38,29 @@ class Color extends Model
         'hex_code',
         'description',
         'price_modifier',
+        'raw_material_id',
+        'material_quantity',
     ];
 
     protected $casts = [
         'price_modifier' => 'float',
+        'material_quantity' => 'float',
     ];
 
     public function products()
     {
         return $this->belongsToMany(Product::class, 'product_colors', 'color_id', 'product_id');
+    }
+    /**
+     * What finishing one item in this colour takes off the shelf.
+     *
+     * Optional — a colour has no stock of its own, so with nothing linked here an
+     * ordered item in this colour consumes nothing, exactly as it did before
+     * finishes could carry materials.
+     */
+    public function rawMaterial(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(RawMaterial::class, 'raw_material_id', 'raw_material_id');
     }
 
     /**

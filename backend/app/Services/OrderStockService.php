@@ -3,25 +3,44 @@
 namespace App\Services;
 
 use App\Enums\StockMovementReason;
+use App\Models\CustomizationRate;
 use App\Models\Order;
 use App\Models\RawMaterial;
+use App\Models\RawMaterialMovement;
 use App\Models\Texture;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 /**
  * Every stock movement an order causes, in one place.
  *
  * Product stock moves at checkout (down) and at cancellation (up). Raw
- * materials and textures move at approval (down) and at cancellation (up),
- * because that's the point the shop commits to making the thing.
+ * materials and textures move in two steps, because approving an order and
+ * making the thing are different events:
+ *
+ *   - **Approval reserves.** The material comes off the shelf so a second
+ *     order can't be promised the same stock, but nothing has been made, so
+ *     the report's Consumed column stays put.
+ *   - **Production consumes.** Staff moving the order to processing turns each
+ *     reservation into consumption. Stock doesn't move again — it already
+ *     left — but `units_consumed` and the materials report finally say it was
+ *     used.
+ *   - **Cancellation reverses** whichever of the two the order reached.
+ *
+ * What an order needs is two bills of materials, not one. The product's own
+ * BOM covers the blank item; `customization_rate_materials` covers what the
+ * customer added to it in the studio, and the finish's `raw_material_id`
+ * covers what it was coloured or printed with. Without the second, a design
+ * with twelve lines of text and internal lighting was charged for ink and an
+ * LED strip that no order ever deducted.
  *
  * Quantities are aggregated per material and per texture before being applied:
  * two lines of different products can draw on the same material, and the
  * shortage check is only meaningful against the combined figure.
  *
  * Raw materials go through RawMaterialStockService so an approval lands in the
- * same ledger — and the same `units_consumed` counter — as usage recorded by
- * hand. Textures have no ledger of their own yet and still move directly.
+ * same ledger — and the same counters — as usage recorded by hand. Textures
+ * have no ledger of their own yet and still move directly.
  */
 class OrderStockService
 {
@@ -30,7 +49,7 @@ class OrderStockService
     }
 
     /**
-     * What this order consumes on approval.
+     * What this order draws on, aggregated.
      *
      * @return array{materials: array<int, array{model: RawMaterial, quantity: float}>, textures: array<int, array{model: Texture, quantity: float}>}
      */
@@ -38,8 +57,20 @@ class OrderStockService
     {
         $order->loadMissing(['orderItems.product.rawMaterials', 'orderItems.customDesign']);
 
-        $materials = [];
+        // Accumulate against material ids first and resolve the models in one
+        // query at the end — the same material can be reached three different
+        // ways (product BOM, a customization option, the finish) and looking it
+        // up on each route would be a query per route.
+        $quantities = [];
         $textures = [];
+
+        $add = function (?int $materialId, float $quantity) use (&$quantities) {
+            if ($materialId === null || $quantity <= 0) {
+                return;
+            }
+
+            $quantities[$materialId] = ($quantities[$materialId] ?? 0) + $quantity;
+        };
 
         foreach ($order->orderItems as $item) {
             if (! $item->product) {
@@ -48,24 +79,46 @@ class OrderStockService
 
             $quantity = (int) $item->quantity;
 
+            // 1. The blank item's own bill of materials.
             foreach ($item->product->rawMaterials as $material) {
-                $id = $material->raw_material_id;
-                $needed = (float) $material->pivot->quantity_required * $quantity;
-
-                $materials[$id]['model'] ??= $material;
-                $materials[$id]['quantity'] = ($materials[$id]['quantity'] ?? 0) + $needed;
+                $add($material->raw_material_id, (float) $material->pivot->quantity_required * $quantity);
             }
 
-            $texture = $item->customDesign?->texture();
+            $design = $item->customDesign;
+            if (! $design) {
+                continue;
+            }
+
+            // 2. What the customer added in the studio. customizationUnits() is
+            //    the same tally the price breakdown charges for, so the material
+            //    draw and the fee can't end up describing different designs.
+            foreach ($design->customizationUnits() as $rateKey => $units) {
+                foreach (CustomizationRate::materialsFor($rateKey) as $materialId => $perUnit) {
+                    $add($materialId, $perUnit * $units * $quantity);
+                }
+            }
+
+            // 3. The finish. Either/or, and the texture wins if a hand-edited
+            //    recipe names both — the same rule CustomDesign::finishLine()
+            //    prices by, so an item can't be charged for one finish and
+            //    costed against the other.
+            $texture = $design->texture();
             if ($texture) {
                 $id = $texture->texture_id;
-
                 $textures[$id]['model'] ??= $texture;
                 $textures[$id]['quantity'] = ($textures[$id]['quantity'] ?? 0) + $quantity;
+
+                $add($texture->raw_material_id, (float) $texture->material_quantity * $quantity);
+
+                continue;
+            }
+
+            if ($color = $design->color()) {
+                $add($color->raw_material_id, (float) $color->material_quantity * $quantity);
             }
         }
 
-        return ['materials' => $materials, 'textures' => $textures];
+        return ['materials' => $this->resolveMaterials($quantities), 'textures' => $textures];
     }
 
     /**
@@ -108,17 +161,21 @@ class OrderStockService
     }
 
     /**
-     * Draw down materials and textures. Call this on approval only.
+     * Set aside what this order will need. Call this on approval only.
+     *
+     * Stock drops now, so the next order to be approved sees a shelf that no
+     * longer counts this one's materials. Nothing is marked consumed — see
+     * startProduction() for that half.
      */
-    public function consume(Order $order): void
+    public function reserve(Order $order): void
     {
         $requirements = $this->requirements($order);
 
         foreach ($requirements['materials'] as $entry) {
-            $this->materialStock->record($entry['model'], StockMovementReason::Consumed, $entry['quantity'], [
+            $this->materialStock->record($entry['model'], StockMovementReason::Reserved, $entry['quantity'], [
                 'user_id' => Auth::id(),
                 'order_id' => $order->order_id,
-                'note' => "Approved order {$order->order_number}",
+                'note' => "Reserved for approved order {$order->order_number}",
             ]);
         }
 
@@ -128,13 +185,70 @@ class OrderStockService
     }
 
     /**
-     * Put materials and textures back. Call this only for an order that was
-     * approved — a rejected order never consumed them.
+     * Turn this order's reservations into consumption. Call this when the
+     * order enters production.
      *
-     * Materials are returned by reversing the ledger rows the approval wrote,
-     * not by re-reading the bill of materials: a product's BOM can be edited
-     * between approval and cancellation, and giving back a quantity the order
-     * never took would invent stock.
+     * Worth being precise about what moves here: the material left the shelf
+     * at approval, so stock is unchanged overall. What changes is that it now
+     * counts as *used* — `units_consumed` and the materials report move for
+     * the first time.
+     *
+     * That is done by reversing each reservation and recording consumption
+     * against the quantity it held, rather than re-reading the bills of
+     * materials: a product's BOM, an option's BOM and a finish's material can
+     * all be edited between approval and production, and consuming a figure
+     * the order never reserved would invent stock. It also leaves a ledger
+     * that reads as what actually happened — reserved, released, consumed —
+     * instead of a consumption row appearing from nowhere.
+     *
+     * Orders approved before reservations existed hold `Consumed` rows
+     * already, so they find nothing to convert and are left alone.
+     */
+    public function startProduction(Order $order): void
+    {
+        DB::transaction(function () use ($order) {
+            $reservations = RawMaterialMovement::where('order_id', $order->order_id)
+                ->where('reason', StockMovementReason::Reserved)
+                ->whereDoesntHave('reversal')
+                ->with('rawMaterial')
+                ->get();
+
+            foreach ($reservations as $reservation) {
+                if (! $reservation->rawMaterial) {
+                    continue;
+                }
+
+                $context = [
+                    'user_id' => Auth::id(),
+                    'order_id' => $order->order_id,
+                    'note' => "Production started on order {$order->order_number}",
+                ];
+
+                $this->materialStock->reverse($reservation, $context);
+
+                // record() re-reads the row under a lock, so it sees the stock
+                // the reversal just put back rather than the stale figure on
+                // $reservation->rawMaterial.
+                $this->materialStock->record(
+                    $reservation->rawMaterial,
+                    StockMovementReason::Consumed,
+                    (float) $reservation->quantity,
+                    $context,
+                );
+            }
+        });
+    }
+
+    /**
+     * Put materials and textures back. Call this only for an order that was
+     * approved — a rejected order never took them.
+     *
+     * Materials are returned by reversing the ledger rows the order wrote, not
+     * by re-reading the bills of materials, for the same reason production
+     * doesn't: they can be edited in between, and giving back a quantity the
+     * order never took would invent stock. Whether those rows are reservations
+     * or consumption depends on how far the order got, and reverseForOrder
+     * handles either without being told which.
      */
     public function restore(Order $order): void
     {
@@ -158,6 +272,39 @@ class OrderStockService
         foreach ($order->orderItems as $item) {
             $item->product?->increment('stock', $item->quantity);
         }
+    }
+
+    /**
+     * Attach a model to each accumulated quantity.
+     *
+     * A material that has since been retired drops out here rather than
+     * blocking the order — the same thing already happened to product BOM
+     * lines, because a soft-deleted material never came back through the
+     * relation in the first place.
+     *
+     * @param  array<int, float>  $quantities
+     * @return array<int, array{model: RawMaterial, quantity: float}>
+     */
+    private function resolveMaterials(array $quantities): array
+    {
+        if ($quantities === []) {
+            return [];
+        }
+
+        return RawMaterial::whereIn('raw_material_id', array_keys($quantities))
+            ->get()
+            ->mapWithKeys(fn (RawMaterial $material) => [
+                $material->raw_material_id => [
+                    'model' => $material,
+                    // Two decimals, because that is what the ledger stores. A
+                    // requirement that rounds away to nothing is dropped rather
+                    // than written as a zero-quantity movement, which record()
+                    // would refuse anyway.
+                    'quantity' => round($quantities[$material->raw_material_id], 2),
+                ],
+            ])
+            ->filter(fn (array $entry) => $entry['quantity'] > 0)
+            ->all();
     }
 
     private function number(float $value): string
