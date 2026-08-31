@@ -64,8 +64,13 @@
     </div>
 
     {{-- Shown only while the list is empty, so a blank option reads as a
-         deliberate "draws nothing" rather than a broken panel. --}}
-    <small class="text-muted-2 material-empty d-block" @if (count($rows)) hidden @endif>
+         deliberate "draws nothing" rather than a broken panel.
+
+         Deliberately not d-block: Bootstrap's display utilities are !important
+         and beat the hidden attribute, which left "draws nothing" showing
+         underneath a list of materials. .material-empty carries the display
+         rule instead. --}}
+    <small class="text-muted-2 material-empty" @if (count($rows)) hidden @endif>
         @if ($materials->isEmpty())
             No raw materials on file yet — add some under Raw Materials first.
         @else

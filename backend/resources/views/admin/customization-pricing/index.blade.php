@@ -257,6 +257,11 @@
 
         .rate-materials .add-material-btn { font-size: 0.78rem; }
 
+        /* Not a d-block utility — those are !important, and this element is
+           shown and hidden through the hidden attribute. */
+        .rate-materials .material-empty { display: block; }
+        .rate-materials .material-empty[hidden] { display: none; }
+
         .pricing-input .form-control:focus {
             border-color: rgba(14, 46, 69, 0.4);
             box-shadow: 0 0 0 0.2rem rgba(255, 197, 8, 0.25);
