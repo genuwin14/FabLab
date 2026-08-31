@@ -412,6 +412,62 @@ class CustomizationMaterialTest extends TestCase
         $this->assertEquals(94, $this->fabric->refresh()->stock_quantity);
     }
 
+    // ------------------------------------------- decorating vs. making
+
+    public function test_a_plain_order_skips_the_materials_that_only_a_print_uses(): void
+    {
+        // The fabric is what the shirt is; the ink is what decorates it.
+        $this->product->rawMaterials()->syncWithoutDetaching([
+            $this->ink->raw_material_id => ['quantity_required' => 8, 'requires_design' => true],
+        ]);
+
+        // No design on the line — ordered straight off the shop page.
+        $this->approve($this->order('pending', 2));
+
+        // The blank still costs its fabric...
+        $this->assertEquals(94, $this->fabric->refresh()->stock_quantity);
+        // ...but no ink is spent on a print nobody asked for.
+        $this->assertEquals(100, $this->ink->refresh()->stock_quantity);
+    }
+
+    public function test_a_designed_order_still_draws_them(): void
+    {
+        $this->product->rawMaterials()->syncWithoutDetaching([
+            $this->ink->raw_material_id => ['quantity_required' => 8, 'requires_design' => true],
+        ]);
+
+        $this->approve($this->order('pending', 2, $this->design([])));
+
+        $this->assertEquals(94, $this->fabric->refresh()->stock_quantity);
+        $this->assertEquals(84, $this->ink->refresh()->stock_quantity);
+    }
+
+    public function test_an_unflagged_line_is_drawn_either_way(): void
+    {
+        // The default. A bill of materials written before the flag existed
+        // must keep behaving exactly as it did.
+        $this->approve($this->order('pending', 2));
+
+        $this->assertEquals(94, $this->fabric->refresh()->stock_quantity);
+    }
+
+    public function test_the_shortage_check_ignores_a_print_material_a_plain_order_wont_use(): void
+    {
+        $this->ink->update(['stock_quantity' => 1]);
+        $this->product->rawMaterials()->syncWithoutDetaching([
+            $this->ink->raw_material_id => ['quantity_required' => 8, 'requires_design' => true],
+        ]);
+        $this->asAdmin();
+
+        // Approval must not be blocked by ink the order was never going to use.
+        $order = $this->order('pending', 2);
+        $this->post("/admin/orders/{$order->order_id}/review", ['status' => 'approved'])
+            ->assertRedirect()
+            ->assertSessionMissing('error');
+
+        $this->assertSame('approved', $order->refresh()->status);
+    }
+
     public function test_requirements_ignores_options_with_no_materials_mapped(): void
     {
         $design = $this->design([

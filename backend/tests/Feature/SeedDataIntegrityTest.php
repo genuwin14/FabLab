@@ -139,6 +139,43 @@ class SeedDataIntegrityTest extends TestCase
         );
     }
 
+    public function test_print_consumables_are_only_drawn_when_something_is_printed(): void
+    {
+        // The flag only makes sense where an order can arrive without a design.
+        foreach (Product::with('rawMaterials')->where('is_customizable', false)->get() as $product) {
+            foreach ($product->rawMaterials as $material) {
+                $this->assertFalse(
+                    (bool) $material->pivot->requires_design,
+                    "\"{$product->name}\" never opens in the studio, so its \"{$material->name}\" would never be drawn."
+                );
+            }
+        }
+
+        $mug = Product::where('sku', 'MG-WHT-11')->firstOrFail();
+
+        // The sheet and the ink decorate the mug; ordering a plain one hands
+        // over the blank and prints nothing, so neither should move.
+        foreach ($mug->rawMaterials as $material) {
+            $this->assertTrue(
+                (bool) $material->pivot->requires_design,
+                "The mug's \"{$material->name}\" is drawn even on a plain order."
+            );
+        }
+
+        // The opposite case, and the one easy to get wrong: an ID lace is
+        // printed as part of being made and cannot be ordered blank, so *all*
+        // of its lines are unconditional — the ink included. Flagging the ink
+        // there would mean a lace never drew any.
+        $lace = Product::where('sku', 'IDL-LACE-STD')->firstOrFail();
+
+        foreach ($lace->rawMaterials as $material) {
+            $this->assertFalse(
+                (bool) $material->pivot->requires_design,
+                "The lace's \"{$material->name}\" would never be drawn: a lace has no design to require."
+            );
+        }
+    }
+
     public function test_the_customizer_options_that_cost_something_are_mapped(): void
     {
         // Not every option: small and medium fit the blank's own sheet, so

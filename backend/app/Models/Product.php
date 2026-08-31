@@ -105,7 +105,9 @@ class Product extends Model
     public function rawMaterials(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
     {
         return $this->belongsToMany(RawMaterial::class, 'product_raw_materials', 'product_id', 'raw_material_id')
-            ->withPivot('quantity_required')
+            // requires_design marks a line as a decorating consumable rather
+            // than part of the blank — see the migration that adds it.
+            ->withPivot('quantity_required', 'requires_design')
             ->withTimestamps();
     }
 

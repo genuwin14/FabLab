@@ -697,6 +697,11 @@
                         class="form-control form-control-sm bg-white border" 
                         value="${data ? data.pivot.quantity_required : 1}" required>
                 </td>
+                <td class="text-center">
+                    <input type="checkbox" value="1" name="materials[${rowIndex}][requires_design]"
+                        class="form-check-input" ${data && data.pivot.requires_design ? 'checked' : ''}
+                        title="Spent decorating the item, not making it. A plain order skips it.">
+                </td>
                 <td class="text-end pe-4">
                     <button type="button" class="btn btn-link text-danger p-0" onclick="this.closest('tr').remove(); checkBomEmptyState();">
                         <i class="bi bi-trash"></i>

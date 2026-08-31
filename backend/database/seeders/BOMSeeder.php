@@ -12,6 +12,11 @@ use App\Models\RawMaterial;
  * This is the link that makes a raw material mean something: approving an
  * order for 40 ID laces walks this table and draws 40 clips, 36 metres of
  * strap and 40 card holders off the shelf, each through the usage ledger.
+ *
+ * A line can also be marked as spent only when there is something to print.
+ * The transfer paper and the ink decorate an item rather than make it, so a
+ * plain white mug ordered straight off the shop page draws neither — see
+ * PRINT_CONSUMABLES below and the requires_design column they set.
  */
 class BOMSeeder extends Seeder
 {
@@ -32,6 +37,31 @@ class BOMSeeder extends Seeder
             'Sublimation Ink (Black)' => round($millilitres * 0.15, 2),
         ];
     }
+
+    /**
+     * The materials that pay for a print rather than for the item.
+     *
+     * The blank mug is the product, and it leaves finished-goods stock however
+     * it is ordered. The sheet and the ink it is decorated with should not:
+     * ten plain mugs used to take ten sheets of transfer paper for ten prints
+     * that never happened.
+     *
+     * Only on a product a customer can actually design, though. An ID lace is
+     * printed as part of being made — there is no such thing as a blank one to
+     * order — so its sheet and ink are drawn unconditionally, the same as its
+     * clip and its strap. Flagging them there would mean a lace never drew any
+     * ink at all.
+     *
+     * Everything else on a recipe — the metal clip, the oak plank, the bond
+     * paper inside a booklet — is the item itself and is always drawn.
+     */
+    private const PRINT_CONSUMABLES = [
+        'Sublimation Transfer Paper (A4)',
+        'Sublimation Ink (Cyan)',
+        'Sublimation Ink (Magenta)',
+        'Sublimation Ink (Yellow)',
+        'Sublimation Ink (Black)',
+    ];
 
     public function run(): void
     {
@@ -87,7 +117,14 @@ class BOMSeeder extends Seeder
             $attach = [];
             foreach ($components as $name => $quantity) {
                 if ($material = $materials->get($name)) {
-                    $attach[$material->raw_material_id] = ['quantity_required' => $quantity];
+                    $attach[$material->raw_material_id] = [
+                        'quantity_required' => $quantity,
+                        // The distinction only exists where an order can arrive
+                        // without a design. On everything else the print is
+                        // part of making the thing.
+                        'requires_design' => $product->is_customizable
+                            && in_array($name, self::PRINT_CONSUMABLES, true),
+                    ];
                 }
             }
 

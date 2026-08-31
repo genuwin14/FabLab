@@ -148,7 +148,12 @@ class ProductController extends Controller
             $materialsData = [];
             foreach ($request->materials as $m) {
                 if (isset($m['raw_material_id']) && isset($m['quantity_required'])) {
-                    $materialsData[$m['raw_material_id']] = ['quantity_required' => $m['quantity_required']];
+                    $materialsData[$m['raw_material_id']] = [
+                        'quantity_required' => $m['quantity_required'],
+                        // An unticked checkbox posts nothing, so absence is the
+                        // "part of the blank" answer rather than a missing one.
+                        'requires_design' => ! empty($m['requires_design']),
+                    ];
                 }
             }
             $product->rawMaterials()->sync($materialsData);

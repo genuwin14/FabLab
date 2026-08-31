@@ -78,13 +78,24 @@ class OrderStockService
             }
 
             $quantity = (int) $item->quantity;
+            $design = $item->customDesign;
 
             // 1. The blank item's own bill of materials.
+            //
+            //    Lines flagged requires_design are the consumables that
+            //    decorate it rather than part of what it is, so a plain order
+            //    skips them: the shop hands over an undecorated mug and no
+            //    transfer paper or ink is spent on a print nobody asked for.
+            //    The blank itself still leaves product stock either way,
+            //    because the blank *is* the product.
             foreach ($item->product->rawMaterials as $material) {
+                if ($material->pivot->requires_design && ! $design) {
+                    continue;
+                }
+
                 $add($material->raw_material_id, (float) $material->pivot->quantity_required * $quantity);
             }
 
-            $design = $item->customDesign;
             if (! $design) {
                 continue;
             }

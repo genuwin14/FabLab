@@ -196,7 +196,11 @@
                                 <div class="d-flex justify-content-between align-items-center mb-3">
                                     <div>
                                         <h6 class="fw-bold mb-1 text-dark">Bill of Materials</h6>
-                                        <p class="text-muted small mb-0">Define which raw materials are required to build this product.</p>
+                                        <p class="text-muted small mb-0">
+                                            Define which raw materials are required to build this product. Tick
+                                            <strong>Only when designed</strong> for anything spent decorating it rather
+                                            than making it &mdash; a plain order then leaves it on the shelf.
+                                        </p>
                                     </div>
                                     <button type="button" class="btn product-btn-save rounded-pill px-3"
                                         onclick="addMaterialRow()">
@@ -208,8 +212,9 @@
                                     <table class="table table-hover align-middle mb-0">
                                         <thead>
                                             <tr class="bg-primary bg-opacity-10">
-                                                <th class="small text-uppercase text-primary fw-bold ps-4 py-3" style="width: 60%">Material</th>
-                                                <th class="small text-uppercase text-primary fw-bold py-3" style="width: 30%">Quantity Required</th>
+                                                <th class="small text-uppercase text-primary fw-bold ps-4 py-3" style="width: 44%">Material</th>
+                                                <th class="small text-uppercase text-primary fw-bold py-3" style="width: 22%">Quantity Required</th>
+                                                <th class="small text-uppercase text-primary fw-bold py-3 text-center" style="width: 24%">Only When Designed</th>
                                                 <th class="small text-uppercase text-primary fw-bold text-end pe-4 py-3" style="width: 10%"></th>
                                             </tr>
                                         </thead>
