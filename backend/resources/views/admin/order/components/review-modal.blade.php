@@ -49,6 +49,8 @@
                         </table>
                     </div>
 
+                    @include('partials.order-materials-panel', ['panelId' => 'reviewMaterialsPanel'])
+
                     <!-- Cancellation Reason (Hidden by default) -->
                     <div id="cancellationSection" class="d-none">
                         <h6 class="order-section-title">

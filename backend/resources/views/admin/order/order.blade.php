@@ -681,6 +681,22 @@
                         `;
                         tbody.innerHTML += row;
                     });
+
+                    // The finished-goods table above says whether there is a
+                    // mug to sell. This says whether there is what it takes to
+                    // make the one they designed — the customization draws ink
+                    // and dye the product's own bill of materials never
+                    // mentions. Only worth showing while approving; cancelling
+                    // puts materials back rather than taking them.
+                    const materialsPanel = document.getElementById('reviewMaterialsPanel');
+                    if (mode === 'cancel') {
+                        materialsPanel.classList.add('d-none');
+                    } else {
+                        fetchOrderMaterials(
+                            'reviewMaterialsPanel',
+                            @json(route('admin.orders.materials', ':id')).replace(':id', order.order_id)
+                        );
+                    }
                 });
             }
         });

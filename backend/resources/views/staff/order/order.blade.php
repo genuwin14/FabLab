@@ -734,11 +734,21 @@
                     const paymentInput = $('#paymentReference');
                     const confirmText = $('#modalConfirmationText');
 
+                    // Starting production is the step that actually cuts into
+                    // the shelf — approval only set the materials aside. So it
+                    // is the one step worth showing them for; the later ones
+                    // move no stock at all.
+                    const materialsPanel = document.getElementById('updateMaterialsPanel');
                     if (nextStatus === 'processing') {
                         paymentContainer.removeClass('d-none');
                         paymentInput.prop('required', true);
                         confirmText.text("Please enter the Payment Reference Number from the Cashier to start processing this order.");
+                        fetchOrderMaterials(
+                            'updateMaterialsPanel',
+                            @json(route('staff.orders.materials', ':id')).replace(':id', id)
+                        );
                     } else {
+                        materialsPanel.classList.add('d-none');
                         paymentContainer.addClass('d-none');
                         paymentInput.prop('required', false);
 

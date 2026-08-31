@@ -41,6 +41,8 @@
                             placeholder="Enter Reference #">
                     </div>
 
+                    @include('partials.order-materials-panel', ['panelId' => 'updateMaterialsPanel'])
+
                     <!-- Default body when payment ref hidden -->
                     <div id="updateStatusInfo" class="text-center py-3">
                         <div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-3"
@@ -99,7 +101,10 @@
         const updateModal = document.getElementById('updateStatusModal');
         if (!updateModal) return;
 
-        // Toggle the default info block when the payment-ref section appears
+        // Toggle the default info block when the payment-ref section appears.
+        // The materials panel counts too: "confirm to mark this order with the
+        // new status" is not worth saying underneath a table that already
+        // spells out exactly what the step will do.
         const paymentRef = document.getElementById('paymentRefContainer');
         const infoBlock = document.getElementById('updateStatusInfo');
         const observer = new MutationObserver(function () {

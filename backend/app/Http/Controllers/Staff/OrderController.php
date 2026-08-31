@@ -10,6 +10,8 @@ use Illuminate\Support\Facades\DB;
 
 class OrderController extends Controller
 {
+    use \App\Http\Controllers\Concerns\ShowsOrderMaterials;
+
     public function index(Request $request)
     {
         // Cast rather than lean on input()'s default: submitting the filter form
