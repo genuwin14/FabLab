@@ -89,7 +89,7 @@ class BOMSeeder extends Seeder
                 'Sublimation Transfer Paper (A4)' => 1,
                 ...self::ink(2),
             ],
-            // The five customizable products below carry no ink of their own.
+            // The seven customizable products below carry no ink of their own.
             // What gets printed on them is whatever the customer put in the
             // studio, so their ink comes entirely from the customization BOM —
             // see CustomizationBOMSeeder. A default split here was charging a
@@ -115,6 +115,16 @@ class BOMSeeder extends Seeder
             ],
             'PL-PQE-NVY' => [
                 'Sublimation Transfer Paper (A4)' => 3,
+            ],
+            // One canopy print, but a big one: the dome is a single panel
+            // wider than any garment here, so it takes four sheets.
+            'UMB-AUT-WHT' => [
+                'Sublimation Transfer Paper (A4)' => 4,
+            ],
+            // Two, one per printable panel, now that the tote unwraps front and
+            // back — see models/bag.js.
+            'TB-CVS-NAT' => [
+                'Sublimation Transfer Paper (A4)' => 2,
             ],
             'BK-BKLT-A5' => [
                 'Bond Paper (A4, 80gsm)' => 6,   // 24 pages, 4 up per sheet

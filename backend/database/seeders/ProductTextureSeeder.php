@@ -32,6 +32,11 @@ class ProductTextureSeeder extends Seeder
             // only ever read as the dark stock it is printed on, so it is
             // offered plain colours instead and left out of this list.
             'PL-PQE-WHT' => ['Fabric077', 'Fabric080', 'Fabric083', 'Fabric062'],
+
+            // Both blanks, so both take the full cloth range: the canopy is
+            // woven polyester and the tote heavyweight canvas.
+            'UMB-AUT-WHT' => ['Fabric077', 'Fabric080', 'Fabric083', 'Fabric062'],
+            'TB-CVS-NAT' => ['Fabric077', 'Fabric080', 'Fabric083', 'Fabric062'],
         ];
 
         foreach ($assignments as $sku => $textureNames) {

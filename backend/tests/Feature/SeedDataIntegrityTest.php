@@ -14,6 +14,7 @@ use Database\Seeders\DatabaseSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Notification;
+use ReflectionClass;
 use Tests\TestCase;
 
 /**
@@ -107,13 +108,36 @@ class SeedDataIntegrityTest extends TestCase
 
     public function test_every_customizable_product_has_a_model_to_open_in(): void
     {
-        // The studio renders four shapes and defaults to the t-shirt for
+        // The studio renders five shapes and defaults to the t-shirt for
         // anything else, so a customizable product it cannot match came out as
         // a shirt wearing that product's name — an ID lace, an oak plaque.
         foreach (Product::where('is_customizable', true)->get() as $product) {
             $this->assertNotNull(
                 $product->customizerShape(),
                 "\"{$product->name}\" is marked customizable, but the studio has no model for it."
+            );
+        }
+    }
+
+    public function test_every_shape_the_studio_renders_has_a_product_behind_it(): void
+    {
+        // The converse of the test above, and the gap it left: a shape can have
+        // a loader, a GLB and a button in the base-style picker while no product
+        // is marked customizable for it. Nothing fails — the studio renders it
+        // perfectly for anyone who starts a design from scratch — but it is
+        // unreachable from the shop, which is where customers actually begin.
+        // The umbrella and the bag sat like that.
+        $shapes = (new ReflectionClass(Product::class))->getConstant('CUSTOMIZER_SHAPES');
+
+        $covered = Product::where('is_customizable', true)->get()
+            ->map(fn (Product $p) => $p->customizerShape())
+            ->filter()
+            ->unique();
+
+        foreach ($shapes as $shape) {
+            $this->assertTrue(
+                $covered->contains($shape),
+                "The studio renders \"{$shape}\" but no seeded product opens in it, so customers can only reach it by starting from scratch."
             );
         }
     }

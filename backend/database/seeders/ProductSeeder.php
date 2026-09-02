@@ -20,9 +20,11 @@ use App\Models\Supplier;
  * multi-supplier stock, an out-of-stock line, a low-stock line with no supplier
  * attached, an asset, and several customisable items.
  *
- * `is_customizable` is only set on items the studio has a 3D model for — the
- * mugs, the t-shirt and the polos. See Product::customizerShape(); marking
- * anything else customizable opens it in the studio as a t-shirt.
+ * `is_customizable` is only set on items the studio has a 3D model for, and
+ * there is now one product for every shape it renders: the mugs, the t-shirt,
+ * the polos, the umbrella and the tote bag. See Product::customizerShape();
+ * marking anything else customizable opens it in the studio as a t-shirt, and
+ * leaving a shape without a product hides it from the shop.
  */
 class ProductSeeder extends Seeder
 {
@@ -183,6 +185,59 @@ class ProductSeeder extends Seeder
                 'status' => 'active',
                 'suppliers' => [
                     ['id' => $genMerch->supplier_id, 'cost' => 205.00, 'moq' => 24, 'lead' => 7, 'default' => true]
+                ]
+            ],
+            // Umbrella and tote bag. Both shapes have had a loader, a GLB and a
+            // button in the base-style picker since they were added, but no
+            // product behind them — so they could only be reached by starting a
+            // design from scratch, never from the shop page, which is where a
+            // customer actually starts. These are the blanks that close that gap.
+            //
+            // Both are seeded white/natural for the same reason the white polo
+            // is the one that carries the full texture range: they are the
+            // sublimation stock, and a print lands on them as designed rather
+            // than as the dyed colour underneath.
+            [
+                'sku' => 'UMB-AUT-WHT',
+                'name' => 'White Auto-Open Umbrella',
+                'description' => 'Auto-open umbrella with a blank white polyester canopy for full-panel sublimation.',
+                'brand' => 'Yiwu',
+                'price' => 450.00,
+                'stock' => 60,
+                'units_on_display' => 2,
+                'units_sponsored' => 0,
+                'units_damaged' => 1,
+                'units_consumed' => 0,
+                'department' => $dcc,
+                'category_id' => $merchandiseId,
+                'unit' => 'pcs',
+                'low_stock_threshold' => 15,
+                'is_customizable' => true,
+                'status' => 'active',
+                'suppliers' => [
+                    ['id' => $genMerch->supplier_id, 'cost' => 280.00, 'moq' => 12, 'lead' => 10, 'default' => true]
+                ]
+            ],
+            [
+                'sku' => 'TB-CVS-NAT',
+                'name' => 'Natural Canvas Tote Bag',
+                'description' => 'Heavyweight cotton canvas tote with reinforced handles, printable front and back.',
+                'brand' => 'Eco-Materials',
+                'price' => 190.00,
+                'stock' => 140,
+                'units_on_display' => 5,
+                'units_sponsored' => 4,
+                'units_damaged' => 0,
+                'units_consumed' => 0,
+                'department' => $dcc,
+                'category_id' => $merchandiseId,
+                'unit' => 'pcs',
+                'low_stock_threshold' => 40,
+                'is_customizable' => true,
+                'status' => 'active',
+                'suppliers' => [
+                    ['id' => $ecoMaterials->supplier_id, 'cost' => 105.00, 'moq' => 50, 'lead' => 8, 'default' => true],
+                    ['id' => $genMerch->supplier_id, 'cost' => 118.00, 'moq' => 24, 'lead' => 4, 'default' => false]
                 ]
             ],
             // Book Production output.
