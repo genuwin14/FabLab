@@ -3,6 +3,7 @@
 namespace App\Notifications;
 
 use App\Models\Order;
+use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
 class OrderStatusChanged extends Notification
@@ -15,7 +16,24 @@ class OrderStatusChanged extends Notification
 
     public function via(object $notifiable): array
     {
-        return ['database'];
+        // Approval already lands in the inbox as the transaction-slip email,
+        // so mailing here too would tell the customer the same thing twice.
+        // Every other step gets an email as well as the in-app bell, so the
+        // customer stays up to date without opening the system.
+        return $this->newStatus === 'approved' ? ['database'] : ['database', 'mail'];
+    }
+
+    public function toMail(object $notifiable): MailMessage
+    {
+        $label = ucwords(str_replace('_', ' ', $this->newStatus));
+
+        return (new MailMessage)
+            ->subject("Order {$this->order->order_number} - {$label}")
+            ->view('emails.orders.status', [
+                'order' => $this->order,
+                'newStatus' => $this->newStatus,
+                'label' => $label,
+            ]);
     }
 
     public function toArray(object $notifiable): array

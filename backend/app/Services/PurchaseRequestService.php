@@ -44,9 +44,7 @@ class PurchaseRequestService
 
         $order->loadMissing('user');
 
-        if ($order->user && $order->user->notifications_enabled) {
-            $order->user->notify(new OrderStatusChanged($order, 'awaiting_pr', 'cancelled'));
-        }
+        \App\Support\Notifier::customer($order->user, new OrderStatusChanged($order, 'awaiting_pr', 'cancelled'));
 
         return true;
     }

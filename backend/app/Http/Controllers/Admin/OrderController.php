@@ -296,8 +296,8 @@ class OrderController extends Controller
 
     private function notifyCustomer(Order $order, string $oldStatus, string $newStatus): void
     {
-        if ($oldStatus !== $newStatus && $order->user && $order->user->notifications_enabled) {
-            $order->user->notify(new \App\Notifications\OrderStatusChanged($order, $oldStatus, $newStatus));
+        if ($oldStatus !== $newStatus) {
+            \App\Support\Notifier::customer($order->user, new \App\Notifications\OrderStatusChanged($order, $oldStatus, $newStatus));
         }
     }
 

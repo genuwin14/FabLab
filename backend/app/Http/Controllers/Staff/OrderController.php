@@ -135,8 +135,8 @@ class OrderController extends Controller
             }
         });
 
-        if ($oldStatus !== $order->status && $order->user && $order->user->notifications_enabled) {
-            $order->user->notify(new \App\Notifications\OrderStatusChanged($order, $oldStatus, $order->status));
+        if ($oldStatus !== $order->status) {
+            \App\Support\Notifier::customer($order->user, new \App\Notifications\OrderStatusChanged($order, $oldStatus, $order->status));
         }
 
         return redirect()->back()->with('success', 'Order status updated successfully.');
