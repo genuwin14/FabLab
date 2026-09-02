@@ -16,6 +16,8 @@ return Application::configure(basePath: dirname(__DIR__))
         $schedule->command('notifications:check-overdue-pos')->dailyAt('07:00');
         // Just after midnight, so an order gets the whole of its final day.
         $schedule->command('orders:close-expired-prs')->dailyAt('00:15');
+        // First of the month, once the previous month is a closed book.
+        $schedule->command('stock:retune-thresholds')->monthlyOn(1, '01:30');
     })
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->statefulApi();
