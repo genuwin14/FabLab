@@ -268,13 +268,18 @@ class CartController extends Controller
 
             \Illuminate\Support\Facades\DB::commit();
 
-            $order->loadMissing('user');
+            $order->loadMissing('user', 'orderItems.product');
 
             // A PR order isn't reviewable yet, so there is nothing for staff to
             // act on. They hear about it when the PR number lands.
             if (! $isPurchaseRequest) {
                 \App\Support\Notifier::staffAndAdmins(new \App\Notifications\NewOrderPlaced($order));
             }
+
+            // The customer's confirmation goes out either way — a PR order
+            // needs its filing instructions in writing precisely because
+            // nothing else will email them until an admin reviews it.
+            \App\Support\Notifier::customer($order->user, new \App\Notifications\OrderPlaced($order));
 
             $message = $isPurchaseRequest
                 ? sprintf(
