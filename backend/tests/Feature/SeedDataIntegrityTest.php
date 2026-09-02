@@ -152,6 +152,29 @@ class SeedDataIntegrityTest extends TestCase
         }
     }
 
+    public function test_every_seeded_texture_comes_up_with_its_image(): void
+    {
+        // A texture with no image is not a broken picture, it is a finish that
+        // renders as flat white in the studio and gives no clue why. All six
+        // used to arrive that way and had to be uploaded by hand after every
+        // migrate:fresh, so this holds the seeder to shipping them.
+        $textures = \App\Models\Texture::all();
+
+        $this->assertNotEmpty($textures, 'No textures were seeded at all.');
+
+        foreach ($textures as $texture) {
+            $this->assertNotNull(
+                $texture->image_url,
+                "Texture \"{$texture->name}\" seeded without an image, so it renders as flat white."
+            );
+
+            $this->assertTrue(
+                \Illuminate\Support\Facades\Storage::disk('public')->exists($texture->image_path),
+                "Texture \"{$texture->name}\" points at \"{$texture->image_path}\", which is not on the public disk."
+            );
+        }
+    }
+
     public function test_the_id_lace_has_a_bill_of_materials(): void
     {
         $lace = Product::where('sku', 'IDL-LACE-STD')->firstOrFail();
