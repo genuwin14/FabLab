@@ -15,19 +15,21 @@
         <div class="container position-relative z-1 px-3 px-sm-4">
             <div class="row justify-content-center">
                 <div class="col-12 col-sm-10 col-md-8 col-lg-6 col-xl-5">
-                    <div class="auth-card p-3 p-sm-4 p-md-5 rounded-4 shadow-lg border border-white border-opacity-10 backdrop-blur text-center"
-                        style="background-color: rgba(255, 255, 255, 0.05);">
+                    <div class="auth-card p-3 p-sm-4 p-md-5 rounded-4 shadow-lg text-center"
+                        style="background-color: #ffffff;">
+                        {{-- A white card, on the panel's recommendation: the verification box is
+                             the one auth surface asked to read as paper rather than glass. --}}
 
                         <!-- Header -->
                         <div class="mb-4">
-                            <h4 class="fw-bold text-white">Verification Required</h4>
-                            <p class="text-white-50 small">
+                            <h4 class="fw-bold text-primary">Verification Required</h4>
+                            <p class="text-muted small">
                                 @if (session('verification_mode') == 'email')
                                     Enter the 6-digit code sent to your email address: <br>
-                                    <span class="text-white">{{ auth()->user()->email }}</span>
+                                    <span class="text-primary fw-bold">{{ auth()->user()->email }}</span>
                                 @else
                                     Enter the 6-digit code sent to your phone number ending in: <br>
-                                    <span class="text-white">{{ substr(auth()->user()->contact_number, -4) }}</span>
+                                    <span class="text-primary fw-bold">{{ substr(auth()->user()->contact_number, -4) }}</span>
                                 @endif
                             </p>
                         </div>
@@ -42,12 +44,12 @@
 
                             <!-- OTP Input -->
                             <div class="mb-4">
-                                <label for="otp" class="form-label small fw-bold text-white-50 ms-1 d-none">OTP
+                                <label for="otp" class="form-label small fw-bold text-muted ms-1 d-none">OTP
                                     Code</label>
                                 <input type="text" name="otp" id="otp" inputmode="numeric" pattern="[0-9]*"
-                                    class="form-control text-center text-white border-white border-opacity-10 fw-bold otp-input"
+                                    class="form-control text-center text-primary fw-bold otp-input"
                                     placeholder="000000" maxlength="6"
-                                    style="background-color: rgba(0,0,0,0.3);" required autofocus>
+                                    style="background-color: #f4f6f8; border-color: rgba(14, 46, 69, 0.15);" required autofocus>
                             </div>
 
                             <!-- Verify Button -->
@@ -58,7 +60,7 @@
 
                         <!-- Resend Link -->
                         <div class="text-center">
-                            <p class="text-white-50 small mb-0">
+                            <p class="text-muted small mb-0">
                                 Didn't receive the code?
                             <form action="{{ route('verify.code.resend') }}" method="POST" id="resend-form"
                                 class="d-inline">
@@ -66,7 +68,7 @@
                                 <input type="hidden" name="verification_mode"
                                     value="{{ session('verification_mode', request('verification_mode')) }}">
                                 <button type="submit"
-                                    class="btn btn-link p-0 text-white fw-bold text-decoration-none ms-1 border-0 bg-transparent"
+                                    class="btn btn-link p-0 text-primary fw-bold text-decoration-none ms-1 border-0 bg-transparent"
                                     style="font-size: inherit;">Resend Code</button>
                             </form>
                             </p>
@@ -142,14 +144,14 @@
 
         /* Custom placeholder color override */
         ::placeholder {
-            color: rgba(255, 255, 255, 0.2) !important;
+            color: rgba(14, 46, 69, 0.25) !important;
             opacity: 1;
         }
 
         .form-control:focus {
-            background-color: rgba(0, 0, 0, 0.4) !important;
+            background-color: #ffffff !important;
             border-color: #ffc508 !important;
-            color: white !important;
+            color: #0e2e45 !important;
             box-shadow: none;
         }
     </style>
