@@ -113,6 +113,9 @@
 
         <div class="small">
             <p><span class="text-muted">Customer:</span> <span class="fw-bold">{{ $order->user->fullname }}</span></p>
+            @if($order->user->contact_number)
+                <p><span class="text-muted">Contact:</span> {{ $order->user->contact_number }}</p>
+            @endif
         </div>
 
         <div class="border-dashed"></div>

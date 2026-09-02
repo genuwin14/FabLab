@@ -158,7 +158,7 @@
                                             </th>
                                             <th class="py-3 text-primary small text-uppercase fw-bold border-0">Customer
                                             </th>
-                                            <th class="py-3 text-primary small text-uppercase fw-bold border-0">Date</th>
+                                            {{-- No Date column: the order number carries its date (ORDR-YYYYMMDD-####). --}}
                                             <th class="py-3 text-primary small text-uppercase fw-bold border-0">Items</th>
                                             <th class="py-3 text-primary small text-uppercase fw-bold border-0">Total</th>
                                             <th class="py-3 text-primary small text-uppercase fw-bold border-0">Status</th>
@@ -204,7 +204,6 @@
                                                         </div>
                                                     </div>
                                                 </td>
-                                                <td class="text-muted small">{{ $order->created_at->format('M d, Y') }}</td>
                                                 <td class="fw-bold text-dark">{{ $order->orderItems->count() }}</td>
                                                 <td class="fw-bold text-primary">
                                                     ₱{{ number_format($order->total_amount, 2) }}
@@ -298,7 +297,7 @@
                                             </tr>
                                         @empty
                                             <tr>
-                                                <td colspan="8" class="text-center py-5 text-muted">
+                                                <td colspan="7" class="text-center py-5 text-muted">
                                                     <i class="bi bi-inbox display-6 d-block mb-3 opacity-50"></i>
                                                     No orders found.
                                                 </td>

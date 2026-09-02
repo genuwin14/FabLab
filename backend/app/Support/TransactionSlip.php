@@ -34,6 +34,14 @@ class TransactionSlip
     private const SAFETY_PAD = 2.0;
 
     /**
+     * The optional contact line under the customer's name. Measured the same
+     * way as the rest: the shortest page that still fits, found by walking the
+     * value against a rendered PDF's page count (7.9 spills, 8.0 fits) — the
+     * CSS arithmetic says 14pt, but DomPDF lays the paragraph out tighter.
+     */
+    private const CONTACT_LINE = 8.0;
+
+    /**
      * Statuses a slip exists for. An order only earns one once it is approved,
      * because the slip is what the customer hands the cashier.
      */
@@ -61,6 +69,7 @@ class TransactionSlip
 
         return ceil(
             self::BASE_HEIGHT
+            + ($order->user->contact_number ? self::CONTACT_LINE : 0)
             + $rows * self::ROW_PADDING
             + $lines * self::LINE_HEIGHT
             + self::SAFETY_PAD

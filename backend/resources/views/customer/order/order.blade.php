@@ -539,7 +539,7 @@
                                         <thead>
                                             <tr class="bg-primary bg-opacity-10">
                                                 <th class="ps-4 py-3 text-primary small text-uppercase fw-bold border-0">Order ID</th>
-                                                <th class="py-3 text-primary small text-uppercase fw-bold border-0">Date</th>
+                                                {{-- No Date column: the order number carries its date (ORDR-YYYYMMDD-####). --}}
                                                 <th class="py-3 text-primary small text-uppercase fw-bold border-0">Items</th>
                                                 <th class="py-3 text-primary small text-uppercase fw-bold border-0">Total</th>
                                                 <th class="py-3 text-primary small text-uppercase fw-bold border-0">Status</th>
@@ -565,7 +565,6 @@
                                                     data-status="{{ $order->status }}"
                                                     data-created-at="{{ $order->created_at->toDateString() }}">
                                                     <td class="ps-4 py-3 fw-bold text-dark">#{{ $order->order_number }}</td>
-                                                    <td class="text-muted small">{{ $order->created_at->format('M d, Y') }}</td>
                                                     <td class="fw-bold text-dark">{{ $order->orderItems->sum('quantity') }}</td>
                                                     <td class="fw-bold text-primary">₱{{ number_format($order->total_amount, 2) }}</td>
                                                     <td>
