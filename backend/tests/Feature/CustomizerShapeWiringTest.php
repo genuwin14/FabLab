@@ -38,7 +38,7 @@ class CustomizerShapeWiringTest extends TestCase
         'polo' => 'polo.glb',
         't-shirt' => 't-shirt.glb',
         'umbrella' => 'umbreella_open.glb',
-        'bag' => 'bag.glb',
+        'bag' => 'tote_bag.glb',
     ];
 
     private function shapes(): array

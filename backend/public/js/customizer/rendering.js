@@ -337,6 +337,63 @@ function updateModelMaterial(textureId) {
     } else {
         applyMapToBaseMesh(null);
     }
+
+    applyFinishToShellMeshes();
+}
+
+/**
+ * Apply the active finish to any `shell` meshes: parts of the product that are
+ * the same fabric as the print panel but carry no design.
+ *
+ * A single-mesh model has none of these and this is a no-op. The tote bag needs
+ * them — its body and handles are a separate mesh from the front panel, so
+ * without this they would keep whatever colour they were painted at load and
+ * sit there in white while the panel followed the colour picker.
+ *
+ * They take the texture or the colour but never the design canvas, which is
+ * what separates them from `base`.
+ */
+function applyFinishToShellMeshes() {
+    if (!model_group) return;
+
+    let hasShell = false;
+    model_group.traverse((child) => {
+        if (child.isMesh && child.name === "shell") hasShell = true;
+    });
+    if (!hasShell) return;
+
+    const paint = (threeTex, tintHex) => {
+        model_group.traverse((child) => {
+            if (!child.isMesh || child.name !== "shell") return;
+
+            if (child.userData.originalMap === undefined) {
+                child.userData.originalMap = child.material.map || null;
+            }
+
+            if (threeTex) {
+                child.material.map = threeTex;
+                child.material.color.setHex(0xFFFFFF);
+            } else if (tintHex) {
+                child.material.map = null;
+                // Same sRGB conversion applyMapToBaseMesh() explains.
+                child.material.color.set(tintHex).convertSRGBToLinear();
+            } else {
+                child.material.map = child.userData.originalMap;
+                child.material.color.setHex(0xFFFFFF);
+            }
+
+            child.material.needsUpdate = true;
+        });
+    };
+
+    if (currentTextureImagePath) {
+        loadThreeTextureFromPath(currentTextureImagePath, (threeTex) => {
+            applyTextureTiling(threeTex);
+            paint(threeTex, null);
+        });
+    } else {
+        paint(null, currentColorHex || null);
+    }
 }
 
 /**
