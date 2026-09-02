@@ -61,6 +61,15 @@
                                 </select>
                             </div>
                             <div class="col-md-6">
+                                <label class="form-label small fw-bold text-muted text-uppercase">Supplier</label>
+                                <select name="supplier_id" class="form-select equipment-field-input">
+                                    <option value="">— Not recorded —</option>
+                                    @foreach($suppliers as $supplier)
+                                        <option value="{{ $supplier->supplier_id }}">{{ $supplier->name }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="col-md-12">
                                 <label class="form-label small fw-bold text-muted text-uppercase">Notes</label>
                                 <input type="text" name="notes" class="form-control equipment-field-input"
                                     placeholder="Optional">

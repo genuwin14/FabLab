@@ -20,4 +20,9 @@ class Supplier extends Model
     {
         return $this->hasMany(RawMaterial::class, 'supplier_id', 'supplier_id');
     }
+
+    public function equipment()
+    {
+        return $this->hasMany(Equipment::class, 'supplier_id', 'supplier_id');
+    }
 }

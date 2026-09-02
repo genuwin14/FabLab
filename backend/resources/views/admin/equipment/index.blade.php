@@ -104,6 +104,7 @@
                                         <tr class="bg-primary bg-opacity-10">
                                             <th class="ps-4 py-3 text-primary small text-uppercase fw-bold border-0">Equipment</th>
                                             <th class="py-3 text-primary small text-uppercase fw-bold border-0">Brand / Model</th>
+                                            <th class="py-3 text-primary small text-uppercase fw-bold border-0">Supplier</th>
                                             <th class="py-3 text-primary small text-uppercase fw-bold border-0">Property No.</th>
                                             <th class="py-3 text-primary small text-uppercase fw-bold border-0">Date Acquired</th>
                                             <th class="py-3 text-primary small text-uppercase fw-bold border-0">Cost</th>
@@ -121,6 +122,7 @@
                                                     @endif
                                                 </td>
                                                 <td class="text-muted small">{{ $item->brand ?: '—' }}</td>
+                                                <td class="text-muted small">{{ $item->supplier?->name ?: '—' }}</td>
                                                 <td class="font-monospace small">{{ $item->property_no ?: '—' }}</td>
                                                 <td class="text-muted small">
                                                     {{ $item->date_acquired ? $item->date_acquired->format('M j, Y') : '—' }}
@@ -147,6 +149,7 @@
                                                         data-id="{{ $item->equipment_id }}"
                                                         data-name="{{ $item->name }}"
                                                         data-brand="{{ $item->brand }}"
+                                                        data-supplier_id="{{ $item->supplier_id }}"
                                                         data-property_no="{{ $item->property_no }}"
                                                         data-date_acquired="{{ $item->date_acquired ? $item->date_acquired->format('Y-m-d') : '' }}"
                                                         data-cost="{{ $item->cost }}"
@@ -164,7 +167,7 @@
                                             </tr>
                                         @empty
                                             <tr>
-                                                <td colspan="7" class="text-center py-5 text-muted">
+                                                <td colspan="8" class="text-center py-5 text-muted">
                                                     <div class="mb-3">
                                                         <i class="bi bi-tools fs-1 opacity-25"></i>
                                                     </div>
@@ -362,6 +365,7 @@
 
                 document.getElementById('editEquipmentName').value = button.getAttribute('data-name') || '';
                 document.getElementById('editEquipmentBrand').value = button.getAttribute('data-brand') || '';
+                document.getElementById('editEquipmentSupplier').value = button.getAttribute('data-supplier_id') || '';
                 document.getElementById('editEquipmentPropertyNo').value = button.getAttribute('data-property_no') || '';
                 document.getElementById('editEquipmentDate').value = button.getAttribute('data-date_acquired') || '';
                 document.getElementById('editEquipmentCost').value = button.getAttribute('data-cost') || 0;

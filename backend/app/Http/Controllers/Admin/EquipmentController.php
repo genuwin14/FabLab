@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Equipment;
+use App\Models\Supplier;
 use Illuminate\Http\Request;
 
 class EquipmentController extends Controller
@@ -18,7 +19,7 @@ class EquipmentController extends Controller
         $search = trim((string) $request->query('search', ''));
         $status = trim((string) $request->query('status', ''));
 
-        $query = Equipment::query();
+        $query = Equipment::query()->with('supplier');
 
         if ($search !== '') {
             $query->where(function ($q) use ($search) {
@@ -33,8 +34,9 @@ class EquipmentController extends Controller
         }
 
         $equipment = $query->latest()->paginate($perPage)->withQueryString();
+        $suppliers = Supplier::orderBy('name')->get(['supplier_id', 'name']);
 
-        return view('admin.equipment.index', compact('equipment', 'perPage', 'search', 'status'));
+        return view('admin.equipment.index', compact('equipment', 'suppliers', 'perPage', 'search', 'status'));
     }
 
     public function store(Request $request)
@@ -42,6 +44,7 @@ class EquipmentController extends Controller
         $data = $request->validate([
             'name' => 'required|string|max:255',
             'brand' => 'nullable|string|max:255',
+            'supplier_id' => 'nullable|exists:suppliers,supplier_id',
             'property_no' => 'nullable|string|max:255',
             'date_acquired' => 'nullable|date',
             'cost' => 'required|numeric|min:0',
@@ -60,6 +63,7 @@ class EquipmentController extends Controller
         $data = $request->validate([
             'name' => 'required|string|max:255',
             'brand' => 'nullable|string|max:255',
+            'supplier_id' => 'nullable|exists:suppliers,supplier_id',
             'property_no' => 'nullable|string|max:255',
             'date_acquired' => 'nullable|date',
             'cost' => 'required|numeric|min:0',

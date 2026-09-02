@@ -15,6 +15,7 @@ class Equipment extends Model
     protected $fillable = [
         'name',
         'brand',
+        'supplier_id',
         'property_no',
         'date_acquired',
         'cost',
@@ -26,4 +27,9 @@ class Equipment extends Model
         'date_acquired' => 'date',
         'cost' => 'decimal:2',
     ];
+
+    public function supplier()
+    {
+        return $this->belongsTo(Supplier::class, 'supplier_id', 'supplier_id');
+    }
 }
