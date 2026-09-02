@@ -1,74 +1,80 @@
-<!DOCTYPE html>
-<html>
+@extends('emails.layout')
 
-<head>
-    <style>
-        body {
-            font-family: sans-serif;
-            line-height: 1.6;
-            color: #333;
-        }
+@section('content')
+    @php
+        // The same variant colors the app's dialogs use: green for done,
+        // red for cancelled, navy for everything in between.
+        $pill = match ($newStatus) {
+            'completed' => '#198754',
+            'cancelled' => '#dc3545',
+            default => '#0e2e45',
+        };
+    @endphp
 
-        .greeting {
-            font-weight: bold;
-            margin-bottom: 20px;
-        }
+    <p style="margin:0 0 16px;font-weight:bold;color:#0e2e45;font-size:16px;">Hello {{ $order->user->fullname }},</p>
 
-        .content {
-            margin-bottom: 20px;
-        }
+    <table role="presentation" cellpadding="0" cellspacing="0" width="100%"
+        style="background-color:#f7f9fb;border:1px solid #e3e7ec;border-radius:8px;margin:0 0 20px;">
+        <tr>
+            <td style="padding:16px 20px;">
+                <div style="color:#6c757d;font-size:12px;letter-spacing:1px;">ORDER</div>
+                <div style="color:#0e2e45;font-size:18px;font-weight:bold;">#{{ $order->order_number }}</div>
+            </td>
+            <td align="right" style="padding:16px 20px;">
+                <span
+                    style="display:inline-block;background-color:{{ $pill }};color:#ffffff;font-size:12px;font-weight:bold;letter-spacing:1px;padding:6px 14px;border-radius:999px;">
+                    {{ strtoupper($label) }}
+                </span>
+            </td>
+        </tr>
+    </table>
 
-        .footer {
-            font-size: 0.875rem;
-            color: #6c757d;
-            border-top: 1px solid #dee2e6;
-            padding-top: 20px;
-            margin-top: 30px;
-        }
-    </style>
-</head>
+    @switch($newStatus)
+        @case('processing')
+            <p style="margin:0 0 12px;">Your order is now in production.</p>
+            <p style="margin:0 0 12px;">We will email you again as soon as it moves to the next step.</p>
+            @break
 
-<body>
-    <p class="greeting">Hello {{ $order->user->fullname }},</p>
+        @case('ready_for_pickup')
+            <p style="margin:0 0 12px;">Your order is ready for pickup!</p>
+            <p style="margin:0 0 12px;">Please visit the CSPC FabLab and present your transaction slip to collect it.</p>
+            @break
 
-    <div class="content">
-        @switch($newStatus)
-            @case('processing')
-                <p>Your order <strong>#{{ $order->order_number }}</strong> is now in production.</p>
-                <p>We will email you again as soon as it moves to the next step.</p>
-                @break
+        @case('for_delivery')
+            <p style="margin:0 0 12px;">Your order has been released for delivery.</p>
+            <p style="margin:0 0 12px;">We will email you again once it has been handed over.</p>
+            @break
 
-            @case('ready_for_pickup')
-                <p>Your order <strong>#{{ $order->order_number }}</strong> is ready for pickup!</p>
-                <p>Please visit the CSPC FabLab and present your transaction slip to collect it.</p>
-                @break
+        @case('completed')
+            <p style="margin:0 0 12px;">Your order has been completed.</p>
+            <p style="margin:0 0 12px;">Thank you for choosing CSPC FabLab &mdash; we hope to see you again!</p>
+            @break
 
-            @case('for_delivery')
-                <p>Your order <strong>#{{ $order->order_number }}</strong> has been released for delivery.</p>
-                <p>We will email you again once it has been handed over.</p>
-                @break
+        @case('cancelled')
+            <p style="margin:0 0 12px;">Your order has been cancelled.</p>
+            @if ($order->reason)
+                <table role="presentation" cellpadding="0" cellspacing="0" width="100%"
+                    style="background-color:#fdf3f4;border-left:4px solid #dc3545;border-radius:4px;margin:0 0 12px;">
+                    <tr>
+                        <td style="padding:10px 14px;color:#58151c;">Reason: {{ $order->reason }}</td>
+                    </tr>
+                </table>
+            @endif
+            <p style="margin:0 0 12px;">If you have any questions, please get in touch with the CSPC FabLab.</p>
+            @break
 
-            @case('completed')
-                <p>Your order <strong>#{{ $order->order_number }}</strong> has been completed.</p>
-                <p>Thank you for choosing CSPC FabLab — we hope to see you again!</p>
-                @break
+        @default
+            <p style="margin:0 0 12px;">Your order is now {{ $label }}.</p>
+    @endswitch
 
-            @case('cancelled')
-                <p>Your order <strong>#{{ $order->order_number }}</strong> has been cancelled.</p>
-                @if ($order->reason)
-                    <p>Reason: {{ $order->reason }}</p>
-                @endif
-                <p>If you have any questions, please get in touch with the CSPC FabLab.</p>
-                @break
-
-            @default
-                <p>Your order <strong>#{{ $order->order_number }}</strong> is now {{ $label }}.</p>
-        @endswitch
-    </div>
-
-    <div class="footer">
-        <p>All Rights Reserved &copy; {{ date('Y') }} CSPC Fablab.</p>
-    </div>
-</body>
-
-</html>
+    <table role="presentation" cellpadding="0" cellspacing="0" style="margin:24px 0 8px;">
+        <tr>
+            <td style="background-color:#ffc508;border-radius:8px;">
+                <a href="{{ route('customer.orders.index') . '#order-' . $order->order_id }}"
+                    style="display:inline-block;padding:12px 24px;color:#0e2e45;font-size:14px;font-weight:bold;text-decoration:none;">
+                    View My Orders
+                </a>
+            </td>
+        </tr>
+    </table>
+@endsection
