@@ -3,12 +3,19 @@
 namespace Database\Seeders;
 
 use App\Models\Equipment;
+use App\Models\Supplier;
 use Illuminate\Database\Seeder;
 
 class EquipmentSeeder extends Seeder
 {
     public function run(): void
     {
+        // The machines come from the tech vendor, the STANLEY hand tools from
+        // the general merchandiser — so the register can say who to call when
+        // a unit goes back for repair.
+        $techSupply = Supplier::where('name', 'Tech Supply Co.')->value('supplier_id');
+        $genMerch = Supplier::where('name', 'General Merchandise Inc.')->value('supplier_id');
+
         $items = [
             ['name' => 'Mug Press',                'brand' => 'CUYI Model - Semi Automatic Single Unit', 'property_no' => 'ICS-06-01-21-OME-MP-05-136-1',  'date_acquired' => '2021-06-01', 'cost' => 3750.00,   'status' => 'Non-Serviceable'],
             ['name' => 'Sublimation Printer',      'brand' => 'EPSON L130 SN:VJ6K322561',                'property_no' => 'ICS-06-01-21-ICT-PRI-05-136-1', 'date_acquired' => '2021-06-01', 'cost' => 10200.00,  'status' => 'Serviceable'],
@@ -29,8 +36,13 @@ class EquipmentSeeder extends Seeder
             ['name' => '3D Printer',               'brand' => 'Creality Ender III',                      'property_no' => 'PS-2023-00766',                 'date_acquired' => '2023-01-25', 'cost' => 37200.00,  'status' => 'Serviceable'],
             ['name' => '3D Resin Printer',         'brand' => 'Creality Halot',                          'property_no' => 'PS-2023-00767',                 'date_acquired' => '2023-01-25', 'cost' => 35290.00,  'status' => 'Serviceable'],
             ['name' => '3D Resin Printer',         'brand' => 'Creality Halot',                          'property_no' => 'PS-2023-00768',                 'date_acquired' => '2023-01-25', 'cost' => 35290.00,  'status' => 'Serviceable'],
+        ];
 
-            // Hand tools section
+        foreach ($items as $item) {
+            Equipment::create($item + ['supplier_id' => $techSupply]);
+        }
+
+        $handTools = [
             ['name' => 'Hammer Claw Heavy Duty',   'brand' => 'Heavy Duty STANLEY', 'property_no' => 'ICS-09-27-21-OPE-HMR-05-294-1',   'date_acquired' => '2021-09-27', 'cost' => 550.00,  'status' => 'Functional'],
             ['name' => 'Hammer Claw Heavy Duty',   'brand' => 'Heavy Duty STANLEY', 'property_no' => 'ICS-09-27-21-OPE-HMR-05-294-2',   'date_acquired' => '2021-09-27', 'cost' => 550.00,  'status' => 'Functional'],
             ['name' => 'Chisel (set)',             'brand' => 'Heavy Duty STANLEY', 'property_no' => 'ICS-09-27-21-OPE-CHSL-05-294-1',  'date_acquired' => '2021-09-27', 'cost' => 895.00,  'status' => 'Functional'],
@@ -44,8 +56,8 @@ class EquipmentSeeder extends Seeder
             ['name' => 'Jack Plane',               'brand' => 'Heavy Duty STANLEY', 'property_no' => 'ICS-09-27-21-OPE-JACK-05-294-1',  'date_acquired' => '2021-09-27', 'cost' => 6300.00, 'status' => 'Functional'],
         ];
 
-        foreach ($items as $item) {
-            Equipment::create($item);
+        foreach ($handTools as $item) {
+            Equipment::create($item + ['supplier_id' => $genMerch]);
         }
     }
 }
