@@ -46,7 +46,8 @@
 
                     <div class="row g-3 g-md-4 align-items-start">
 
-                        <!-- Panel 1: what a customer adds to the design -->
+                        <!-- Panel 1: what a customer adds to the design, with the image
+                             scale reference tucked underneath the rate it follows -->
                         <div class="col-12 col-lg-6">
                             <div class="card border-0 shadow-sm pricing-card">
                                 <div class="card-header bg-white border-0 pt-3 pt-md-4 pb-2 px-3 px-md-4">
@@ -65,51 +66,6 @@
                                                 <div class="flex-grow-1">
                                                     <div class="fw-semibold text-dark">
                                                         <i class="bi {{ $rate['icon'] }} me-1 text-muted"></i>{{ $rate['label'] }}
-                                                    </div>
-                                                    <small class="text-muted">{{ $rate['description'] }}</small>
-                                                </div>
-                                                <div class="pricing-amount flex-shrink-0 text-end">
-                                                    <div class="fw-bold text-dark pricing-amount-value">
-                                                        ₱{{ number_format($rate['amount'], 2) }}
-                                                    </div>
-                                                    <small class="text-muted d-block mt-1">{{ $rate['suffix'] }}</small>
-                                                </div>
-                                            </div>
-                                            @include('staff.customization-pricing.partials.materials', ['key' => $key, 'rate' => $rate, 'materials' => $materialLookup])
-                                        </div>
-                                    @endforeach
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Panel 2: what the ordered size adds, with the image
-                             scale reference tucked underneath it -->
-                        <div class="col-12 col-lg-6">
-                            <div class="card border-0 shadow-sm pricing-card">
-                                <div class="card-header bg-white border-0 pt-3 pt-md-4 pb-2 px-3 px-md-4">
-                                    <div class="d-flex align-items-center gap-2">
-                                        <span class="pricing-section-icon"><i class="bi bi-rulers"></i></span>
-                                        <div>
-                                            <h6 class="fw-bold mb-0 text-dark">Size surcharges</h6>
-                                            <small class="text-muted">
-                                                Added on top when a customer orders that size, Small to 5XL. Only one ever
-                                                applies to an item. A size at ₱0.00 costs nothing extra.
-                                            </small>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="card-body px-3 px-md-4 pb-3 pb-md-4">
-                                    @foreach($rates['sizes'] ?? [] as $key => $rate)
-                                        <div class="rate-entry py-3 border-top">
-                                            <div class="pricing-row d-flex justify-content-between align-items-start gap-3">
-                                                <div class="flex-grow-1">
-                                                    <div class="fw-semibold text-dark">
-                                                        <i class="bi {{ $rate['icon'] }} me-1 text-muted"></i>{{ $rate['label'] }}
-                                                        {{-- The garment code is what the customer picks and what
-                                                             the order shows, so it sits beside the name. --}}
-                                                        @if(!empty($rate['short']))
-                                                            <span class="badge rounded-pill bg-light text-dark border ms-1 fw-semibold">{{ $rate['short'] }}</span>
-                                                        @endif
                                                     </div>
                                                     <small class="text-muted">{{ $rate['description'] }}</small>
                                                 </div>
@@ -167,6 +123,50 @@
                                         Sizes beyond the slider's range are clamped to it, so this is the full span of what
                                         one image can cost.
                                     </small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Panel 2: what the ordered size adds, Small to 5XL -->
+                        <div class="col-12 col-lg-6">
+                            <div class="card border-0 shadow-sm pricing-card">
+                                <div class="card-header bg-white border-0 pt-3 pt-md-4 pb-2 px-3 px-md-4">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <span class="pricing-section-icon"><i class="bi bi-rulers"></i></span>
+                                        <div>
+                                            <h6 class="fw-bold mb-0 text-dark">Size surcharges</h6>
+                                            <small class="text-muted">
+                                                Added on top when a customer orders that size, Small to 5XL. Only one ever
+                                                applies to an item. A size at ₱0.00 costs nothing extra.
+                                            </small>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="card-body px-3 px-md-4 pb-3 pb-md-4">
+                                    @foreach($rates['sizes'] ?? [] as $key => $rate)
+                                        <div class="rate-entry py-3 border-top">
+                                            <div class="pricing-row d-flex justify-content-between align-items-start gap-3">
+                                                <div class="flex-grow-1">
+                                                    <div class="fw-semibold text-dark">
+                                                        <i class="bi {{ $rate['icon'] }} me-1 text-muted"></i>{{ $rate['label'] }}
+                                                        {{-- The garment code is what the customer picks and what
+                                                             the order shows, so it sits beside the name. --}}
+                                                        @if(!empty($rate['short']))
+                                                            <span class="badge rounded-pill bg-light text-dark border ms-1 fw-semibold">{{ $rate['short'] }}</span>
+                                                        @endif
+                                                    </div>
+                                                    <small class="text-muted">{{ $rate['description'] }}</small>
+                                                </div>
+                                                <div class="pricing-amount flex-shrink-0 text-end">
+                                                    <div class="fw-bold text-dark pricing-amount-value">
+                                                        ₱{{ number_format($rate['amount'], 2) }}
+                                                    </div>
+                                                    <small class="text-muted d-block mt-1">{{ $rate['suffix'] }}</small>
+                                                </div>
+                                            </div>
+                                            @include('staff.customization-pricing.partials.materials', ['key' => $key, 'rate' => $rate, 'materials' => $materialLookup])
+                                        </div>
+                                    @endforeach
                                 </div>
                             </div>
                         </div>
