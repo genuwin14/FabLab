@@ -259,6 +259,15 @@ class SeedDataIntegrityTest extends TestCase
         }
 
         $this->assertSame([], CustomizationRate::materialsFor('size_medium'));
+
+        // Large and up outgrow the blank's sheet, so every size to 5XL draws
+        // transfer paper — and more of it the bigger the garment.
+        $sheets = fn (string $key) => array_sum(CustomizationRate::materialsFor($key));
+        $this->assertGreaterThan(0, $sheets('size_large'));
+        $this->assertGreaterThan($sheets('size_large'), $sheets('size_5xl'));
+        foreach (['size_xl', 'size_2xl', 'size_3xl', 'size_4xl', 'size_5xl'] as $key) {
+            $this->assertNotEmpty(CustomizationRate::materialsFor($key), "The {$key} size draws no materials.");
+        }
     }
 
     public function test_every_seeded_option_material_resolves_to_a_real_material(): void

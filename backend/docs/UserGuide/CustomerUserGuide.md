@@ -83,6 +83,7 @@ Choose a quantity and click **Add to Cart**. Stock is checked as you do: asking 
 
 Products marked customizable carry a **Customize Now** button on their shop card, which opens them in the 3D studio (`/customer/customize`). You can also open the studio from the sidebar and pick a product there. Inside you can:
 
+- Pick a **size** — Small, Medium, Large, XL, 2XL, 3XL, 4XL or 5XL. It's recorded on your order and doesn't change the preview; where the shop charges extra for a size, the button shows it.
 - Add **text** elements — ₱50 each.
 - Add **shapes** — ₱30 each.
 - Add **logos** — ₱150 each.

@@ -16,9 +16,15 @@ const CustomizerPricing = {
         shape: 30,
         logo: 150,
         led_lighting: 500,
+        // One per garment size, Small to 5XL — see CustomizationRate::sizes().
         size_small: 0,
         size_medium: 0,
-        size_large: 0
+        size_large: 0,
+        size_xl: 0,
+        size_2xl: 0,
+        size_3xl: 0,
+        size_4xl: 0,
+        size_5xl: 0
     },
 
     // How far the Size slider goes. An uploaded image is billed for the print
@@ -229,11 +235,11 @@ function calculateCustomPrice() {
 /**
  * Size is a label, not a transform.
  *
- * Picking S/M/L used to shrink or grow the model, which told the customer
- * nothing — the mouse already zooms, so a "small" shirt just looked like a
- * shirt further away, and it made the design look like it had changed size when
- * it hadn't. Size now records what was ordered and, if an admin has priced that
- * size, what it adds.
+ * Picking a size (Small through 5XL) used to shrink or grow the model, which
+ * told the customer nothing — the mouse already zooms, so a "small" shirt just
+ * looked like a shirt further away, and it made the design look like it had
+ * changed size when it hadn't. Size now records what was ordered and, if an
+ * admin has priced that size, what it adds.
  */
 function updateModelSize() {
     calculateCustomPrice();

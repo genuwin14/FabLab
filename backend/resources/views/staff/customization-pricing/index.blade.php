@@ -92,8 +92,8 @@
                                         <div>
                                             <h6 class="fw-bold mb-0 text-dark">Size surcharges</h6>
                                             <small class="text-muted">
-                                                Added on top when a customer orders that size. Only one ever applies to an
-                                                item. A size at ₱0.00 costs nothing extra.
+                                                Added on top when a customer orders that size, Small to 5XL. Only one ever
+                                                applies to an item. A size at ₱0.00 costs nothing extra.
                                             </small>
                                         </div>
                                     </div>
@@ -105,6 +105,11 @@
                                                 <div class="flex-grow-1">
                                                     <div class="fw-semibold text-dark">
                                                         <i class="bi {{ $rate['icon'] }} me-1 text-muted"></i>{{ $rate['label'] }}
+                                                        {{-- The garment code is what the customer picks and what
+                                                             the order shows, so it sits beside the name. --}}
+                                                        @if(!empty($rate['short']))
+                                                            <span class="badge rounded-pill bg-light text-dark border ms-1 fw-semibold">{{ $rate['short'] }}</span>
+                                                        @endif
                                                     </div>
                                                     <small class="text-muted">{{ $rate['description'] }}</small>
                                                 </div>

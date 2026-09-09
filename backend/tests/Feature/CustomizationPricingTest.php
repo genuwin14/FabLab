@@ -228,7 +228,95 @@ class CustomizationPricingTest extends TestCase
         $this->assertSame(
             [['label' => 'Size: Large', 'amount' => 120.0]],
             $design->price_breakdown,
-            'Only the ordered size is charged, never all three.'
+            'Only the ordered size is charged, never the others.'
+        );
+    }
+
+    public function test_every_size_up_to_5xl_can_be_ordered_and_priced(): void
+    {
+        // The client's brief: sizes run "hanggang 5XL" — up to 5XL.
+        $this->assertSame(
+            ['small', 'medium', 'large', 'xl', '2xl', '3xl', '4xl', '5xl'],
+            array_keys(CustomizationRate::sizes()),
+            'The size list must run Small to 5XL, smallest first.'
+        );
+
+        // A recipe stores the lowercase code; the lookup is forgiving of case.
+        $this->assertSame('size_5xl', CustomizationRate::keyForSize('5XL'));
+        $this->assertSame('size_2xl', CustomizationRate::keyForSize(' 2xl '));
+        $this->assertNull(CustomizationRate::keyForSize('6xl'), 'Nothing above 5XL is sold.');
+
+        $this->actingAs($this->admin());
+        $this->put(route('admin.customization-pricing.update'), $this->payload([
+            'size_xl' => 40,
+            'size_5xl' => 200,
+        ]))->assertRedirect();
+
+        CustomizationRate::flushCache();
+
+        $this->assertSame(40.0, CustomizationRate::amountFor('size_xl'));
+        $this->assertSame(200.0, CustomizationRate::amountFor('size_5xl'));
+
+        Sanctum::actingAs($this->customer());
+        $product = $this->product(1000);
+
+        $response = $this->postJson(route('customer.cart.add'), [
+            'product_id' => $product->product_id,
+            'quantity' => 1,
+            'custom_recipe' => json_encode(['size' => '5xl', 'elements' => []]),
+        ])->assertOk();
+
+        $this->assertSame(1200.0, (float) \App\Models\CartItem::first()->price);
+
+        $design = CustomDesign::findOrFail($response->json('design_id'));
+        $this->assertSame(
+            [['label' => 'Size: 5X-Large', 'amount' => 200.0]],
+            $design->price_breakdown
+        );
+    }
+
+    public function test_the_studio_offers_every_size_up_to_5xl(): void
+    {
+        $product = $this->product(1000);
+        Sanctum::actingAs($this->customer());
+
+        $response = $this->get(route('customer.customize.index', ['product_id' => $product->product_id]))
+            ->assertOk()
+            // The rates payload the live quote reads carries every size too.
+            ->assertSee('"size_5xl":0', false);
+
+        foreach (['small', 'medium', 'large', 'xl', '2xl', '3xl', '4xl', '5xl'] as $size) {
+            $response->assertSee('data-size="' . $size . '"', false);
+        }
+
+        // The button shows the garment code, not just the spelled-out name.
+        $response->assertSee('5XL');
+    }
+
+    public function test_the_admin_and_staff_price_lists_run_to_5xl(): void
+    {
+        $this->actingAs($this->admin());
+        $this->get(route('admin.customization-pricing.index'))
+            ->assertOk()
+            ->assertSee('name="rates[size_5xl]"', false)
+            ->assertSee('5X-Large')
+            ->assertSee('5XL');
+
+        $staff = User::create([
+            'fullname' => 'Staff', 'email' => 'staff@example.test', 'password' => 'password',
+            'role' => 'staff', 'contact_number' => '09111111111', 'phone_verified' => true,
+        ]);
+        $this->actingAs($staff);
+        $this->get(route('staff.customization-pricing.index'))
+            ->assertOk()
+            ->assertSee('5X-Large')
+            ->assertSee('5XL');
+
+        $sizes = CustomizationRate::forDisplay()['sizes'];
+        $this->assertSame(
+            ['size_small', 'size_medium', 'size_large', 'size_xl', 'size_2xl', 'size_3xl', 'size_4xl', 'size_5xl'],
+            array_keys($sizes),
+            'The pricing screens list the sizes smallest first, ending at 5XL.'
         );
     }
 

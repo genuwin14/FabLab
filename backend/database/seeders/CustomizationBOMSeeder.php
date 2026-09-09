@@ -19,7 +19,8 @@ use Illuminate\Database\Seeder;
  *
  * Deliberately partial, because both states are worth having in demo data:
  *
- *   - Text, shapes, images, lighting and the large size all draw something.
+ *   - Text, shapes, images, lighting and every size from Large up to 5XL
+ *     draw something.
  *   - Small and medium draw nothing — they fit the same sheet as the blank,
  *     so there is nothing extra to deduct.
  *   - The four free house colours draw nothing either. The blank garment
@@ -77,11 +78,18 @@ class CustomizationBOMSeeder extends Seeder
             'led_lighting' => ['LED Light Kit (USB, Warm White)' => 1],
 
             // Small and medium fit the sheet the blank already uses. Large
-            // doesn't, so it takes one more. Worth seeding even though the
-            // size surcharge is ₱0 out of the box: an option can cost the shop
+            // doesn't, so it takes one more, and the print keeps growing with
+            // the garment from there: another sheet at every second step up,
+            // so 5XL takes three. Worth seeding even though the size
+            // surcharges are ₱0 out of the box: an option can cost the shop
             // something while charging the customer nothing, and the report
             // should still see it.
             'size_large' => ['Sublimation Transfer Paper (A4)' => 1],
+            'size_xl' => ['Sublimation Transfer Paper (A4)' => 1],
+            'size_2xl' => ['Sublimation Transfer Paper (A4)' => 2],
+            'size_3xl' => ['Sublimation Transfer Paper (A4)' => 2],
+            'size_4xl' => ['Sublimation Transfer Paper (A4)' => 3],
+            'size_5xl' => ['Sublimation Transfer Paper (A4)' => 3],
         ];
 
         foreach ($recipes as $rateKey => $components) {

@@ -60,10 +60,12 @@ class CustomizeController extends Controller
         }
 
         // The studio quotes live in the browser, so it needs the same rates the
-        // cart will price the design with when it arrives.
+        // cart will price the design with when it arrives — and the same size
+        // list, Small to 5XL, so its buttons and the surcharges line up.
         $rates = \App\Models\CustomizationRate::amounts();
+        $sizes = \App\Models\CustomizationRate::sizes();
 
-        return view('customer.prod-customize.customize-product', compact('product', 'initialShape', 'design', 'requiresSelection', 'textures', 'colors', 'rates'));
+        return view('customer.prod-customize.customize-product', compact('product', 'initialShape', 'design', 'requiresSelection', 'textures', 'colors', 'rates', 'sizes'));
     }
 
     public function save(Request $request)

@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
  * An admin-editable price for one kind of customization.
  *
  * The set of rates is fixed by DEFINITIONS below — the customizer only knows
- * how to apply these four — so the admin screen edits amounts and nothing else.
+ * how to apply these — so the admin screen edits amounts and nothing else.
  * Every consumer goes through amountFor(), which falls back to the shipped
  * default if a row is somehow missing, so a half-migrated database still prices
  * designs rather than charging zero.
@@ -21,6 +21,9 @@ class CustomizationRate extends Model
      * `suffix` is the qualifier the admin screen and the studio print after the
      * amount; the logo rate needs one because its charge scales with the size
      * the image is printed at.
+     *
+     * Sizes also carry `short`, the garment code (S … 5XL) the studio prints on
+     * the size button and the admin screen shows beside the name.
      */
     public const DEFINITIONS = [
         'text' => [
@@ -58,9 +61,12 @@ class CustomizationRate extends Model
 
         // Sizes default to zero, so nothing reprices until someone sets them.
         // Only one ever applies to an item — the size the customer picked.
+        // Listed smallest first, which is the order every screen shows them
+        // in; the shop takes garments up to 5XL.
         'size_small' => [
             'group' => 'sizes',
             'label' => 'Small',
+            'short' => 'S',
             'description' => 'Added when the customer orders this size.',
             'icon' => 'bi-dash-square',
             'suffix' => 'per item',
@@ -69,6 +75,7 @@ class CustomizationRate extends Model
         'size_medium' => [
             'group' => 'sizes',
             'label' => 'Medium',
+            'short' => 'M',
             'description' => 'Added when the customer orders this size.',
             'icon' => 'bi-square',
             'suffix' => 'per item',
@@ -77,19 +84,89 @@ class CustomizationRate extends Model
         'size_large' => [
             'group' => 'sizes',
             'label' => 'Large',
+            'short' => 'L',
             'description' => 'Added when the customer orders this size.',
             'icon' => 'bi-plus-square',
             'suffix' => 'per item',
             'default' => 0,
         ],
+        'size_xl' => [
+            'group' => 'sizes',
+            'label' => 'X-Large',
+            'short' => 'XL',
+            'description' => 'Added when the customer orders this size.',
+            'icon' => 'bi-plus-square-fill',
+            'suffix' => 'per item',
+            'default' => 0,
+        ],
+        'size_2xl' => [
+            'group' => 'sizes',
+            'label' => '2X-Large',
+            'short' => '2XL',
+            'description' => 'Added when the customer orders this size.',
+            'icon' => 'bi-plus-square-fill',
+            'suffix' => 'per item',
+            'default' => 0,
+        ],
+        'size_3xl' => [
+            'group' => 'sizes',
+            'label' => '3X-Large',
+            'short' => '3XL',
+            'description' => 'Added when the customer orders this size.',
+            'icon' => 'bi-plus-square-fill',
+            'suffix' => 'per item',
+            'default' => 0,
+        ],
+        'size_4xl' => [
+            'group' => 'sizes',
+            'label' => '4X-Large',
+            'short' => '4XL',
+            'description' => 'Added when the customer orders this size.',
+            'icon' => 'bi-plus-square-fill',
+            'suffix' => 'per item',
+            'default' => 0,
+        ],
+        'size_5xl' => [
+            'group' => 'sizes',
+            'label' => '5X-Large',
+            'short' => '5XL',
+            'description' => 'Added when the customer orders this size.',
+            'icon' => 'bi-plus-square-fill',
+            'suffix' => 'per item',
+            'default' => 0,
+        ],
     ];
+
+    /** The recipe value a size rate key stands for: `size_2xl` → `2xl`. */
+    private const SIZE_PREFIX = 'size_';
 
     /** The rate key for a recipe's size, or null if it names something unknown. */
     public static function keyForSize(?string $size): ?string
     {
-        $key = 'size_' . strtolower(trim((string) $size));
+        $key = self::SIZE_PREFIX . strtolower(trim((string) $size));
 
         return isset(self::DEFINITIONS[$key]) ? $key : null;
+    }
+
+    /**
+     * The sizes a customer can order, smallest first, keyed by the value the
+     * design recipe stores (`small` … `5xl`). Each carries its definition plus
+     * `rate_key`, so the studio can build its size buttons from the same list
+     * the admin prices and the cart charges against.
+     *
+     * @return array<string, array<string, mixed>>
+     */
+    public static function sizes(): array
+    {
+        $sizes = [];
+
+        foreach (self::DEFINITIONS as $key => $definition) {
+            if ($definition['group'] !== 'sizes') continue;
+
+            $sizes[substr($key, strlen(self::SIZE_PREFIX))] = $definition + ['rate_key' => $key];
+        }
+
+        return $sizes;
     }
 
     protected $primaryKey = 'customization_rate_id';

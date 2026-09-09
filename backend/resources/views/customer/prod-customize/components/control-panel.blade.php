@@ -107,21 +107,22 @@
 
         {{-- Step 1: Select Size — a label on the order, not a transform. The
              model is not resized: the customer can already zoom, so scaling it
-             only made the design look like it had changed size when it hadn't. --}}
+             only made the design look like it had changed size when it hadn't.
+
+             The list runs Small to 5XL and comes from
+             CustomizationRate::sizes(), the same definitions the admin prices
+             and the cart charges against, so a size can't be offered here
+             that the order can't record. --}}
         <div class="mb-5">
             <label class="text-accent small text-uppercase fw-bold tracking-wider mb-3 d-block">1. Select Size</label>
             <div class="row g-2">
-                @foreach([
-                    ['size' => 'small', 'initial' => 'S', 'label' => 'Small'],
-                    ['size' => 'medium', 'initial' => 'M', 'label' => 'Medium'],
-                    ['size' => 'large', 'initial' => 'L', 'label' => 'Large'],
-                ] as $option)
-                    @php $surcharge = $rates['size_' . $option['size']] ?? 0; @endphp
+                @foreach($sizes ?? [] as $size => $option)
+                    @php $surcharge = $rates[$option['rate_key']] ?? 0; @endphp
                     <div class="col-4">
-                        <button class="btn btn-size {{ $option['size'] === 'medium' ? 'active' : '' }} w-100"
-                            data-size="{{ $option['size'] }}"
+                        <button class="btn btn-size {{ $size === 'medium' ? 'active' : '' }} w-100"
+                            data-size="{{ $size }}"
                             title="{{ $option['label'] }}{{ $surcharge > 0 ? ' (+₱' . number_format($surcharge, 2) . ')' : '' }}">
-                            <div class="shape-icon fw-bold">{{ $option['initial'] }}</div>
+                            <div class="shape-icon fw-bold">{{ $option['short'] }}</div>
                             <div class="tiny mt-1 fw-bold">{{ $option['label'] }}</div>
                             @if($surcharge > 0)
                                 <div class="tiny fw-bold" style="color: #ffc508;">+₱{{ number_format($surcharge, 2) }}</div>
@@ -130,7 +131,7 @@
                     </div>
                 @endforeach
             </div>
-            <div class="tiny text-white-50 mt-2">Recorded on your order. It doesn't change the preview.</div>
+            <div class="tiny text-white-50 mt-2">Sizes run Small to 5XL. Recorded on your order; it doesn't change the preview.</div>
         </div>
 
 
