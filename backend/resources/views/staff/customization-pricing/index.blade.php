@@ -55,7 +55,7 @@
                                         <span class="pricing-section-icon"><i class="bi bi-cash-stack"></i></span>
                                         <div>
                                             <h6 class="fw-bold mb-0 text-dark">Design element rates</h6>
-                                            <small class="text-muted">Charged per element a customer adds to their design.</small>
+                                            <small class="text-muted">Charged per element a customer adds to their design. Ink is not listed under these — it is measured from the artwork; see Sublimation ink.</small>
                                         </div>
                                     </div>
                                 </div>
@@ -162,9 +162,59 @@
                                                         ₱{{ number_format($rate['amount'], 2) }}
                                                     </div>
                                                     <small class="text-muted d-block mt-1">{{ $rate['suffix'] }}</small>
+                                                    {{-- Measured ink scales by this: the same design on a
+                                                         bigger garment covers more fabric. --}}
+                                                    <small class="text-muted d-block mt-1">
+                                                        <i class="bi bi-arrows-angle-expand me-1"></i>print area ×{{ rtrim(rtrim(number_format($rate['area_factor'] ?? 1, 3, '.', ''), '0'), '.') }} vs Medium
+                                                    </small>
                                                 </div>
                                             </div>
                                             @include('staff.customization-pricing.partials.materials', ['key' => $key, 'rate' => $rate, 'materials' => $materialLookup])
+                                        </div>
+                                    @endforeach
+                                </div>
+                            </div>
+
+                            <!-- Panel 3: the printer's inks, read-only. Worth having at the
+                                 bench: "why does this order draw 9ml of cyan?" is answered by
+                                 the rate here times the design's measured coverage. -->
+                            <div class="card border-0 shadow-sm pricing-card mt-3 mt-md-4" id="inkChannels">
+                                <div class="card-header bg-white border-0 pt-3 pt-md-4 pb-2 px-3 px-md-4">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <span class="pricing-section-icon"><i class="bi bi-droplet-half"></i></span>
+                                        <div>
+                                            <h6 class="fw-bold mb-0 text-dark">Sublimation ink</h6>
+                                            <small class="text-muted">
+                                                A design's ink is measured from its artwork: how much of the product's printable
+                                                area each channel covers, times that area at the ordered size, times the rate here.
+                                            </small>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="card-body px-3 px-md-4 pb-3 pb-md-4">
+                                    @foreach($inkChannels as $channel => $ink)
+                                        @php $bottle = $ink['raw_material_id'] ? ($materialLookup[$ink['raw_material_id']] ?? null) : null; @endphp
+                                        <div class="rate-entry py-3 border-top">
+                                            <div class="pricing-row d-flex justify-content-between align-items-start gap-3">
+                                                <div class="flex-grow-1">
+                                                    <div class="fw-semibold text-dark">
+                                                        <span class="ink-swatch me-1" style="background-color: {{ $ink['swatch'] }}"></span>{{ $ink['label'] }}
+                                                    </div>
+                                                    <small class="text-muted">
+                                                        @if ($bottle)
+                                                            Draws from {{ $bottle->name }}.
+                                                        @else
+                                                            Not linked to a bottle — measured, but nothing is deducted.
+                                                        @endif
+                                                    </small>
+                                                </div>
+                                                <div class="pricing-amount flex-shrink-0 text-end">
+                                                    <div class="fw-bold text-dark pricing-amount-value">
+                                                        {{ rtrim(rtrim(number_format($ink['ml_per_cm2'], 5, '.', ''), '0'), '.') }} ml/cm²
+                                                    </div>
+                                                    <small class="text-muted d-block mt-1">at solid coverage</small>
+                                                </div>
+                                            </div>
                                         </div>
                                     @endforeach
                                 </div>
@@ -186,6 +236,7 @@
     </div>
 
     <style>
+        .ink-swatch { display: inline-block; width: 12px; height: 12px; border-radius: 3px; border: 1px solid rgba(0,0,0,.15); vertical-align: -1px; }
         .pricing-card { border-radius: 14px; }
 
         .pricing-section-icon {

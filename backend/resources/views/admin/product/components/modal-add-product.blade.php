@@ -53,6 +53,17 @@
                                     </div>
                                 </div>
 
+                                {{-- The size of the blank's printable panels at Medium.
+                                     Ink for a design is measured as a fraction of this,
+                                     so leaving it empty means the design's ink is taken
+                                     from the per-element materials instead. --}}
+                                <div>
+                                    <label class="form-label small fw-bold text-muted text-uppercase">Printable Area (cm²)</label>
+                                    <input type="number" name="print_area_cm2" step="0.01" min="0" max="99999999.99"
+                                        class="form-control product-field-input" placeholder="e.g. 2400 for a shirt front and back">
+                                    <small class="text-muted">At size Medium. Sizes scale it by the factors on Customization Pricing.</small>
+                                </div>
+
                                 <div>
                                     <label class="form-label small fw-bold text-muted text-uppercase">Description</label>
                                     <textarea name="description" class="form-control product-field-input" rows="5"

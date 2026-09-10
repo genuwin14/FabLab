@@ -744,6 +744,7 @@
                 document.getElementById('editUnitsConsumed').value = product.units_consumed ?? 0;
                 document.getElementById('editDescription').value = product.description;
                 document.getElementById('editIsCustomizable').checked = product.is_customizable == 1;
+                document.getElementById('editPrintArea').value = product.print_area_cm2 ?? '';
                 document.getElementById('editStatus').value = product.status || "active";
                 document.getElementById('editDepartment').value = product.department || '';
 

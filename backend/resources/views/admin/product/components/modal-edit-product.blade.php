@@ -71,6 +71,15 @@
                                                 </label>
                                             </div>
                                         </div>
+
+                                        {{-- See the add modal: the blank's printable panels at
+                                             Medium, which measured ink is a fraction of. --}}
+                                        <div>
+                                            <label class="form-label small fw-bold text-muted text-uppercase">Printable Area (cm²)</label>
+                                            <input type="number" name="print_area_cm2" id="editPrintArea" step="0.01" min="0" max="99999999.99"
+                                                class="form-control product-field-input" placeholder="e.g. 2400 for a shirt front and back">
+                                            <small class="text-muted">At size Medium. Sizes scale it by the factors on Customization Pricing.</small>
+                                        </div>
                                         <div>
                                             <label class="form-label small fw-bold text-muted text-uppercase">Description</label>
                                             <textarea name="description" id="editDescription"

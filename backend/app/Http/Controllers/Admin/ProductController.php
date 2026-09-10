@@ -70,6 +70,10 @@ class ProductController extends Controller
             'unit' => ['required', Rule::in(\App\Enums\MaterialUnit::values())],
             'brand' => 'nullable|string|max:255',
             'low_stock_threshold' => 'nullable|integer|min:0',
+            // The blank's printable panels at Medium, in cm². Empty means
+            // "not measured", and the design's ink falls back to the
+            // per-element materials.
+            'print_area_cm2' => 'nullable|numeric|min:0|max:99999999.99',
             'units_on_display' => 'nullable|integer|min:0',
             'units_sponsored' => 'nullable|integer|min:0',
             'units_damaged' => 'nullable|integer|min:0',
@@ -85,6 +89,8 @@ class ProductController extends Controller
 
         $data = $request->except('image_file');
         $data['is_customizable'] = $request->has('is_customizable');
+        // An emptied field posts as '', which the decimal column would refuse.
+        $data['print_area_cm2'] = $request->filled('print_area_cm2') ? (float) $request->input('print_area_cm2') : null;
 
         // Set default status to 'active' if not provided
         if (empty($data['status'])) {
@@ -116,6 +122,10 @@ class ProductController extends Controller
             'unit' => ['required', Rule::in(\App\Enums\MaterialUnit::allowedFor($product->unit))],
             'brand' => 'nullable|string|max:255',
             'low_stock_threshold' => 'nullable|integer|min:0',
+            // The blank's printable panels at Medium, in cm². Empty means
+            // "not measured", and the design's ink falls back to the
+            // per-element materials.
+            'print_area_cm2' => 'nullable|numeric|min:0|max:99999999.99',
             'units_on_display' => 'nullable|integer|min:0',
             'units_sponsored' => 'nullable|integer|min:0',
             'units_damaged' => 'nullable|integer|min:0',
@@ -130,6 +140,8 @@ class ProductController extends Controller
 
         $data = $request->except('image_file');
         $data['is_customizable'] = $request->has('is_customizable');
+        // An emptied field posts as '', which the decimal column would refuse.
+        $data['print_area_cm2'] = $request->filled('print_area_cm2') ? (float) $request->input('print_area_cm2') : null;
 
         // Set default status to 'active' if not provided
         if (empty($data['status'])) {

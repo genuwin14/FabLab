@@ -63,6 +63,13 @@ class CustomizationRate extends Model
         // Only one ever applies to an item — the size the customer picked.
         // Listed smallest first, which is the order every screen shows them
         // in; the shop takes garments up to 5XL.
+        //
+        // `area_factor` is how much bigger or smaller the size's printable
+        // panels are than the product's Medium, which is the figure the
+        // product's own print area records. The measured ink scales by it: a
+        // design printed on a 5XL covers the same fraction of a larger panel,
+        // so it takes more ink. Roughly a garment size chart's chest-width
+        // steps, squared; admin-editable, like the surcharge beside it.
         'size_small' => [
             'group' => 'sizes',
             'label' => 'Small',
@@ -71,6 +78,7 @@ class CustomizationRate extends Model
             'icon' => 'bi-dash-square',
             'suffix' => 'per item',
             'default' => 0,
+            'area_factor' => 0.85,
         ],
         'size_medium' => [
             'group' => 'sizes',
@@ -80,6 +88,7 @@ class CustomizationRate extends Model
             'icon' => 'bi-square',
             'suffix' => 'per item',
             'default' => 0,
+            'area_factor' => 1.0,
         ],
         'size_large' => [
             'group' => 'sizes',
@@ -89,6 +98,7 @@ class CustomizationRate extends Model
             'icon' => 'bi-plus-square',
             'suffix' => 'per item',
             'default' => 0,
+            'area_factor' => 1.15,
         ],
         'size_xl' => [
             'group' => 'sizes',
@@ -98,6 +108,7 @@ class CustomizationRate extends Model
             'icon' => 'bi-plus-square-fill',
             'suffix' => 'per item',
             'default' => 0,
+            'area_factor' => 1.3,
         ],
         'size_2xl' => [
             'group' => 'sizes',
@@ -107,6 +118,7 @@ class CustomizationRate extends Model
             'icon' => 'bi-plus-square-fill',
             'suffix' => 'per item',
             'default' => 0,
+            'area_factor' => 1.45,
         ],
         'size_3xl' => [
             'group' => 'sizes',
@@ -116,6 +128,7 @@ class CustomizationRate extends Model
             'icon' => 'bi-plus-square-fill',
             'suffix' => 'per item',
             'default' => 0,
+            'area_factor' => 1.6,
         ],
         'size_4xl' => [
             'group' => 'sizes',
@@ -125,6 +138,7 @@ class CustomizationRate extends Model
             'icon' => 'bi-plus-square-fill',
             'suffix' => 'per item',
             'default' => 0,
+            'area_factor' => 1.75,
         ],
         'size_5xl' => [
             'group' => 'sizes',
@@ -134,6 +148,7 @@ class CustomizationRate extends Model
             'icon' => 'bi-plus-square-fill',
             'suffix' => 'per item',
             'default' => 0,
+            'area_factor' => 1.9,
         ],
     ];
 
@@ -171,15 +186,18 @@ class CustomizationRate extends Model
 
     protected $primaryKey = 'customization_rate_id';
 
-    protected $fillable = ['key', 'amount'];
+    protected $fillable = ['key', 'amount', 'print_area_factor'];
 
-    protected $casts = ['amount' => 'float'];
+    protected $casts = ['amount' => 'float', 'print_area_factor' => 'float'];
 
     /** Per-request memo. One small query serves every design priced in a request. */
     private static ?array $cachedAmounts = null;
 
     /** The same memo for the material side. See materials(). */
     private static ?array $cachedMaterials = null;
+
+    /** And for the print-area factors. See areaFactors(). */
+    private static ?array $cachedAreaFactors = null;
 
     protected static function booted(): void
     {
@@ -212,6 +230,48 @@ class CustomizationRate extends Model
     public static function amountFor(string $key): float
     {
         return self::amounts()[$key] ?? 0.0;
+    }
+
+    /**
+     * How much bigger each size's printable panels are than the product's
+     * Medium, as `size_key => factor`, with shipped defaults filling gaps.
+     *
+     * Only the size rows have one; the elements are absent. Same guarded read
+     * as amounts(), and for the same reason.
+     *
+     * @return array<string, float>
+     */
+    public static function areaFactors(): array
+    {
+        if (self::$cachedAreaFactors !== null) return self::$cachedAreaFactors;
+
+        $defaults = collect(self::DEFINITIONS)
+            ->filter(fn ($definition) => isset($definition['area_factor']))
+            ->map(fn ($definition) => (float) $definition['area_factor'])
+            ->all();
+
+        try {
+            $stored = self::query()->whereIn('key', array_keys($defaults))
+                ->pluck('print_area_factor', 'key')
+                ->map(fn ($factor) => (float) $factor)
+                ->all();
+        } catch (\Throwable) {
+            $stored = [];
+        }
+
+        return self::$cachedAreaFactors = array_merge($defaults, $stored);
+    }
+
+    /**
+     * The print-area factor for a recipe's size. An unknown or missing size
+     * is treated as Medium — the product's own figure, unscaled — rather
+     * than guessed at.
+     */
+    public static function areaFactorForSize(?string $size): float
+    {
+        $key = self::keyForSize($size);
+
+        return $key ? (self::areaFactors()[$key] ?? 1.0) : 1.0;
     }
 
     /**
@@ -265,6 +325,7 @@ class CustomizationRate extends Model
     {
         self::$cachedAmounts = null;
         self::$cachedMaterials = null;
+        self::$cachedAreaFactors = null;
     }
 
     /**
@@ -278,6 +339,7 @@ class CustomizationRate extends Model
     {
         $amounts = self::amounts();
         $materials = self::materials();
+        $areaFactors = self::areaFactors();
 
         return collect(self::DEFINITIONS)
             ->map(fn($definition, $key) => $definition + [
@@ -286,6 +348,8 @@ class CustomizationRate extends Model
                 // What the shop spends on the option, alongside what it
                 // charges for it. `raw_material_id => quantity_required`.
                 'materials' => $materials[$key] ?? [],
+                // Sizes only: the live factor replaces the shipped default.
+                'area_factor' => $areaFactors[$key] ?? null,
             ])
             // preserveKeys: the rate key is the form field name, so losing it
             // would post rates[0] instead of rates[logo].

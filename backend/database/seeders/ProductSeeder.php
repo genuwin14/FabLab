@@ -309,9 +309,27 @@ class ProductSeeder extends Seeder
             ],
         ];
 
+        // The printable panels of each blank at Medium, in cm². A design's
+        // ink is measured as a fraction of this, so the customizable products
+        // need one or their ink falls back to the per-element materials.
+        // Front and back where the studio offers both: a 30×40 chest and
+        // back for the garments, a 30×30 face each side of the tote, the
+        // wrap of a mug, and the eight panels of an umbrella canopy.
+        $printAreas = [
+            'MG-WHT-11' => 200,
+            'MG-BLK-11' => 200,
+            'TS-CTN-WHT' => 2400,
+            'PL-PQE-WHT' => 2400,
+            'PL-PQE-NVY' => 2400,
+            'UMB-AUT-WHT' => 3200,
+            'TB-CVS-NAT' => 1800,
+        ];
+
         foreach ($products as $productData) {
             $suppliersData = $productData['suppliers'];
             unset($productData['suppliers']); // Remove from Main Product Data
+
+            $productData['print_area_cm2'] = $printAreas[$productData['sku']] ?? null;
 
             $product = Product::create($productData);
 

@@ -37,10 +37,32 @@ class Product extends Model
         'category_id',
         'status',
         'is_customizable',
+        'print_area_cm2',
         'low_stock_threshold',
         'unit',
         'image'
     ];
+
+    protected $casts = [
+        'print_area_cm2' => 'float',
+    ];
+
+    /**
+     * The printable area of this product at the given garment size, in square
+     * centimetres — the blank's own figure scaled by the size's factor.
+     *
+     * Null when the product's print area has never been measured. That is
+     * the signal for the stock service to fall back to the per-element bills
+     * of materials rather than draw a measured figure against nothing.
+     */
+    public function printAreaFor(?string $size): ?float
+    {
+        if ($this->print_area_cm2 === null || (float) $this->print_area_cm2 <= 0) {
+            return null;
+        }
+
+        return round((float) $this->print_area_cm2 * CustomizationRate::areaFactorForSize($size), 2);
+    }
 
     /**
      * The shapes the 3D studio can actually render, matched against a name.

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\CustomizationRate;
 use App\Models\CustomizationRateMaterial;
+use App\Models\InkChannel;
 use App\Models\RawMaterial;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -28,6 +29,7 @@ class CustomizationPricingController extends Controller
     {
         return view('admin.customization-pricing.index', [
             'rates' => CustomizationRate::forDisplay(),
+            'inkChannels' => InkChannel::forDisplay(),
             'logoMinScale' => \App\Models\CustomDesign::LOGO_MIN_SCALE,
             'logoMaxScale' => \App\Models\CustomDesign::LOGO_MAX_SCALE,
             // Retired materials are left out: they can't be consumed, so
@@ -48,12 +50,28 @@ class CustomizationPricingController extends Controller
             // line of text is a normal figure here, so the minimum has to sit
             // below the product BOM's two-decimal floor.
             'materials.*.*.quantity' => ['nullable', 'numeric', 'min:0.0001', 'max:99999999.9999'],
+
+            // Both optional, so a form that predates them — or a test that
+            // only reprices — leaves the stored figures alone.
+            'area_factors' => ['nullable', 'array'],
+            'area_factors.*' => ['nullable', 'numeric', 'min:0.01', 'max:99'],
+            'ink' => ['nullable', 'array'],
+            'ink.*' => ['nullable', 'array'],
+            'ink.*.raw_material_id' => ['nullable', 'integer', 'exists:raw_materials,raw_material_id'],
+            'ink.*.ml_per_cm2' => ['nullable', 'numeric', 'min:0', 'max:9.99999'],
         ];
         $messages = [
             'materials.*.*.raw_material_id.exists' => 'One of the materials you picked no longer exists.',
             'materials.*.*.quantity.numeric' => 'A material quantity must be a number.',
             'materials.*.*.quantity.min' => 'A material quantity must be greater than zero. Remove the row instead.',
             'materials.*.*.quantity.max' => 'A material quantity is higher than this system can store.',
+            'area_factors.*.numeric' => 'A print-area factor must be a number.',
+            'area_factors.*.min' => 'A print-area factor must be greater than zero.',
+            'area_factors.*.max' => 'A print-area factor is higher than this system can store.',
+            'ink.*.raw_material_id.exists' => 'One of the ink bottles you picked no longer exists.',
+            'ink.*.ml_per_cm2.numeric' => 'An ink rate must be a number.',
+            'ink.*.ml_per_cm2.min' => "An ink rate can't be negative.",
+            'ink.*.ml_per_cm2.max' => 'An ink rate is higher than this system can store.',
         ];
 
         foreach ($keys as $key) {
@@ -97,9 +115,37 @@ class CustomizationPricingController extends Controller
                     ]);
                 }
             }
+
+            // Only the size rows carry a print-area factor. Anything posted
+            // against another key is ignored rather than stored.
+            foreach ($validated['area_factors'] ?? [] as $key => $factor) {
+                if ($factor === null || $factor === '' || ! isset(CustomizationRate::DEFINITIONS[$key]['area_factor'])) {
+                    continue;
+                }
+
+                CustomizationRate::where('key', $key)->update(['print_area_factor' => round((float) $factor, 3)]);
+            }
+
+            foreach ($validated['ink'] ?? [] as $channel => $settings) {
+                if (! isset(InkChannel::CHANNELS[$channel]) || ! is_array($settings)) {
+                    continue;
+                }
+
+                $rate = $settings['ml_per_cm2'] ?? null;
+                $materialId = $settings['raw_material_id'] ?? null;
+
+                InkChannel::updateOrCreate(['channel' => $channel], [
+                    // An emptied select unlinks the bottle; that is a valid
+                    // answer ("measure it, deduct nothing") rather than a
+                    // half-filled row to drop.
+                    'raw_material_id' => filled($materialId) ? (int) $materialId : null,
+                    'ml_per_cm2' => filled($rate) ? round((float) $rate, 5) : InkChannel::rates()[$channel]['ml_per_cm2'],
+                ]);
+            }
         });
 
         CustomizationRate::flushCache();
+        InkChannel::flushCache();
 
         return redirect()
             ->route('admin.customization-pricing.index')

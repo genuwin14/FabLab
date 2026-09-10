@@ -24,11 +24,14 @@ class CustomDesign extends Model
         'user_id',
         'product_id',
         'recipe',
-        'snapshot'
+        'snapshot',
+        'ink_coverage',
+        'print_image',
     ];
 
     protected $casts = [
-        'recipe' => 'array'
+        'recipe' => 'array',
+        'ink_coverage' => 'array',
     ];
 
     /**
@@ -56,6 +59,16 @@ class CustomDesign extends Model
     public function orderItems()
     {
         return $this->hasMany(OrderItem::class, 'custom_design_id', 'custom_design_id');
+    }
+
+    /**
+     * The flat print the studio exported when this design was saved, as a
+     * URL a template can show. Null for a design saved before prints were
+     * kept — its ink is estimated from the recipe instead.
+     */
+    public function getPrintImageUrlAttribute(): ?string
+    {
+        return \App\Support\ImageUrl::for($this->print_image);
     }
 
     /**
