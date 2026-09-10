@@ -158,6 +158,68 @@
                                     </small>
                                 </div>
                             </div>
+
+                            <!-- Panel 3: the printer's four inks. Ink is measured off the
+                                 artwork rather than listed per element, and this is where the
+                                 measurement is turned into millilitres. -->
+                            <div class="card border-0 shadow-sm pricing-card mt-3 mt-md-4" id="inkChannels">
+                                <div class="card-header bg-white border-0 pt-3 pt-md-4 pb-2 px-3 px-md-4">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <span class="pricing-section-icon"><i class="bi bi-droplet-half"></i></span>
+                                        <div>
+                                            <h6 class="fw-bold mb-0 text-dark">Sublimation ink</h6>
+                                            <small class="text-muted">
+                                                A design's ink is measured from its artwork: how much of the product's printable
+                                                area each channel covers, times that area at the ordered size, times the rate here.
+                                                Nobody types an ink figure per order.
+                                            </small>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="card-body px-3 px-md-4 pb-3 pb-md-4">
+                                    @foreach($inkChannels as $channel => $ink)
+                                        <div class="rate-entry py-3 border-top">
+                                            <div class="pricing-row d-flex justify-content-between align-items-start gap-3">
+                                                <div class="flex-grow-1">
+                                                    <div class="fw-semibold text-dark">
+                                                        <span class="ink-swatch me-1" style="background-color: {{ $ink['swatch'] }}"></span>{{ $ink['label'] }}
+                                                    </div>
+                                                    <select class="form-select form-select-sm mt-2 @error('ink.' . $channel . '.raw_material_id') is-invalid @enderror"
+                                                        name="ink[{{ $channel }}][raw_material_id]"
+                                                        aria-label="Bottle the {{ $ink['label'] }} channel draws from">
+                                                        <option value="">Not linked — measured but nothing deducted</option>
+                                                        @foreach ($materials as $material)
+                                                            <option value="{{ $material->raw_material_id }}"
+                                                                @selected((int) old('ink.' . $channel . '.raw_material_id', $ink['raw_material_id']) === $material->raw_material_id)>
+                                                                {{ $material->name }} ({{ $material->unit }})
+                                                            </option>
+                                                        @endforeach
+                                                    </select>
+                                                </div>
+                                                <div class="pricing-input flex-shrink-0">
+                                                    <div class="input-group">
+                                                        <input type="number" step="0.00001" min="0" max="9.99999"
+                                                            class="form-control text-end fw-semibold @error('ink.' . $channel . '.ml_per_cm2') is-invalid @enderror"
+                                                            name="ink[{{ $channel }}][ml_per_cm2]"
+                                                            id="ink-rate-{{ $channel }}"
+                                                            value="{{ old('ink.' . $channel . '.ml_per_cm2', rtrim(rtrim(number_format($ink['ml_per_cm2'], 5, '.', ''), '0'), '.')) }}"
+                                                            aria-label="{{ $ink['label'] }} millilitres per square centimetre">
+                                                        <span class="input-group-text bg-white text-muted">ml/cm²</span>
+                                                    </div>
+                                                    <small class="text-muted d-block text-end mt-1">at solid coverage</small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    @endforeach
+
+                                    <small class="text-muted d-block mt-3">
+                                        <i class="bi bi-info-circle me-1"></i>To calibrate a rate: print a solid square of one colour
+                                        at a known size, weigh the bottle before and after, and divide the millilitres used by the
+                                        square's area. Each product's printable area is set on its product card; sizes scale it by
+                                        the factors above.
+                                    </small>
+                                </div>
+                            </div>
                         </div>
 
                         <!-- Panel 2: what the ordered size adds, Small to 5XL -->
@@ -223,68 +285,6 @@
                                             @include('admin.customization-pricing.partials.materials', ['key' => $key, 'rate' => $rate, 'materials' => $materials])
                                         </div>
                                     @endforeach
-                                </div>
-                            </div>
-
-                            <!-- Panel 3: the printer's four inks. Ink is measured off the
-                                 artwork rather than listed per element, and this is where the
-                                 measurement is turned into millilitres. -->
-                            <div class="card border-0 shadow-sm pricing-card mt-3 mt-md-4" id="inkChannels">
-                                <div class="card-header bg-white border-0 pt-3 pt-md-4 pb-2 px-3 px-md-4">
-                                    <div class="d-flex align-items-center gap-2">
-                                        <span class="pricing-section-icon"><i class="bi bi-droplet-half"></i></span>
-                                        <div>
-                                            <h6 class="fw-bold mb-0 text-dark">Sublimation ink</h6>
-                                            <small class="text-muted">
-                                                A design's ink is measured from its artwork: how much of the product's printable
-                                                area each channel covers, times that area at the ordered size, times the rate here.
-                                                Nobody types an ink figure per order.
-                                            </small>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="card-body px-3 px-md-4 pb-3 pb-md-4">
-                                    @foreach($inkChannels as $channel => $ink)
-                                        <div class="rate-entry py-3 border-top">
-                                            <div class="pricing-row d-flex justify-content-between align-items-start gap-3">
-                                                <div class="flex-grow-1">
-                                                    <div class="fw-semibold text-dark">
-                                                        <span class="ink-swatch me-1" style="background-color: {{ $ink['swatch'] }}"></span>{{ $ink['label'] }}
-                                                    </div>
-                                                    <select class="form-select form-select-sm mt-2 @error('ink.' . $channel . '.raw_material_id') is-invalid @enderror"
-                                                        name="ink[{{ $channel }}][raw_material_id]"
-                                                        aria-label="Bottle the {{ $ink['label'] }} channel draws from">
-                                                        <option value="">Not linked — measured but nothing deducted</option>
-                                                        @foreach ($materials as $material)
-                                                            <option value="{{ $material->raw_material_id }}"
-                                                                @selected((int) old('ink.' . $channel . '.raw_material_id', $ink['raw_material_id']) === $material->raw_material_id)>
-                                                                {{ $material->name }} ({{ $material->unit }})
-                                                            </option>
-                                                        @endforeach
-                                                    </select>
-                                                </div>
-                                                <div class="pricing-input flex-shrink-0">
-                                                    <div class="input-group">
-                                                        <input type="number" step="0.00001" min="0" max="9.99999"
-                                                            class="form-control text-end fw-semibold @error('ink.' . $channel . '.ml_per_cm2') is-invalid @enderror"
-                                                            name="ink[{{ $channel }}][ml_per_cm2]"
-                                                            id="ink-rate-{{ $channel }}"
-                                                            value="{{ old('ink.' . $channel . '.ml_per_cm2', rtrim(rtrim(number_format($ink['ml_per_cm2'], 5, '.', ''), '0'), '.')) }}"
-                                                            aria-label="{{ $ink['label'] }} millilitres per square centimetre">
-                                                        <span class="input-group-text bg-white text-muted">ml/cm²</span>
-                                                    </div>
-                                                    <small class="text-muted d-block text-end mt-1">at solid coverage</small>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    @endforeach
-
-                                    <small class="text-muted d-block mt-3">
-                                        <i class="bi bi-info-circle me-1"></i>To calibrate a rate: print a solid square of one colour
-                                        at a known size, weigh the bottle before and after, and divide the millilitres used by the
-                                        square's area. Each product's printable area is set on its product card; sizes scale it by
-                                        the factors above.
-                                    </small>
                                 </div>
                             </div>
                         </div>
