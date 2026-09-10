@@ -204,12 +204,60 @@ class InkMeasurementTest extends TestCase
             'custom_snapshot' => 'data:image/png;base64,AAA',
             'custom_print' => $print,
             'custom_print_area' => 0.5,
+            'custom_print_zones' => json_encode([
+                ['id' => 'front', 'label' => 'Front', 'u0' => 0.159, 'v0' => 0.446, 'u1' => 0.392, 'v1' => 0.878],
+                ['id' => 'back', 'label' => 'Back', 'u0' => 0.615, 'v0' => 0.447, 'u1' => 0.812, 'v1' => 0.833, 'flipU' => true],
+            ]),
         ])->assertOk()->assertJson(['success' => true]);
 
         $design = CustomDesign::sole();
         $this->assertEqualsWithDelta(1.0, $design->ink_coverage['yellow'], 0.01, 'Yellow fills the half of the canvas that is printable.');
         $this->assertEquals(0, $design->ink_coverage['cyan']);
         Storage::disk('public')->assertExists('designs/prints/' . $design->custom_design_id . '.png');
+
+        // The panels ride along, so the order screens can crop each one out.
+        $this->assertCount(2, $design->print_zones);
+        $this->assertSame('Front', $design->print_zones[0]['label']);
+        $this->assertSame(0.159, $design->print_zones[0]['u0']);
+        $this->assertFalse($design->print_zones[0]['flipU']);
+        $this->assertTrue($design->print_zones[1]['flipU']);
+        $this->assertStringStartsWith('/storage/designs/prints/', $design->print_image_url);
+    }
+
+    public function test_panels_that_do_not_fit_on_the_print_are_dropped(): void
+    {
+        Storage::fake('public');
+        [$customer, $product] = $this->customerAndProduct();
+        Sanctum::actingAs($customer);
+
+        $print = $this->png(32, function ($image) {
+            imagefilledrectangle($image, 0, 0, 31, 31, imagecolorallocatealpha($image, 0, 0, 0, 0));
+        });
+
+        // Re-saves the same design each time, as the studio does once it has an id.
+        $post = fn ($zones) => $this->postJson(route('customer.customize.save'), [
+            'product_id' => $product->product_id,
+            'design_id' => CustomDesign::first()?->custom_design_id,
+            'custom_recipe' => json_encode(['elements' => []]),
+            'custom_print' => $print,
+            'custom_print_zones' => is_string($zones) ? $zones : json_encode($zones),
+        ])->assertOk();
+
+        // One good panel among the bad: off the atlas, no area, not an object.
+        $post([
+            ['label' => 'Front', 'u0' => 0.1, 'v0' => 0.1, 'u1' => 0.5, 'v1' => 0.5],
+            ['label' => 'Off', 'u0' => 0.5, 'v0' => 0.5, 'u1' => 1.5, 'v1' => 0.9],
+            ['label' => 'Flat', 'u0' => 0.5, 'v0' => 0.5, 'u1' => 0.5, 'v1' => 0.9],
+            ['label' => 'Nameless', 'u0' => 'x'],
+            'not a panel',
+        ]);
+        $zones = CustomDesign::sole()->print_zones;
+        $this->assertCount(1, $zones);
+        $this->assertSame('Front', $zones[0]['label']);
+
+        // Nothing usable at all stores nothing, and the screens show the print whole.
+        $post('not json');
+        $this->assertNull(CustomDesign::sole()->print_zones);
     }
 
     public function test_adding_to_the_cart_measures_the_print_too(): void

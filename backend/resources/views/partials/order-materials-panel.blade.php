@@ -87,16 +87,22 @@
             </button>
         </div>
 
-        {{-- The flat prints the ink figures were measured from — every panel's
+        {{-- The prints the ink figures were measured from — every panel's
              artwork, none of the garment — so the reviewer sees exactly what
              the printer will lay down. Hidden when the order has none.
+
+             The studio's print is the model's whole texture atlas, and a
+             shirt's chest is a small rectangle in it. So each panel the
+             design records is cropped out and shown on its own, labelled
+             Front, Back and so on; a design saved before panels were
+             recorded is shown whole.
 
              A thumbnail is the affordance, not the view: clicking one opens it
              in the stage below at a size coverage can actually be judged
              from. Inline rather than a second modal, for the same reason the
              design preview above is — a modal on a modal fights the backdrop. --}}
         <div class="materials-prints d-none mb-2">
-            <small class="text-muted d-block mb-1"><i class="bi bi-printer me-1"></i>Measured from these prints — click one to enlarge</small>
+            <small class="text-muted d-block mb-1"><i class="bi bi-printer me-1"></i>Measured from these prints — click a panel to enlarge</small>
             <div class="d-flex flex-wrap gap-2 materials-prints-list"></div>
 
             <div class="materials-print-preview mt-2" hidden>
@@ -104,7 +110,7 @@
                     <small class="text-muted"><i class="bi bi-zoom-in me-1"></i><span class="materials-print-preview-title">Print</span></small>
                     <div class="d-flex align-items-center gap-3">
                         <a class="small text-decoration-none materials-print-open" href="#" target="_blank" rel="noopener">
-                            <i class="bi bi-box-arrow-up-right me-1"></i>Open full size
+                            <i class="bi bi-box-arrow-up-right me-1"></i>Open whole print
                         </a>
                         <button type="button" class="btn btn-sm btn-link p-0 text-decoration-none text-muted materials-print-close" aria-label="Close print preview">
                             <i class="bi bi-x-lg"></i> Close
@@ -112,11 +118,11 @@
                     </div>
                 </div>
                 <div class="materials-print-stage border rounded-3">
-                    <img class="materials-print-large" src="" alt="The flat print this order's ink was measured from">
+                    <img class="materials-print-large" src="" alt="The print this order's ink was measured from">
                 </div>
-                <small class="text-muted d-block mt-1">
-                    Every panel's artwork on a transparent canvas, nothing of the garment. This is what the printer
-                    lays down, and the ink figures above are measured from it.
+                <small class="text-muted d-block mt-1 materials-print-caption">
+                    This panel's artwork on a transparent canvas, nothing of the garment. This is what the printer
+                    lays down on it, and the ink figures above are measured from it.
                 </small>
             </div>
         </div>
@@ -174,6 +180,12 @@
         .order-materials .materials-print {
             width: 96px; height: 96px; object-fit: contain; border-radius: 6px; border: 1px solid #dee2e6;
             cursor: zoom-in; transition: border-color .15s, box-shadow .15s;
+        }
+        /* One panel: its crop with the panel's name under it. */
+        .order-materials .materials-print-figure { margin: 0; width: 96px; text-align: center; }
+        .order-materials .materials-print-figure figcaption {
+            font-size: 0.68rem; line-height: 1.2; color: #6c757d; margin-top: 3px;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
         }
         .order-materials .materials-print:hover,
         .order-materials .materials-print.is-open { border-color: #0e2e45; box-shadow: 0 0 0 2px rgba(14, 46, 69, .15); }
@@ -314,10 +326,46 @@
         }
 
         /**
-         * Show one of the order's flat prints in the panel's own stage.
+         * Cut one panel out of a print.
          *
-         * Clicking the thumbnail that is already open closes it again, so the
-         * thumbnails work as a toggle and the stage never has to be hunted for.
+         * The zone is a UV rectangle on the atlas. A panel the model unwraps
+         * mirrored (the bag's back) was drawn mirrored so it reads right on
+         * the garment; the same flip is applied again here so the crop reads
+         * right on screen. Returns a data URL, or null if the canvas can't
+         * be read back (a cross-origin print), in which case the caller
+         * shows the print whole instead.
+         */
+        function cropPrintZone(img, zone) {
+            const W = img.naturalWidth, H = img.naturalHeight;
+            const sx = Math.round(zone.u0 * W), sy = Math.round(zone.v0 * H);
+            const sw = Math.max(1, Math.round((zone.u1 - zone.u0) * W));
+            const sh = Math.max(1, Math.round((zone.v1 - zone.v0) * H));
+
+            const canvas = document.createElement('canvas');
+            canvas.width = sw;
+            canvas.height = sh;
+            const ctx = canvas.getContext('2d');
+            ctx.translate(zone.flipU ? sw : 0, zone.flipV ? sh : 0);
+            ctx.scale(zone.flipU ? -1 : 1, zone.flipV ? -1 : 1);
+            ctx.drawImage(img, sx, sy, sw, sh, 0, 0, sw, sh);
+
+            try {
+                return canvas.toDataURL('image/png');
+            } catch (e) {
+                return null;
+            }
+        }
+
+        /**
+         * Show the order's prints, one thumbnail per panel, and open any of
+         * them in the panel's own stage.
+         *
+         * Each print is `{ url, label, zones }`. With zones, every panel is
+         * cropped out of the print and labelled with its name; without them
+         * (a design saved before panels were recorded) the print is shown
+         * whole. Clicking the thumbnail that is already open closes it again,
+         * so the thumbnails work as a toggle and the stage never has to be
+         * hunted for.
          */
         function wirePrintPreview(panel, prints) {
             const list = panel.querySelector('.materials-prints-list');
@@ -326,49 +374,114 @@
             const title = panel.querySelector('.materials-print-preview-title');
             const open = panel.querySelector('.materials-print-open');
             const close = panel.querySelector('.materials-print-close');
+            const caption = panel.querySelector('.materials-print-caption');
 
             list.innerHTML = '';
             preview.hidden = true;
 
-            const thumbs = prints.map((url, index) => {
+            // One entry per thumbnail: what to show large, what to call it,
+            // and which whole print it came from.
+            const views = [];
+
+            const addThumb = (view) => {
+                const figure = document.createElement('figure');
+                figure.className = 'materials-print-figure';
+
                 const img = document.createElement('img');
-                img.src = url;
-                img.alt = 'Print ' + (index + 1) + ' of ' + prints.length + ', click to enlarge';
+                img.src = view.src;
+                img.alt = view.name + ', click to enlarge';
                 img.title = 'Click to enlarge';
                 img.className = 'materials-print';
                 img.tabIndex = 0;
                 img.setAttribute('role', 'button');
-                list.appendChild(img);
-                return img;
-            });
+
+                const cap = document.createElement('figcaption');
+                cap.textContent = view.caption;
+                cap.title = view.name;
+
+                figure.appendChild(img);
+                figure.appendChild(cap);
+                list.appendChild(figure);
+
+                view.thumb = img;
+                const index = views.push(view) - 1;
+                img.addEventListener('click', () => show(index));
+                img.addEventListener('keydown', e => {
+                    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); show(index); }
+                });
+            };
 
             const show = (index) => {
-                const isOpen = !preview.hidden && large.src === thumbs[index].src;
-                thumbs.forEach(t => t.classList.remove('is-open'));
+                const view = views[index];
+                const isOpen = !preview.hidden && large.dataset.view === String(index);
+                views.forEach(v => v.thumb && v.thumb.classList.remove('is-open'));
 
                 if (isOpen) {
                     preview.hidden = true;
                     return;
                 }
 
-                large.src = thumbs[index].src;
-                open.href = thumbs[index].src;
-                title.textContent = prints.length > 1 ? `Print ${index + 1} of ${prints.length}` : 'Print';
-                thumbs[index].classList.add('is-open');
+                // A panel crop is a slice of the atlas, so it can be a couple
+                // of hundred pixels tall. Let it grow to fill the stage, but
+                // no more than twice its own size — past that it is blur, not
+                // detail.
+                large.style.height = '';
+                large.onload = () => {
+                    const cap = Math.min(window.innerHeight * 0.6, large.naturalHeight * 2);
+                    large.style.height = Math.round(cap) + 'px';
+                    large.style.width = 'auto';
+                };
+                large.src = view.src;
+                large.dataset.view = String(index);
+                open.href = view.printUrl;
+                title.textContent = view.name;
+                caption.textContent = view.whole
+                    ? 'Every panel\'s artwork on a transparent canvas, nothing of the garment. This is what the printer lays down, and the ink figures above are measured from it.'
+                    : 'This panel\'s artwork on a transparent canvas, nothing of the garment. This is what the printer lays down on it, and the ink figures above are measured from it.';
+                view.thumb.classList.add('is-open');
                 preview.hidden = false;
                 preview.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
             };
 
-            thumbs.forEach((img, index) => {
-                img.addEventListener('click', () => show(index));
-                img.addEventListener('keydown', e => {
-                    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); show(index); }
+            const several = prints.length > 1;
+
+            prints.forEach(print => {
+                const zones = Array.isArray(print.zones) ? print.zones : [];
+                const productName = print.label || 'Design';
+                const wholeView = () => addThumb({
+                    src: print.url, printUrl: print.url, whole: true,
+                    name: several ? productName + ' — whole print' : 'Whole print',
+                    caption: several ? productName : 'Whole print',
                 });
+
+                if (!zones.length) {
+                    wholeView();
+                    return;
+                }
+
+                // Panels need the pixels, so they wait for the print to load.
+                // Until then, and if it never does, nothing is shown for it —
+                // a broken image would say less than nothing.
+                const img = new Image();
+                img.onload = () => {
+                    const crops = zones.map(zone => ({ zone, src: cropPrintZone(img, zone) }));
+                    if (crops.some(c => c.src === null)) {
+                        wholeView();
+                        return;
+                    }
+                    crops.forEach(({ zone, src }) => addThumb({
+                        src, printUrl: print.url, whole: false,
+                        name: several ? productName + ' — ' + zone.label : zone.label,
+                        caption: zone.label,
+                    }));
+                };
+                img.onerror = wholeView;
+                img.src = print.url;
             });
 
             close.onclick = () => {
                 preview.hidden = true;
-                thumbs.forEach(t => t.classList.remove('is-open'));
+                views.forEach(v => v.thumb && v.thumb.classList.remove('is-open'));
             };
         }
 

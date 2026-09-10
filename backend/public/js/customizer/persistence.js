@@ -304,15 +304,20 @@ function captureSnapshot() {
 }
 
 /**
- * The flat print the server measures ink from, plus the share of the canvas
- * that is printable. See renderDesignOnlyOnCanvas().
+ * The flat print the server measures ink from, the share of the canvas that
+ * is printable, and where each printable panel sits on it. See
+ * renderDesignOnlyOnCanvas().
  *
- * Rendered at the studio's full 1024 and handed over at half that: coverage
- * survives the downscale and the upload is a quarter the size. Null when
- * there is nothing on the design, so a blank save carries no print and the
- * server has nothing to measure — which it reads as "no ink".
+ * Handed over at the studio's full 1024, because the order screens crop each
+ * panel out of it to show the reviewer: a shirt's chest is under a quarter
+ * of the atlas across, and at half size it would be too small to read.
+ * Mostly-transparent PNG compresses well, so the upload stays modest. Null
+ * when the canvas can't be read back.
  *
- * @returns {{ image: string, area: number } | null}
+ * The panels are the model's own zones — id, label and UV rectangle — so
+ * "Front" on the review screen is exactly the panel the studio calls Front.
+ *
+ * @returns {{ image: string, area: number, zones: Array<object> } | null}
  */
 function capturePrint() {
     const hasDesign = textElements.length > 0 || shapeElements.length > 0 || logoElements.length > 0;
@@ -322,13 +327,18 @@ function capturePrint() {
     full.height = 1024;
     if (hasDesign) renderDesignOnlyOnCanvas(full.getContext('2d'));
 
-    const out = document.createElement('canvas');
-    out.width = 512;
-    out.height = 512;
-    out.getContext('2d').drawImage(full, 0, 0, 512, 512);
+    const zones = ((designZones && designZones.length) ? designZones : SINGLE_ZONE).map(zone => {
+        const area = zone.area || FULL_PRINT_AREA;
+        return {
+            id: zone.id,
+            label: zone.label || zone.id,
+            u0: area.u0, v0: area.v0, u1: area.u1, v1: area.v1,
+            flipU: !!area.flipU, flipV: !!area.flipV,
+        };
+    });
 
     try {
-        return { image: out.toDataURL('image/png'), area: printableFraction() };
+        return { image: full.toDataURL('image/png'), area: printableFraction(), zones };
     } catch (e) {
         // A tainted canvas (an image from another origin) cannot be read
         // back. The server then estimates from the recipe instead.

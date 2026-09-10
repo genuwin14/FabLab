@@ -81,7 +81,7 @@ class OrderStockService
      * flat prints those figures were measured from, for the same reason.
      *
      * @param  array<int|string, mixed>  $overrides
-     * @return array{materials: array<int, array{model: RawMaterial, quantity: float, adjusted: bool}>, textures: array<int, array{model: Texture, quantity: float}>, notes: array<int, array<int, string>>, prints: array<int, string>}
+     * @return array{materials: array<int, array{model: RawMaterial, quantity: float, adjusted: bool}>, textures: array<int, array{model: Texture, quantity: float}>, notes: array<int, array<int, string>>, prints: array<int, array{url: string, label: string, zones: array<int, array<string, mixed>>}>}
      */
     public function requirements(Order $order, array $overrides = []): array
     {
@@ -181,8 +181,16 @@ class OrderStockService
                     );
                 }
 
+                // The print with its panels, so the screen can crop and label
+                // each one rather than show the whole atlas. No panels means
+                // a design saved before they were recorded; the screen then
+                // shows the print whole.
                 if ($url = $design->print_image_url) {
-                    $prints[$design->custom_design_id] = $url;
+                    $prints[$design->custom_design_id] = [
+                        'url' => $url,
+                        'label' => $item->product->name,
+                        'zones' => is_array($design->print_zones) ? array_values($design->print_zones) : [],
+                    ];
                 }
             }
 
@@ -273,7 +281,7 @@ class OrderStockService
      *     calculation disagree with what the job at the bench will consume,
      *     and the bench is right.
      *
-     * @return array{stage: string, note: string, lines: array<int, array<string, mixed>>, shortages: array<int, string>, prints: array<int, string>}
+     * @return array{stage: string, note: string, lines: array<int, array<string, mixed>>, shortages: array<int, string>, prints: array<int, array{url: string, label: string, zones: array<int, array<string, mixed>>}>}
      */
     public function plannedDraw(Order $order): array
     {

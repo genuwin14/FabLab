@@ -27,11 +27,13 @@ class CustomDesign extends Model
         'snapshot',
         'ink_coverage',
         'print_image',
+        'print_zones',
     ];
 
     protected $casts = [
         'recipe' => 'array',
         'ink_coverage' => 'array',
+        'print_zones' => 'array',
     ];
 
     /**
@@ -65,10 +67,25 @@ class CustomDesign extends Model
      * The flat print the studio exported when this design was saved, as a
      * URL a template can show. Null for a design saved before prints were
      * kept — its ink is estimated from the recipe instead.
+     *
+     * Root-relative rather than asset(), deliberately: the order screens
+     * crop this image on a canvas to show each panel, and a canvas that has
+     * drawn a cross-origin image can't be read back. APP_URL says 127.0.0.1
+     * while a browser may well be on localhost, and that is cross-origin.
      */
     public function getPrintImageUrlAttribute(): ?string
     {
-        return \App\Support\ImageUrl::for($this->print_image);
+        $value = $this->print_image;
+
+        if (blank($value)) {
+            return null;
+        }
+
+        if (str_starts_with($value, 'data:') || str_starts_with($value, 'http://') || str_starts_with($value, 'https://')) {
+            return $value;
+        }
+
+        return '/storage/' . ltrim($value, '/');
     }
 
     /**

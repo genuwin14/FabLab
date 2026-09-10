@@ -292,9 +292,11 @@ $(document).ready(function () {
                 design_id: CustomizerConfig.designId,
                 custom_recipe: recipe,
                 custom_snapshot: snapshot,
-                // The flat print, so the server can measure the design's ink.
+                // The flat print, so the server can measure the design's ink,
+                // and where its panels sit so the print can be shown per panel.
                 custom_print: print ? print.image : null,
-                custom_print_area: print ? print.area : null
+                custom_print_area: print ? print.area : null,
+                custom_print_zones: print ? JSON.stringify(print.zones) : null
             },
             success: function (response) {
                 if (response.success) {
@@ -344,6 +346,7 @@ $(document).ready(function () {
                 custom_snapshot: snapshot,
                 custom_print: print ? print.image : null,
                 custom_print_area: print ? print.area : null,
+                custom_print_zones: print ? JSON.stringify(print.zones) : null,
                 custom_design_id: CustomizerConfig.designId
             },
             success: function (response) {

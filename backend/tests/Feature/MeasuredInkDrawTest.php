@@ -106,6 +106,9 @@ class MeasuredInkDrawTest extends TestCase
             'recipe' => $recipe + ['base_style' => 't-shirt', 'size' => $size, 'elements' => ['text' => [], 'shapes' => [], 'logos' => [['scale' => 1]]]],
             'ink_coverage' => $coverage + ['cyan' => 0, 'magenta' => 0, 'yellow' => 0, 'black' => 0],
             'print_image' => 'designs/prints/1.png',
+            'print_zones' => [
+                ['id' => 'front', 'label' => 'Front', 'u0' => 0.159, 'v0' => 0.446, 'u1' => 0.392, 'v1' => 0.878, 'flipU' => false, 'flipV' => false],
+            ],
         ]);
     }
 
@@ -259,8 +262,12 @@ class MeasuredInkDrawTest extends TestCase
         $this->assertStringContainsString('size L', $cyan['notes'][0]);
         $this->assertStringContainsString('× 2 items', $cyan['notes'][0]);
 
+        // The print comes with its panels, so the screen can crop and label
+        // each one instead of showing the whole atlas.
         $this->assertCount(1, $data['prints']);
-        $this->assertStringContainsString('designs/prints/1.png', $data['prints'][0]);
+        $this->assertSame('/storage/designs/prints/1.png', $data['prints'][0]['url']);
+        $this->assertSame('Shirt', $data['prints'][0]['label']);
+        $this->assertSame('Front', $data['prints'][0]['zones'][0]['label']);
 
         // Staff see the same working at the bench.
         Sanctum::actingAs($this->user('staff', 'st@example.test'));
