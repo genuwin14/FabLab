@@ -1,5 +1,5 @@
 <div class="modal fade order-modal" id="reviewOrderModal" tabindex="-1" data-bs-backdrop="static" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-fullscreen-sm-down modal-lg">
         <div class="modal-content border-0 shadow-lg overflow-hidden">
             <!-- Themed Dark Header -->
             <div class="order-modal-header">
@@ -411,6 +411,14 @@
 </script>
 
 <style>
+    /* The body scrolls under a fixed header and footer (modal-dialog-scrollable),
+       so Approve stays in reach however long the materials panel gets. Bootstrap
+       expects .modal-body directly inside .modal-content; here a <form> sits
+       between them, so it has to pass the flex constraint down or the body just
+       grows and the whole page scrolls instead. */
+    #reviewOrderModal .modal-content > form { display: flex; flex-direction: column; min-height: 0; flex: 1 1 auto; }
+    #reviewOrderModal .modal-content > form > .modal-body { overflow-y: auto; min-height: 0; }
+
     .review-design-preview[hidden] { display: none; }
 
     /* Tall enough to judge ink coverage on, capped so the modal still scrolls

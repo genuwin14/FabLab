@@ -12,6 +12,12 @@
     rendered from the JSON rather than baked into the page, because working it
     out per order is too expensive to do for a whole list.
 
+    Layout follows the panel's own width rather than the viewport (a container
+    query): in the admin's wide review modal it is a table, in the staff's
+    narrower status modal and on a phone each material becomes a stacked card
+    with its three figures labelled underneath. The same partial serves both,
+    so the switch has to come from the space it is given, not from the screen.
+
     Expects: $panelId. The caller passes the URL to fetchOrderMaterials() when
     it opens the modal, because only the caller knows which order it is for.
 --}}
@@ -36,14 +42,24 @@
             <ul class="mb-0 ps-3 materials-shortage-list"></ul>
         </div>
 
-        <div class="table-responsive border rounded-3 mb-2 overflow-hidden modal-table-scroll">
-            <table class="table table-hover align-middle mb-0 modal-table">
+        <div class="table-responsive border rounded-3 mb-2 overflow-hidden modal-table-scroll materials-table-wrap">
+            <table class="table table-hover align-middle mb-0 modal-table materials-table">
+                {{-- The three figures get fixed columns so the material's
+                     name and its working take whatever is left. Without this
+                     the auto layout squeezed In Stock until "2575 pcs" broke
+                     across two lines. --}}
+                <colgroup>
+                    <col class="materials-col-name">
+                    <col class="materials-col-deduct">
+                    <col class="materials-col-stock">
+                    <col class="materials-col-remaining">
+                </colgroup>
                 <thead>
                     <tr class="bg-primary bg-opacity-10">
                         <th class="ps-3 py-2 text-primary small text-uppercase fw-bold border-0">Material</th>
-                        <th class="text-center py-2 text-primary small text-uppercase fw-bold border-0 col-deduct">To Deduct</th>
-                        <th class="text-center py-2 text-primary small text-uppercase fw-bold border-0">In Stock</th>
-                        <th class="text-end pe-3 py-2 text-primary small text-uppercase fw-bold border-0 col-remaining">Remaining</th>
+                        <th class="text-center py-2 text-primary small text-uppercase fw-bold border-0 text-nowrap col-deduct">To Deduct</th>
+                        <th class="text-center py-2 text-primary small text-uppercase fw-bold border-0 text-nowrap">In Stock</th>
+                        <th class="text-end pe-3 py-2 text-primary small text-uppercase fw-bold border-0 text-nowrap col-remaining">Remaining</th>
                     </tr>
                 </thead>
                 <tbody class="materials-body border-top-0"></tbody>
@@ -73,10 +89,36 @@
 
         {{-- The flat prints the ink figures were measured from — every panel's
              artwork, none of the garment — so the reviewer sees exactly what
-             the printer will lay down. Hidden when the order has none. --}}
+             the printer will lay down. Hidden when the order has none.
+
+             A thumbnail is the affordance, not the view: clicking one opens it
+             in the stage below at a size coverage can actually be judged
+             from. Inline rather than a second modal, for the same reason the
+             design preview above is — a modal on a modal fights the backdrop. --}}
         <div class="materials-prints d-none mb-2">
-            <small class="text-muted d-block mb-1"><i class="bi bi-printer me-1"></i>Measured from these prints</small>
+            <small class="text-muted d-block mb-1"><i class="bi bi-printer me-1"></i>Measured from these prints — click one to enlarge</small>
             <div class="d-flex flex-wrap gap-2 materials-prints-list"></div>
+
+            <div class="materials-print-preview mt-2" hidden>
+                <div class="d-flex justify-content-between align-items-center gap-2 mb-1">
+                    <small class="text-muted"><i class="bi bi-zoom-in me-1"></i><span class="materials-print-preview-title">Print</span></small>
+                    <div class="d-flex align-items-center gap-3">
+                        <a class="small text-decoration-none materials-print-open" href="#" target="_blank" rel="noopener">
+                            <i class="bi bi-box-arrow-up-right me-1"></i>Open full size
+                        </a>
+                        <button type="button" class="btn btn-sm btn-link p-0 text-decoration-none text-muted materials-print-close" aria-label="Close print preview">
+                            <i class="bi bi-x-lg"></i> Close
+                        </button>
+                    </div>
+                </div>
+                <div class="materials-print-stage border rounded-3">
+                    <img class="materials-print-large" src="" alt="The flat print this order's ink was measured from">
+                </div>
+                <small class="text-muted d-block mt-1">
+                    Every panel's artwork on a transparent canvas, nothing of the garment. This is what the printer
+                    lays down, and the ink figures above are measured from it.
+                </small>
+            </div>
         </div>
 
         <p class="materials-note text-muted small mb-0"></p>
@@ -110,17 +152,85 @@
 
         .order-materials .materials-input { width: 92px; }
 
-        /* The working behind a measured ink figure, under the bottle's name. */
+        /* Table mode: the figures never wrap, the name column takes the rest. */
+        .order-materials .materials-col-deduct { width: 150px; }
+        .order-materials .materials-col-stock { width: 100px; }
+        .order-materials .materials-col-remaining { width: 110px; }
+        .order-materials .materials-table td.materials-qty { white-space: nowrap; }
+
+        /* The working behind a measured ink figure, under the bottle's name.
+           It is the one thing in the table that is meant to wrap. */
         .order-materials .materials-working { font-size: 0.72rem; line-height: 1.3; white-space: normal; }
 
         /* Checkerboard behind a print, so white artwork on a transparent
            canvas is visible rather than lost against the modal. */
-        .order-materials .materials-print {
-            width: 72px; height: 72px; object-fit: contain; border-radius: 6px; border: 1px solid #dee2e6;
+        .order-materials .materials-print,
+        .order-materials .materials-print-stage {
             background-color: #eee;
             background-image: linear-gradient(45deg, #ddd 25%, transparent 25%, transparent 75%, #ddd 75%),
                               linear-gradient(45deg, #ddd 25%, transparent 25%, transparent 75%, #ddd 75%);
             background-size: 12px 12px; background-position: 0 0, 6px 6px;
+        }
+        .order-materials .materials-print {
+            width: 96px; height: 96px; object-fit: contain; border-radius: 6px; border: 1px solid #dee2e6;
+            cursor: zoom-in; transition: border-color .15s, box-shadow .15s;
+        }
+        .order-materials .materials-print:hover,
+        .order-materials .materials-print.is-open { border-color: #0e2e45; box-shadow: 0 0 0 2px rgba(14, 46, 69, .15); }
+        .order-materials .materials-print-preview[hidden] { display: none; }
+        .order-materials .materials-print-stage { padding: 8px; text-align: center; }
+        .order-materials .materials-print-large {
+            display: block; margin: 0 auto; max-width: 100%; max-height: 60vh; width: auto; height: auto;
+        }
+
+        /* Card mode, decided by the panel's own width: the staff status modal
+           is narrower than the admin's review modal, and a phone is narrower
+           than both. Each material becomes a block with its figures in a
+           labelled grid beneath, so nothing has to scroll sideways.
+
+           These rules are more specific than the pages' own mobile rules on
+           .modal-table (nowrap, min-width), so they win where both apply. */
+        .order-materials { container-type: inline-size; }
+
+        @container (max-width: 600px) {
+            .order-materials .materials-table-wrap { overflow: visible !important; }
+            .order-materials .materials-table { min-width: 0; display: block; }
+            .order-materials .materials-table colgroup,
+            .order-materials .materials-table thead { display: none; }
+            .order-materials .materials-table tbody { display: block; }
+            .order-materials .materials-table tr {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+                gap: 6px 10px;
+                padding: 10px 12px;
+                border-bottom: 1px solid #dee2e6;
+            }
+            /* The input plus its unit has to fit one grid cell on a phone;
+               at the table width it clipped the unit to "pc". */
+            .order-materials .materials-input { width: 68px; }
+            .order-materials .materials-table tr:last-child { border-bottom: 0; }
+            .order-materials .materials-table td {
+                display: block; border: 0; padding: 0; white-space: normal; text-align: left;
+            }
+            .order-materials .materials-table td:first-child { grid-column: 1 / -1; }
+            .order-materials .materials-table td[data-label]::before {
+                content: attr(data-label);
+                display: block;
+                font-size: 0.62rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase;
+                color: #6c757d; margin-bottom: 2px;
+            }
+            .order-materials .materials-table td .d-flex { justify-content: flex-start !important; }
+            /* Row tints move to the row, since its cells are no longer laid out
+               as one strip — including Bootstrap's hover, which otherwise paints
+               each cell as a separate grey block. */
+            .order-materials .materials-short td,
+            .order-materials .materials-edited td { background-color: transparent; }
+            .order-materials .materials-table.table-hover > tbody > tr:hover > * { --bs-table-bg-state: transparent; }
+            .order-materials .materials-table.table-hover > tbody > tr:hover { background-color: rgba(0, 0, 0, 0.02); }
+            .order-materials tr.materials-short { background-color: rgba(220, 53, 69, 0.06); }
+            .order-materials tr.materials-edited { background-color: rgba(13, 110, 253, 0.05); }
+
+            .order-materials .materials-adjust-hint { flex-direction: column; }
         }
     </style>
 
@@ -157,7 +267,7 @@
                     const stock = parseFloat(input.dataset.stock);
                     const wanted = parseFloat(input.value);
                     const remaining = row.querySelector('.col-remaining');
-                    const unit = row.querySelector('td:nth-child(3)').textContent.replace(/^[\d.,]+\s*/, '');
+                    const unit = input.dataset.unit || '';
 
                     if (!Number.isFinite(wanted) || wanted < 0) {
                         remaining.textContent = '—';
@@ -176,7 +286,7 @@
                     remaining.textContent = round(Math.max(0, stock - wanted)) + (unit ? ' ' + unit : '');
 
                     if (over) {
-                        const name = row.querySelector('td').textContent;
+                        const name = row.querySelector('.materials-name').textContent;
                         problems.push(`${name} (needs ${round(wanted)}${unit ? ' ' + unit : ''}, ${round(stock)} in stock)`);
                     }
                 });
@@ -201,6 +311,65 @@
             };
 
             recalculate();
+        }
+
+        /**
+         * Show one of the order's flat prints in the panel's own stage.
+         *
+         * Clicking the thumbnail that is already open closes it again, so the
+         * thumbnails work as a toggle and the stage never has to be hunted for.
+         */
+        function wirePrintPreview(panel, prints) {
+            const list = panel.querySelector('.materials-prints-list');
+            const preview = panel.querySelector('.materials-print-preview');
+            const large = panel.querySelector('.materials-print-large');
+            const title = panel.querySelector('.materials-print-preview-title');
+            const open = panel.querySelector('.materials-print-open');
+            const close = panel.querySelector('.materials-print-close');
+
+            list.innerHTML = '';
+            preview.hidden = true;
+
+            const thumbs = prints.map((url, index) => {
+                const img = document.createElement('img');
+                img.src = url;
+                img.alt = 'Print ' + (index + 1) + ' of ' + prints.length + ', click to enlarge';
+                img.title = 'Click to enlarge';
+                img.className = 'materials-print';
+                img.tabIndex = 0;
+                img.setAttribute('role', 'button');
+                list.appendChild(img);
+                return img;
+            });
+
+            const show = (index) => {
+                const isOpen = !preview.hidden && large.src === thumbs[index].src;
+                thumbs.forEach(t => t.classList.remove('is-open'));
+
+                if (isOpen) {
+                    preview.hidden = true;
+                    return;
+                }
+
+                large.src = thumbs[index].src;
+                open.href = thumbs[index].src;
+                title.textContent = prints.length > 1 ? `Print ${index + 1} of ${prints.length}` : 'Print';
+                thumbs[index].classList.add('is-open');
+                preview.hidden = false;
+                preview.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+            };
+
+            thumbs.forEach((img, index) => {
+                img.addEventListener('click', () => show(index));
+                img.addEventListener('keydown', e => {
+                    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); show(index); }
+                });
+            });
+
+            close.onclick = () => {
+                preview.hidden = true;
+                thumbs.forEach(t => t.classList.remove('is-open'));
+            };
         }
 
         function fetchOrderMaterials(panelId, url, editable = false) {
@@ -238,7 +407,7 @@
                     // to move. After approval it already has, so the column
                     // would just repeat In Stock.
                     const showRemaining = data.stage === 'reserve';
-                    panel.querySelectorAll('.col-remaining').forEach(th => th.classList.toggle('d-none', !showRemaining));
+                    panel.querySelectorAll('.col-remaining, .materials-col-remaining').forEach(el => el.classList.toggle('d-none', !showRemaining));
 
                     if (!data.lines.length) {
                         empty.classList.remove('d-none');
@@ -256,14 +425,16 @@
                         const unit = line.unit ? ' ' + line.unit : '';
                         const editThis = canEdit && line.editable && line.id !== null;
 
+                        // data-label is what card mode prints above each figure
+                        // once the header row is gone.
                         row.innerHTML = `
-                            <td class="ps-3 fw-semibold text-dark"></td>
-                            <td class="text-center materials-qty fw-bold"></td>
-                            <td class="text-center materials-qty"></td>
-                            <td class="text-end pe-3 materials-qty col-remaining${showRemaining ? '' : ' d-none'}"></td>`;
+                            <td class="ps-3 fw-semibold text-dark"><span class="materials-name"></span></td>
+                            <td class="text-center materials-qty fw-bold" data-label="To deduct"></td>
+                            <td class="text-center materials-qty" data-label="In stock"></td>
+                            <td class="text-end pe-3 materials-qty col-remaining${showRemaining ? '' : ' d-none'}" data-label="Remaining"></td>`;
 
                         const cells = row.querySelectorAll('td');
-                        cells[0].textContent = line.name;
+                        cells[0].querySelector('.materials-name').textContent = line.name;
                         // A measured ink line explains itself: coverage,
                         // area, rate. Shown at every stage, because "why
                         // 9ml of cyan?" is as fair a question at the bench
@@ -286,6 +457,7 @@
                             input.value = line.quantity;
                             input.dataset.calculated = line.quantity;
                             input.dataset.stock = line.stock;
+                            input.dataset.unit = line.unit || '';
                             input.setAttribute('aria-label', 'Quantity of ' + line.name + ' to deduct');
 
                             const wrap = document.createElement('div');
@@ -320,17 +492,9 @@
                         list.appendChild(li);
                     });
 
-                    const prints = panel.querySelector('.materials-prints');
-                    const printList = panel.querySelector('.materials-prints-list');
-                    printList.innerHTML = '';
-                    (data.prints || []).forEach(url => {
-                        const img = document.createElement('img');
-                        img.src = url;
-                        img.alt = 'The flat print this order\'s ink was measured from';
-                        img.className = 'materials-print';
-                        printList.appendChild(img);
-                    });
-                    prints.classList.toggle('d-none', !(data.prints || []).length);
+                    const prints = data.prints || [];
+                    panel.querySelector('.materials-prints').classList.toggle('d-none', !prints.length);
+                    wirePrintPreview(panel, prints);
 
                     panel.querySelector('.materials-note').textContent = data.note;
                     content.classList.remove('d-none');

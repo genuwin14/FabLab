@@ -1,5 +1,5 @@
 <div class="modal fade order-modal" id="updateStatusModal" tabindex="-1" data-bs-backdrop="static" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
         <div class="modal-content border-0 shadow-lg overflow-hidden">
             <!-- Themed Dark Header -->
             <div class="order-modal-header">
@@ -69,6 +69,11 @@
 </div>
 
 <style>
+    /* See the admin review modal: the body scrolls under a fixed header and
+       footer, and the <form> between them has to pass the flex constraint down. */
+    #updateStatusModal .modal-content > form { display: flex; flex-direction: column; min-height: 0; flex: 1 1 auto; }
+    #updateStatusModal .modal-content > form > .modal-body { overflow-y: auto; min-height: 0; }
+
     /* Mobile-responsive modal rules (ResponsiveMobileNote §6). */
     @media (max-width: 991.98px) {
         /* §6a — shrink type + spacing on phones */
