@@ -59,8 +59,8 @@
              and its Reset button on screens that never wired them up. --}}
         <div class="materials-adjust-hint justify-content-between align-items-start gap-2 mb-2" hidden>
             <small class="text-muted">
-                <i class="bi bi-pencil-square me-1"></i>These are estimates. Correct any of them against the
-                design above — an all-red image uses little cyan, a dense photo uses more of everything.
+                <i class="bi bi-pencil-square me-1"></i>Ink is measured from the artwork; the working is under each
+                line. Correct any figure if the print in front of you says otherwise.
             </small>
             {{-- Disabled until something has actually been changed. It used to
                  sit there enabled with nothing to undo, so clicking it did
@@ -69,6 +69,14 @@
                 title="Put the calculated estimates back" disabled>
                 <i class="bi bi-arrow-counterclockwise"></i> Undo my changes
             </button>
+        </div>
+
+        {{-- The flat prints the ink figures were measured from — every panel's
+             artwork, none of the garment — so the reviewer sees exactly what
+             the printer will lay down. Hidden when the order has none. --}}
+        <div class="materials-prints d-none mb-2">
+            <small class="text-muted d-block mb-1"><i class="bi bi-printer me-1"></i>Measured from these prints</small>
+            <div class="d-flex flex-wrap gap-2 materials-prints-list"></div>
         </div>
 
         <p class="materials-note text-muted small mb-0"></p>
@@ -101,6 +109,19 @@
         .order-materials .materials-reset-btn:disabled { opacity: .4; }
 
         .order-materials .materials-input { width: 92px; }
+
+        /* The working behind a measured ink figure, under the bottle's name. */
+        .order-materials .materials-working { font-size: 0.72rem; line-height: 1.3; white-space: normal; }
+
+        /* Checkerboard behind a print, so white artwork on a transparent
+           canvas is visible rather than lost against the modal. */
+        .order-materials .materials-print {
+            width: 72px; height: 72px; object-fit: contain; border-radius: 6px; border: 1px solid #dee2e6;
+            background-color: #eee;
+            background-image: linear-gradient(45deg, #ddd 25%, transparent 25%, transparent 75%, #ddd 75%),
+                              linear-gradient(45deg, #ddd 25%, transparent 25%, transparent 75%, #ddd 75%);
+            background-size: 12px 12px; background-position: 0 0, 6px 6px;
+        }
     </style>
 
     <script>
@@ -243,6 +264,16 @@
 
                         const cells = row.querySelectorAll('td');
                         cells[0].textContent = line.name;
+                        // A measured ink line explains itself: coverage,
+                        // area, rate. Shown at every stage, because "why
+                        // 9ml of cyan?" is as fair a question at the bench
+                        // as at review.
+                        (line.notes || []).forEach(text => {
+                            const note = document.createElement('small');
+                            note.className = 'text-muted d-block fw-normal materials-working';
+                            note.textContent = text;
+                            cells[0].appendChild(note);
+                        });
                         cells[2].textContent = line.stock + unit;
 
                         if (editThis) {
@@ -288,6 +319,18 @@
                         li.textContent = text;
                         list.appendChild(li);
                     });
+
+                    const prints = panel.querySelector('.materials-prints');
+                    const printList = panel.querySelector('.materials-prints-list');
+                    printList.innerHTML = '';
+                    (data.prints || []).forEach(url => {
+                        const img = document.createElement('img');
+                        img.src = url;
+                        img.alt = 'The flat print this order\'s ink was measured from';
+                        img.className = 'materials-print';
+                        printList.appendChild(img);
+                    });
+                    prints.classList.toggle('d-none', !(data.prints || []).length);
 
                     panel.querySelector('.materials-note').textContent = data.note;
                     content.classList.remove('d-none');

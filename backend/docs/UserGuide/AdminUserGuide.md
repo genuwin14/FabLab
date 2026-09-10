@@ -60,10 +60,11 @@ Revenue counts `completed` orders only — an approved order that hasn't been ha
 Open **Review**, check the lines and any customization, then **Approve**. In one step the system:
 
 1. Sets the order to `approved`.
-2. **Deducts raw materials** — for every line, the product's bill of materials × the quantity ordered.
-3. **Deducts texture stock** — one unit per ordered unit, for designs that use a texture.
-4. **Emails the customer their transaction slip** (the PDF receipt with the order-number barcode).
-5. Notifies the customer that the status changed.
+2. **Reserves raw materials** — for every line, the product's bill of materials × the quantity ordered, plus whatever the design's customization options draw.
+3. **Reserves the design's ink, measured from its artwork.** Nobody types an ink figure. When the customer saved the design, the studio exported the flat print and the system measured how much of the product's printable area each of the four inks covers. Approval multiplies that by the printable area at the ordered size and by each ink's rate (see [§8](#8-raw-materials)). The **Materials Required** panel on the review modal shows the working under each ink line and the print it was measured from; you can still correct a figure if the artwork in front of you says otherwise. A design saved before prints were kept is estimated from its recipe instead, and the panel says so.
+4. **Deducts texture stock** — one unit per ordered unit, for designs that use a texture.
+5. **Emails the customer their transaction slip** (the PDF receipt with the order-number barcode).
+6. Notifies the customer that the status changed.
 
 Product stock was already deducted at checkout, so approval does not touch it again.
 
@@ -157,6 +158,10 @@ Tick the textures a customer may apply to this product in the design studio. If 
 
 Edit the product and add raw materials with a **quantity required** per unit. That recipe is what gets deducted when you approve an order. A product with no BOM consumes no materials on approval.
 
+### Printable area
+
+For a customizable product, fill in the **printable area** in square centimetres — the size of the panels a design can be printed on, at size Medium (a shirt with a 30 × 40 cm chest and back is 2400). A design's ink is measured as a fraction of this, so a product with no printable area cannot have its ink measured and its designs fall back to whatever the customization options draw. Garment sizes scale the area by the factors set beside each size on **Customization Pricing**.
+
 ### Deleting
 
 Deleting from the product page is a **soft delete**: the row stays, so order history and reports still resolve. Prefer this to any route that hard-deletes.
@@ -170,6 +175,10 @@ Deleting from the product page is a **soft delete**: the row stays, so order his
 Stock falls automatically when you approve orders for products that list the material in their BOM, and rises when a purchase order containing it is marked `delivered`. Staff can correct the figures ([Staff Guide §8](StaffUserGuide.md#8-raw-materials)).
 
 Raw materials raise a low-stock alert the moment they cross their threshold, the same as products and textures.
+
+### Sublimation ink
+
+The printer's four inks are set up once on **Customization Pricing**, under **Sublimation ink**: which bottle each channel (cyan, magenta, yellow, black) draws from, and how many millilitres a square centimetre of solid colour costs. To calibrate a rate, print a solid square of one colour at a known size, weigh the bottle before and after, and divide. From then on every designed order's ink is measured from its artwork — see [§4](#4-reviewing-orders) — and nobody types a figure per order.
 
 ---
 

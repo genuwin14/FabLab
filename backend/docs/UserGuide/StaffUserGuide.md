@@ -32,7 +32,7 @@ Customer checks out          Admin reviews             YOU                      
 Two things to take from this:
 
 - **You never approve orders.** A pending order shows *Awaiting admin* in your list and nothing else — see [Admin Guide §4](AdminUserGuide.md#4-reviewing-orders).
-- **Materials are already deducted before you start.** Approval consumed the bill of materials and the design's texture. Your job is to make what was approved and to correct stock figures if the real consumption differed.
+- **Materials are already reserved before you start.** Approval set aside the bill of materials, the design's texture, and the design's ink — measured from the flat print the customer's design produced, not typed by anyone. The **Materials To Be Consumed** panel on the status modal shows the working under each ink line. Your job is to make what was approved and to correct stock figures if the real consumption differed.
 
 ---
 
@@ -148,7 +148,7 @@ Use the plain **stock** field to correct counts after a physical audit. Dropping
 
 Editable: name, supplier, cost per unit, stock quantity, low-stock threshold, unit, description.
 
-Raw materials are consumed automatically when an admin approves an order that contains a product with a bill of materials — the quantity per unit times the quantity ordered. If the shop floor used more or less than the recipe says, correct the stock figure here.
+Raw materials are consumed automatically when an admin approves an order that contains a product with a bill of materials — the quantity per unit times the quantity ordered. Sublimation ink is the exception: for a designed item it is measured from the artwork (coverage × the product's printable area at the ordered size × the ink's rate), and **Customization Pricing** shows the rates. If the shop floor used more or less than the figure says, correct the stock figure here.
 
 ---
 

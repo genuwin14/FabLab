@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Enums\StockMovementReason;
 use App\Models\CustomizationRate;
+use App\Models\InkChannel;
 use App\Models\Order;
 use App\Models\RawMaterial;
 use App\Models\RawMaterialMovement;
@@ -34,6 +35,14 @@ use Illuminate\Support\Facades\DB;
  * with twelve lines of text and internal lighting was charged for ink and an
  * LED strip that no order ever deducted.
  *
+ * Ink is the exception to "bill of materials". A BOM can only guess at a
+ * picture, so where the product's printable area is known and the printer's
+ * channels are linked to bottles, a design's ink is *measured* instead — see
+ * InkEstimator — and any ink the element BOMs would have drawn is skipped so
+ * a bottle is never emptied twice for one print. A product with no print
+ * area, or an install with no channel linked, falls back to the BOMs as
+ * before.
+ *
  * Quantities are aggregated per material and per texture before being applied:
  * two lines of different products can draw on the same material, and the
  * shortage check is only meaningful against the combined figure.
@@ -44,8 +53,10 @@ use Illuminate\Support\Facades\DB;
  */
 class OrderStockService
 {
-    public function __construct(private RawMaterialStockService $materialStock)
-    {
+    public function __construct(
+        private RawMaterialStockService $materialStock,
+        private InkEstimator $ink,
+    ) {
     }
 
     /**
@@ -63,8 +74,14 @@ class OrderStockService
      * with. Zero is a valid answer — "this artwork uses no cyan at all" — and
      * drops the line entirely.
      *
+     * Measured ink comes with its working. `notes` is `raw_material_id => [string]`,
+     * one line per item that drew on the bottle, saying what coverage, what
+     * area and what rate produced the figure, so the reviewer can see why it
+     * is what it is before deciding whether to correct it. `prints` are the
+     * flat prints those figures were measured from, for the same reason.
+     *
      * @param  array<int|string, mixed>  $overrides
-     * @return array{materials: array<int, array{model: RawMaterial, quantity: float, adjusted: bool}>, textures: array<int, array{model: Texture, quantity: float}>}
+     * @return array{materials: array<int, array{model: RawMaterial, quantity: float, adjusted: bool}>, textures: array<int, array{model: Texture, quantity: float}>, notes: array<int, array<int, string>>, prints: array<int, string>}
      */
     public function requirements(Order $order, array $overrides = []): array
     {
@@ -76,6 +93,8 @@ class OrderStockService
         // up on each route would be a query per route.
         $quantities = [];
         $textures = [];
+        $notes = [];
+        $prints = [];
 
         $add = function (?int $materialId, float $quantity) use (&$quantities) {
             if ($materialId === null || $quantity <= 0) {
@@ -92,6 +111,12 @@ class OrderStockService
 
             $quantity = (int) $item->quantity;
             $design = $item->customDesign;
+
+            // Whether this item's ink is measured rather than taken from the
+            // bills of materials, and if so which bottles the measurement
+            // reaches — those are skipped in the element BOMs below.
+            $measured = $design && $this->ink->applies($design, $item->product);
+            $inkBottles = $measured ? array_values(InkChannel::linkedMaterials()) : [];
 
             // 1. The blank item's own bill of materials.
             //
@@ -116,9 +141,48 @@ class OrderStockService
             // 2. What the customer added in the studio. customizationUnits() is
             //    the same tally the price breakdown charges for, so the material
             //    draw and the fee can't end up describing different designs.
+            //
+            //    Where the ink is measured, any ink these options would draw
+            //    is left out: the measurement already covers everything the
+            //    printer lays down for this design.
             foreach ($design->customizationUnits() as $rateKey => $units) {
                 foreach (CustomizationRate::materialsFor($rateKey) as $materialId => $perUnit) {
+                    if (in_array($materialId, $inkBottles, true)) {
+                        continue;
+                    }
+
                     $add($materialId, $perUnit * $units * $quantity);
+                }
+            }
+
+            // 2b. The ink itself, measured off the print: coverage × the
+            //     product's printable area at the ordered size × the
+            //     channel's rate, per item.
+            if ($measured) {
+                $size = $design->recipe['size'] ?? null;
+                $sizeLabel = ($key = CustomizationRate::keyForSize($size))
+                    ? CustomizationRate::DEFINITIONS[$key]['short']
+                    : 'M';
+
+                foreach ($this->ink->millilitres($design, $item->product) as $materialId => $draw) {
+                    $add($materialId, $draw['quantity'] * $quantity);
+
+                    $notes[$materialId][] = sprintf(
+                        '%s: %s%% %s coverage of %s cm² (%s, size %s) × %s ml/cm²%s%s',
+                        $item->product->name,
+                        $this->number($draw['coverage'] * 100),
+                        InkChannel::CHANNELS[$draw['channel']]['label'] ?? $draw['channel'],
+                        $this->number($draw['area']),
+                        $draw['source'] === 'measured' ? 'measured from the print' : 'estimated from the design',
+                        $sizeLabel,
+                        rtrim(rtrim(number_format($draw['rate'], 5, '.', ''), '0'), '.'),
+                        $quantity > 1 ? " × {$quantity} items" : '',
+                        $draw['quantity'] > 0 ? '' : ' — none of this colour in the artwork',
+                    );
+                }
+
+                if ($url = $design->print_image_url) {
+                    $prints[$design->custom_design_id] = $url;
                 }
             }
 
@@ -145,6 +209,8 @@ class OrderStockService
         return [
             'materials' => $this->applyOverrides($this->resolveMaterials($quantities), $overrides),
             'textures' => $textures,
+            'notes' => $notes,
+            'prints' => array_values($prints),
         ];
     }
 
@@ -207,7 +273,7 @@ class OrderStockService
      *     calculation disagree with what the job at the bench will consume,
      *     and the bench is right.
      *
-     * @return array{stage: string, note: string, lines: array<int, array<string, mixed>>, shortages: array<int, string>}
+     * @return array{stage: string, note: string, lines: array<int, array<string, mixed>>, shortages: array<int, string>, prints: array<int, string>}
      */
     public function plannedDraw(Order $order): array
     {
@@ -221,7 +287,15 @@ class OrderStockService
                 // Only raw materials are correctable. A texture is one sheet per
                 // item — a count, not a judgement about coverage — so there is
                 // nothing for a reviewer to weigh up.
-                $lines[] = $this->line($entry['model']->name, $entry['model']->unit, $entry['quantity'], (float) $entry['model']->stock_quantity, id: $id, editable: true);
+                $lines[] = $this->line(
+                    $entry['model']->name,
+                    $entry['model']->unit,
+                    $entry['quantity'],
+                    (float) $entry['model']->stock_quantity,
+                    id: $id,
+                    editable: true,
+                    notes: $requirements['notes'][$id] ?? [],
+                );
             }
 
             foreach ($requirements['textures'] as $entry) {
@@ -233,6 +307,7 @@ class OrderStockService
                 'note' => 'Approving reserves these off the shelf so another order cannot be promised them. They are not counted as used until staff start production.',
                 'lines' => $lines,
                 'shortages' => $this->shortages($order),
+                'prints' => $requirements['prints'],
             ];
         }
 
@@ -262,6 +337,7 @@ class OrderStockService
                     ->values()
                     ->all(),
                 'shortages' => [],
+                'prints' => [],
             ];
         }
 
@@ -284,12 +360,14 @@ class OrderStockService
                 ->values()
                 ->all(),
             'shortages' => [],
+            'prints' => [],
         ];
     }
 
     /**
      * One row of plannedDraw(), formatted for display.
      *
+     * @param  array<int, string>  $notes  the working behind a measured figure
      * @return array<string, mixed>
      */
     private function line(
@@ -300,6 +378,7 @@ class OrderStockService
         bool $checkStock = true,
         ?int $id = null,
         bool $editable = false,
+        array $notes = [],
     ): array {
         return [
             // Named so the form can post a correction back against the right
@@ -308,6 +387,7 @@ class OrderStockService
             // already carries these silently discarded them.
             'id' => $id,
             'editable' => $editable,
+            'notes' => $notes,
             'name' => $name,
             'unit' => $unit ?? '',
             'quantity' => $this->number($quantity),

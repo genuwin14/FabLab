@@ -11,16 +11,23 @@ use Illuminate\Database\Seeder;
 /**
  * What the customizer's options cost the shop, as opposed to what they charge.
  *
- * `customization_rates` says a line of text is ₱50. This says it is also a
- * quarter of a millilitre of black ink. Without the second half a design could
- * be charged for twelve lines of text and internal lighting while no ink and no
- * LED kit ever left the shelf — the fee was collected and the shelf never
+ * `customization_rates` says internal lighting is ₱500. This says it is also
+ * an LED kit. Without the second half a design could be charged for lighting
+ * while no kit ever left the shelf — the fee was collected and the shelf never
  * moved.
+ *
+ * Ink is deliberately *not* here. Text, shapes and images used to carry a
+ * fixed millilitre figure each, which is a bill of materials guessing at a
+ * picture: red text was charged black, an all-yellow logo was charged cyan.
+ * A design's ink is now measured off the print the studio exports (see
+ * InkEstimator and InkChannelSeeder), so mapping ink to an element here
+ * would only be skipped by the order for every product with a print area.
  *
  * Deliberately partial, because both states are worth having in demo data:
  *
- *   - Text, shapes, images, lighting and every size from Large up to 5XL
- *     draw something.
+ *   - Lighting and every size from Large up to 5XL draw something.
+ *   - Text, shapes and images draw nothing of their own — their ink is
+ *     measured, and they take nothing else.
  *   - Small and medium draw nothing — they fit the same sheet as the blank,
  *     so there is nothing extra to deduct.
  *   - The four free house colours draw nothing either. The blank garment
@@ -35,46 +42,12 @@ use Illuminate\Database\Seeder;
  */
 class CustomizationBOMSeeder extends Seeder
 {
-    /**
-     * Split a print's total ink across the four bottles, in millilitres.
-     *
-     * The same weighting BOMSeeder uses for the products themselves, so a
-     * design's extra ink empties the bottles in the same order the base print
-     * does — magenta first — rather than flattening the difference the shop
-     * stocks them separately for.
-     *
-     * @return array<string, float>
-     */
-    private static function ink(float $millilitres): array
-    {
-        return [
-            'Sublimation Ink (Cyan)' => round($millilitres * 0.30, 4),
-            'Sublimation Ink (Magenta)' => round($millilitres * 0.30, 4),
-            'Sublimation Ink (Yellow)' => round($millilitres * 0.25, 4),
-            'Sublimation Ink (Black)' => round($millilitres * 0.15, 4),
-        ];
-    }
-
     public function run(): void
     {
         $materials = RawMaterial::all()->keyBy('name');
 
-        // Per one unit of the option: one line of text, one shape, one image
-        // at 1x size, one lit item, one item in that size.
+        // Per one unit of the option: one lit item, one item in that size.
         $recipes = [
-            // Text is set in a single flat colour and nearly always a dark one,
-            // so it draws black alone rather than a four-colour split.
-            'text' => ['Sublimation Ink (Black)' => 0.25],
-
-            // A circle or a line is a flat fill, but it can be any colour.
-            'shape' => self::ink(0.4),
-
-            // An uploaded image is full colour and much the largest draw of the
-            // three. This is the figure at 1x; the order multiplies it by the
-            // Size slider, so a 5x print costs five times the ink, exactly as
-            // it costs five times the fee.
-            'logo' => self::ink(2.5),
-
             'led_lighting' => ['LED Light Kit (USB, Warm White)' => 1],
 
             // Small and medium fit the sheet the blank already uses. Large

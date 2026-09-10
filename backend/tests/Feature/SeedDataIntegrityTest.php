@@ -245,17 +245,46 @@ class SeedDataIntegrityTest extends TestCase
         $this->assertTrue($lace->rawMaterials->contains(fn ($m) => str_contains($m->name, 'Ink')));
     }
 
+    public function test_every_customizable_product_can_have_its_ink_measured(): void
+    {
+        // Measured ink needs two things: the product's printable area, and
+        // the printer's channels pointing at bottles. Without either, a
+        // design falls back to the element BOMs — which now carry no ink —
+        // and a customized order would draw none at all.
+        foreach (Product::where('is_customizable', true)->get() as $product) {
+            $this->assertGreaterThan(
+                0,
+                (float) $product->print_area_cm2,
+                "\"{$product->name}\" is customizable but has no printable area, so its designs' ink cannot be measured."
+            );
+        }
+
+        $linked = \App\Models\InkChannel::linkedMaterials();
+        $this->assertSame(['cyan', 'magenta', 'yellow', 'black'], array_keys($linked), 'Every channel should point at its bottle.');
+
+        $names = \App\Models\RawMaterial::whereIn('raw_material_id', $linked)->pluck('name', 'raw_material_id');
+        foreach ($linked as $channel => $materialId) {
+            $this->assertSame('Sublimation Ink (' . ucfirst($channel) . ')', $names[$materialId]);
+        }
+    }
+
     public function test_the_customizer_options_that_cost_something_are_mapped(): void
     {
         // Not every option: small and medium fit the blank's own sheet, so
-        // they draw nothing on purpose. These four are the ones a customer is
-        // charged for, and each was collecting a fee against nothing before
-        // the customization BOM existed.
-        foreach (['text', 'shape', 'logo', 'led_lighting'] as $key) {
-            $this->assertNotEmpty(
-                CustomizationRate::materialsFor($key),
-                "The '{$key}' option is charged for but draws no materials."
-            );
+        // they draw nothing on purpose. Lighting is the one element that
+        // takes a part off the shelf, and it was collecting a fee against
+        // nothing before the customization BOM existed.
+        $this->assertNotEmpty(
+            CustomizationRate::materialsFor('led_lighting'),
+            "The 'led_lighting' option is charged for but draws no materials."
+        );
+
+        // Text, shapes and images take only ink, and ink is measured off the
+        // print rather than listed here. A figure here would be skipped by
+        // every product with a print area, and charge the ones without one a
+        // guess — so there must be none.
+        foreach (['text', 'shape', 'logo'] as $key) {
+            $this->assertSame([], CustomizationRate::materialsFor($key), "The '{$key}' option should draw no fixed ink; ink is measured.");
         }
 
         $this->assertSame([], CustomizationRate::materialsFor('size_medium'));
