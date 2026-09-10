@@ -9,6 +9,8 @@ use App\Models\Texture;
 
 class CustomizeController extends Controller
 {
+    use \App\Http\Controllers\Concerns\SavesCustomDesign;
+
     public function index(Request $request)
     {
         $productId = $request->query('product_id');
@@ -73,7 +75,6 @@ class CustomizeController extends Controller
         $productId = $request->input('product_id');
         $designId = $request->input('design_id');
         $recipe = $request->input('custom_recipe');
-        $snapshot = $request->input('custom_snapshot');
 
         if (!$recipe) {
             return response()->json(['success' => false, 'message' => 'Design data is missing.'], 400);
@@ -81,18 +82,9 @@ class CustomizeController extends Controller
 
         $recipeData = json_decode($recipe, true);
 
-        // Update existing if designId is provided, otherwise create new
-        $design = \App\Models\CustomDesign::updateOrCreate(
-            [
-                'custom_design_id' => $designId,
-                'user_id' => auth()->id()
-            ],
-            [
-                'product_id' => $productId,
-                'recipe' => $recipeData,
-                'snapshot' => $snapshot
-            ]
-        );
+        // Update existing if designId is provided, otherwise create new — and
+        // measure the design's ink off the print the studio sent with it.
+        $design = $this->saveCustomDesign($request, $designId, $productId, $recipeData);
 
         $message = 'Design saved to your personal collection!';
         if ($design->wasRecentlyCreated) {

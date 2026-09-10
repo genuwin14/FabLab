@@ -173,6 +173,49 @@ function renderOverlayOnCanvas(ctx, baseImage) {
 }
 
 /**
+ * The design alone — every panel's artwork on a transparent canvas, with
+ * nothing of the garment under it.
+ *
+ * This is what the server measures ink from. The finish is left out on
+ * purpose: a colour or texture is dyed or is its own sheet, and is costed as
+ * such, whereas what goes through the printer is only what the customer drew.
+ */
+function renderDesignOnlyOnCanvas(ctx) {
+    ctx.clearRect(0, 0, 1024, 1024);
+
+    const zones = (designZones && designZones.length) ? designZones : SINGLE_ZONE;
+    const fallback = zones[0].id;
+
+    for (const zone of zones) {
+        const mine = (el) => ((el && el.zone) || fallback) === zone.id;
+
+        renderZoneOnCanvas(ctx, zone.area || FULL_PRINT_AREA, {
+            shapes: shapeElements.filter(mine),
+            logos: logoElements.filter(mine),
+            texts: textElements.filter(mine),
+        });
+    }
+}
+
+/**
+ * How much of the canvas the model's printable panels occupy, 0..1.
+ *
+ * Coverage is measured as a fraction of the panels rather than of the whole
+ * atlas, because the product's print area describes the panels — a shirt's
+ * tile is mostly seams and gaps that never see ink.
+ */
+function printableFraction() {
+    const zones = (designZones && designZones.length) ? designZones : SINGLE_ZONE;
+
+    const total = zones.reduce((sum, zone) => {
+        const area = zone.area || FULL_PRINT_AREA;
+        return sum + Math.max(0, area.u1 - area.u0) * Math.max(0, area.v1 - area.v0);
+    }, 0);
+
+    return Math.max(0.01, Math.min(1, total));
+}
+
+/**
  * Composite one panel's elements into its slice of the canvas.
  *
  * Positions and sizes are relative to the panel, not the tile: on the bag that

@@ -1,0 +1,280 @@
+<?php
+
+namespace Tests\Feature;
+
+use App\Models\Category;
+use App\Models\CustomDesign;
+use App\Models\Product;
+use App\Models\User;
+use App\Services\InkEstimator;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Storage;
+use Laravel\Sanctum\Sanctum;
+use Tests\TestCase;
+
+/**
+ * Measuring ink off the artwork, and estimating it when there is no artwork.
+ *
+ * The number that matters is coverage: the fraction of the printable panels
+ * each of the printer's four channels lays down. A solid cyan square over
+ * half the print is 50% cyan and nothing else; white is no ink; a
+ * half-transparent pixel counts half. Designs saved before prints were
+ * exported get the same shape of answer estimated from their recipe.
+ */
+class InkMeasurementTest extends TestCase
+{
+    use RefreshDatabase;
+
+    private InkEstimator $estimator;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->estimator = new InkEstimator();
+    }
+
+    /**
+     * A PNG data URL, `$side` pixels square, transparent except where
+     * `$paint` fills it in. `$paint` receives the GD image.
+     */
+    private function png(int $side, callable $paint): string
+    {
+        $image = imagecreatetruecolor($side, $side);
+        imagealphablending($image, false);
+        imagesavealpha($image, true);
+        imagefill($image, 0, 0, imagecolorallocatealpha($image, 0, 0, 0, 127));
+
+        $paint($image);
+
+        ob_start();
+        imagepng($image);
+        $bytes = ob_get_clean();
+        imagedestroy($image);
+
+        return 'data:image/png;base64,' . base64_encode($bytes);
+    }
+
+    public function test_a_solid_cyan_half_measures_as_half_cyan_and_nothing_else(): void
+    {
+        $print = $this->png(256, function ($image) {
+            imagefilledrectangle($image, 0, 0, 127, 255, imagecolorallocatealpha($image, 0, 255, 255, 0));
+        });
+
+        $coverage = $this->estimator->measure($print);
+
+        $this->assertEqualsWithDelta(0.5, $coverage['cyan'], 0.01);
+        $this->assertEqualsWithDelta(0.0, $coverage['magenta'], 0.001);
+        $this->assertEqualsWithDelta(0.0, $coverage['yellow'], 0.001);
+        $this->assertEqualsWithDelta(0.0, $coverage['black'], 0.001);
+    }
+
+    public function test_coverage_is_a_fraction_of_the_printable_panels_not_the_canvas(): void
+    {
+        $print = $this->png(256, function ($image) {
+            imagefilledrectangle($image, 0, 0, 127, 255, imagecolorallocatealpha($image, 0, 255, 255, 0));
+        });
+
+        // The panels occupy half the canvas, and the cyan fills those panels.
+        $this->assertEqualsWithDelta(1.0, $this->estimator->measure($print, 0.5)['cyan'], 0.01);
+
+        // A fraction that would push past 100% is clamped, not honoured.
+        $this->assertSame(1.0, $this->estimator->measure($print, 0.1)['cyan']);
+    }
+
+    public function test_white_takes_no_ink_and_black_takes_only_black(): void
+    {
+        $print = $this->png(64, function ($image) {
+            imagefilledrectangle($image, 0, 0, 31, 63, imagecolorallocatealpha($image, 255, 255, 255, 0));
+            imagefilledrectangle($image, 32, 0, 63, 63, imagecolorallocatealpha($image, 0, 0, 0, 0));
+        });
+
+        $coverage = $this->estimator->measure($print);
+
+        $this->assertEqualsWithDelta(0.5, $coverage['black'], 0.01);
+        $this->assertEqualsWithDelta(0.0, $coverage['cyan'] + $coverage['magenta'] + $coverage['yellow'], 0.001);
+    }
+
+    public function test_a_half_transparent_pixel_counts_half(): void
+    {
+        $print = $this->png(64, function ($image) {
+            // Alpha 63 of 127 is about half opaque.
+            imagefilledrectangle($image, 0, 0, 63, 63, imagecolorallocatealpha($image, 0, 0, 0, 63));
+        });
+
+        $this->assertEqualsWithDelta(0.5, $this->estimator->measure($print)['black'], 0.02);
+    }
+
+    public function test_something_that_is_not_an_image_measures_as_nothing(): void
+    {
+        $this->assertNull($this->estimator->measure('data:image/png;base64,AAA'));
+        $this->assertNull($this->estimator->measure('https://example.test/print.png'));
+        $this->assertNull($this->estimator->measure(''));
+    }
+
+    public function test_an_estimate_knows_red_text_takes_no_cyan(): void
+    {
+        $coverage = $this->estimator->estimate([
+            'elements' => ['text' => [['text' => 'HELLO', 'color' => '#ff0000', 'scale' => 2]], 'shapes' => [], 'logos' => []],
+        ]);
+
+        $this->assertSame(0.0, $coverage['cyan']);
+        $this->assertSame(0.0, $coverage['black']);
+        $this->assertGreaterThan(0, $coverage['magenta']);
+        $this->assertEqualsWithDelta($coverage['magenta'], $coverage['yellow'], 0.0001, 'Pure red is equal parts magenta and yellow.');
+    }
+
+    public function test_an_estimate_grows_with_the_element_and_ignores_white(): void
+    {
+        $small = $this->estimator->estimate([
+            'elements' => ['shapes' => [['type' => 'circle', 'color' => '#0000ff', 'scale' => 1]], 'text' => [], 'logos' => []],
+        ]);
+        $large = $this->estimator->estimate([
+            'elements' => ['shapes' => [['type' => 'circle', 'color' => '#0000ff', 'scale' => 3]], 'text' => [], 'logos' => []],
+        ]);
+        $white = $this->estimator->estimate([
+            'elements' => ['shapes' => [['type' => 'circle', 'color' => '#ffffff', 'scale' => 5]], 'text' => [], 'logos' => []],
+        ]);
+
+        $this->assertGreaterThan($small['cyan'], $large['cyan']);
+        $this->assertEqualsWithDelta(9.0, $large['cyan'] / $small['cyan'], 0.05, 'Three times the radius is nine times the area.');
+        $this->assertSame(0.0, array_sum($white));
+    }
+
+    public function test_an_estimate_reads_the_uploaded_image_itself(): void
+    {
+        $magenta = $this->png(32, function ($image) {
+            imagefilledrectangle($image, 0, 0, 31, 31, imagecolorallocatealpha($image, 255, 0, 255, 0));
+        });
+
+        $coverage = $this->estimator->estimate([
+            'elements' => ['logos' => [['src' => $magenta, 'scale' => 1]], 'text' => [], 'shapes' => []],
+        ]);
+
+        // A 200px square of solid magenta on a 1024² canvas.
+        $this->assertEqualsWithDelta((200 * 200) / (1024 * 1024), $coverage['magenta'], 0.001);
+        $this->assertSame(0.0, $coverage['cyan']);
+        $this->assertSame(0.0, $coverage['yellow']);
+    }
+
+    public function test_an_unreadable_image_is_assumed_to_be_full_colour(): void
+    {
+        $coverage = $this->estimator->estimate([
+            'elements' => ['logos' => [['src' => 'data:image/png;base64,AAA', 'scale' => 1]], 'text' => [], 'shapes' => []],
+        ]);
+
+        foreach (['cyan', 'magenta', 'yellow', 'black'] as $channel) {
+            $this->assertGreaterThan(0, $coverage[$channel]);
+        }
+    }
+
+    public function test_a_design_uses_its_measured_coverage_when_it_has_one(): void
+    {
+        [$customer, $product] = $this->customerAndProduct();
+
+        $design = CustomDesign::create([
+            'user_id' => $customer->id, 'product_id' => $product->product_id,
+            'recipe' => ['elements' => ['text' => [['text' => 'x', 'color' => '#ff0000']]]],
+            'ink_coverage' => ['cyan' => 0.2, 'magenta' => 0.1, 'yellow' => 0, 'black' => 0.05],
+        ]);
+
+        $answer = $this->estimator->coverageFor($design);
+        $this->assertSame('measured', $answer['source']);
+        $this->assertSame(0.2, $answer['coverage']['cyan']);
+
+        $design->update(['ink_coverage' => null]);
+        $answer = $this->estimator->coverageFor($design->refresh());
+        $this->assertSame('estimated', $answer['source']);
+        $this->assertSame(0.0, $answer['coverage']['cyan']);
+        $this->assertGreaterThan(0, $answer['coverage']['magenta']);
+    }
+
+    public function test_saving_from_the_studio_measures_and_keeps_the_print(): void
+    {
+        Storage::fake('public');
+        [$customer, $product] = $this->customerAndProduct();
+        Sanctum::actingAs($customer);
+
+        $print = $this->png(128, function ($image) {
+            imagefilledrectangle($image, 0, 0, 127, 63, imagecolorallocatealpha($image, 255, 255, 0, 0));
+        });
+
+        $this->postJson(route('customer.customize.save'), [
+            'product_id' => $product->product_id,
+            'custom_recipe' => json_encode(['base_style' => 't-shirt', 'size' => 'large', 'elements' => []]),
+            'custom_snapshot' => 'data:image/png;base64,AAA',
+            'custom_print' => $print,
+            'custom_print_area' => 0.5,
+        ])->assertOk()->assertJson(['success' => true]);
+
+        $design = CustomDesign::sole();
+        $this->assertEqualsWithDelta(1.0, $design->ink_coverage['yellow'], 0.01, 'Yellow fills the half of the canvas that is printable.');
+        $this->assertEquals(0, $design->ink_coverage['cyan']);
+        Storage::disk('public')->assertExists('designs/prints/' . $design->custom_design_id . '.png');
+    }
+
+    public function test_adding_to_the_cart_measures_the_print_too(): void
+    {
+        Storage::fake('public');
+        [$customer, $product] = $this->customerAndProduct();
+        Sanctum::actingAs($customer);
+
+        $print = $this->png(64, function ($image) {
+            imagefilledrectangle($image, 0, 0, 63, 63, imagecolorallocatealpha($image, 0, 0, 0, 0));
+        });
+
+        $this->postJson(route('customer.cart.add'), [
+            'product_id' => $product->product_id,
+            'quantity' => 1,
+            'custom_recipe' => json_encode(['base_style' => 't-shirt', 'elements' => []]),
+            'custom_print' => $print,
+            'custom_print_area' => 1,
+        ])->assertOk();
+
+        $this->assertEqualsWithDelta(1.0, CustomDesign::sole()->ink_coverage['black'], 0.01);
+    }
+
+    public function test_re_saving_without_a_print_keeps_the_measurement(): void
+    {
+        Storage::fake('public');
+        [$customer, $product] = $this->customerAndProduct();
+        Sanctum::actingAs($customer);
+
+        $design = CustomDesign::create([
+            'user_id' => $customer->id, 'product_id' => $product->product_id,
+            'recipe' => ['elements' => []],
+            'ink_coverage' => ['cyan' => 0.3, 'magenta' => 0, 'yellow' => 0, 'black' => 0],
+            'print_image' => 'designs/prints/kept.png',
+        ]);
+
+        // My Designs re-posts the recipe with no print, and so does a
+        // corrupt one: neither may wipe what was measured.
+        foreach ([null, 'data:image/png;base64,AAA'] as $print) {
+            $this->postJson(route('customer.customize.save'), [
+                'product_id' => $product->product_id,
+                'design_id' => $design->custom_design_id,
+                'custom_recipe' => json_encode(['elements' => [], 'size' => 'small']),
+                'custom_print' => $print,
+            ])->assertOk();
+
+            $this->assertSame(0.3, $design->refresh()->ink_coverage['cyan']);
+            $this->assertSame('designs/prints/kept.png', $design->print_image);
+        }
+    }
+
+    /** @return array{0: User, 1: Product} */
+    private function customerAndProduct(): array
+    {
+        $customer = User::create([
+            'fullname' => 'Customer', 'email' => 'c@example.test', 'password' => 'password',
+            'role' => 'customer', 'contact_number' => '09123456789', 'phone_verified' => true,
+        ]);
+        $category = Category::create(['name' => 'Cat', 'description' => 'x']);
+        $product = Product::create([
+            'sku' => 'P-1', 'name' => 'Shirt', 'price' => 100, 'stock' => 20, 'unit' => 'pcs',
+            'category_id' => $category->category_id, 'status' => 'active', 'low_stock_threshold' => 2,
+            'is_customizable' => true, 'print_area_cm2' => 2400,
+        ]);
+
+        return [$customer, $product];
+    }
+}

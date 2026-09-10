@@ -304,6 +304,39 @@ function captureSnapshot() {
 }
 
 /**
+ * The flat print the server measures ink from, plus the share of the canvas
+ * that is printable. See renderDesignOnlyOnCanvas().
+ *
+ * Rendered at the studio's full 1024 and handed over at half that: coverage
+ * survives the downscale and the upload is a quarter the size. Null when
+ * there is nothing on the design, so a blank save carries no print and the
+ * server has nothing to measure — which it reads as "no ink".
+ *
+ * @returns {{ image: string, area: number } | null}
+ */
+function capturePrint() {
+    const hasDesign = textElements.length > 0 || shapeElements.length > 0 || logoElements.length > 0;
+
+    const full = document.createElement('canvas');
+    full.width = 1024;
+    full.height = 1024;
+    if (hasDesign) renderDesignOnlyOnCanvas(full.getContext('2d'));
+
+    const out = document.createElement('canvas');
+    out.width = 512;
+    out.height = 512;
+    out.getContext('2d').drawImage(full, 0, 0, 512, 512);
+
+    try {
+        return { image: out.toDataURL('image/png'), area: printableFraction() };
+    } catch (e) {
+        // A tainted canvas (an image from another origin) cannot be read
+        // back. The server then estimates from the recipe instead.
+        return null;
+    }
+}
+
+/**
  * Simplified version for previewing without UI synchronization
  */
 function loadDesignRecipePreview(recipe) {

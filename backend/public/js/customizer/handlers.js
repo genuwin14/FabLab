@@ -277,6 +277,7 @@ $(document).ready(function () {
         const productId = new URLSearchParams(window.location.search).get('product_id') || CustomizerConfig.productId;
         const recipe = serializeDesign();
         const snapshot = captureSnapshot();
+        const print = capturePrint();
 
         const originalContent = btn.html();
         btn.html('<span class="spinner-border spinner-border-sm me-1"></span> Saving...');
@@ -290,7 +291,10 @@ $(document).ready(function () {
                 product_id: productId,
                 design_id: CustomizerConfig.designId,
                 custom_recipe: recipe,
-                custom_snapshot: snapshot
+                custom_snapshot: snapshot,
+                // The flat print, so the server can measure the design's ink.
+                custom_print: print ? print.image : null,
+                custom_print_area: print ? print.area : null
             },
             success: function (response) {
                 if (response.success) {
@@ -323,6 +327,7 @@ $(document).ready(function () {
 
         const recipe = serializeDesign();
         const snapshot = captureSnapshot();
+        const print = capturePrint();
 
         const originalContent = btn.html();
         btn.html('<span class="spinner-border spinner-border-sm me-1"></span> Adding...');
@@ -337,6 +342,8 @@ $(document).ready(function () {
                 quantity: 1,
                 custom_recipe: recipe,
                 custom_snapshot: snapshot,
+                custom_print: print ? print.image : null,
+                custom_print_area: print ? print.area : null,
                 custom_design_id: CustomizerConfig.designId
             },
             success: function (response) {

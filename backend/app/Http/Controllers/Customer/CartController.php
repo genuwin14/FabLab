@@ -15,6 +15,8 @@ use App\Models\CustomDesign;
  */
 class CartController extends Controller
 {
+    use \App\Http\Controllers\Concerns\SavesCustomDesign;
+
     /**
      * View the Cart Page
      */
@@ -35,7 +37,6 @@ class CartController extends Controller
         $productId = $request->input('product_id');
         $quantity = max(1, (int) $request->input('quantity', 1));
         $recipe = $request->input('custom_recipe');
-        $snapshot = $request->input('custom_snapshot');
 
         $product = Product::findOrFail($productId);
 
@@ -55,18 +56,9 @@ class CartController extends Controller
         if ($recipe) {
             $recipeData = json_decode($recipe, true);
 
-            // Save/Update Design (Normalized)
-            $design = CustomDesign::updateOrCreate(
-                [
-                    'custom_design_id' => $designId,
-                    'user_id' => auth()->id()
-                ],
-                [
-                    'product_id' => $productId,
-                    'recipe' => $recipeData,
-                    'snapshot' => $snapshot
-                ]
-            );
+            // Save/Update Design (Normalized), and measure its ink off the
+            // print the studio sent with it.
+            $design = $this->saveCustomDesign($request, $designId, $productId, $recipeData);
             $designId = $design->custom_design_id;
 
             // Price the saved design through the model so the cart, My Designs
