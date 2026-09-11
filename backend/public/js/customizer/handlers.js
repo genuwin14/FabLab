@@ -45,16 +45,67 @@ $(document).ready(function () {
         currentTextureImagePath = $(this).data('image-path');
         updateModelMaterial(currentTextureId);
         if (typeof calculateCustomPrice === 'function') calculateCustomPrice();
+        refreshVariantAvailability();
     });
 
     $(document).on('click', '.color-option', function () {
+        if ($(this).hasClass('is-out')) return;
         clearFinishSelection();
         $(this).addClass('active');
         currentColorId = $(this).data('color-id');
         currentColorHex = $(this).data('hex');
         updateModelMaterial();
         if (typeof calculateCustomPrice === 'function') calculateCustomPrice();
+        refreshVariantAvailability();
     });
+
+    /**
+     * Grey out the sizes and colours the shop has none of.
+     *
+     * A product stocked per size and colour tells the studio the stock of
+     * each cell. A size is out for the colour in hand (or the product's first
+     * colour, when the finish is a texture or nothing yet), and a colour is
+     * out for the size in hand. The cart refuses an empty cell anyway; this
+     * just says so before the customer designs for it.
+     */
+    function variantStock(size, colorId) {
+        const cells = (typeof CustomizerConfig !== 'undefined' && CustomizerConfig.variants) || [];
+        const cell = cells.find(v => String(v.size || '') === String(size || '') && String(v.color_id || '') === String(colorId || ''));
+        return cell ? cell.stock : null;
+    }
+
+    function refreshVariantAvailability() {
+        const cells = (typeof CustomizerConfig !== 'undefined' && CustomizerConfig.variants) || [];
+        if (!cells.length) return;
+
+        const hasColours = cells.some(v => v.color_id);
+        const activeSize = $('.btn-size.active').data('size') || null;
+        const colourInHand = hasColours ? (currentColorId || $('.color-option').first().data('color-id') || null) : null;
+
+        $('.btn-size').each(function () {
+            const stock = variantStock($(this).data('size'), colourInHand);
+            const out = stock !== null && stock <= 0;
+            $(this).toggleClass('is-out', out).prop('disabled', out);
+        });
+
+        $('.color-option').each(function () {
+            const stock = variantStock(activeSize, $(this).data('color-id'));
+            $(this).toggleClass('is-out', stock !== null && stock <= 0);
+        });
+
+        // The size in hand ran out for this colour: move to the first that hasn't.
+        if ($('.btn-size.active').hasClass('is-out')) {
+            const next = $('.btn-size').not('.is-out').first();
+            if (next.length) {
+                $('.btn-size').removeClass('active');
+                next.addClass('active');
+                updateModelSize();
+                refreshVariantAvailability();
+            }
+        }
+    }
+    window.refreshVariantAvailability = refreshVariantAvailability;
+    refreshVariantAvailability();
 
     // 2b. Design panels — front / back / sleeves on a t-shirt, one panel on a mug.
     $(document).on('click', '.btn-zone', function () {
@@ -66,9 +117,11 @@ $(document).ready(function () {
     setTimeout(renderZoneTabs, 300);
 
     $('.btn-size').on('click', function () {
+        if ($(this).hasClass('is-out')) return;
         $('.btn-size').removeClass('active');
         $(this).addClass('active');
         updateModelSize();
+        refreshVariantAvailability();
     });
 
     $('.btn-shape').on('click', function () {

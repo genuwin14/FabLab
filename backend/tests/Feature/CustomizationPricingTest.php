@@ -48,11 +48,19 @@ class CustomizationPricingTest extends TestCase
     {
         $category = Category::create(['name' => 'Apparel', 'description' => 'Test category']);
 
-        return Product::create([
+        // A shirt comes in sizes; the studio only shows size buttons for a
+        // product that does, and only a size with stock can be ordered — so
+        // ten of every size.
+        $product = Product::create([
             'sku' => 'TST-001', 'name' => 'Test Shirt', 'price' => $price, 'stock' => 10, 'unit' => 'pcs',
             'category_id' => $category->category_id, 'status' => 'active',
-            'is_customizable' => true, 'low_stock_threshold' => 2,
+            'is_customizable' => true, 'has_sizes' => true, 'low_stock_threshold' => 2,
         ]);
+        $product->ensureVariants();
+        \App\Models\ProductVariant::where('product_id', $product->product_id)->update(['stock' => 10]);
+        $product->syncStockFromVariants();
+
+        return $product;
     }
 
     /** The four rates the admin form posts. */

@@ -14,6 +14,8 @@ use App\Models\Texture;
 
 class ProductController extends Controller
 {
+    use \App\Http\Controllers\Concerns\SyncsProductVariants;
+
     public function index(Request $request)
     {
         $perPage = (int) $request->query('per_page', 10);
@@ -25,7 +27,9 @@ class ProductController extends Controller
         $categoryId = $request->query('category_id');
         $stockStatus = $request->query('stock_status');
 
-        $query = Product::with(['category', 'suppliers', 'rawMaterials']);
+        // Colours and variants ride along so the edit modal can draw the
+        // stock grid and the list can show the breakdown.
+        $query = Product::with(['category', 'suppliers', 'rawMaterials', 'colors', 'variants.color']);
 
         if ($search !== '') {
             $query->where(function ($q) use ($search) {
@@ -52,8 +56,10 @@ class ProductController extends Controller
         $categories = Category::all();
         $suppliers = Supplier::all();
         $rawMaterials = RawMaterial::all();
+        // The rows of the stock grid, Small to 5XL.
+        $sizes = \App\Models\CustomizationRate::sizes();
         return view('admin.product.products', compact(
-            'products', 'categories', 'suppliers', 'rawMaterials',
+            'products', 'categories', 'suppliers', 'rawMaterials', 'sizes',
             'perPage', 'search', 'categoryId', 'stockStatus'
         ));
     }
@@ -87,8 +93,9 @@ class ProductController extends Controller
             'unit.in' => 'Pick a unit from the list.',
         ]);
 
-        $data = $request->except('image_file');
+        $data = $request->except('image_file', 'variants');
         $data['is_customizable'] = $request->has('is_customizable');
+        $data['has_sizes'] = $request->has('has_sizes');
         // An emptied field posts as '', which the decimal column would refuse.
         $data['print_area_cm2'] = $request->filled('print_area_cm2') ? (float) $request->input('print_area_cm2') : null;
 
@@ -103,6 +110,10 @@ class ProductController extends Controller
         }
 
         $product = Product::create($data);
+
+        // A product that comes in sizes gets its grid straight away, with the
+        // opening stock in its first cell for the admin to spread out.
+        $product->ensureVariants();
 
         // Redirect to supplier assignment page
         return redirect()->route('admin.products.suppliers.assign', $product->product_id)
@@ -138,8 +149,9 @@ class ProductController extends Controller
             'unit.in' => 'Pick a unit from the list.',
         ]);
 
-        $data = $request->except('image_file');
+        $data = $request->except('image_file', 'variants');
         $data['is_customizable'] = $request->has('is_customizable');
+        $data['has_sizes'] = $request->has('has_sizes');
         // An emptied field posts as '', which the decimal column would refuse.
         $data['print_area_cm2'] = $request->filled('print_area_cm2') ? (float) $request->input('print_area_cm2') : null;
 
@@ -153,7 +165,10 @@ class ProductController extends Controller
             $data['image'] = $product->storeImage($request->file('image_file'));
         }
 
-        $product->update($data);
+        // A product stocked per size and colour takes its figures per cell;
+        // the single stock field is the read-only total and is re-summed.
+        $product->update($this->withoutTotalWhenPerCell($product, $data));
+        $this->syncVariants($product, $request->input('variants'));
 
         // Sync BOM
         if ($request->has('materials')) {
@@ -269,6 +284,12 @@ class ProductController extends Controller
         ]);
 
         $product->colors()->sync($request->input('colors', []));
+
+        // Every assigned colour is a column of the stock grid, so the grid
+        // follows the assignment: new colours get empty cells, and the
+        // stock of an unassigned colour moves to a cell that remains.
+        $product->unsetRelation('colors');
+        $product->ensureVariants();
 
         return redirect()->route('admin.products.index')
             ->with('success', 'Colors assigned successfully.');

@@ -143,6 +143,9 @@
                                                             @if($item->product_id)
                                                                 <div class="fw-bold text-dark small">
                                                                     {{ $item->product->name }}
+                                                                    @if($item->productVariant && $item->productVariant->label !== '')
+                                                                        <span class="badge bg-light text-dark border rounded-pill fw-semibold ms-1" style="font-size: 0.65rem;">{{ $item->productVariant->label }}</span>
+                                                                    @endif
                                                                 </div>
                                                                 <div class="text-muted font-monospace"
                                                                     style="font-size: 0.7rem;">

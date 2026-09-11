@@ -121,10 +121,25 @@
                                 <!-- Footer/Action Overlay on Hover -->
                                 <div class="product-overlay">
                                     <div class="d-flex flex-column gap-2 p-3 w-100 product-actions">
+                                        @php
+                                            // A product stocked per size and colour needs the
+                                            // shopper to pick a cell, so its Add button opens the
+                                            // quick view with the picker rather than adding blind.
+                                            $variantOptions = $product->variants->map(fn ($v) => [
+                                                'id' => $v->product_variant_id,
+                                                'size' => $v->size,
+                                                'size_short' => $v->sizeShort(),
+                                                'color_id' => $v->color_id,
+                                                'color' => $v->color?->name,
+                                                'hex' => $v->color?->hex_code,
+                                                'stock' => (int) $v->stock,
+                                            ])->values();
+                                        @endphp
                                         <button class="btn btn-primary fw-bold rounded-pill w-100 small shadow-sm py-2 btn-add-to-cart"
                                                 title="Add to Cart"
                                                 data-id="{{ $product->product_id }}"
                                                 data-name="{{ $product->name }}"
+                                                data-has-variants="{{ $variantOptions->isNotEmpty() ? 1 : 0 }}"
                                                 {{ $product->stock <= 0 ? 'disabled' : '' }}>
                                             <i class="bi bi-cart-plus me-lg-1"></i> <span class="d-none d-lg-inline">Add to Cart</span>
                                         </button>
@@ -132,6 +147,8 @@
                                                 title="Quick View"
                                                 data-id="{{ $product->product_id }}"
                                                 data-name="{{ $product->name }}"
+                                                data-has-sizes="{{ $product->has_sizes ? 1 : 0 }}"
+                                                data-variants="{{ $variantOptions->toJson() }}"
                                                 data-description="{{ $product->description }}"
                                                 data-price="₱{{ number_format($product->price, 2) }}"
                                                 data-image="{{ $product->image_url ?: asset('img/FABLAB-LOGO.png') }}"
@@ -504,25 +521,27 @@
     @push('scripts')
     <script>
         $(document).ready(function() {
-            $('.btn-add-to-cart').on('click', function(e) {
-                e.preventDefault();
-                const btn = $(this);
-                const productId = btn.data('id');
-                const productName = btn.data('name');
-                
-                // Visual feedback
-                const originalContent = btn.html();
-                btn.html('<span class="spinner-border spinner-border-sm me-1"></span> Adding...');
-                btn.prop('disabled', true);
+            /**
+             * Post a line to the cart. `extra` carries the size and colour for
+             * a product stocked per cell; the server refuses the add without
+             * them, so the picker in the quick view is the only way such a
+             * product gets in.
+             */
+            function addToCart(productId, extra, btn) {
+                const originalContent = btn ? btn.html() : null;
+                if (btn) {
+                    btn.html('<span class="spinner-border spinner-border-sm me-1"></span> Adding...');
+                    btn.prop('disabled', true);
+                }
 
                 $.ajax({
                     url: "{{ route('customer.cart.add') }}",
                     method: "POST",
-                    data: {
+                    data: Object.assign({
                         _token: "{{ csrf_token() }}",
                         product_id: productId,
                         quantity: 1
-                    },
+                    }, extra || {}),
                     success: function(response) {
                         if (response.success) {
                             showToast(response.message, 'success');
@@ -538,17 +557,103 @@
                         showToast(message, 'error');
                     },
                     complete: function() {
-                        btn.html(originalContent);
-                        btn.prop('disabled', false);
+                        if (btn) {
+                            btn.html(originalContent);
+                            btn.prop('disabled', false);
+                        }
                     }
                 });
+            }
+
+            $('.btn-add-to-cart').on('click', function(e) {
+                e.preventDefault();
+                const btn = $(this);
+
+                // A sized or coloured product is picked in the quick view.
+                if (String(btn.data('has-variants')) === '1') {
+                    $(`.btn-quick-view[data-id="${btn.data('id')}"]`).trigger('click');
+                    return;
+                }
+
+                addToCart(btn.data('id'), {}, btn);
+            });
+
+            // The picker state for the product open in the quick view.
+            const picker = { productId: null, variants: [], hasSizes: false, size: null, colorId: null, unit: 'pcs' };
+
+            function pickerStock() {
+                const hasColours = picker.variants.some(v => v.color_id);
+                const match = picker.variants.find(v =>
+                    (picker.hasSizes ? v.size === picker.size : true) &&
+                    (hasColours ? String(v.color_id) === String(picker.colorId) : true));
+                return match ? match.stock : null;
+            }
+
+            /**
+             * Draw the size buttons and colour swatches, greying out cells with
+             * nothing in them for the other choice, and keep the stock status
+             * and the Add button honest about the picked cell.
+             */
+            function renderPicker() {
+                const hasColours = picker.variants.some(v => v.color_id);
+                const complete = (!picker.hasSizes || picker.size) && (!hasColours || picker.colorId);
+
+                const sizes = [];
+                picker.variants.forEach(v => { if (v.size && !sizes.find(s => s.size === v.size)) sizes.push({ size: v.size, short: v.size_short }); });
+                const colours = [];
+                picker.variants.forEach(v => { if (v.color_id && !colours.find(c => c.id === v.color_id)) colours.push({ id: v.color_id, name: v.color, hex: v.hex }); });
+
+                const stockFor = (size, colorId) => {
+                    const cells = picker.variants.filter(v =>
+                        (size === undefined || v.size === size) && (colorId === undefined || String(v.color_id) === String(colorId)));
+                    return cells.reduce((sum, v) => sum + v.stock, 0);
+                };
+
+                $('#qv-sizes-block').prop('hidden', !picker.hasSizes);
+                $('#qv-sizes').html(sizes.map(s => {
+                    const stock = stockFor(s.size, hasColours && picker.colorId ? picker.colorId : undefined);
+                    return `<button type="button" class="qv-size ${picker.size === s.size ? 'active' : ''} ${stock <= 0 ? 'is-out' : ''}" data-size="${s.size}" title="${stock <= 0 ? 'Out of stock' : stock + ' available'}">${s.short}</button>`;
+                }).join(''));
+
+                $('#qv-colours-block').prop('hidden', !hasColours);
+                $('#qv-colours').html(colours.map(c => {
+                    const stock = stockFor(picker.hasSizes && picker.size ? picker.size : undefined, c.id);
+                    return `<span class="qv-colour ${String(picker.colorId) === String(c.id) ? 'active' : ''} ${stock <= 0 ? 'is-out' : ''}" data-color-id="${c.id}" style="background:${c.hex}" title="${c.name}${stock <= 0 ? ' — out of stock' : ' — ' + stock + ' available'}" role="button"></span>`;
+                }).join(''));
+
+                const stockStatus = $('#qv-stock-status');
+                const addBtn = $('#qv-add-to-cart-btn');
+                const stock = complete ? pickerStock() : null;
+
+                if (!complete) {
+                    stockStatus.text('Pick a size and colour').removeClass('text-success text-danger').addClass('text-warning');
+                    addBtn.prop('disabled', true).html('<i class="bi bi-cart-plus me-2"></i> Add to Cart');
+                    $('#qv-pick-hint').prop('hidden', false);
+                } else if (!stock || stock <= 0) {
+                    stockStatus.text('Out of Stock').removeClass('text-success text-warning').addClass('text-danger');
+                    addBtn.prop('disabled', true).text('Out of Stock');
+                    $('#qv-pick-hint').prop('hidden', true);
+                } else {
+                    stockStatus.text(stock + ' ' + picker.unit + ' Available').removeClass('text-danger text-warning').addClass('text-success');
+                    addBtn.prop('disabled', false).html('<i class="bi bi-cart-plus me-2"></i> Add to Cart');
+                    $('#qv-pick-hint').prop('hidden', true);
+                }
+            }
+
+            $(document).on('click', '#qv-sizes .qv-size', function () {
+                picker.size = $(this).data('size');
+                renderPicker();
+            });
+            $(document).on('click', '#qv-colours .qv-colour', function () {
+                picker.colorId = $(this).data('color-id');
+                renderPicker();
             });
 
             // Quick View Logic
             $('.btn-quick-view').on('click', function() {
                 const btn = $(this);
                 const data = btn.data();
-                
+
                 $('#qv-name').text(data.name);
                 $('#qv-description').text(data.description || 'No description available.');
                 $('#qv-price').text(data.price);
@@ -556,20 +661,35 @@
                 $('#qv-category').text(data.category);
                 $('#qv-sku').text('SKU: ' + data.sku);
                 $('#qv-brand').text(data.brand || 'No Brand');
-                
+
                 const stock = parseInt(data.stock);
                 const unit = data.unit;
                 const stockStatus = $('#qv-stock-status');
                 const addBtn = $('#qv-add-to-cart-btn');
-                
-                if (stock <= 0) {
+                addBtn.data('id', data.id);
+
+                // A product stocked per cell: the picker decides the status.
+                let variants = data.variants;
+                if (typeof variants === 'string') { try { variants = JSON.parse(variants); } catch (e) { variants = []; } }
+                picker.productId = data.id;
+                picker.variants = Array.isArray(variants) ? variants : [];
+                picker.hasSizes = String(data.hasSizes) === '1';
+                picker.size = null;
+                picker.colorId = null;
+                picker.unit = unit;
+
+                const perCell = picker.variants.length > 0;
+                $('#qv-variants').prop('hidden', !perCell);
+                $('#qv-pick-hint').prop('hidden', true);
+
+                if (perCell) {
+                    renderPicker();
+                } else if (stock <= 0) {
                     stockStatus.text('Out of Stock').removeClass('text-success text-warning').addClass('text-danger');
                     addBtn.prop('disabled', true).text('Out of Stock');
                 } else {
-                    stockStatus.text(stock + ' ' + unit + ' Available').removeClass('text-danger').addClass('text-success');
+                    stockStatus.text(stock + ' ' + unit + ' Available').removeClass('text-danger text-warning').addClass('text-success');
                     addBtn.prop('disabled', false).html('<i class="bi bi-cart-plus me-2"></i> Add to Cart');
-                    // Set product id for the add to cart button in modal
-                    addBtn.data('id', data.id);
                 }
 
                 const qvModal = new bootstrap.Modal(document.getElementById('quickViewModal'));
@@ -580,13 +700,15 @@
             $('#qv-add-to-cart-btn').on('click', function() {
                 const productId = $(this).data('id');
                 if (!productId) return;
-                
-                // Find the original button in the grid to trigger its logic
-                const gridBtn = $(`.btn-add-to-cart[data-id="${productId}"]`);
-                if (gridBtn.length) {
-                    bootstrap.Modal.getInstance(document.getElementById('quickViewModal')).hide();
-                    gridBtn.trigger('click');
+
+                const extra = {};
+                if (picker.variants.length) {
+                    if (picker.hasSizes) extra.size = picker.size;
+                    if (picker.colorId) extra.color_id = picker.colorId;
                 }
+
+                bootstrap.Modal.getInstance(document.getElementById('quickViewModal')).hide();
+                addToCart(productId, extra, $(this));
             });
         });
     </script>

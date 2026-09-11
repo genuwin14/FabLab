@@ -595,10 +595,14 @@ class OrderStockService
      */
     public function returnProducts(Order $order): void
     {
-        $order->loadMissing('orderItems.product');
+        $order->loadMissing('orderItems.product', 'orderItems.productVariant');
+        $stock = app(ProductStockService::class);
 
         foreach ($order->orderItems as $item) {
-            $item->product?->increment('stock', $item->quantity);
+            if ($item->product) {
+                // Back into the size-and-colour cell it was taken from.
+                $stock->give($item->product, $item->productVariant, (int) $item->quantity);
+            }
         }
     }
 

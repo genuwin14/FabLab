@@ -76,12 +76,10 @@ class OrderController extends Controller
             $order->status = 'cancelled';
             $order->save();
 
-            // Return Stock
-            foreach ($order->orderItems as $item) {
-                if ($item->product) {
-                    $item->product->increment('stock', $item->quantity);
-                }
-            }
+            // Return Stock, to the same size-and-colour cells checkout took
+            // it from. Nothing else has moved at these statuses: materials
+            // are only reserved at approval.
+            app(\App\Services\OrderStockService::class)->returnProducts($order);
 
             return redirect()->back()->with('success', 'Order cancelled successfully.');
         }

@@ -11,6 +11,7 @@ class CartItem extends Model
     protected $fillable = [
         'user_id',
         'product_id',
+        'product_variant_id',
         'custom_design_id',
         'quantity',
         'price',
@@ -36,33 +37,50 @@ class CartItem extends Model
         return $this->belongsTo(CustomDesign::class, 'custom_design_id', 'custom_design_id');
     }
 
+    /** The size-and-colour cell this line takes, for a product that has them. */
+    public function productVariant()
+    {
+        return $this->belongsTo(ProductVariant::class, 'product_variant_id', 'product_variant_id');
+    }
+
     /**
      * The identifier the cart UI uses for a line. Two designs of the same
-     * product are different things to make, so they stay separate lines.
+     * product are different things to make, so they stay separate lines —
+     * and so do two sizes or colours of a plain one.
      */
     public function lineKey(): string
     {
-        return self::keyFor($this->product_id, $this->custom_design_id);
+        return self::keyFor($this->product_id, $this->custom_design_id, $this->product_variant_id);
     }
 
-    public static function keyFor(int|string $productId, int|string|null $designId): string
+    public static function keyFor(int|string $productId, int|string|null $designId, int|string|null $variantId = null): string
     {
-        return $designId ? "{$productId}_custom_{$designId}" : (string) $productId;
+        if ($designId) {
+            return "{$productId}_custom_{$designId}";
+        }
+
+        return $variantId ? "{$productId}_v_{$variantId}" : (string) $productId;
     }
 
     /**
      * Split a line key back into its parts.
      *
-     * @return array{0: int, 1: int|null}
+     * @return array{0: int, 1: int|null, 2: int|null}  product, design, variant
      */
     public static function parseKey(string $key): array
     {
         if (str_contains($key, '_custom_')) {
             [$productId, $designId] = explode('_custom_', $key, 2);
 
-            return [(int) $productId, (int) $designId];
+            return [(int) $productId, (int) $designId, null];
         }
 
-        return [(int) $key, null];
+        if (str_contains($key, '_v_')) {
+            [$productId, $variantId] = explode('_v_', $key, 2);
+
+            return [(int) $productId, null, (int) $variantId];
+        }
+
+        return [(int) $key, null, null];
     }
 }

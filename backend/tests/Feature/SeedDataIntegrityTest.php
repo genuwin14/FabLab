@@ -253,6 +253,33 @@ class SeedDataIntegrityTest extends TestCase
         $this->assertTrue($lace->rawMaterials->contains(fn ($m) => str_contains($m->name, 'Ink')));
     }
 
+    public function test_the_garments_are_stocked_per_size_and_colour_and_the_mugs_are_not(): void
+    {
+        // The shop keeps blanks per colour and per size, so the shirt and
+        // the polos carry a grid whose cells add up to the figure the
+        // product seeder gave them; a mug comes in one size with no colour
+        // assigned and keeps its single figure.
+        foreach (['TS-CTN-WHT', 'PL-PQE-WHT', 'PL-PQE-NVY'] as $sku) {
+            $product = Product::where('sku', $sku)->with('variants')->firstOrFail();
+            $this->assertTrue($product->has_sizes, "\"{$product->name}\" should come in sizes.");
+            $this->assertTrue($product->hasColorVariants(), "\"{$product->name}\" should be stocked per colour.");
+            $this->assertGreaterThan(8, $product->variants->count(), "\"{$product->name}\" should have a cell per size and colour.");
+            $this->assertSame((int) $product->stock, (int) $product->variants->sum('stock'), "\"{$product->name}\"'s cells should add up to its stock.");
+        }
+
+        foreach (['MG-WHT-11', 'MG-BLK-11', 'UMB-AUT-WHT', 'TB-CVS-NAT'] as $sku) {
+            $product = Product::where('sku', $sku)->with('variants')->firstOrFail();
+            $this->assertFalse($product->has_sizes, "\"{$product->name}\" comes in one size.");
+            $this->assertCount(0, $product->variants, "\"{$product->name}\" should keep a single stock figure.");
+        }
+
+        // And one cell is seeded low, so the demo has a per-cell alert to show.
+        $low = Product::where('sku', 'TS-CTN-WHT')->firstOrFail()->variants()->with('color')->get()
+            ->first(fn ($v) => $v->label === 'Navy Blue · 5XL');
+        $this->assertNotNull($low);
+        $this->assertSame(1, $low->stock);
+    }
+
     public function test_every_customizable_product_can_have_its_ink_measured(): void
     {
         // Measured ink needs two things: the product's printable area, and

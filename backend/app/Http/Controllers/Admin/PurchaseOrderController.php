@@ -104,7 +104,8 @@ class PurchaseOrderController extends Controller
                     'sku' => $product->sku,
                     'quantity' => $qty,
                     'cost' => $supplierPivot->cost,
-                    'unit' => $product->unit
+                    'unit' => $product->unit,
+                    'variants' => $this->variantOptions($product),
                 ];
             }
 
@@ -169,7 +170,10 @@ class PurchaseOrderController extends Controller
                     'id' => $p->product_id,
                     'name' => $p->name,
                     'sku' => $p->sku,
-                    'cost' => $cost
+                    'cost' => $cost,
+                    // A product stocked per size and colour is ordered per
+                    // cell, so the form can ask which.
+                    'variants' => $this->variantOptions($p),
                 ];
             }
 
@@ -220,6 +224,24 @@ class PurchaseOrderController extends Controller
         return redirect()->route('admin.purchase.index', $request->query());
     }
 
+    /**
+     * The size-and-colour cells of a product, for the form's cell picker:
+     * `[{id, label, stock}]`, empty for a product stocked as a whole.
+     *
+     * @return array<int, array{id: int, label: string, stock: int}>
+     */
+    private function variantOptions(Product $product): array
+    {
+        if (! $product->tracksVariants()) {
+            return [];
+        }
+
+        return $product->variants()->with('color')->get()
+            ->map(fn ($v) => ['id' => $v->product_variant_id, 'label' => $v->label, 'stock' => (int) $v->stock])
+            ->values()
+            ->all();
+    }
+
     public function store(Request $request)
     {
         $request->validate([
@@ -227,6 +249,7 @@ class PurchaseOrderController extends Controller
             'expected_delivery_date' => 'nullable|date',
             'items' => 'required|array|min:1',
             'items.*.product_id' => 'nullable|exists:products,product_id',
+            'items.*.product_variant_id' => 'nullable|exists:product_variants,product_variant_id',
             'items.*.raw_material_id' => 'nullable|exists:raw_materials,raw_material_id',
             'items.*.texture_id' => 'nullable|exists:textures,texture_id',
             'items.*.quantity' => 'required|numeric|min:0.01',
@@ -255,6 +278,11 @@ class PurchaseOrderController extends Controller
             PurchaseOrderItem::create([
                 'purchase_order_id' => $po->purchase_order_id,
                 'product_id' => $item['product_id'] ?? null,
+                // Only meaningful with a product, and only a cell of that
+                // product: anything else is dropped rather than stored.
+                'product_variant_id' => ! empty($item['product_id']) && ! empty($item['product_variant_id'])
+                    ? \App\Models\ProductVariant::where('product_id', $item['product_id'])->where('product_variant_id', $item['product_variant_id'])->value('product_variant_id')
+                    : null,
                 'raw_material_id' => $item['raw_material_id'] ?? null,
                 'texture_id' => $item['texture_id'] ?? null,
                 'quantity' => $item['quantity'],
@@ -267,7 +295,7 @@ class PurchaseOrderController extends Controller
 
     public function show($id)
     {
-        $purchaseOrder = PurchaseOrder::with(['supplier', 'items.product', 'items.rawMaterial', 'items.texture', 'creator'])->findOrFail($id);
+        $purchaseOrder = PurchaseOrder::with(['supplier', 'items.product', 'items.productVariant.color', 'items.rawMaterial', 'items.texture', 'creator'])->findOrFail($id);
         return view('admin.purchase.show', compact('purchaseOrder'));
     }
 
@@ -281,10 +309,14 @@ class PurchaseOrderController extends Controller
         $oldStatus = $po->status;
         $newStatus = $request->status;
 
+        $stock = app(\App\Services\ProductStockService::class);
+
         if ($newStatus === 'delivered' && $oldStatus !== 'delivered') {
             foreach ($po->items as $item) {
                 if ($item->product_id) {
-                    $item->product->increment('stock', $item->quantity);
+                    // Into the size-and-colour cell the line names, or the
+                    // product's first cell when it names none.
+                    $stock->give($item->product, $item->productVariant, (int) $item->quantity);
                 } elseif ($item->raw_material_id) {
                     $item->rawMaterial->increment('stock_quantity', $item->quantity);
                 } elseif ($item->texture_id) {
@@ -296,7 +328,7 @@ class PurchaseOrderController extends Controller
         if ($oldStatus === 'delivered' && $newStatus !== 'delivered') {
             foreach ($po->items as $item) {
                 if ($item->product_id) {
-                    $item->product->decrement('stock', $item->quantity);
+                    $stock->take($item->product, $item->productVariant, (int) $item->quantity);
                 } elseif ($item->raw_material_id) {
                     $item->rawMaterial->decrement('stock_quantity', $item->quantity);
                 } elseif ($item->texture_id) {

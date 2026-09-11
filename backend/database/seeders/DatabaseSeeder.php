@@ -23,6 +23,9 @@ class DatabaseSeeder extends Seeder
             RawMaterialSeeder::class,
             TextureSeeder::class,
             ColorSeeder::class,
+            // Must follow ProductSeeder and ColorSeeder: it assigns the garments
+            // their house colours and spreads their stock across sizes.
+            ProductVariantSeeder::class,
             EquipmentSeeder::class,
             BOMSeeder::class,
             // Must follow ColorSeeder and RawMaterialSeeder: it links the

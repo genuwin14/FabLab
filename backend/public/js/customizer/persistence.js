@@ -264,7 +264,9 @@ function loadDesignRecipe(recipe) {
  */
 function serializeDesign() {
     const activeShape = $('.btn-shape.active').data('shape') || (typeof CustomizerConfig !== 'undefined' ? CustomizerConfig.initialShape : 't-shirt');
-    const activeSize = $('.btn-size.active').data('size') || 'medium';
+    // No size buttons — a product that comes in one size — means no size on
+    // the recipe, so it is charged no surcharge and takes its one cell.
+    const activeSize = $('.btn-size.active').data('size') || null;
     const ledLighting = $('#lighting').is(':checked');
 
     return JSON.stringify({

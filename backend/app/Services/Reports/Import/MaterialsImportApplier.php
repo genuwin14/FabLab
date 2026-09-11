@@ -159,12 +159,20 @@ class MaterialsImportApplier
             throw new RuntimeException('That item no longer exists.');
         }
 
-        $model->update([
+        $changes = [
             'units_on_display' => $values['on_display'],
             'units_sponsored' => $values['sponsored'],
             'units_damaged' => $values['damaged'],
             'units_consumed' => $values['consumed'],
-            $item['stock_column'] => $values['available'],
-        ]);
+        ];
+
+        // A product stocked per size and colour has no single figure to set:
+        // its total is the sum of its cells, and the report only carries the
+        // total. The planner never offers the change; this is the backstop.
+        if (! ($model instanceof Product && $model->tracksVariants())) {
+            $changes[$item['stock_column']] = $values['available'];
+        }
+
+        $model->update($changes);
     }
 }

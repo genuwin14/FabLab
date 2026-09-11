@@ -72,6 +72,17 @@
                                             </div>
                                         </div>
 
+                                        {{-- See the add modal: sized products are stocked per size. --}}
+                                        <div class="product-secured-card">
+                                            <div class="form-check form-switch m-0">
+                                                <input class="form-check-input" type="checkbox" id="editHasSizes" name="has_sizes">
+                                                <label class="form-check-label small fw-bold" for="editHasSizes">
+                                                    Comes in sizes (S–5XL)
+                                                </label>
+                                            </div>
+                                            <small class="text-muted d-block mt-1">Stock is then kept per size, and per colour once colours are assigned.</small>
+                                        </div>
+
                                         {{-- See the add modal: the blank's printable panels at
                                              Medium, which measured ink is a fraction of. --}}
                                         <div>
@@ -169,6 +180,13 @@
                                                 class="form-control product-field-input">
                                         </div>
                                     </div>
+
+                                    @include('partials.product-variant-grid', [
+                                        'gridId' => 'editVariantGrid',
+                                        'totalInputId' => 'editStock',
+                                        'sizesInputId' => 'editHasSizes',
+                                        'sizes' => $sizes,
+                                    ])
 
                                     <h6 class="product-section-title mt-4">
                                         <i class="bi bi-bar-chart-fill me-2"></i>Report Tracking

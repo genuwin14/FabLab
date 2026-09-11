@@ -11,6 +11,8 @@ use App\Models\Category;
 
 class ProductController extends Controller
 {
+    use \App\Http\Controllers\Concerns\SyncsProductVariants;
+
     public function index(Request $request)
     {
         $perPage = (int) $request->query('per_page', 10);
@@ -22,7 +24,9 @@ class ProductController extends Controller
         $categoryId = $request->query('category_id');
         $stockStatus = $request->query('stock_status');
 
-        $query = Product::with(['category', 'suppliers', 'rawMaterials']);
+        // Colours and variants ride along so the edit modal can draw the
+        // stock grid and the list can show the breakdown.
+        $query = Product::with(['category', 'suppliers', 'rawMaterials', 'colors', 'variants.color']);
 
         if ($search !== '') {
             $query->where(function ($q) use ($search) {
@@ -47,9 +51,11 @@ class ProductController extends Controller
 
         $products = $query->latest()->paginate($perPage)->withQueryString();
         $categories = Category::all();
+        // The rows of the stock grid, Small to 5XL.
+        $sizes = \App\Models\CustomizationRate::sizes();
 
         return view('staff.product.products', compact(
-            'products', 'categories',
+            'products', 'categories', 'sizes',
             'perPage', 'search', 'categoryId', 'stockStatus'
         ));
     }
@@ -74,8 +80,9 @@ class ProductController extends Controller
             'unit.in' => 'Pick a unit from the list.',
         ]);
 
-        $data = $request->except('image_file');
+        $data = $request->except('image_file', 'variants');
         $data['is_customizable'] = $request->has('is_customizable');
+        $data['has_sizes'] = $request->has('has_sizes');
 
         if (empty($data['status'])) {
             $data['status'] = 'active';
@@ -85,7 +92,10 @@ class ProductController extends Controller
             $data['image'] = $product->storeImage($request->file('image_file'));
         }
 
-        $product->update($data);
+        // A product stocked per size and colour takes its figures per cell;
+        // the single stock field is the read-only total and is re-summed.
+        $product->update($this->withoutTotalWhenPerCell($product, $data));
+        $this->syncVariants($product, $request->input('variants'));
 
         return redirect()->route('staff.products.index')->with('success', 'Product updated successfully.');
     }

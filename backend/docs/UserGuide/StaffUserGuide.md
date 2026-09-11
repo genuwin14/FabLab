@@ -128,6 +128,8 @@ Items with no default supplier are grouped separately and can't be pre-filled in
 
 `/staff/products` — you can **view and edit**, but not create or delete.
 
+A garment is stocked per size and colour. Its **Stock** field is the read-only total of a grid you will find under **Stock by size and colour** in the edit modal: one figure per size and colour, which you can correct cell by cell the same way you correct a single figure. The list shows the total with a **by size / colour** breakdown beneath it, low and empty cells highlighted, and low-stock alerts name the cell — *Navy Blue · 5XL* — not just the product. A purchase order line for such a product asks which cell the delivery is for.
+
 Search by name, SKU, or brand; filter by category or stock status (in stock, low stock, out of stock); page size 10 to 100.
 
 Editing lets you change: name, SKU, category, price, stock, unit, brand, low-stock threshold, description, status, the customizable flag, and the image (max 2 MB).

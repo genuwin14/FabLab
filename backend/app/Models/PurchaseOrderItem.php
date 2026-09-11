@@ -13,6 +13,7 @@ class PurchaseOrderItem extends Model
     protected $fillable = [
         'purchase_order_id',
         'product_id',
+        'product_variant_id',
         'raw_material_id',
         'texture_id',
         'quantity',
@@ -27,6 +28,12 @@ class PurchaseOrderItem extends Model
     public function product()
     {
         return $this->belongsTo(Product::class, 'product_id');
+    }
+
+    /** The size-and-colour cell a delivery of this line restocks. */
+    public function productVariant()
+    {
+        return $this->belongsTo(ProductVariant::class, 'product_variant_id', 'product_variant_id');
     }
 
     public function rawMaterial()

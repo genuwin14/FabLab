@@ -53,6 +53,19 @@
                                     </div>
                                 </div>
 
+                                {{-- A garment comes in S–5XL and is stocked per size; a mug
+                                     does not. The opening stock lands in the first size for
+                                     the admin to spread out after saving. --}}
+                                <div class="product-secured-card">
+                                    <div class="form-check form-switch m-0">
+                                        <input class="form-check-input" type="checkbox" id="addHasSizes" name="has_sizes">
+                                        <label class="form-check-label small fw-bold" for="addHasSizes">
+                                            Comes in sizes (S–5XL)
+                                        </label>
+                                    </div>
+                                    <small class="text-muted d-block mt-1">Stock is then kept per size, and per colour once colours are assigned.</small>
+                                </div>
+
                                 {{-- The size of the blank's printable panels at Medium.
                                      Ink for a design is measured as a fraction of this,
                                      so leaving it empty means the design's ink is taken

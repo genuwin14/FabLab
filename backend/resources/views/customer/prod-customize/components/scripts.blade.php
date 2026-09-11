@@ -31,6 +31,10 @@
             // Admin → Customization Pricing. The live quote must use these and
             // not its own numbers, or it stops matching what the cart charges.
             rates: @json($rates ?? []),
+            // Whether the product comes in sizes, and the stock of each of its
+            // size-and-colour cells, so the studio can grey out an empty one.
+            hasSizes: {{ ($hasSizes ?? true) ? 'true' : 'false' }},
+            variants: @json($variants ?? []),
             routes: {
                 save: "{{ route('customer.customize.save') }}",
                 addToCart: "{{ route('customer.cart.add') }}"

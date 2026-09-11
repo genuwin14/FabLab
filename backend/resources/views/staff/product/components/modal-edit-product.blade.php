@@ -53,6 +53,16 @@
                                         </label>
                                     </div>
                                 </div>
+                                {{-- A garment comes in S–5XL and is stocked per size; a mug does not. --}}
+                                <div class="product-secured-card">
+                                    <div class="form-check form-switch m-0">
+                                        <input class="form-check-input" type="checkbox" id="editHasSizes" name="has_sizes">
+                                        <label class="form-check-label small fw-bold" for="editHasSizes">
+                                            Comes in sizes (S–5XL)
+                                        </label>
+                                    </div>
+                                    <small class="text-muted d-block mt-1">Stock is then kept per size, and per colour once colours are assigned.</small>
+                                </div>
                                 <div>
                                     <label class="form-label small fw-bold text-muted text-uppercase">Description</label>
                                     <textarea name="description" id="editDescription"
@@ -133,6 +143,13 @@
                                         class="form-control product-field-input">
                                 </div>
                             </div>
+
+                            @include('partials.product-variant-grid', [
+                                'gridId' => 'editVariantGrid',
+                                'totalInputId' => 'editStock',
+                                'sizesInputId' => 'editHasSizes',
+                                'sizes' => $sizes,
+                            ])
                         </div>
                     </div>
 

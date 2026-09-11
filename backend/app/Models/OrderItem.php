@@ -13,10 +13,20 @@ class OrderItem extends Model
     protected $fillable = [
         'order_id',
         'product_id',
+        'product_variant_id',
         'custom_design_id',
         'quantity',
         'price'
     ];
+
+    /**
+     * The size-and-colour cell this line took at checkout, so cancelling
+     * puts it back where it came from.
+     */
+    public function productVariant()
+    {
+        return $this->belongsTo(ProductVariant::class, 'product_variant_id', 'product_variant_id');
+    }
 
     /**
      * Get the customized design associated with the order item.

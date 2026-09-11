@@ -1,4 +1,17 @@
 <!-- Quick View Modal -->
+<style>
+    /* The size and colour picker for a product stocked per cell. */
+    #quickViewModal .qv-size {
+        min-width: 44px; padding: 6px 10px; border: 2px solid #dee2e6; border-radius: 10px; background: #fff;
+        font-weight: 700; font-size: 0.8rem; color: #0e2e45; cursor: pointer;
+    }
+    #quickViewModal .qv-size.active { border-color: #0e2e45; background: #0e2e45; color: #fff; }
+    #quickViewModal .qv-size.is-out, #quickViewModal .qv-colour.is-out { opacity: .35; cursor: not-allowed; text-decoration: line-through; }
+    #quickViewModal .qv-colour {
+        width: 34px; height: 34px; border-radius: 50%; border: 3px solid #fff; box-shadow: 0 0 0 2px #dee2e6; cursor: pointer;
+    }
+    #quickViewModal .qv-colour.active { box-shadow: 0 0 0 2px #0e2e45; }
+</style>
 <div class="modal fade" id="quickViewModal" tabindex="-1" aria-labelledby="quickViewModalLabel" aria-hidden="true"
     style="z-index: 1055;">
     <div class="modal-dialog modal-dialog-centered modal-lg">
@@ -30,6 +43,20 @@
                             <p id="qv-description" class="text-muted small mb-0" style="line-height: 1.6;"></p>
                         </div>
 
+                        {{-- Size and colour, for a product stocked per cell. Filled by
+                             the shop script from the card's variants; hidden otherwise.
+                             The stock status below follows the picked cell. --}}
+                        <div id="qv-variants" class="mb-4" hidden>
+                            <div id="qv-sizes-block" class="mb-3" hidden>
+                                <h6 class="fw-bold text-dark small text-uppercase tracking-wider opacity-75 mb-2">Size</h6>
+                                <div id="qv-sizes" class="d-flex flex-wrap gap-2"></div>
+                            </div>
+                            <div id="qv-colours-block" hidden>
+                                <h6 class="fw-bold text-dark small text-uppercase tracking-wider opacity-75 mb-2">Colour</h6>
+                                <div id="qv-colours" class="d-flex flex-wrap gap-2"></div>
+                            </div>
+                        </div>
+
                         <div class="row g-3 mb-4">
                             <div class="col-6">
                                 <div class="p-2 border rounded-3 bg-light text-center">
@@ -50,6 +77,7 @@
                                 class="btn btn-primary btn-lg rounded-pill fw-bold shadow-sm py-3">
                                 <i class="bi bi-cart-plus me-2"></i> Add to Cart
                             </button>
+                            <div id="qv-pick-hint" class="small text-muted text-center" hidden>Pick a size and colour to add this to your cart.</div>
                             <button class="btn btn-light rounded-pill fw-bold py-2 small" data-bs-dismiss="modal">
                                 Continue Shopping
                             </button>

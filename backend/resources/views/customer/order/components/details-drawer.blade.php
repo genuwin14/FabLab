@@ -95,6 +95,9 @@
                         </div>
                         <div class="text-muted small">
                             ₱{{ number_format($item->price ?? 0, 2) }}
+                            @if($item->productVariant && $item->productVariant->label !== '')
+                                · {{ $item->productVariant->label }}
+                            @endif
                         </div>
                     </div>
                     <span class="fw-bold text-dark flex-shrink-0">x{{ $item->quantity }}</span>

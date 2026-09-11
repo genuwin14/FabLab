@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\CartItem;
 use App\Models\Product;
 use App\Models\CustomDesign;
+use App\Services\ProductStockService;
 
 /**
  * The cart is stored per user in `cart_items`, so it survives signing out,
@@ -39,14 +40,7 @@ class CartController extends Controller
         $recipe = $request->input('custom_recipe');
 
         $product = Product::findOrFail($productId);
-
-        // Check if stock is available
-        if ($product->stock < $quantity) {
-            return response()->json([
-                'success' => false,
-                'message' => "Insufficient stock! Only {$product->stock} {$product->unit} available."
-            ], 400);
-        }
+        $stock = app(ProductStockService::class);
 
         $price = $product->price;
         $designId = $request->input('custom_design_id');
@@ -66,17 +60,47 @@ class CartController extends Controller
             // selected texture's price modifier.
             $design->setRelation('product', $product);
             $price = $design->calculated_price;
+
+            // The design says which size and colour it is for.
+            $variant = $stock->variantForDesign($product, $design);
+        } else {
+            // A plain product stocked per size or colour needs the shopper to
+            // say which: a Navy 5XL and a White Medium are different stock.
+            $size = $request->input('size');
+            $colorId = $request->input('color_id');
+
+            if ($missing = $stock->missingChoice($product, $size, $colorId)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => "Please pick a {$missing} first.",
+                    'needs' => $missing,
+                ], 422);
+            }
+
+            $variant = $product->variantFor($size, $colorId);
+        }
+
+        // Check if stock is available — of the cell, where the product has cells.
+        $available = $stock->available($product, $variant);
+        $what = $variant && $variant->label !== '' ? "{$product->name} ({$variant->label})" : $product->name;
+
+        if ($available < $quantity) {
+            return response()->json([
+                'success' => false,
+                'message' => "Insufficient stock! Only {$available} {$product->unit} of {$what} available."
+            ], 400);
         }
 
         $line = CartItem::where('user_id', auth()->id())
             ->where('product_id', $product->product_id)
             ->where('custom_design_id', $designId)
+            ->where('product_variant_id', $variant?->product_variant_id)
             ->first();
 
         if ($line) {
             $newQuantity = $line->quantity + $quantity;
 
-            if ($product->stock < $newQuantity) {
+            if ($available < $newQuantity) {
                 return response()->json([
                     'success' => false,
                     'message' => "Cannot add more. Stock limit reached!"
@@ -88,6 +112,7 @@ class CartController extends Controller
             CartItem::create([
                 'user_id' => auth()->id(),
                 'product_id' => $product->product_id,
+                'product_variant_id' => $variant?->product_variant_id,
                 'custom_design_id' => $designId,
                 'quantity' => $quantity,
                 'price' => $price,
@@ -127,7 +152,7 @@ class CartController extends Controller
         if ($line && $quantity > 0) {
             $product = $line->product;
 
-            if (! $product || $product->stock < $quantity) {
+            if (! $product || app(ProductStockService::class)->available($product, $line->productVariant) < $quantity) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Insufficient stock!'
@@ -206,14 +231,20 @@ class CartController extends Controller
         try {
             \Illuminate\Support\Facades\DB::beginTransaction();
 
+            $stock = app(ProductStockService::class);
+
             $total = 0;
             foreach ($checkoutLines as $line) {
                 $total += $line->price * $line->quantity;
 
-                // Verify stock again just in case
+                // Verify stock again just in case — of the cell the line takes.
                 $product = $line->product;
-                if (! $product || $product->stock < $line->quantity) {
-                    throw new \Exception("Insufficient stock for product: " . ($product->name ?? 'unknown'));
+                if (! $product || $stock->available($product, $line->productVariant) < $line->quantity) {
+                    $what = $product?->name ?? 'unknown';
+                    if ($line->productVariant && $line->productVariant->label !== '') {
+                        $what .= " ({$line->productVariant->label})";
+                    }
+                    throw new \Exception("Insufficient stock for product: {$what}");
                 }
             }
 
@@ -246,13 +277,14 @@ class CartController extends Controller
                 \App\Models\OrderItem::create([
                     'order_id' => $order->order_id,
                     'product_id' => $line->product_id,
+                    'product_variant_id' => $line->product_variant_id,
                     'custom_design_id' => $line->custom_design_id,
                     'quantity' => $line->quantity,
                     'price' => $line->price
                 ]);
 
-                // Decrease Stock
-                $line->product->decrement('stock', $line->quantity);
+                // Decrease Stock, in the cell the line took.
+                $stock->take($line->product, $line->productVariant, (int) $line->quantity);
             }
 
             // Only the checked-out lines leave the cart; the rest stay put.
@@ -325,7 +357,7 @@ class CartController extends Controller
      */
     private function cartForView(): array
     {
-        return CartItem::with(['product', 'customDesign'])
+        return CartItem::with(['product', 'customDesign', 'productVariant.color'])
             ->where('user_id', auth()->id())
             ->get()
             ->reject(fn (CartItem $line) => $line->product === null)
@@ -337,6 +369,9 @@ class CartController extends Controller
                     'product_id' => $product->product_id,
                     'custom_design_id' => $line->custom_design_id,
                     'name' => $product->name . ($line->custom_design_id ? ' (Customized)' : ''),
+                    // "Navy Blue · L": the cell this line takes, for the shopper
+                    // to see what they picked.
+                    'variant' => $line->productVariant?->label ?: null,
                     'quantity' => $line->quantity,
                     'price' => $line->price,
                     'image' => $snapshot ?: $product->image_url,
@@ -353,11 +388,12 @@ class CartController extends Controller
             return null;
         }
 
-        [$productId, $designId] = CartItem::parseKey($key);
+        [$productId, $designId, $variantId] = CartItem::parseKey($key);
 
         return CartItem::where('user_id', auth()->id())
             ->where('product_id', $productId)
             ->where('custom_design_id', $designId)
+            ->where('product_variant_id', $variantId)
             ->first();
     }
 

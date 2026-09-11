@@ -154,6 +154,16 @@ For each supplier you attach: **cost**, **minimum order quantity**, **lead time 
 
 Tick the textures a customer may apply to this product in the design studio. If you tick none, the studio offers **every** texture, which is rarely what you want for a physical product.
 
+### Stock by size and colour
+
+A garment is not one figure. Tick **Comes in sizes (S–5XL)** on a product that does — a shirt or a polo, not a mug — and assign it the colours it is stocked in under the palette icon. The product then carries a grid: one cell per size and colour, each with its own stock, and the product's **Stock** field becomes the read-only total of the cells.
+
+- **Editing the grid.** Open **Edit** and scroll to **Stock by size and colour**. Type a figure per cell; the total updates as you type. A cell that is new — you have just ticked sizes, or assigned a colour — is greyed until you save, because saving is what creates it. The stock the product had moves into its first cell for you to spread out.
+- **Unassigning a colour** or switching sizes off never loses stock: the cells that disappear pour into a cell that remains, of the same colour where there is one.
+- **Alerts** fire per cell as well as for the total, and name the cell: *Low stock: White Cotton T-Shirt — Navy Blue · 5XL*.
+- **Where the stock moves.** The shop asks the customer for a size and colour before a sized or coloured product goes in the cart; a design from the studio carries its own. Checkout takes from that cell, cancellation gives back to it, and a purchase order line for such a product names the cell a delivery restocks.
+- The product list shows the total with a **by size / colour** breakdown under it, low and empty cells highlighted.
+
 ### Bill of materials
 
 Edit the product and add raw materials with a **quantity required** per unit. That recipe is what gets deducted when you approve an order. A product with no BOM consumes no materials on approval.

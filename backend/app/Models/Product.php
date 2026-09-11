@@ -37,6 +37,7 @@ class Product extends Model
         'category_id',
         'status',
         'is_customizable',
+        'has_sizes',
         'print_area_cm2',
         'low_stock_threshold',
         'unit',
@@ -45,6 +46,7 @@ class Product extends Model
 
     protected $casts = [
         'print_area_cm2' => 'float',
+        'has_sizes' => 'boolean',
     ];
 
     /**
@@ -144,5 +146,213 @@ class Product extends Model
     {
         return $this->belongsToMany(Color::class, 'product_colors', 'product_id', 'color_id')
             ->withTimestamps();
+    }
+
+    // ------------------------------------------------ stock by size and colour
+
+    /**
+     * The cells of this product's stock grid, one per size × colour.
+     *
+     * Ordered the way the grid is drawn: by size, smallest first, then by
+     * colour in the order the colours were assigned. Empty for a product
+     * that comes in one size with no colours, which keeps a single figure.
+     */
+    public function variants(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(ProductVariant::class, 'product_id', 'product_id')
+            ->orderBy('product_variant_id');
+    }
+
+    /** Whether this product is stocked per size and/or per colour at all. */
+    public function tracksVariants(): bool
+    {
+        return (bool) $this->has_sizes || $this->hasColorVariants();
+    }
+
+    /** Whether colour is a dimension of the stock grid: any colour assigned. */
+    public function hasColorVariants(): bool
+    {
+        return $this->relationLoaded('colors')
+            ? $this->colors->isNotEmpty()
+            : $this->colors()->exists();
+    }
+
+    /**
+     * The colour a design takes when it names none — a texture finish, or a
+     * recipe from before colours were assigned. The first assigned colour,
+     * which the studio also shows first.
+     */
+    public function defaultColorId(): ?int
+    {
+        $colors = $this->relationLoaded('colors') ? $this->colors : $this->colors()->get();
+
+        return $colors->first()?->color_id;
+    }
+
+    /**
+     * Every cell the grid should have, as variant keys with their size and
+     * colour: sizes (or just "none") × assigned colours (or just "none").
+     *
+     * @return array<string, array{size: ?string, color_id: ?int}>
+     */
+    public function variantMatrix(): array
+    {
+        if (! $this->tracksVariants()) {
+            return [];
+        }
+
+        $sizes = $this->has_sizes ? array_keys(CustomizationRate::sizes()) : [null];
+        $colors = $this->relationLoaded('colors') ? $this->colors : $this->colors()->get();
+        $colorIds = $colors->isNotEmpty() ? $colors->pluck('color_id')->all() : [null];
+
+        $matrix = [];
+        foreach ($sizes as $size) {
+            foreach ($colorIds as $colorId) {
+                $matrix[ProductVariant::keyFor($size, $colorId)] = ['size' => $size, 'color_id' => $colorId];
+            }
+        }
+
+        return $matrix;
+    }
+
+    /**
+     * Make the stored cells match the grid: create what is missing, drop
+     * what no longer belongs, and lose no stock doing it.
+     *
+     * Stock in a cell that disappears — a colour unassigned, sizes switched
+     * off — moves to the nearest cell that remains: one of the same colour
+     * if there is one, else the first. A product that gains its first cells
+     * moves its single figure into the first of them, for an admin to
+     * spread out. A product that loses its last cells keeps the total as
+     * its single figure. Either way the total never changes here.
+     */
+    public function ensureVariants(): void
+    {
+        $matrix = $this->variantMatrix();
+        $existing = $this->variants()->get()->keyBy('variant_key');
+
+        if ($matrix === []) {
+            if ($existing->isNotEmpty()) {
+                $total = (int) $existing->sum('stock');
+                ProductVariant::withoutEvents(fn () => $existing->each->delete());
+                $this->unsetRelation('variants');
+                $this->update(['stock' => $total]);
+            }
+
+            return;
+        }
+
+        $hadCells = $existing->isNotEmpty();
+        $orphaned = 0;
+        $carry = [];
+
+        foreach ($existing as $key => $variant) {
+            if (isset($matrix[$key])) {
+                continue;
+            }
+
+            // Prefer a surviving cell of the same colour.
+            $target = null;
+            foreach ($matrix as $candidate => $cell) {
+                if ($cell['color_id'] === $variant->color_id) {
+                    $target = $candidate;
+                    break;
+                }
+            }
+            $carry[$target ?? array_key_first($matrix)] = ($carry[$target ?? array_key_first($matrix)] ?? 0) + (int) $variant->stock;
+            $orphaned++;
+
+            ProductVariant::withoutEvents(fn () => $variant->delete());
+        }
+
+        // A product's first cells inherit the figure it had as one product.
+        if (! $hadCells) {
+            $carry[array_key_first($matrix)] = ($carry[array_key_first($matrix)] ?? 0) + (int) $this->stock;
+        }
+
+        foreach ($matrix as $key => $cell) {
+            $variant = $existing->get($key);
+
+            if (! $variant) {
+                // Created without events, so the key is set here rather than
+                // by the saving hook that would otherwise do it.
+                $variant = ProductVariant::withoutEvents(fn () => ProductVariant::create([
+                    'product_id' => $this->product_id,
+                    'size' => $cell['size'],
+                    'color_id' => $cell['color_id'],
+                    'variant_key' => $key,
+                    'stock' => 0,
+                ]));
+            }
+
+            if (($carry[$key] ?? 0) > 0) {
+                ProductVariant::withoutEvents(fn () => $variant->update(['stock' => $variant->stock + $carry[$key]]));
+            }
+        }
+
+        $this->unsetRelation('variants');
+        $this->syncStockFromVariants();
+    }
+
+    /**
+     * Re-sum the product's `stock` from its cells. Called whenever a cell
+     * moves, so the total every other screen reads stays right — and goes
+     * through update(), so the total's own low-stock alert still fires.
+     */
+    public function syncStockFromVariants(): void
+    {
+        if (! $this->variants()->exists()) {
+            return;
+        }
+
+        $total = (int) $this->variants()->sum('stock');
+
+        if ((int) $this->stock !== $total) {
+            $this->update(['stock' => $total]);
+        }
+    }
+
+    /**
+     * The cell a size and colour land in, resolved against what this
+     * product tracks: a size only if it has sizes, a colour only if it has
+     * colours — and the default colour when it has colours and none was
+     * named. Null for a product with no cells, which is moved as a whole.
+     */
+    public function variantFor(?string $size, int|string|null $colorId): ?ProductVariant
+    {
+        if (! $this->tracksVariants()) {
+            return null;
+        }
+
+        $size = $this->has_sizes && CustomizationRate::keyForSize($size) ? strtolower(trim($size)) : null;
+        $colorId = $this->hasColorVariants() ? ((int) $colorId ?: $this->defaultColorId()) : null;
+
+        // A colour the product doesn't carry is not a cell it has.
+        if ($colorId !== null && ! $this->colors()->where('colors.color_id', $colorId)->exists()) {
+            $colorId = $this->defaultColorId();
+        }
+
+        $key = ProductVariant::keyFor($size, $colorId);
+        $variant = $this->variants()->where('variant_key', $key)->first();
+
+        // A cell the grid should have but doesn't yet exist is created on
+        // demand, so a product whose colours were assigned before this
+        // existed still resolves.
+        if (! $variant && isset($this->variantMatrix()[$key])) {
+            $this->ensureVariants();
+            $variant = $this->variants()->where('variant_key', $key)->first();
+        }
+
+        return $variant;
+    }
+
+    /** The first cell of the grid, where stock with no cell named lands. */
+    public function firstVariant(): ?ProductVariant
+    {
+        if (! $this->tracksVariants()) {
+            return null;
+        }
+
+        return $this->variants()->first() ?? tap($this, fn () => $this->ensureVariants())->variants()->first();
     }
 }

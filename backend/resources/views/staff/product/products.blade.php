@@ -173,6 +173,7 @@
                                                                 aria-valuemax="100"></div>
                                                         </div>
                                                     </div>
+                                                    @include('partials.product-variant-breakdown', ['product' => $product])
                                                 </td>
                                                 <td>
                                                     @if ($product->stock <= 0)
@@ -551,7 +552,11 @@
                 document.getElementById('editLowStock').value = product.low_stock_threshold;
                 document.getElementById('editDescription').value = product.description;
                 document.getElementById('editIsCustomizable').checked = product.is_customizable == 1;
+                document.getElementById('editHasSizes').checked = !!product.has_sizes;
                 document.getElementById('editStatus').value = product.status || "active";
+
+                // Stock by size and colour, from the cells the product carries.
+                wireVariantGrid('editVariantGrid', product, @json($sizes));
 
                 var preview = document.getElementById('editImagePreview');
                 var placeholder = document.getElementById('editImagePlaceholder');

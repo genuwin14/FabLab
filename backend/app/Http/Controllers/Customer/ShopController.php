@@ -9,7 +9,9 @@ class ShopController extends Controller
 {
     public function index(Request $request)
     {
-        $query = \App\Models\Product::with('category')
+        // Cells and colours ride along so a sized or coloured product can
+        // offer its picker on the card.
+        $query = \App\Models\Product::with(['category', 'colors', 'variants.color'])
             ->whereIn('status', ['active', 'functional'])
             ->where('price', '>', 0);
 

@@ -77,6 +77,8 @@ Not every catalog item appears here. A product shows up only if the shop has mar
 
 Choose a quantity and click **Add to Cart**. Stock is checked as you do: asking for more than exists returns *"Insufficient stock! Only N left"*, and the cart badge updates when it succeeds.
 
+A garment is stocked per size and colour, so for one of those **Add to Cart** opens the quick view with a **Size** row and a **Colour** row. Pick both; a size or colour with nothing left in the other choice is greyed out, and the stock status shows what is left of exactly that combination. The cart line then shows the size and colour you picked. A mug has no sizes and goes straight in.
+
 ---
 
 ## 5. Customizing a product

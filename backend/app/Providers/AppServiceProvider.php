@@ -23,6 +23,8 @@ class AppServiceProvider extends ServiceProvider
 
         // Stock alerts cover everything the shop counts, not just products.
         \App\Models\Product::observe(\App\Observers\StockLevelObserver::class);
+        // A size-and-colour cell alerts on its own, naming the cell.
+        \App\Models\ProductVariant::observe(\App\Observers\StockLevelObserver::class);
         \App\Models\RawMaterial::observe(\App\Observers\StockLevelObserver::class);
         \App\Models\Texture::observe(\App\Observers\StockLevelObserver::class);
 

@@ -746,6 +746,10 @@
                         <input type="hidden" name="items[${rowCount}][product_id]" class="product-id-input" value="${data && data.type === 'product' ? data.id : ''}">
                         <input type="hidden" name="items[${rowCount}][raw_material_id]" class="material-id-input" value="${data && data.type === 'material' ? data.id : ''}">
                         <input type="hidden" name="items[${rowCount}][texture_id]" class="texture-id-input" value="${data && data.type === 'texture' ? data.id : ''}">
+                        <!-- Which size-and-colour cell a delivery of this line restocks.
+                             Only shown for a product that has cells. -->
+                        <select class="form-select form-select-sm border-0 bg-light shadow-sm mt-1 variant-select d-none"
+                            name="items[${rowCount}][product_variant_id]" aria-label="Size and colour to restock"></select>
                     </td>
                     <td>
                         <input type="number" step="0.01" name="items[${rowCount}][quantity]" class="form-control form-control-sm border-0 bg-light shadow-sm quantity-input" value="${qty}" min="0.01" required>
@@ -774,6 +778,21 @@
                 const qtyInput = tr.querySelector('.quantity-input');
                 const costInput = tr.querySelector('.cost-input');
                 const removeBtn = tr.querySelector('.remove-row');
+                const variantSelect = tr.querySelector('.variant-select');
+
+                // Offer the product's cells, current stock beside each, so
+                // the delivery lands where it is short. Cleared for anything
+                // that has no cells.
+                const showVariants = (itemData, selectedId) => {
+                    const variants = itemData && Array.isArray(itemData.variants) ? itemData.variants : [];
+                    variantSelect.innerHTML = '';
+                    variantSelect.classList.toggle('d-none', variants.length === 0);
+                    variantSelect.required = variants.length > 0;
+                    if (!variants.length) return;
+                    variantSelect.innerHTML = '<option value="" disabled selected>Size / colour…</option>' +
+                        variants.map(v => `<option value="${v.id}" ${selectedId == v.id ? 'selected' : ''}>${v.label || 'Standard'} (${v.stock} in stock)</option>`).join('');
+                };
+                showVariants(data ? itemsForSupplier.find(i => i.type === data.type && i.id == data.id) : null, data ? data.product_variant_id : null);
 
                 itemSelect.addEventListener('change', function () {
                     const val = this.value;
@@ -782,6 +801,7 @@
                     if (itemData) {
                         costInput.value = itemData.cost;
                     }
+                    showVariants(type === 'product' ? itemData : null, null);
                     const productInput = tr.querySelector('.product-id-input');
                     const materialInput = tr.querySelector('.material-id-input');
                     const textureInput = tr.querySelector('.texture-id-input');

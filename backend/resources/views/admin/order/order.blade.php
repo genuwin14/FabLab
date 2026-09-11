@@ -230,7 +230,7 @@
                                                 </td>
                                                 <td class="text-end pe-4">
                                                     @php
-                                                        $orderItemsJson = json_encode($order->orderItems()->with(['product', 'customDesign'])->get());
+                                                        $orderItemsJson = json_encode($order->orderItems()->with(['product', 'customDesign', 'productVariant.color'])->get());
                                                         $orderJson = json_encode($order);
                                                     @endphp
                                                     @if($order->status == 'pending')
@@ -651,7 +651,12 @@
 
                     items.forEach((item, itemIndex) => {
                         const product = item.product || {};
-                        const stock = product.stock ?? 0;
+                        // A line for a size-and-colour cell is checked against
+                        // that cell, not the product's total: fifty shirts in
+                        // stock is no help if none of them is a Navy 5XL.
+                        const variant = item.product_variant || item.productVariant || null;
+                        const stock = variant ? (variant.stock ?? 0) : (product.stock ?? 0);
+                        const variantLabel = variant && variant.label ? variant.label : '';
                         const isAvailable = stock >= item.quantity;
                         const design = item.custom_design || item.customDesign;
                         const isCustom = !!(item.custom_design_id && design);
@@ -674,7 +679,7 @@
                                         </div>
                                         <div>
                                             <div class="fw-bold text-dark small">${product.name ?? '-'}${customBadge}</div>
-                                            <div class="text-muted font-monospace" style="font-size: 0.7rem;">SKU: ${product.sku ?? '-'}</div>
+                                            <div class="text-muted font-monospace" style="font-size: 0.7rem;">SKU: ${product.sku ?? '-'}${variantLabel ? ' · <span class="font-sans-serif fw-semibold text-dark">' + variantLabel + '</span>' : ''}</div>
                                         </div>
                                     </div>
                                 </td>

@@ -113,7 +113,10 @@
              CustomizationRate::sizes(), the same definitions the admin prices
              and the cart charges against, so a size can't be offered here
              that the order can't record. --}}
-        <div class="mb-5">
+        {{-- Only a product that comes in sizes shows them. A mug has none,
+             and a design for one records no size. --}}
+        @if($hasSizes ?? true)
+        <div class="mb-5" id="sizePanel">
             <label class="text-accent small text-uppercase fw-bold tracking-wider mb-3 d-block">1. Select Size</label>
             <div class="row g-2">
                 @foreach($sizes ?? [] as $size => $option)
@@ -131,8 +134,20 @@
                     </div>
                 @endforeach
             </div>
-            <div class="tiny text-white-50 mt-2">Sizes run Small to 5XL. Recorded on your order; it doesn't change the preview.</div>
+            <div class="tiny text-white-50 mt-2">Sizes run Small to 5XL. Recorded on your order; it doesn't change the preview. A greyed size is out of stock in the chosen colour.</div>
         </div>
+        @endif
+
+        <style>
+            /* A size or colour with nothing on the shelf for the other choice. */
+            .btn-size.is-out { opacity: .35; cursor: not-allowed; }
+            .btn-size.is-out .shape-icon { text-decoration: line-through; }
+            .color-option.is-out { opacity: .3; cursor: not-allowed; position: relative; }
+            .color-option.is-out::after {
+                content: ''; position: absolute; left: 10%; right: 10%; top: 50%; height: 2px;
+                background: #fff; transform: rotate(-45deg); box-shadow: 0 0 0 1px rgba(0,0,0,.4);
+            }
+        </style>
 
 
 

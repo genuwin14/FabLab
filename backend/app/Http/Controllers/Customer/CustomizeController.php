@@ -67,7 +67,20 @@ class CustomizeController extends Controller
         $rates = \App\Models\CustomizationRate::amounts();
         $sizes = \App\Models\CustomizationRate::sizes();
 
-        return view('customer.prod-customize.customize-product', compact('product', 'initialShape', 'design', 'requiresSelection', 'textures', 'colors', 'rates', 'sizes'));
+        // Whether this product comes in sizes at all — a mug does not, and
+        // then the studio shows no size buttons — and the stock of each of
+        // its size-and-colour cells, so a cell that is empty can be greyed
+        // out before the cart refuses it.
+        $hasSizes = $product ? (bool) $product->has_sizes : true;
+        $variants = $product
+            ? $product->variants()->with('color')->get()->map(fn ($v) => [
+                'size' => $v->size,
+                'color_id' => $v->color_id,
+                'stock' => (int) $v->stock,
+            ])->values()->all()
+            : [];
+
+        return view('customer.prod-customize.customize-product', compact('product', 'initialShape', 'design', 'requiresSelection', 'textures', 'colors', 'rates', 'sizes', 'hasSizes', 'variants'));
     }
 
     public function save(Request $request)

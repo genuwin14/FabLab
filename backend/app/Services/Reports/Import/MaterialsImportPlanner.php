@@ -90,7 +90,12 @@ class MaterialsImportPlanner
 
         $currentStock = (float) $model->{$target['stock_column']};
 
-        if ($this->differs($currentStock, (float) $row['available'])) {
+        // A product stocked per size and colour can't take a total from a
+        // report — which cell would it go in? Its cells are adjusted on the
+        // product; the report's figure is left alone here.
+        $perCell = $model instanceof Product && $model->tracksVariants();
+
+        if (! $perCell && $this->differs($currentStock, (float) $row['available'])) {
             $changes['available'] = ['from' => $currentStock, 'to' => (float) $row['available']];
         }
 

@@ -82,6 +82,10 @@
                                                                         <h6 class="fw-bold text-dark mb-1">{{ $item['name'] }}</h6>
                                                                         <div class="d-flex align-items-center gap-2">
                                                                             <div class="small text-muted">{{ $item['sku'] }}</div>
+                                                                            @if(!empty($item['variant']))
+                                                                                {{-- The size and colour this line is for. --}}
+                                                                                <span class="badge bg-light text-dark border tiny rounded-pill fw-semibold">{{ $item['variant'] }}</span>
+                                                                            @endif
                                                                             @if(isset($item['custom_design_id']))
                                                                                 <span class="badge bg-soft-primary text-primary border border-primary-subtle tiny rounded-pill">Custom Design</span>
                                                                             @endif
