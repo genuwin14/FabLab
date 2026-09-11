@@ -57,6 +57,21 @@ class OrderSeeder extends Seeder
             'price' => 85.00,
         ]);
 
+        // Order 2b: PAID (receipt recorded by the admin, waiting for staff to start)
+        $o2b = Order::create([
+            'order_number' => Order::nextOrderNumber(),
+            'user_id' => $customer->id,
+            'status' => 'paid',
+            'payment_reference' => 'OR-' . rand(100000, 999999),
+            'total_amount' => 425.00,
+        ]);
+        OrderItem::create([
+            'order_id' => $o2b->order_id,
+            'product_id' => $mugWhite->product_id,
+            'quantity' => 5,
+            'price' => 85.00,
+        ]);
+
         // Order 3: PROCESSING (Payment received, being prepared)
         $o3 = Order::create([
             'order_number' => Order::nextOrderNumber(),

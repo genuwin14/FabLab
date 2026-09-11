@@ -43,6 +43,7 @@ class Order extends Model
         'pending',
         'awaiting_pr',
         'approved',
+        'paid',
         'processing',
         'ready_for_pickup',
         'for_delivery',
@@ -68,8 +69,8 @@ class Order extends Model
 
     /**
      * A cashier order counts as paid once an admin has recorded the number
-     * on the official receipt. There is no separate "paid" status: the
-     * receipt number on an approved order is the proof, and it is what the
+     * on the official receipt. Recording it moves the order from `approved`
+     * to `paid`, and the number stays on it from then on — it is what the
      * customer brings to collect the order.
      */
     public function isPaid(): bool
@@ -83,7 +84,7 @@ class Order extends Model
      */
     public function isAwaitingPayment(): bool
     {
-        return $this->status === 'approved' && ! $this->isPurchaseRequest() && ! $this->isPaid();
+        return $this->status === 'approved' && ! $this->isPurchaseRequest();
     }
 
     /**
@@ -94,7 +95,7 @@ class Order extends Model
     public function acceptsPayment(): bool
     {
         return ! $this->isPurchaseRequest()
-            && in_array($this->status, ['approved', 'processing', 'ready_for_pickup', 'for_delivery'], true);
+            && in_array($this->status, ['approved', 'paid', 'processing', 'ready_for_pickup', 'for_delivery'], true);
     }
 
     /**

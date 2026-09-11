@@ -186,13 +186,18 @@ class OrderController extends Controller
         }
 
         $firstTime = blank($order->payment_reference);
-        $order->update(['payment_reference' => $request->payment_reference]);
+        $order->update([
+            'payment_reference' => $request->payment_reference,
+            // Recording the receipt is what moves an approved order on. A
+            // correction later in the pipeline leaves the status alone.
+            'status' => $order->status === 'approved' ? 'paid' : $order->status,
+        ]);
 
         if ($firstTime) {
             \App\Support\Notifier::customer($order->user, new \App\Notifications\PaymentRecorded($order));
         }
 
-        return back()->with('success', $firstTime && $order->status === 'approved'
+        return back()->with('success', $firstTime && $order->status === 'paid'
             ? "Payment recorded — receipt {$order->payment_reference} on order {$order->order_number}. Staff can now start production."
             : "Receipt number on order {$order->order_number} updated to {$order->payment_reference}.");
     }
@@ -209,7 +214,7 @@ class OrderController extends Controller
 
         $order = Order::with(['user', 'orderItems.product.rawMaterials', 'orderItems.customDesign'])->findOrFail($id);
 
-        $cancellable = ['approved', 'processing', 'ready_for_pickup', 'for_delivery'];
+        $cancellable = ['approved', 'paid', 'processing', 'ready_for_pickup', 'for_delivery'];
 
         if (! in_array($order->status, $cancellable, true)) {
             $message = match ($order->status) {

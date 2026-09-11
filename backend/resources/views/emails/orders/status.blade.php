@@ -30,6 +30,13 @@
     </table>
 
     @switch($newStatus)
+        @case('paid')
+            <p style="margin:0 0 12px;">Your payment has been received and your order is queued for production.</p>
+            @if ($order->payment_reference)
+                <p style="margin:0 0 12px;">Keep your receipt — number <strong>{{ $order->payment_reference }}</strong> is what you show to collect the order.</p>
+            @endif
+            @break
+
         @case('processing')
             <p style="margin:0 0 12px;">Your order is now in production.</p>
             <p style="margin:0 0 12px;">We will email you again as soon as it moves to the next step.</p>

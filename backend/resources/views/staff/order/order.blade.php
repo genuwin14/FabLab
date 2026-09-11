@@ -35,6 +35,7 @@
                         $statusMeta = [
                             'pending'          => ['label' => 'Pending',          'icon' => 'bi-hourglass-split',   'bg' => 'rgba(255, 193, 7, 0.15)',  'color' => '#997404'],
                             'approved'         => ['label' => 'Approved',         'icon' => 'bi-clipboard-check',   'bg' => 'rgba(13, 110, 253, 0.12)', 'color' => '#0d6efd'],
+                            'paid'             => ['label' => 'Paid',             'icon' => 'bi-cash-coin',         'bg' => 'rgba(32, 201, 151, 0.15)', 'color' => '#0f8a6a'],
                             'processing'       => ['label' => 'Processing',       'icon' => 'bi-arrow-repeat',      'bg' => 'rgba(13, 202, 240, 0.15)', 'color' => '#087990'],
                             'awaiting_pr'      => ['label' => 'Awaiting PR',       'icon' => 'bi-file-earmark-text', 'bg' => 'rgba(108, 117, 125, 0.15)','color' => '#5c636a'],
                             'ready_for_pickup' => ['label' => 'Ready for Pickup', 'icon' => 'bi-bag-check',         'bg' => 'rgba(255, 153, 0, 0.15)',  'color' => '#b95900'],
@@ -111,7 +112,7 @@
                                             <select name="status" autocomplete="off" class="form-select rounded-2 w-100"
                                                 onchange="document.getElementById('orderFilterForm').submit()">
                                                 <option value="">All Statuses</option>
-                                                @foreach(['pending', 'awaiting_pr', 'approved', 'processing', 'ready_for_pickup', 'for_delivery', 'completed', 'cancelled'] as $s)
+                                                @foreach(['pending', 'awaiting_pr', 'approved', 'paid', 'processing', 'ready_for_pickup', 'for_delivery', 'completed', 'cancelled'] as $s)
                                                     <option value="{{ $s }}" {{ $status === $s ? 'selected' : '' }}>
                                                         {{ \App\Models\Order::statusLabel($s) }}
                                                     </option>
@@ -213,6 +214,7 @@
                                                         [$statusBg, $statusColor, $statusIcon] = match ($order->status) {
                                                             'completed' => ['rgba(25, 135, 84, 0.12)', '#198754', 'bi-check-circle-fill'],
                                                             'approved' => ['rgba(13, 110, 253, 0.12)', '#0d6efd', 'bi-clipboard-check'],
+                                                            'paid' => ['rgba(32, 201, 151, 0.15)', '#0f8a6a', 'bi-cash-coin'],
                                                             'processing' => ['rgba(13, 202, 240, 0.15)', '#087990', 'bi-arrow-repeat'],
                                                             'awaiting_pr' => ['rgba(108, 117, 125, 0.15)', '#5c636a', 'bi-file-earmark-text'],
                                                             'ready_for_pickup' => ['rgba(255, 193, 7, 0.18)', '#997404', 'bi-bag-check'],
@@ -229,8 +231,6 @@
                                                     </span>
                                                     @if($order->isAwaitingPayment())
                                                         <div class="tiny text-muted mt-1"><i class="bi bi-cash-coin me-1"></i>Awaiting payment</div>
-                                                    @elseif($order->status === 'approved' && $order->isPaid())
-                                                        <div class="tiny text-success fw-semibold mt-1"><i class="bi bi-check-circle-fill me-1"></i>Paid</div>
                                                     @endif
                                                 </td>
                                                 <td class="text-end pe-4">
@@ -242,7 +242,7 @@
                                                         $nextStatus = $isPr
                                                             ? ($order->status === 'for_delivery' ? 'completed' : null)
                                                             : match ($order->status) {
-                                                                'approved' => 'processing',
+                                                                'paid' => 'processing',
                                                                 'processing' => 'ready_for_pickup',
                                                                 'ready_for_pickup' => 'completed',
                                                                 default => null,

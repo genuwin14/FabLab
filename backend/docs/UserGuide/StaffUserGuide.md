@@ -69,12 +69,13 @@ Each row offers exactly one forward step, so the pipeline can't be skipped:
 | Current status | Button | Becomes |
 | :--- | :--- | :--- |
 | `pending` | *(none — "Awaiting admin")* | — |
-| `approved` | **Process** | `processing` |
+| `approved` | — (*Awaiting payment*) | — |
+| `paid` | **Process** | `processing` |
 | `processing` | **Ready** | `ready_for_pickup` |
 | `ready_for_pickup` | **Complete** | `completed` |
 | `completed` / `cancelled` | *(none)* | — |
 
-**Moving to Processing requires the order to be paid.** The customer pays at the CSPC Cashier against their transaction slip, and an admin records the number on the official receipt — see [Admin Guide §4](AdminUserGuide.md#recording-the-payment). Until then the order shows **Awaiting payment** and the Process button is not offered. Once the receipt number is on the order it shows **Paid**, and the confirmation dialog repeats the number so you can check it against the customer's receipt before cutting into stock. The number is searchable, which is how you reconcile at end of day.
+**Moving to Processing requires the order to be paid.** The customer pays at the CSPC Cashier against their transaction slip, and an admin records the number on the official receipt — see [Admin Guide §4](AdminUserGuide.md#recording-the-payment). Until then the order shows **Awaiting payment** and the Process button is not offered. Recording the receipt moves it to **Paid**, which has its own card on the list, and the confirmation dialog repeats the number so you can check it against the customer's receipt before cutting into stock. The number is searchable, which is how you reconcile at end of day.
 
 **View** opens the full order: customer details, every line, any customization (with its design preview), the total, and the receipt number.
 

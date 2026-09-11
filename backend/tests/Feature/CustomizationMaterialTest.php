@@ -153,7 +153,7 @@ class CustomizationMaterialTest extends TestCase
     private function startProduction(Order $order): void
     {
         // The admin records the customer's payment; staff then start the job.
-        $order->update(['payment_reference' => 'OR-' . $order->order_id]);
+        $order->update(['status' => 'paid', 'payment_reference' => 'OR-' . $order->order_id]);
 
         $this->asStaff();
         $this->post("/staff/orders/{$order->order_id}/update-status", ['status' => 'processing'])

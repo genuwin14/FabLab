@@ -339,8 +339,8 @@ flowchart TD
     A["C · Checkout<br/>status: pending<br/>product stock ↓"] --> B{"A · Review"}
     B -- "Approve" --> C["status: approved<br/>materials + textures ↓<br/>slip emailed"]
     B -- "Reject + reason" --> X["status: cancelled<br/>product stock ↑"]
-    C --> C2["A · Record payment<br/>receipt number on the order"]
-    C2 --> D["S · Process<br/>status: processing<br/>only once paid"]
+    C --> C2["A · Record payment<br/>status: paid"]
+    C2 --> D["S · Process<br/>status: processing"]
     D --> E["S · Ready<br/>status: ready_for_pickup<br/>customer notified"]
     E --> F["S · Complete<br/>status: completed<br/>counts as revenue"]
     A -. "C may cancel while pending" .-> X
@@ -391,7 +391,8 @@ Each row offers **exactly one forward step**:
 | Current status | Button | Becomes | Requires |
 | :--- | :--- | :--- | :--- |
 | `pending` | *(none — "Awaiting admin")* | — | — |
-| `approved` | **Process** | `processing` | **The admin to have recorded the payment** — an unpaid order shows *Awaiting payment* instead of the button |
+| `approved` | — | — | Shows *Awaiting payment*; the admin records the receipt, which moves it to `paid` |
+| `paid` | **Process** | `processing` | Nothing further — the dialog repeats the receipt number to check against the customer's copy |
 | `processing` | **Ready** | `ready_for_pickup` | — |
 | `ready_for_pickup` | **Complete** | `completed` | — |
 | `completed` / `cancelled` | *(none)* | — | — |
@@ -491,8 +492,8 @@ flowchart LR
 | 1 | Customer | The checkout preview slip states: **present this receipt at the CSPC Cashier for payment** |
 | 2 | Admin | Approving emails the **transaction slip** — a PDF carrying the order number as a **Code 128 barcode**, the customer's details, the lines, and the total |
 | 3 | Customer | Pays at the **CSPC Cashier**, presenting the slip. The cashier issues a receipt or transaction number |
-| 4 | Admin | **Record Payment** on the approved order: type the number on the official receipt the cashier issued. The customer is notified that their payment was received and told the receipt number is what they bring to collect |
-| 5 | Staff | The order now reads **Paid**; the **Process** button appears and the confirmation dialog repeats the receipt number. The number is **searchable** on both order lists |
+| 4 | Admin | **Record Payment** on the approved order: type the number on the official receipt the cashier issued. The order becomes `paid`. The customer is notified that their payment was received and told the receipt number is what they bring to collect |
+| 5 | Staff | The order now reads **Paid**, with its own card on the list; the **Process** button appears and the confirmation dialog repeats the receipt number. The number is **searchable** on both order lists |
 
 **Why the payment is recorded by the admin, before staff can start:** it's the gate between "paid for" and "being made", and it's how the shop reconciles takings at end of day. Search any order list by receipt number to find the order it belongs to.
 
@@ -762,7 +763,8 @@ To force the refused approval: edit the raw material and drop its stock below wh
 | Status | Set by | Stock effect |
 | :--- | :--- | :--- |
 | `pending` | System, at checkout | Product stock already deducted |
-| `approved` | **Admin review only** | Raw materials and textures deducted; slip emailed |
+| `approved` | **Admin review only** | Raw materials and textures reserved; slip emailed |
+| `paid` | Admin — **records the cashier receipt** | None; the customer is emailed the receipt number |
 | `processing` | Staff — **only once the admin has recorded the payment** | None |
 | `ready_for_pickup` | Staff | None |
 | `completed` | Staff | None — now counts as revenue |

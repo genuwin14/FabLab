@@ -35,7 +35,7 @@ class DashboardController extends Controller
         // ---------------- Charts ----------------
         // Order status breakdown (live pipeline)
         $orderStatusBreakdown = Order::selectRaw('status, COUNT(*) as count')
-            ->whereIn('status', ['pending', 'approved', 'processing', 'ready_for_pickup'])
+            ->whereIn('status', ['pending', 'approved', 'paid', 'processing', 'ready_for_pickup'])
             ->groupBy('status')
             ->get();
 
@@ -54,7 +54,7 @@ class DashboardController extends Controller
         // ---------------- Action Lists ----------------
         // Orders needing staff action (pending + approved, oldest first)
         $orderQueue = Order::with('user')
-            ->whereIn('status', ['pending', 'approved', 'processing'])
+            ->whereIn('status', ['pending', 'approved', 'paid', 'processing'])
             ->orderBy('created_at')
             ->take(6)
             ->get();

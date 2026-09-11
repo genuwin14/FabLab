@@ -231,7 +231,7 @@ class OrderWorkflowTest extends TestCase
 
     public function test_staff_advance_one_step_at_a_time(): void
     {
-        $order = $this->order('approved');
+        $order = $this->order('paid');
         $order->update(['payment_reference' => 'OR-1234']);
         Sanctum::actingAs($this->user('staff', 's@example.test'));
 
@@ -312,7 +312,7 @@ class OrderWorkflowTest extends TestCase
 
         $order->refresh();
         $this->assertSame('OR-1234', $order->payment_reference);
-        $this->assertSame('approved', $order->status);
+        $this->assertSame('paid', $order->status);
         $this->assertTrue($order->isPaid());
         \Illuminate\Support\Facades\Notification::assertSentTo($this->customer, \App\Notifications\PaymentRecorded::class);
     }
@@ -392,7 +392,7 @@ class OrderWorkflowTest extends TestCase
         Sanctum::actingAs($staff);
         $this->get('/staff/orders')->assertOk()->assertSee('Awaiting payment')->assertDontSee('data-next-status="processing"', false);
 
-        $order->update(['payment_reference' => 'OR-77']);
+        $order->update(['status' => 'paid', 'payment_reference' => 'OR-77']);
 
         $this->get('/staff/orders')->assertOk()->assertSee('Paid')->assertSee('data-next-status="processing"', false)->assertSee('data-receipt="OR-77"', false);
 

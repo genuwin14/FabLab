@@ -201,7 +201,7 @@ class OrderMaterialsPanelTest extends TestCase
         $this->asAdmin();
         $this->post("/admin/orders/{$order->order_id}/review", ['status' => 'approved']);
 
-        $order->update(['payment_reference' => 'OR-1']);
+        $order->update(['status' => 'paid', 'payment_reference' => 'OR-1']);
         $this->asStaff();
         $this->post("/staff/orders/{$order->order_id}/update-status", ['status' => 'processing']);
 

@@ -74,7 +74,7 @@ class OrderController extends Controller
      * can't send a completed order back to pending or skip a stage.
      */
     private const TRANSITIONS = [
-        'approved' => 'processing',
+        'paid' => 'processing',
         'processing' => 'ready_for_pickup',
         'ready_for_pickup' => 'completed',
     ];

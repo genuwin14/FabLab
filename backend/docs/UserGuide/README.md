@@ -66,8 +66,8 @@ flowchart TD
     A["Customer checks out<br/>status: pending"] --> B{"Admin reviews"}
     B -- "Approve" --> C["status: approved<br/>materials deducted<br/>slip emailed"]
     B -- "Reject + reason" --> X["status: cancelled<br/>product stock returned"]
-    C --> C2["Admin: records payment<br/>receipt number on the order"]
-    C2 --> D["Staff: processing<br/>only once paid"]
+    C --> C2["Admin: records payment<br/>status: paid"]
+    C2 --> D["Staff: processing"]
     D --> E["Staff: ready_for_pickup"]
     E --> F["Staff: completed"]
     A -. "customer may cancel<br/>while still pending" .-> X
@@ -79,7 +79,7 @@ Step by step, with who does what:
 | :-- | :--- | :--- | :--- | :--- |
 | 1 | Place the order | Customer | [Customer §8](CustomerUserGuide.md#8-checking-out) | Order created as `pending`; **product stock is deducted immediately**; staff and admins are notified |
 | 2 | Review it | Admin | [Admin §4](AdminUserGuide.md#4-reviewing-orders) | `approved` (raw materials and textures deducted, transaction slip emailed) or `cancelled` with a reason (stock returned) |
-| 3 | Record the payment | Admin | [Admin §4](AdminUserGuide.md#recording-the-payment) | still `approved`, now carrying the cashier's receipt number; the customer is told it is the number to bring |
+| 3 | Record the payment | Admin | [Admin §4](AdminUserGuide.md#recording-the-payment) | `paid` — the cashier's receipt number is on the order and the customer is told it is the number to bring |
 | 3b | Prepare it | Staff | [Staff §4](StaffUserGuide.md#4-processing-orders) | `processing` — offered only once the payment is recorded |
 | 4 | Set it aside | Staff | [Staff §4](StaffUserGuide.md#4-processing-orders) | `ready_for_pickup`; the customer is notified to collect |
 | 5 | Hand it over | Staff | [Staff §4](StaffUserGuide.md#4-processing-orders) | `completed`; the order now counts towards Sales |
@@ -109,7 +109,8 @@ If an item has no default supplier, it can't be pre-filled into a PO. Admins can
 | Status | Set by | What it means | Stock effect |
 | :--- | :--- | :--- | :--- |
 | `pending` | The system, at checkout | Waiting for admin review | Product stock already deducted |
-| `approved` | Admin review only | Accepted for production | Raw materials and textures deducted; slip emailed to the customer |
+| `approved` | Admin review only | Accepted; waiting for the customer to pay at the cashier | Raw materials and textures reserved; slip emailed to the customer |
+| `paid` | Admin records the receipt | Paid; queued for staff to start | None — the customer is emailed the receipt number to bring |
 | `processing` | Staff | Being made; only reachable once the admin has recorded the payment | None |
 | `ready_for_pickup` | Staff | Waiting for the customer to collect | None |
 | `completed` | Staff | Handed over; counts as a sale | None |

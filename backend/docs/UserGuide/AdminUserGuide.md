@@ -90,7 +90,7 @@ Approval sends the customer their transaction slip; they take it to the **CSPC C
 
 An approved cashier order shows **Awaiting payment** under its status and a **Record Payment** button. Open it, type the number on the official receipt, and save. In one step the system:
 
-1. Stores the receipt number on the order — the status stays `approved`, now marked **Paid**.
+1. Stores the receipt number on the order and moves it to `paid`.
 2. Notifies and emails the customer that the payment was received, with the receipt number, telling them it is what they show to collect the order.
 3. Unlocks the **Process** button for staff — see [Staff Guide §4](StaffUserGuide.md#4-processing-orders). Until this point staff see *Awaiting payment* instead.
 
@@ -100,7 +100,7 @@ Purchase Request orders never come through here — they are paid through procur
 
 ### Cancelling after approval
 
-Orders that are `approved`, `processing`, or `ready_for_pickup` carry a **Cancel** button in the orders list. It asks for a reason, then returns everything the order took — product stock, raw materials, and textures — and notifies the customer.
+Orders that are `approved`, `paid`, `processing`, or `ready_for_pickup` carry a **Cancel** button in the orders list. It asks for a reason, then returns everything the order took — product stock, raw materials, and textures — and notifies the customer.
 
 A `completed` order can't be cancelled: it's already in the customer's hands.
 

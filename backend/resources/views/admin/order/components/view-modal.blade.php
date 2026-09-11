@@ -163,6 +163,7 @@
         const STATUS_META = {
             'pending':          { label: 'Pending',          icon: 'bi-hourglass-split',   bg: 'rgba(255, 193, 7, 0.18)',  color: '#997404' },
             'approved':         { label: 'Approved',         icon: 'bi-clipboard-check',   bg: 'rgba(13, 110, 253, 0.12)', color: '#0d6efd' },
+            'paid':             { label: 'Paid',             icon: 'bi-cash-coin',         bg: 'rgba(32, 201, 151, 0.15)', color: '#0f8a6a' },
             'processing':       { label: 'Processing',       icon: 'bi-arrow-repeat',      bg: 'rgba(13, 202, 240, 0.15)', color: '#087990' },
             'ready_for_pickup': { label: 'Ready for Pickup', icon: 'bi-bag-check',         bg: 'rgba(255, 153, 0, 0.15)',  color: '#b95900' },
             'completed':        { label: 'Completed',        icon: 'bi-check-circle-fill', bg: 'rgba(25, 135, 84, 0.12)',  color: '#198754' },

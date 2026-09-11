@@ -391,7 +391,7 @@
                                                 <select id="orderStatusFilter"
                                                     class="form-select rounded-2 w-100">
                                                     <option value="">All Statuses</option>
-                                                    @foreach(['pending', 'awaiting_pr', 'approved', 'processing', 'ready_for_pickup', 'for_delivery', 'completed', 'cancelled'] as $s)
+                                                    @foreach(['pending', 'awaiting_pr', 'approved', 'paid', 'processing', 'ready_for_pickup', 'for_delivery', 'completed', 'cancelled'] as $s)
                                                         <option value="{{ $s }}">
                                                             {{ \App\Models\Order::statusLabel($s) }}
                                                         </option>
@@ -569,7 +569,7 @@
                                                             data-url="{{ route('customer.orders.cancel', $order->order_id) }}">
                                                             Cancel
                                                         </button>
-                                                    @elseif(in_array($order->status, ['approved', 'processing', 'ready_for_pickup', 'for_delivery', 'completed']))
+                                                    @elseif(in_array($order->status, ['approved', 'paid', 'processing', 'ready_for_pickup', 'for_delivery', 'completed']))
                                                         <a href="{{ route('customer.orders.receipt', $order->order_id) }}"
                                                             target="_blank"
                                                             class="btn btn-sm table-action-btn shadow-sm flex-grow-1 d-flex align-items-center justify-content-center fw-bold"
@@ -606,6 +606,7 @@
                                                     [$rowStatusBg, $rowStatusColor, $rowStatusIcon] = match ($order->status) {
                                                         'completed' => ['rgba(25, 135, 84, 0.12)', '#198754', 'bi-check-circle-fill'],
                                                         'approved' => ['rgba(13, 110, 253, 0.12)', '#0d6efd', 'bi-clipboard-check'],
+                                                        'paid' => ['rgba(32, 201, 151, 0.15)', '#0f8a6a', 'bi-cash-coin'],
                                                         'processing' => ['rgba(13, 202, 240, 0.15)', '#087990', 'bi-arrow-repeat'],
                                                         'awaiting_pr' => ['rgba(108, 117, 125, 0.15)', '#5c636a', 'bi-file-earmark-text'],
                                                         'ready_for_pickup' => ['rgba(255, 193, 7, 0.18)', '#997404', 'bi-bag-check'],
@@ -654,7 +655,7 @@
                                                                     data-url="{{ route('customer.orders.cancel', $order->order_id) }}">
                                                                     <i class="bi bi-x-lg me-1"></i>Cancel
                                                                 </button>
-                                                            @elseif(in_array($order->status, ['approved', 'processing', 'ready_for_pickup', 'for_delivery', 'completed']))
+                                                            @elseif(in_array($order->status, ['approved', 'paid', 'processing', 'ready_for_pickup', 'for_delivery', 'completed']))
                                                                 {{-- Same action the card view offers, so the two
                                                                      layouts of this page stay in step. --}}
                                                                 <a href="{{ route('customer.orders.receipt', $order->order_id) }}"

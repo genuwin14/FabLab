@@ -3,6 +3,7 @@
     $statusColors = [
         'pending' => 'bg-warning text-dark',
         'approved' => 'bg-info text-white',
+        'paid' => 'bg-success text-white',
         'processing' => 'bg-info text-white',
         'awaiting_pr' => 'bg-secondary text-white',
         'ready_for_pickup' => 'bg-primary text-white',
@@ -55,7 +56,7 @@
                     </div>
                     <i class="bi bi-receipt-cutoff fs-3 text-primary opacity-50"></i>
                 </div>
-                @if(in_array($order->status, ['approved', 'processing', 'ready_for_pickup', 'for_delivery']))
+                @if(in_array($order->status, ['approved', 'paid', 'processing', 'ready_for_pickup', 'for_delivery']))
                     <div class="text-muted small mt-2">
                         <i class="bi bi-info-circle me-1"></i>Bring this number to the FabLab to collect your order.
                     </div>
@@ -250,7 +251,7 @@
 
         {{-- The transaction slip exists from approval onwards; this is where a
              customer looking at the order expects to find it. --}}
-        @if(in_array($order->status, ['approved', 'processing', 'ready_for_pickup', 'for_delivery', 'completed']))
+        @if(in_array($order->status, ['approved', 'paid', 'processing', 'ready_for_pickup', 'for_delivery', 'completed']))
             <a href="{{ route('customer.orders.receipt', $order->order_id) }}" target="_blank"
                 class="btn w-100 rounded-pill fw-bold mt-3 d-flex align-items-center justify-content-center"
                 style="background-color: #0e2e45; color: #ffffff;">

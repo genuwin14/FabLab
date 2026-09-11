@@ -44,6 +44,7 @@
                         $statusMeta = [
                             'pending'          => ['label' => 'Pending',          'color' => '#997404'],
                             'approved'         => ['label' => 'Approved',         'color' => '#0d6efd'],
+                            'paid'             => ['label' => 'Paid',             'color' => '#0f8a6a'],
                             'processing'       => ['label' => 'Processing',       'color' => '#087990'],
                             'ready_for_pickup' => ['label' => 'Ready for Pickup', 'color' => '#b95900'],
                             'completed'        => ['label' => 'Completed',        'color' => '#198754'],

@@ -224,6 +224,7 @@
                                                                 // colours, so a status reads the same on both screens.
                                                                 [$statusBg, $statusColor] = match ($order->status) {
                                                                     'approved' => ['rgba(13, 110, 253, 0.12)', '#0d6efd'],
+                                                                    'paid' => ['rgba(32, 201, 151, 0.15)', '#0f8a6a'],
                                                                     'processing' => ['rgba(13, 202, 240, 0.15)', '#087990'],
                                                                     default => ['rgba(255, 193, 7, 0.18)', '#997404'],
                                                                 };
@@ -446,6 +447,7 @@
             const statusColorMap = {
                 'pending': '#ffc107',
                 'approved': '#0dcaf0',
+                'paid': '#20c997',
                 'processing': '#0d6efd',
                 'ready_for_pickup': '#6610f2'
             };

@@ -162,7 +162,8 @@ Once approved, a PR order is driven by paperwork rather than by the workshop que
 | Status | What it means for you | Who set it |
 | :--- | :--- | :--- |
 | **Pending** | Submitted, waiting for the shop to review it. You can still cancel | The system, at checkout |
-| **Approved** | Accepted. A transaction slip has been emailed to you — pay at the CSPC Cashier with it. Once the admin records your payment, Details shows your **receipt number** and production can start | An admin |
+| **Approved** | Accepted. A transaction slip has been emailed to you — pay at the CSPC Cashier with it | An admin |
+| **Paid** | Your payment has been recorded. Details shows your **receipt number**, the number to bring when collecting, and production can start | An admin |
 | **Processing** | Being made | Staff |
 | **Ready for Pickup** | Waiting for you at the shop — go collect it | Staff |
 | **Completed** | Handed over. Done | Staff |

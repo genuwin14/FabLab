@@ -419,7 +419,7 @@ class MeasuredInkDrawTest extends TestCase
         $order = $this->order($this->measured(['cyan' => 0.5]));
         $this->approve($order);
 
-        $order->update(['payment_reference' => 'OR-1']);
+        $order->update(['status' => 'paid', 'payment_reference' => 'OR-1']);
         Sanctum::actingAs($this->user('staff', 'st@example.test'));
         $this->post("/staff/orders/{$order->order_id}/update-status", ['status' => 'processing'])
             ->assertRedirect();

@@ -47,7 +47,7 @@ class RetuneLowStockThresholds extends Command
      * An order counts toward demand once it is approved — that is when stock
      * leaves the shelf. Pending never took anything, cancelled gave it back.
      */
-    private const CONSUMING_STATUSES = ['approved', 'processing', 'ready_for_pickup', 'for_delivery', 'completed'];
+    private const CONSUMING_STATUSES = ['approved', 'paid', 'processing', 'ready_for_pickup', 'for_delivery', 'completed'];
 
     public function handle(): int
     {
