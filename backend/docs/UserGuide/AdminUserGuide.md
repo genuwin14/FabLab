@@ -51,9 +51,9 @@ Revenue counts `completed` orders only — an approved order that hasn't been ha
 
 ## 4. Reviewing orders
 
-`/admin/orders` lists every order in the system, newest first, 10 per page. Search by order number, payment reference, or customer name; filter by status or by date (today / this week / this month).
+`/admin/orders` lists every order in the system, newest first, 10 per page. Search by order number, receipt number, or customer name; filter by status or by date (today / this week / this month).
 
-**Only `pending` orders carry a Review button.** Everything else opens read-only, showing the customer, the lines, any customization with its preview, the total, the payment reference staff recorded, and the cancellation reason if there is one.
+**Only `pending` orders carry a Review button.** Everything else opens read-only, showing the customer, the lines, any customization with its preview, the total, the receipt number staff recorded, and the cancellation reason if there is one.
 
 ### Approving
 

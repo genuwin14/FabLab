@@ -118,7 +118,7 @@
                             @php
                                 $commonReasons = [
                                     'Insufficient stock',
-                                    'Invalid payment reference',
+                                    'Invalid receipt number',
                                     'Customer request',
                                     'Unavailable at this time',
                                     'Incomplete order details'

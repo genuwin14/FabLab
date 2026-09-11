@@ -93,7 +93,7 @@
                                             </span>
                                             <input type="text" name="search" value="{{ $search }}" autocomplete="off"
                                                 class="form-control border-start-0 rounded-end-2 ps-0"
-                                                placeholder="Search by Order ID, Ref No, or Customer...">
+                                                placeholder="Search by Order ID, Receipt No, or Customer...">
                                         </div>
                                     </div>
                                 </div>
@@ -154,7 +154,7 @@
                                         <tr class="bg-primary bg-opacity-10">
                                             <th class="ps-4 py-3 text-primary small text-uppercase fw-bold border-0">
                                                 Order ID</th>
-                                            <th class="py-3 text-primary small text-uppercase fw-bold border-0">Ref No
+                                            <th class="py-3 text-primary small text-uppercase fw-bold border-0">Receipt No
                                             </th>
                                             <th class="py-3 text-primary small text-uppercase fw-bold border-0">Customer
                                             </th>
@@ -741,7 +741,7 @@
                     if (nextStatus === 'processing') {
                         paymentContainer.removeClass('d-none');
                         paymentInput.prop('required', true);
-                        confirmText.text("Please enter the Payment Reference Number from the Cashier to start processing this order.");
+                        confirmText.text("Please enter the Receipt Number from the Cashier to start processing this order.");
                         fetchOrderMaterials(
                             'updateMaterialsPanel',
                             @json(route('staff.orders.materials', ':id')).replace(':id', id)

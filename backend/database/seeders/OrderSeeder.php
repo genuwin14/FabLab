@@ -62,7 +62,7 @@ class OrderSeeder extends Seeder
             'order_number' => Order::nextOrderNumber(),
             'user_id' => $customer->id,
             'status' => 'processing',
-            'payment_reference' => 'GCASH-REF-' . rand(100000, 999999),
+            'payment_reference' => 'OR-' . rand(100000, 999999),
             'total_amount' => 1850.00,
         ]);
         OrderItem::create([
@@ -83,7 +83,7 @@ class OrderSeeder extends Seeder
             'order_number' => Order::nextOrderNumber(),
             'user_id' => $customer->id,
             'status' => 'ready_for_pickup',
-            'payment_reference' => 'GCASH-REF-' . rand(100000, 999999),
+            'payment_reference' => 'OR-' . rand(100000, 999999),
             'total_amount' => 6000.00,
         ]);
         OrderItem::create([
@@ -98,7 +98,7 @@ class OrderSeeder extends Seeder
             'order_number' => Order::nextOrderNumber(now()->subMonth()),
             'user_id' => $customer->id,
             'status' => 'completed',
-            'payment_reference' => 'GCASH-REF-' . rand(100000, 999999),
+            'payment_reference' => 'OR-' . rand(100000, 999999),
             'total_amount' => 14500.00,
             'created_at' => now()->subMonth(),
             'updated_at' => now()->subMonth()->addDays(3),

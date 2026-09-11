@@ -58,7 +58,7 @@ Two things to take from this:
 
 ### Finding an order
 
-- **Search** matches the order number, the payment reference, or the customer's name.
+- **Search** matches the order number, the receipt number, or the customer's name.
 - **Filter** by status, or by date (today / this week / this month).
 - Status tabs across the top carry live counts.
 
@@ -74,9 +74,9 @@ Each row offers exactly one forward step, so the pipeline can't be skipped:
 | `ready_for_pickup` | **Complete** | `completed` |
 | `completed` / `cancelled` | *(none)* | — |
 
-**Moving to Processing requires a payment reference.** The confirmation dialog asks for it — enter the receipt or transaction number for the payment you took. It's stored on the order and is searchable afterwards, which is how you reconcile at end of day.
+**Moving to Processing requires a receipt number.** The confirmation dialog asks for it — enter the number on the receipt the cashier issued for the payment. It's stored on the order, shown to the customer as the number to bring when collecting, and is searchable afterwards, which is how you reconcile at end of day.
 
-**View** opens the full order: customer details, every line, any customization (with its design preview), the total, and the payment reference.
+**View** opens the full order: customer details, every line, any customization (with its design preview), the total, and the receipt number.
 
 Each change notifies the customer automatically, provided they haven't switched notifications off.
 

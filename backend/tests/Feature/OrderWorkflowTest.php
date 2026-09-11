@@ -283,7 +283,7 @@ class OrderWorkflowTest extends TestCase
         $this->assertSame('pending', $order->refresh()->status);
     }
 
-    public function test_processing_requires_a_payment_reference(): void
+    public function test_processing_requires_a_receipt_number(): void
     {
         $order = $this->order('approved');
         Sanctum::actingAs($this->user('staff', 's@example.test'));
@@ -294,7 +294,7 @@ class OrderWorkflowTest extends TestCase
         $this->assertSame('approved', $order->refresh()->status);
     }
 
-    public function test_a_payment_reference_cannot_be_reused_on_another_order(): void
+    public function test_a_receipt_number_cannot_be_reused_on_another_order(): void
     {
         $first = $this->order('processing');
         $first->update(['payment_reference' => 'OR-1234']);

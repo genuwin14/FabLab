@@ -66,7 +66,7 @@ flowchart TD
     A["Customer checks out<br/>status: pending"] --> B{"Admin reviews"}
     B -- "Approve" --> C["status: approved<br/>materials deducted<br/>slip emailed"]
     B -- "Reject + reason" --> X["status: cancelled<br/>product stock returned"]
-    C --> D["Staff: processing<br/>payment reference required"]
+    C --> D["Staff: processing<br/>receipt number required"]
     D --> E["Staff: ready_for_pickup"]
     E --> F["Staff: completed"]
     A -. "customer may cancel<br/>while still pending" .-> X
@@ -78,7 +78,7 @@ Step by step, with who does what:
 | :-- | :--- | :--- | :--- | :--- |
 | 1 | Place the order | Customer | [Customer §8](CustomerUserGuide.md#8-checking-out) | Order created as `pending`; **product stock is deducted immediately**; staff and admins are notified |
 | 2 | Review it | Admin | [Admin §4](AdminUserGuide.md#4-reviewing-orders) | `approved` (raw materials and textures deducted, transaction slip emailed) or `cancelled` with a reason (stock returned) |
-| 3 | Prepare it | Staff | [Staff §4](StaffUserGuide.md#4-processing-orders) | `processing` — a payment reference must be recorded here |
+| 3 | Prepare it | Staff | [Staff §4](StaffUserGuide.md#4-processing-orders) | `processing` — a receipt number must be recorded here |
 | 4 | Set it aside | Staff | [Staff §4](StaffUserGuide.md#4-processing-orders) | `ready_for_pickup`; the customer is notified to collect |
 | 5 | Hand it over | Staff | [Staff §4](StaffUserGuide.md#4-processing-orders) | `completed`; the order now counts towards Sales |
 
@@ -108,7 +108,7 @@ If an item has no default supplier, it can't be pre-filled into a PO. Admins can
 | :--- | :--- | :--- | :--- |
 | `pending` | The system, at checkout | Waiting for admin review | Product stock already deducted |
 | `approved` | Admin review only | Accepted for production | Raw materials and textures deducted; slip emailed to the customer |
-| `processing` | Staff | Being made; a payment reference is recorded | None |
+| `processing` | Staff | Being made; a receipt number is recorded | None |
 | `ready_for_pickup` | Staff | Waiting for the customer to collect | None |
 | `completed` | Staff | Handed over; counts as a sale | None |
 | `cancelled` | Customer (while `pending`), or Admin (rejecting at review, or cancelling any time before hand-over) | Order is dead | Everything it took is returned: product stock, and materials and textures if it had been approved |
@@ -231,5 +231,5 @@ The price is worked out from the saved design, so the studio's live quote, the c
 | **Department** | One of Digital Customization Center, Book Production, or Woodworks. Groups items in the materials report |
 | **Design (recipe)** | A saved customization: base style, texture, and the text/shape/logo elements placed on it |
 | **Low-stock threshold** | The level at or below which an item appears on the inventory watchlist |
-| **Payment reference** | The receipt or transaction number staff record when an order moves to `processing` |
+| **Receipt number** | The number on the cashier's receipt, recorded by staff when an order moves to `processing`; the customer shows it to collect the order |
 | **Transaction slip** | The PDF receipt, carrying a barcode of the order number, emailed on approval and downloadable by the customer |

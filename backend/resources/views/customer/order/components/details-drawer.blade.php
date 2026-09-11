@@ -40,10 +40,28 @@
     <div class="offcanvas-body customer-order-details-body p-3">
         <div class="d-flex justify-content-between align-items-center mb-3">
             <span class="badge {{ $badgeClass }} rounded-pill px-3 py-2">{{ $statusLabel }}</span>
-            @if($order->payment_reference ?? false)
-                <span class="text-muted small font-monospace">{{ $order->payment_reference }}</span>
-            @endif
         </div>
+
+        {{-- The receipt number the cashier issued, recorded by staff when the
+             order went into production. It is what the customer shows at the
+             counter to collect the order, so it gets its own block rather
+             than a footnote beside the status. --}}
+        @if($order->payment_reference)
+            <div class="customer-order-details-receipt mb-3">
+                <div class="d-flex justify-content-between align-items-center gap-3">
+                    <div>
+                        <div class="customer-order-details-receipt-label">Receipt Number</div>
+                        <div class="customer-order-details-receipt-number">{{ $order->payment_reference }}</div>
+                    </div>
+                    <i class="bi bi-receipt-cutoff fs-3 text-primary opacity-50"></i>
+                </div>
+                @if(in_array($order->status, ['processing', 'ready_for_pickup', 'for_delivery']))
+                    <div class="text-muted small mt-2">
+                        <i class="bi bi-info-circle me-1"></i>Bring this number to the FabLab to collect your order.
+                    </div>
+                @endif
+            </div>
+        @endif
 
         @if($order->isPurchaseRequest())
             <div class="customer-order-details-summary mb-3">

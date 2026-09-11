@@ -33,7 +33,7 @@
                     </div>
                     <div class="col-md-4">
                         <div class="text-uppercase fw-bold text-muted"
-                            style="font-size: 0.65rem; letter-spacing: 0.05em;">Payment Reference</div>
+                            style="font-size: 0.65rem; letter-spacing: 0.05em;">Receipt Number</div>
                         <div class="fw-semibold text-dark small mt-1 font-monospace" id="viewPaymentRefContainer">
                             <span id="viewPaymentRef">—</span>
                         </div>

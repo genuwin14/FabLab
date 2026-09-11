@@ -26,19 +26,19 @@
                 <input type="hidden" name="status" id="updateStatusInput">
 
                 <div class="modal-body p-4 bg-white">
-                    <!-- Payment Reference (Hidden by default) -->
+                    <!-- Receipt Number (Hidden by default) -->
                     <div id="paymentRefContainer" class="d-none">
                         <h6 class="order-section-title">
-                            <i class="bi bi-credit-card-2-front me-2"></i>Payment Reference
+                            <i class="bi bi-receipt me-2"></i>Receipt Number
                         </h6>
                         <div class="alert alert-warning border-0 d-flex align-items-center mb-3 rounded-3">
                             <i class="bi bi-exclamation-triangle-fill me-2"></i>
-                            <div class="small fw-bold">Reference number is required to start processing this order.</div>
+                            <div class="small fw-bold">Receipt number is required to start processing this order. The customer will show it to collect the order.</div>
                         </div>
                         <input type="text"
                             class="form-control order-field-input"
                             id="paymentReference" name="payment_reference"
-                            placeholder="Enter Reference #">
+                            placeholder="Enter Receipt #">
                     </div>
 
                     @include('partials.order-materials-panel', ['panelId' => 'updateMaterialsPanel'])

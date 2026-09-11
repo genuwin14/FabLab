@@ -168,7 +168,7 @@ Once approved, a PR order is driven by paperwork rather than by the workshop que
 | **Completed** | Handed over. Done | Staff |
 | **Cancelled** | Not going ahead. If the shop cancelled it, the reason is shown on the order | You, an admin, or staff |
 
-Click **Details** on any order for the full picture: every line with its design preview, the payment reference, the total, and the receipt.
+Click **Details** on any order for the full picture: every line with its design preview, the receipt number (bring it to collect your order), the total, and the transaction slip.
 
 Each change also arrives as a notification, as long as notifications are on in your [Settings](#13-profile-and-settings) — and clicking it opens that order's details straight away.
 

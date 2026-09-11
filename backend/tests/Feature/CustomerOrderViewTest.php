@@ -168,6 +168,32 @@ class CustomerOrderViewTest extends TestCase
             ->assertSee('₱300.00');
     }
 
+    public function test_the_drawer_tells_the_customer_the_receipt_number_to_bring(): void
+    {
+        $order = $this->order('ready_for_pickup');
+        $order->update(['payment_reference' => 'OR-55123']);
+
+        Sanctum::actingAs($this->customer);
+
+        $this->get('/customer/orders')
+            ->assertOk()
+            ->assertSee('Receipt Number')
+            ->assertSee('OR-55123')
+            ->assertSee('Bring this number to the FabLab to collect your order.');
+    }
+
+    public function test_the_pickup_email_carries_the_receipt_number(): void
+    {
+        $order = $this->order('ready_for_pickup');
+        $order->update(['payment_reference' => 'OR-55123']);
+
+        $html = (new OrderStatusChanged($order, 'processing', 'ready_for_pickup'))
+            ->toMail($this->customer)->render();
+
+        $this->assertStringContainsString('RECEIPT NUMBER', $html);
+        $this->assertStringContainsString('OR-55123', $html);
+    }
+
     public function test_the_page_opens_the_drawer_named_in_the_fragment(): void
     {
         $order = $this->order('approved');

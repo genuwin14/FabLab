@@ -127,6 +127,27 @@
             padding: 14px 16px;
         }
 
+        .customer-order-details-receipt {
+            background-color: rgba(255, 197, 8, 0.1);
+            border: 1px dashed rgba(153, 116, 4, 0.45);
+            border-radius: 12px;
+            padding: 12px 16px;
+        }
+        .customer-order-details-receipt-label {
+            font-size: 0.68rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: #997404;
+        }
+        .customer-order-details-receipt-number {
+            font-family: var(--bs-font-monospace);
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: #0e2e45;
+            word-break: break-all;
+        }
+
         .customer-order-details-section-title {
             font-size: 0.7rem;
             font-weight: 700;

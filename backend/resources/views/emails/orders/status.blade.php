@@ -37,7 +37,20 @@
 
         @case('ready_for_pickup')
             <p style="margin:0 0 12px;">Your order is ready for pickup!</p>
-            <p style="margin:0 0 12px;">Please visit the CSPC FabLab and present your transaction slip to collect it.</p>
+            @if ($order->payment_reference)
+                <p style="margin:0 0 12px;">Please visit the CSPC FabLab and present this receipt number to collect it:</p>
+                <table role="presentation" cellpadding="0" cellspacing="0" width="100%"
+                    style="background-color:#fff8e1;border:1px dashed #997404;border-radius:8px;margin:0 0 12px;">
+                    <tr>
+                        <td style="padding:12px 16px;">
+                            <div style="color:#997404;font-size:11px;font-weight:bold;letter-spacing:1px;">RECEIPT NUMBER</div>
+                            <div style="color:#0e2e45;font-size:20px;font-weight:bold;font-family:Consolas,Menlo,monospace;">{{ $order->payment_reference }}</div>
+                        </td>
+                    </tr>
+                </table>
+            @else
+                <p style="margin:0 0 12px;">Please visit the CSPC FabLab and present your receipt number to collect it.</p>
+            @endif
             @break
 
         @case('for_delivery')
