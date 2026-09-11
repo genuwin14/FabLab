@@ -61,8 +61,9 @@
                     <button type="button" class="btn order-btn-cancel rounded-pill px-4" data-bs-dismiss="modal">
                         Cancel
                     </button>
-                    <button type="submit" class="btn order-btn-save rounded-pill px-4">
-                        <i class="bi bi-check-lg me-1"></i>Confirm Update
+                    <button type="submit" class="btn order-btn-save rounded-pill px-4" id="updateStatusSubmit">
+                        <span class="spinner-border spinner-border-sm me-1 d-none" role="status" aria-hidden="true"></span>
+                        <i class="bi bi-check-lg me-1 btn-icon"></i><span class="btn-text">Confirm Update</span>
                     </button>
                 </div>
             </form>
@@ -122,5 +123,31 @@
             }
         });
         observer.observe(paymentRef, { attributes: true, attributeFilter: ['class'] });
+
+        // The page reloads on the response, so the button only has to say
+        // that the step is under way and refuse a second click meanwhile.
+        // Starting production also moves the materials, which can take a
+        // moment — long enough for a silent button to look stuck.
+        const submit = document.getElementById('updateStatusSubmit');
+        const busyText = {
+            processing: 'Starting production...',
+            ready_for_pickup: 'Marking ready...',
+            completed: 'Completing...',
+        };
+
+        document.getElementById('updateStatusForm').addEventListener('submit', function () {
+            submit.disabled = true;
+            submit.querySelector('.spinner-border').classList.remove('d-none');
+            submit.querySelector('.btn-icon').classList.add('d-none');
+            submit.querySelector('.btn-text').textContent = busyText[document.getElementById('updateStatusInput').value] || 'Updating...';
+        });
+
+        // A closed-and-reopened dialog must start from a live button.
+        updateModal.addEventListener('show.bs.modal', function () {
+            submit.disabled = false;
+            submit.querySelector('.spinner-border').classList.add('d-none');
+            submit.querySelector('.btn-icon').classList.remove('d-none');
+            submit.querySelector('.btn-text').textContent = 'Confirm Update';
+        });
     });
 </script>
