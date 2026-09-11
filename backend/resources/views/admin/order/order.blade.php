@@ -239,10 +239,12 @@
                                                         style="background-color: {{ $statusBg }}; color: {{ $statusColor }};">
                                                         <i class="bi {{ $statusIcon }}" style="font-size: 0.75rem;"></i>
                                                         {{ \App\Models\Order::statusLabel($order->status) }}
+                                                        {{-- An approved PAXS order is waiting on the customer to
+                                                             pay; say so in the badge rather than on a second line. --}}
+                                                        @if($order->isAwaitingPayment())
+                                                            <span class="fw-normal opacity-75">(Awaiting payment)</span>
+                                                        @endif
                                                     </span>
-                                                    @if($order->isAwaitingPayment())
-                                                        <div class="tiny text-muted mt-1"><i class="bi bi-cash-coin me-1"></i>Awaiting payment</div>
-                                                    @endif
                                                 </td>
                                                 <td class="text-end pe-4">
                                                     @php

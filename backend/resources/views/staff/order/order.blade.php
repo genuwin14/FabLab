@@ -229,9 +229,6 @@
                                                         <i class="bi {{ $statusIcon }}" style="font-size: 0.75rem;"></i>
                                                         {{ \App\Models\Order::statusLabel($order->status) }}
                                                     </span>
-                                                    @if($order->isAwaitingPayment())
-                                                        <div class="tiny text-muted mt-1"><i class="bi bi-cash-coin me-1"></i>Awaiting payment</div>
-                                                    @endif
                                                 </td>
                                                 <td class="text-end pe-4">
                                                     @php
