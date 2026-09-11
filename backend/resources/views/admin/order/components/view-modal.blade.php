@@ -140,12 +140,6 @@
                     </aside>
                 </div>
             </div>
-
-            <div class="order-modal-footer">
-                <button type="button" class="btn order-btn-cancel rounded-pill px-4" data-bs-dismiss="modal">
-                    Close Preview
-                </button>
-            </div>
         </div>
     </div>
 </div>
