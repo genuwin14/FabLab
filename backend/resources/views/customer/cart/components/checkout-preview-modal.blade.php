@@ -50,16 +50,17 @@
 
                 <div class="border-top border-dark border-dashed my-3"></div>
 
-                <!-- Payment Info -->
-                <div class="text-center mb-4">
-                    <p class="small fw-bold mb-1">PAYMENT INSTRUCTION</p>
-                    <p class="small text-muted mb-0">Please present this slip at the<br><strong>CSPC Cashier</strong>
-                        for payment.</p>
-                </div>
-
-                <!-- Barcode Placeholder -->
-                <div class="text-center opacity-75 mt-2">
-                    <svg id="receiptBarcode"></svg>
+                {{-- This is a preview, not the slip. The order number and its
+                     barcode only exist once the order is placed and approved,
+                     and they arrive on the emailed transaction slip — so no
+                     made-up reference is shown here. --}}
+                <div class="text-center mb-2">
+                    <p class="small fw-bold mb-1">WHAT HAPPENS NEXT</p>
+                    <p class="small text-muted mb-0">
+                        Once an admin approves your order, your <strong>transaction slip</strong> is emailed to you.
+                        Present it at the <strong>CSPC Cashier</strong> to pay, and keep the official receipt —
+                        its number is what you show to collect your order.
+                    </p>
                 </div>
 
                 <!-- Actions -->
@@ -105,9 +106,6 @@
     }
 </style>
 
-<!-- JsBarcode CDN -->
-<script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.0/dist/JsBarcode.all.min.js"></script>
-
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         const checkoutModalEl = document.getElementById('checkoutPreviewModal');
@@ -115,21 +113,6 @@
             // Set dynamic date
             const options = { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' };
             document.getElementById('receiptDate').innerText = new Date().toLocaleDateString('en-US', options);
-
-            // Generate a temporary Reference Number for the barcode (e.g. TMP-Timestamp)
-            const tempRef = 'REF-' + Date.now().toString().slice(-8);
-
-            JsBarcode("#receiptBarcode", tempRef, {
-                format: "CODE128",
-                width: 1.5,
-                height: 40,
-                displayValue: true,
-                fontSize: 14,
-                fontOptions: "bold",
-                background: "transparent",
-                marginTop: 10,
-                marginBottom: 10
-            });
         });
     });
 </script>
