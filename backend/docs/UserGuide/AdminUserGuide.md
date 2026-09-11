@@ -61,7 +61,7 @@ Open **Review**, check the lines and any customization, then **Approve**. In one
 
 1. Sets the order to `approved`.
 2. **Reserves raw materials** — for every line, the product's bill of materials × the quantity ordered, plus whatever the design's customization options draw.
-3. **Reserves the design's ink, measured from its artwork.** Nobody types an ink figure. When the customer saved the design, the studio exported the flat print and the system measured how much of the product's printable area each of the four inks covers. Approval multiplies that by the printable area at the ordered size and by each ink's rate (see [§8](#8-raw-materials)). The **Materials Required** panel on the review modal shows the working under each ink line and the print it was measured from; you can still correct a figure if the artwork in front of you says otherwise. A design saved before prints were kept is estimated from its recipe instead, and the panel says so.
+3. **Reserves the design's ink and transfer paper, measured from its artwork.** Nobody types either figure. When the customer saved the design, the studio exported the flat print and the system measured how much of the product's printable area each of the four inks covers, and boxed the artwork on each panel. Approval multiplies the coverage by the printable area and by each ink's rate, and draws the fraction of a transfer sheet the cut piece takes, margin included (see [§8](#8-raw-materials)). The **Materials Required** panel on the review modal shows the working under each line, the print size of every panel, and the panels themselves cropped from the print; you can still correct a figure if the artwork in front of you says otherwise. A print too big for the sheet is flagged there, because the printers cannot do it in one piece. A design saved before prints were kept is estimated from its recipe instead, and the panel says so.
 4. **Deducts texture stock** — one unit per ordered unit, for designs that use a texture.
 5. **Emails the customer their transaction slip** (the PDF receipt with the order-number barcode).
 6. Notifies the customer that the status changed.
@@ -160,7 +160,7 @@ Edit the product and add raw materials with a **quantity required** per unit. Th
 
 ### Printable area
 
-For a customizable product, fill in the **printable area** in square centimetres — the size of the panels a design can be printed on, at size Medium (a shirt with a 30 × 40 cm chest and back is 2400). A design's ink is measured as a fraction of this, so a product with no printable area cannot have its ink measured and its designs fall back to whatever the customization options draw. Garment sizes scale the area by the factors set beside each size on **Customization Pricing**.
+For a customizable product, fill in the **printable area** in square centimetres — the size of the panels a design can be printed on, at size Medium (a shirt with a 30 × 40 cm chest and back is 2400). A design's ink is measured as a fraction of this, and the print size of each panel is worked out from it, so a product with no printable area cannot have its ink or paper measured and its designs fall back to whatever the customization options draw. Garment sizes scale the area by the factor beside each size on **Customization Pricing**. Those factors are 1 out of the box, because a cut transfer is the same size on a Small and a 5XL; raise them only if the shop scales the print with the garment.
 
 ### Deleting
 
@@ -179,6 +179,10 @@ Raw materials raise a low-stock alert the moment they cross their threshold, the
 ### Sublimation ink
 
 The printer's four inks are set up once on **Customization Pricing**, under **Sublimation ink**: which bottle each channel (cyan, magenta, yellow, black) draws from, and how many millilitres a square centimetre of solid colour costs. To calibrate a rate, print a solid square of one colour at a known size, weigh the bottle before and after, and divide. From then on every designed order's ink is measured from its artwork — see [§4](#4-reviewing-orders) — and nobody types a figure per order.
+
+### Transfer paper
+
+Under **Transfer paper** on the same screen: which raw material the sheets are stocked as, the sheet size (A4, 21 × 29.7 cm, is the largest the printers take) and the margin the cutter leaves around the artwork. Every print is cut from a sheet of this size and pressed onto the product, so an order draws the fraction of a sheet each panel's piece takes — a 4 × 2 inch sticker is about a tenth of an A4 — rather than a fixed count per garment size. Several small prints on one order add up to less than a sheet, which is what the stock figure reflects; correct it under Raw Materials if the cutting wasted more.
 
 ---
 

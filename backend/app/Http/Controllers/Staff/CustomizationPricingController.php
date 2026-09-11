@@ -23,6 +23,7 @@ class CustomizationPricingController extends Controller
         return view('staff.customization-pricing.index', [
             'rates' => CustomizationRate::forDisplay(),
             'inkChannels' => \App\Models\InkChannel::forDisplay(),
+            'transferSheet' => \App\Models\TransferSheet::current(),
             'logoMinScale' => \App\Models\CustomDesign::LOGO_MIN_SCALE,
             'logoMaxScale' => \App\Models\CustomDesign::LOGO_MAX_SCALE,
             // Keyed on the id, because the view resolves the ids each rate

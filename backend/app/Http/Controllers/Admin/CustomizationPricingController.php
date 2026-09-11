@@ -7,6 +7,7 @@ use App\Models\CustomizationRate;
 use App\Models\CustomizationRateMaterial;
 use App\Models\InkChannel;
 use App\Models\RawMaterial;
+use App\Models\TransferSheet;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -30,6 +31,7 @@ class CustomizationPricingController extends Controller
         return view('admin.customization-pricing.index', [
             'rates' => CustomizationRate::forDisplay(),
             'inkChannels' => InkChannel::forDisplay(),
+            'transferSheet' => TransferSheet::current(),
             'logoMinScale' => \App\Models\CustomDesign::LOGO_MIN_SCALE,
             'logoMaxScale' => \App\Models\CustomDesign::LOGO_MAX_SCALE,
             // Retired materials are left out: they can't be consumed, so
@@ -59,6 +61,11 @@ class CustomizationPricingController extends Controller
             'ink.*' => ['nullable', 'array'],
             'ink.*.raw_material_id' => ['nullable', 'integer', 'exists:raw_materials,raw_material_id'],
             'ink.*.ml_per_cm2' => ['nullable', 'numeric', 'min:0', 'max:9.99999'],
+            'paper' => ['nullable', 'array'],
+            'paper.raw_material_id' => ['nullable', 'integer', 'exists:raw_materials,raw_material_id'],
+            'paper.width_cm' => ['nullable', 'numeric', 'min:1', 'max:999.99'],
+            'paper.height_cm' => ['nullable', 'numeric', 'min:1', 'max:999.99'],
+            'paper.margin_cm' => ['nullable', 'numeric', 'min:0', 'max:99.99'],
         ];
         $messages = [
             'materials.*.*.raw_material_id.exists' => 'One of the materials you picked no longer exists.',
@@ -72,6 +79,10 @@ class CustomizationPricingController extends Controller
             'ink.*.ml_per_cm2.numeric' => 'An ink rate must be a number.',
             'ink.*.ml_per_cm2.min' => "An ink rate can't be negative.",
             'ink.*.ml_per_cm2.max' => 'An ink rate is higher than this system can store.',
+            'paper.raw_material_id.exists' => 'The transfer paper you picked no longer exists.',
+            'paper.width_cm.min' => 'The sheet width must be at least 1 cm.',
+            'paper.height_cm.min' => 'The sheet height must be at least 1 cm.',
+            'paper.margin_cm.min' => "The cut margin can't be negative.",
         ];
 
         foreach ($keys as $key) {
@@ -142,10 +153,24 @@ class CustomizationPricingController extends Controller
                     'ml_per_cm2' => filled($rate) ? round((float) $rate, 5) : InkChannel::rates()[$channel]['ml_per_cm2'],
                 ]);
             }
+
+            if (is_array($validated['paper'] ?? null)) {
+                $paper = $validated['paper'];
+                $current = TransferSheet::current();
+                $figure = fn (string $field) => filled($paper[$field] ?? null) ? round((float) $paper[$field], 2) : $current[$field];
+
+                TransferSheet::updateOrCreate(['name' => $current['name']], [
+                    'raw_material_id' => filled($paper['raw_material_id'] ?? null) ? (int) $paper['raw_material_id'] : null,
+                    'width_cm' => $figure('width_cm'),
+                    'height_cm' => $figure('height_cm'),
+                    'margin_cm' => $figure('margin_cm'),
+                ]);
+            }
         });
 
         CustomizationRate::flushCache();
         InkChannel::flushCache();
+        TransferSheet::flushCache();
 
         return redirect()
             ->route('admin.customization-pricing.index')

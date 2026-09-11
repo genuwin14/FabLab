@@ -14,6 +14,7 @@ use App\Models\Product;
 use App\Models\RawMaterial;
 use App\Models\RawMaterialMovement;
 use App\Models\Supplier;
+use App\Models\TransferSheet;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Mail;
@@ -39,6 +40,7 @@ class MeasuredInkDrawTest extends TestCase
     /** @var array<string, RawMaterial> */
     private array $bottles = [];
     private RawMaterial $led;
+    private RawMaterial $paper;
 
     protected function setUp(): void
     {
@@ -75,6 +77,14 @@ class MeasuredInkDrawTest extends TestCase
             'stock_quantity' => 100, 'low_stock_threshold' => 5, 'unit' => 'pcs',
         ]);
 
+        // The transfer sheet: an A4 with a half-centimetre cut margin,
+        // stocked as this paper.
+        $this->paper = RawMaterial::create([
+            'name' => 'Sublimation Transfer Paper (A4)', 'supplier_id' => $supplier->supplier_id, 'cost_per_unit' => 3,
+            'stock_quantity' => 100, 'low_stock_threshold' => 5, 'unit' => 'pcs',
+        ]);
+        TransferSheet::query()->update(['raw_material_id' => $this->paper->raw_material_id, 'width_cm' => 21, 'height_cm' => 29.7, 'margin_cm' => 0.5]);
+
         // Medium prints at 1.0, Large at 1.5 — set explicitly so the test
         // does not depend on the shipped defaults.
         CustomizationRate::where('key', 'size_medium')->update(['print_area_factor' => 1]);
@@ -82,6 +92,7 @@ class MeasuredInkDrawTest extends TestCase
 
         CustomizationRate::flushCache();
         InkChannel::flushCache();
+        TransferSheet::flushCache();
     }
 
     private function user(string $role, string $email): User
@@ -95,10 +106,16 @@ class MeasuredInkDrawTest extends TestCase
     /**
      * A design whose print was measured as the given coverage.
      *
+     * Its one panel is the left half of the atlas, so with the product's
+     * 1000 cm² the atlas is √(1000 / 0.5) ≈ 44.72 cm across; and the
+     * artwork on it is boxed at a tenth of the atlas wide by a fifth tall,
+     * so it prints 4.47 × 8.94 cm.
+     *
      * @param  array<string, float>  $coverage
      * @param  array<string, mixed>  $recipe
+     * @param  array<string, float>|null  $bbox  where the artwork sits, or null for a blank panel
      */
-    private function measured(array $coverage, string $size = 'medium', array $recipe = []): CustomDesign
+    private function measured(array $coverage, string $size = 'medium', array $recipe = [], ?array $bbox = ['u0' => 0.1, 'v0' => 0.1, 'u1' => 0.2, 'v1' => 0.3]): CustomDesign
     {
         return CustomDesign::create([
             'user_id' => $this->customer->id,
@@ -107,9 +124,14 @@ class MeasuredInkDrawTest extends TestCase
             'ink_coverage' => $coverage + ['cyan' => 0, 'magenta' => 0, 'yellow' => 0, 'black' => 0],
             'print_image' => 'designs/prints/1.png',
             'print_zones' => [
-                ['id' => 'front', 'label' => 'Front', 'u0' => 0.159, 'v0' => 0.446, 'u1' => 0.392, 'v1' => 0.878, 'flipU' => false, 'flipV' => false],
+                ['id' => 'front', 'label' => 'Front', 'u0' => 0.0, 'v0' => 0.0, 'u1' => 0.5, 'v1' => 1.0, 'flipU' => false, 'flipV' => false, 'bbox' => $bbox],
             ],
         ]);
+    }
+
+    private function paperStock(): float
+    {
+        return (float) $this->paper->refresh()->stock_quantity;
     }
 
     private function order(CustomDesign $design, int $quantity = 1, string $status = 'pending'): Order
@@ -272,6 +294,113 @@ class MeasuredInkDrawTest extends TestCase
         // Staff see the same working at the bench.
         Sanctum::actingAs($this->user('staff', 'st@example.test'));
         $this->get("/staff/orders/{$order->order_id}/materials")->assertOk()->assertJsonPath('lines.0.notes.0', $cyan['notes'][0]);
+    }
+
+    // ------------------------------------------------ the transfer paper
+
+    public function test_paper_is_the_fraction_of_a_sheet_the_cut_piece_takes(): void
+    {
+        // 4.47 × 8.94 cm of artwork, cut 5.47 × 9.94 with the margin:
+        // 54.37 cm² of an A4's 623.7 = 0.0872 of a sheet, 0.09 in the ledger.
+        $this->approve($this->order($this->measured(['cyan' => 0.5])));
+
+        $this->assertSame(99.91, $this->paperStock());
+    }
+
+    public function test_every_item_takes_its_own_piece_of_paper(): void
+    {
+        // 0.0872 × 3 = 0.2616 → 0.26 of a sheet.
+        $this->approve($this->order($this->measured(['cyan' => 0.5]), quantity: 3));
+
+        $this->assertSame(99.74, $this->paperStock());
+    }
+
+    public function test_a_transfer_is_the_same_size_on_every_garment_by_default(): void
+    {
+        // Large prints at 1.5× in this test's settings, so the piece grows;
+        // out of the box every factor is 1 and it would not. Both are
+        // honoured — the point is that the paper follows the same factor
+        // the ink does.
+        $this->approve($this->order($this->measured(['cyan' => 0.5], 'large')));
+
+        // √(1500 / 0.5) = 54.77 cm across: 5.48 × 10.95 artwork, cut 6.48 × 11.95 = 77.44 cm² → 0.1242 → 0.12.
+        $this->assertSame(99.88, $this->paperStock());
+    }
+
+    public function test_the_bills_no_longer_draw_paper_for_a_measured_print(): void
+    {
+        // The old fixed sheets: one per Large garment in the size BOM, and
+        // one per print on the product's own BOM, flagged as decoration.
+        CustomizationRateMaterial::create([
+            'rate_key' => 'size_large', 'raw_material_id' => $this->paper->raw_material_id, 'quantity_required' => 1,
+        ]);
+        $this->shirt->rawMaterials()->attach($this->paper->raw_material_id, ['quantity_required' => 1, 'requires_design' => true]);
+        CustomizationRate::flushCache();
+
+        $this->approve($this->order($this->measured(['cyan' => 0.5], 'large')));
+
+        // Only the measured piece, not two whole sheets on top.
+        $this->assertSame(99.88, $this->paperStock());
+    }
+
+    public function test_a_design_saved_before_panels_were_boxed_falls_back_to_the_bills(): void
+    {
+        CustomizationRateMaterial::create([
+            'rate_key' => 'size_large', 'raw_material_id' => $this->paper->raw_material_id, 'quantity_required' => 1,
+        ]);
+        CustomizationRate::flushCache();
+
+        // A panel with no box: nothing to measure a piece from.
+        $this->approve($this->order($this->measured(['cyan' => 0.5], 'large', bbox: null)));
+
+        $this->assertSame(99.0, $this->paperStock());
+    }
+
+    public function test_paper_needs_the_sheet_linked_to_stock(): void
+    {
+        TransferSheet::query()->update(['raw_material_id' => null]);
+        TransferSheet::flushCache();
+
+        $this->approve($this->order($this->measured(['cyan' => 0.5])));
+
+        $this->assertSame(100.0, $this->paperStock());
+    }
+
+    public function test_a_print_bigger_than_the_sheet_is_flagged_but_not_blocked(): void
+    {
+        // The whole panel: 22.36 × 44.72 cm, which no way round fits an A4.
+        $order = $this->order($this->measured(['cyan' => 0.5], bbox: ['u0' => 0, 'v0' => 0, 'u1' => 0.5, 'v1' => 1]));
+
+        Sanctum::actingAs($this->user('admin', 'a@example.test'));
+        $data = $this->get("/admin/orders/{$order->order_id}/materials")->assertOk()->json();
+
+        $this->assertCount(1, $data['warnings']);
+        $this->assertStringContainsString('larger than an A4 sheet', $data['warnings'][0]);
+        $this->assertSame([], $data['shortages']);
+
+        // Still counted — the reviewer decides — and still approvable.
+        $this->approve($order);
+        $this->assertLessThan(100.0, $this->paperStock());
+    }
+
+    public function test_the_panel_shows_the_print_size_behind_the_paper_figure(): void
+    {
+        $order = $this->order($this->measured(['cyan' => 0.5]));
+
+        Sanctum::actingAs($this->user('admin', 'a@example.test'));
+        $data = $this->get("/admin/orders/{$order->order_id}/materials")->assertOk()->json();
+
+        $paper = collect($data['lines'])->firstWhere('id', $this->paper->raw_material_id);
+        $this->assertNotNull($paper);
+        $this->assertSame('0.09', $paper['quantity']);
+        $this->assertStringContainsString('Front prints 4.47 × 8.94 cm (1.8 × 3.5 in)', $paper['notes'][0]);
+        // Two decimals in the working, like the ledger it lands in.
+        $this->assertStringContainsString('cut 5.47 × 9.94 cm with the 0.5 cm margin = 0.09 of an A4 sheet', $paper['notes'][0]);
+        $this->assertSame([], $data['warnings']);
+
+        // The panel crop carries the same size, for its caption.
+        $this->assertSame(4.47, $data['prints'][0]['zones'][0]['width_cm']);
+        $this->assertSame(8.94, $data['prints'][0]['zones'][0]['height_cm']);
     }
 
     public function test_the_reviewer_can_still_correct_a_measured_figure(): void

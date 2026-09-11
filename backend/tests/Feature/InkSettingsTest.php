@@ -8,6 +8,7 @@ use App\Models\InkChannel;
 use App\Models\Product;
 use App\Models\RawMaterial;
 use App\Models\Supplier;
+use App\Models\TransferSheet;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -52,6 +53,7 @@ class InkSettingsTest extends TestCase
 
         CustomizationRate::flushCache();
         InkChannel::flushCache();
+        TransferSheet::flushCache();
     }
 
     /** @return array<string, mixed> */
@@ -134,16 +136,76 @@ class InkSettingsTest extends TestCase
         $this->assertSame(0.009, InkChannel::rates()['cyan']['ml_per_cm2']);
     }
 
-    public function test_sizes_ship_with_print_area_factors_that_grow_with_the_garment(): void
+    public function test_every_size_prints_at_the_products_own_area_out_of_the_box(): void
     {
+        // The shop presses a cut transfer, and a 4×2 sticker is 4×2 on a
+        // Small and on a 5XL. A shop that scales the print with the garment
+        // raises these on the pricing screen.
         $factors = CustomizationRate::areaFactors();
 
-        $this->assertSame(1.0, $factors['size_medium']);
-        $this->assertLessThan(1.0, $factors['size_small']);
-        $this->assertGreaterThan($factors['size_large'], $factors['size_5xl']);
+        $this->assertSame(
+            ['size_small', 'size_medium', 'size_large', 'size_xl', 'size_2xl', 'size_3xl', 'size_4xl', 'size_5xl'],
+            array_keys($factors)
+        );
+        foreach ($factors as $key => $factor) {
+            $this->assertSame(1.0, $factor, "{$key} should print at the product's own area until an admin says otherwise.");
+        }
 
         // Elements have no factor at all — nothing to scale.
         $this->assertArrayNotHasKey('logo', $factors);
+    }
+
+    public function test_the_migration_creates_an_a4_transfer_sheet_with_nothing_linked(): void
+    {
+        $sheet = TransferSheet::current();
+
+        $this->assertSame('A4', $sheet['name']);
+        $this->assertSame(21.0, $sheet['width_cm']);
+        $this->assertSame(29.7, $sheet['height_cm']);
+        $this->assertSame(0.5, $sheet['margin_cm']);
+        // Migrated on an empty raw_materials table, so measured paper cannot be drawn yet.
+        $this->assertNull($sheet['raw_material_id']);
+        $this->assertFalse(TransferSheet::configured());
+    }
+
+    public function test_an_admin_can_link_the_transfer_paper_and_set_the_sheet(): void
+    {
+        $paper = RawMaterial::create([
+            'name' => 'Sublimation Transfer Paper (A4)', 'supplier_id' => $this->cyan->supplier_id, 'cost_per_unit' => 3,
+            'stock_quantity' => 500, 'low_stock_threshold' => 50, 'unit' => 'pcs',
+        ]);
+
+        $this->actingAs($this->admin);
+        $this->put(route('admin.customization-pricing.update'), $this->payload([
+            'paper' => ['raw_material_id' => $paper->raw_material_id, 'width_cm' => '21', 'height_cm' => '29.7', 'margin_cm' => '1'],
+        ]))->assertRedirect(route('admin.customization-pricing.index'));
+
+        TransferSheet::flushCache();
+        $sheet = TransferSheet::current();
+        $this->assertSame($paper->raw_material_id, $sheet['raw_material_id']);
+        $this->assertSame(1.0, $sheet['margin_cm']);
+        $this->assertTrue(TransferSheet::configured());
+
+        // Repricing alone leaves it be; emptying the select unlinks it.
+        $this->put(route('admin.customization-pricing.update'), $this->payload())->assertRedirect();
+        TransferSheet::flushCache();
+        $this->assertSame($paper->raw_material_id, TransferSheet::materialId());
+
+        $this->put(route('admin.customization-pricing.update'), $this->payload([
+            'paper' => ['raw_material_id' => '', 'width_cm' => '21', 'height_cm' => '29.7', 'margin_cm' => '1'],
+        ]))->assertRedirect();
+        TransferSheet::flushCache();
+        $this->assertNull(TransferSheet::materialId());
+        $this->assertFalse(TransferSheet::configured());
+    }
+
+    public function test_a_sheet_with_no_width_is_rejected(): void
+    {
+        $this->actingAs($this->admin);
+
+        $this->put(route('admin.customization-pricing.update'), $this->payload([
+            'paper' => ['raw_material_id' => '', 'width_cm' => '0', 'height_cm' => '29.7', 'margin_cm' => '0.5'],
+        ]))->assertSessionHasErrors('paper.width_cm');
     }
 
     public function test_an_admin_can_change_how_much_bigger_a_size_prints(): void
@@ -217,6 +279,14 @@ class InkSettingsTest extends TestCase
             ->assertOk()
             ->assertSee('Sublimation ink')
             ->assertSee('Draws from Sublimation Ink (Cyan)')
-            ->assertDontSee('name="ink[cyan][ml_per_cm2]"', false);
+            ->assertSee('Transfer paper')
+            ->assertSee('21 × 29.7 cm')
+            ->assertDontSee('name="ink[cyan][ml_per_cm2]"', false)
+            ->assertDontSee('name="paper[width_cm]"', false);
+
+        $this->actingAs($this->admin);
+        $this->get(route('admin.customization-pricing.index'))
+            ->assertSee('Transfer paper')
+            ->assertSee('name="paper[width_cm]"', false);
     }
 }

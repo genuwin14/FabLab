@@ -222,6 +222,37 @@ class InkMeasurementTest extends TestCase
         $this->assertFalse($design->print_zones[0]['flipU']);
         $this->assertTrue($design->print_zones[1]['flipU']);
         $this->assertStringStartsWith('/storage/designs/prints/', $design->print_image_url);
+
+        // And each panel records where its artwork sits. The yellow fills the
+        // top half of the canvas, so on the front panel (v 0.446–0.878) it
+        // runs from the panel's top edge down to the middle of the canvas.
+        $front = $design->print_zones[0]['bbox'];
+        $this->assertEqualsWithDelta(0.159, $front['u0'], 0.01);
+        $this->assertEqualsWithDelta(0.392, $front['u1'], 0.01);
+        $this->assertEqualsWithDelta(0.446, $front['v0'], 0.01);
+        $this->assertEqualsWithDelta(0.5, $front['v1'], 0.01);
+        $this->assertNotNull($design->print_zones[1]['bbox']);
+    }
+
+    public function test_a_panel_with_nothing_on_it_has_no_box(): void
+    {
+        $zones = [
+            ['id' => 'front', 'label' => 'Front', 'u0' => 0.0, 'v0' => 0.0, 'u1' => 0.5, 'v1' => 1.0],
+            ['id' => 'back', 'label' => 'Back', 'u0' => 0.5, 'v0' => 0.0, 'u1' => 1.0, 'v1' => 1.0],
+        ];
+
+        // A 20px square at (40,40) of a 200px print: entirely on the front.
+        $print = $this->png(200, function ($image) {
+            imagefilledrectangle($image, 40, 40, 59, 59, imagecolorallocatealpha($image, 0, 0, 0, 0));
+        });
+
+        $boxes = $this->estimator->boundingBoxes($print, $zones);
+
+        $this->assertEqualsWithDelta(0.2, $boxes[0]['u0'], 0.01);
+        $this->assertEqualsWithDelta(0.3, $boxes[0]['u1'], 0.01);
+        $this->assertEqualsWithDelta(0.2, $boxes[0]['v0'], 0.01);
+        $this->assertEqualsWithDelta(0.3, $boxes[0]['v1'], 0.01);
+        $this->assertNull($boxes[1]);
     }
 
     public function test_panels_that_do_not_fit_on_the_print_are_dropped(): void

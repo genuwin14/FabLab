@@ -25,11 +25,12 @@ use Illuminate\Database\Seeder;
  *
  * Deliberately partial, because both states are worth having in demo data:
  *
- *   - Lighting and every size from Large up to 5XL draw something.
+ *   - Lighting draws something: the kit.
  *   - Text, shapes and images draw nothing of their own — their ink is
  *     measured, and they take nothing else.
- *   - Small and medium draw nothing — they fit the same sheet as the blank,
- *     so there is nothing extra to deduct.
+ *   - No size draws anything. The transfer paper a print takes is measured
+ *     off the print too, and a cut transfer is the same size on a Small
+ *     and a 5XL.
  *   - The four free house colours draw nothing either. The blank garment
  *     already *is* white, black, grey or navy; only the paid finishes are
  *     actually dyed, which is what their surcharge pays for.
@@ -46,23 +47,16 @@ class CustomizationBOMSeeder extends Seeder
     {
         $materials = RawMaterial::all()->keyBy('name');
 
-        // Per one unit of the option: one lit item, one item in that size.
+        // Per one unit of the option: one lit item.
+        //
+        // No size draws anything. Transfer paper used to be seeded per
+        // garment size — a sheet more at Large, three by 5XL — but the shop
+        // presses a cut transfer, which is the same size on every garment,
+        // and the paper is now measured off the print (see
+        // InkEstimator::paper() and TransferSheetSeeder). A figure here would
+        // be skipped for every product with a print area.
         $recipes = [
             'led_lighting' => ['LED Light Kit (USB, Warm White)' => 1],
-
-            // Small and medium fit the sheet the blank already uses. Large
-            // doesn't, so it takes one more, and the print keeps growing with
-            // the garment from there: another sheet at every second step up,
-            // so 5XL takes three. Worth seeding even though the size
-            // surcharges are ₱0 out of the box: an option can cost the shop
-            // something while charging the customer nothing, and the report
-            // should still see it.
-            'size_large' => ['Sublimation Transfer Paper (A4)' => 1],
-            'size_xl' => ['Sublimation Transfer Paper (A4)' => 1],
-            'size_2xl' => ['Sublimation Transfer Paper (A4)' => 2],
-            'size_3xl' => ['Sublimation Transfer Paper (A4)' => 2],
-            'size_4xl' => ['Sublimation Transfer Paper (A4)' => 3],
-            'size_5xl' => ['Sublimation Transfer Paper (A4)' => 3],
         ];
 
         foreach ($recipes as $rateKey => $components) {

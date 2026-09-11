@@ -125,7 +125,7 @@ Everything you buy comes from a supplier. This one record is the hinge of the wh
 
 **Who:** Admin · **Where:** `/admin/raw-materials` · **Detail:** [Admin §8](AdminUserGuide.md#8-raw-materials)
 
-The consumables a product is made from — wood, ink, glue, paper. Customers never see them. They exist so that approving an order automatically draws down what production will use. Sublimation ink is drawn a little differently from the rest: a designed item's ink is measured from its artwork rather than listed per element, using the product's printable area and the per-channel rates on Customization Pricing.
+The consumables a product is made from — wood, ink, glue, paper. Customers never see them. They exist so that approving an order automatically draws down what production will use. Sublimation ink and transfer paper are drawn a little differently from the rest: a designed item's ink and paper are measured from its artwork rather than listed per element or per size, using the product's printable area, the per-channel ink rates and the transfer sheet on Customization Pricing.
 
 **Process**
 

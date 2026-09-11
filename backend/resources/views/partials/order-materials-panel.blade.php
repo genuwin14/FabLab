@@ -42,6 +42,13 @@
             <ul class="mb-0 ps-3 materials-shortage-list"></ul>
         </div>
 
+        {{-- Worth a look but not a block: a print bigger than the transfer
+             sheet, which the printers can't do in one piece. --}}
+        <div class="materials-warnings alert alert-warning border-0 rounded-3 small d-none mb-3">
+            <div class="fw-bold mb-1"><i class="bi bi-exclamation-triangle-fill me-1"></i>Check before approving</div>
+            <ul class="mb-0 ps-3 materials-warnings-list"></ul>
+        </div>
+
         <div class="table-responsive border rounded-3 mb-2 overflow-hidden modal-table-scroll materials-table-wrap">
             <table class="table table-hover align-middle mb-0 modal-table materials-table">
                 {{-- The three figures get fixed columns so the material's
@@ -469,10 +476,19 @@
                         wholeView();
                         return;
                     }
+                    // A panel that was measured says how big it prints, in
+                    // the units the shop cuts paper by. Nothing on it, no size.
+                    const sizeOf = zone => (zone.width_cm && zone.height_cm)
+                        ? Math.round(zone.width_cm) + '×' + Math.round(zone.height_cm) + ' cm'
+                        : null;
+                    const longSizeOf = zone => (zone.width_cm && zone.height_cm)
+                        ? zone.width_cm + ' × ' + zone.height_cm + ' cm (' + (zone.width_cm / 2.54).toFixed(1) + ' × ' + (zone.height_cm / 2.54).toFixed(1) + ' in)'
+                        : null;
+
                     crops.forEach(({ zone, src }) => addThumb({
                         src, printUrl: print.url, whole: false,
-                        name: several ? productName + ' — ' + zone.label : zone.label,
-                        caption: zone.label,
+                        name: (several ? productName + ' — ' : '') + zone.label + (longSizeOf(zone) ? ', prints ' + longSizeOf(zone) : ', nothing printed'),
+                        caption: zone.label + (sizeOf(zone) ? ' · ' + sizeOf(zone) : ''),
                     }));
                 };
                 img.onerror = wholeView;
@@ -603,6 +619,16 @@
                         const li = document.createElement('li');
                         li.textContent = text;
                         list.appendChild(li);
+                    });
+
+                    const warnings = data.warnings || [];
+                    const warningList = panel.querySelector('.materials-warnings-list');
+                    warningList.innerHTML = '';
+                    panel.querySelector('.materials-warnings').classList.toggle('d-none', !warnings.length);
+                    warnings.forEach(text => {
+                        const li = document.createElement('li');
+                        li.textContent = text;
+                        warningList.appendChild(li);
                     });
 
                     const prints = data.prints || [];

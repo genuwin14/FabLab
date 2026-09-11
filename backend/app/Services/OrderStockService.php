@@ -35,13 +35,15 @@ use Illuminate\Support\Facades\DB;
  * with twelve lines of text and internal lighting was charged for ink and an
  * LED strip that no order ever deducted.
  *
- * Ink is the exception to "bill of materials". A BOM can only guess at a
- * picture, so where the product's printable area is known and the printer's
- * channels are linked to bottles, a design's ink is *measured* instead — see
- * InkEstimator — and any ink the element BOMs would have drawn is skipped so
- * a bottle is never emptied twice for one print. A product with no print
- * area, or an install with no channel linked, falls back to the BOMs as
- * before.
+ * Ink and transfer paper are the exceptions to "bill of materials". A BOM
+ * can only guess at a picture, so where the product's printable area is
+ * known and the printer's channels are linked to bottles, a design's ink is
+ * *measured* instead — see InkEstimator — and where the transfer sheet is
+ * linked to stock, so is the paper: the piece cut around each panel's
+ * artwork, as a fraction of a sheet. Any ink or paper the BOMs would have
+ * drawn for the designed item is skipped, so a bottle or a sheet is never
+ * drawn twice for one print. A product with no print area, or an install
+ * with nothing linked, falls back to the BOMs as before.
  *
  * Quantities are aggregated per material and per texture before being applied:
  * two lines of different products can draw on the same material, and the
@@ -81,7 +83,7 @@ class OrderStockService
      * flat prints those figures were measured from, for the same reason.
      *
      * @param  array<int|string, mixed>  $overrides
-     * @return array{materials: array<int, array{model: RawMaterial, quantity: float, adjusted: bool}>, textures: array<int, array{model: Texture, quantity: float}>, notes: array<int, array<int, string>>, prints: array<int, array{url: string, label: string, zones: array<int, array<string, mixed>>}>}
+     * @return array{materials: array<int, array{model: RawMaterial, quantity: float, adjusted: bool}>, textures: array<int, array{model: Texture, quantity: float}>, notes: array<int, array<int, string>>, prints: array<int, array{url: string, label: string, zones: array<int, array<string, mixed>>}>, warnings: array<int, string>}
      */
     public function requirements(Order $order, array $overrides = []): array
     {
@@ -95,6 +97,7 @@ class OrderStockService
         $textures = [];
         $notes = [];
         $prints = [];
+        $warnings = [];
 
         $add = function (?int $materialId, float $quantity) use (&$quantities) {
             if ($materialId === null || $quantity <= 0) {
@@ -112,11 +115,18 @@ class OrderStockService
             $quantity = (int) $item->quantity;
             $design = $item->customDesign;
 
-            // Whether this item's ink is measured rather than taken from the
-            // bills of materials, and if so which bottles the measurement
-            // reaches — those are skipped in the element BOMs below.
+            // Whether this item's ink and paper are measured rather than
+            // taken from the bills of materials, and if so which materials
+            // the measurements reach — those are skipped in the BOMs below,
+            // wherever a line only applies to a designed item, so one print
+            // never draws a bottle or a sheet twice.
             $measured = $design && $this->ink->applies($design, $item->product);
-            $inkBottles = $measured ? array_values(InkChannel::linkedMaterials()) : [];
+            $paper = $design ? $this->ink->paper($design, $item->product) : null;
+
+            $replaced = $measured ? array_values(InkChannel::linkedMaterials()) : [];
+            if ($paper !== null) {
+                $replaced[] = $paper['material_id'];
+            }
 
             // 1. The blank item's own bill of materials.
             //
@@ -128,6 +138,9 @@ class OrderStockService
             //    because the blank *is* the product.
             foreach ($item->product->rawMaterials as $material) {
                 if ($material->pivot->requires_design && ! $design) {
+                    continue;
+                }
+                if ($material->pivot->requires_design && in_array($material->raw_material_id, $replaced, true)) {
                     continue;
                 }
 
@@ -147,7 +160,7 @@ class OrderStockService
             //    printer lays down for this design.
             foreach ($design->customizationUnits() as $rateKey => $units) {
                 foreach (CustomizationRate::materialsFor($rateKey) as $materialId => $perUnit) {
-                    if (in_array($materialId, $inkBottles, true)) {
+                    if (in_array($materialId, $replaced, true)) {
                         continue;
                     }
 
@@ -180,18 +193,72 @@ class OrderStockService
                         $draw['quantity'] > 0 ? '' : ' — none of this colour in the artwork',
                     );
                 }
+            }
 
-                // The print with its panels, so the screen can crop and label
-                // each one rather than show the whole atlas. No panels means
-                // a design saved before they were recorded; the screen then
-                // shows the print whole.
-                if ($url = $design->print_image_url) {
-                    $prints[$design->custom_design_id] = [
-                        'url' => $url,
-                        'label' => $item->product->name,
-                        'zones' => is_array($design->print_zones) ? array_values($design->print_zones) : [],
-                    ];
+            // 2c. The transfer paper, measured off the same print: each
+            //     panel's artwork is boxed, the piece the shop cuts is that
+            //     box plus the margin, and the draw is the fraction of a
+            //     sheet those pieces come to. A piece the sheet can't hold
+            //     is still counted, and flagged, because the printers can't
+            //     print it in one go and the reviewer has to decide.
+            if ($paper !== null) {
+                $add($paper['material_id'], $paper['sheets'] * $quantity);
+
+                $sheet = $paper['sheet'];
+                foreach ($paper['panels'] as $panel) {
+                    $notes[$paper['material_id']][] = sprintf(
+                        '%s: %s prints %s × %s cm (%s × %s in), cut %s × %s cm with the %s cm margin = %s of an %s sheet%s',
+                        $item->product->name,
+                        $panel['label'],
+                        $this->number($panel['width_cm']),
+                        $this->number($panel['height_cm']),
+                        $this->number(round($panel['width_cm'] / 2.54, 1)),
+                        $this->number(round($panel['height_cm'] / 2.54, 1)),
+                        $this->number($panel['piece_width_cm']),
+                        $this->number($panel['piece_height_cm']),
+                        $this->number($sheet['margin_cm']),
+                        $this->number($panel['fraction']),
+                        $sheet['name'],
+                        $quantity > 1 ? " × {$quantity} items" : '',
+                    );
+
+                    if (! $panel['fits']) {
+                        $warnings[] = sprintf(
+                            '%s: the %s artwork is %s × %s cm with its margin, larger than an %s sheet (%s × %s cm). The printers cannot print it in one piece — check the design before approving.',
+                            $item->product->name,
+                            $panel['label'],
+                            $this->number($panel['piece_width_cm']),
+                            $this->number($panel['piece_height_cm']),
+                            $sheet['name'],
+                            $this->number($sheet['width_cm']),
+                            $this->number($sheet['height_cm']),
+                        );
+                    }
                 }
+            }
+
+            // The print with its panels, so the screen can crop and label
+            // each one rather than show the whole atlas, with each panel's
+            // measured print size where it has one. No panels means a
+            // design saved before they were recorded; the screen then shows
+            // the print whole.
+            if ($design->print_image_url) {
+                $sizes = [];
+                foreach ($paper['panels'] ?? [] as $panel) {
+                    $sizes[$panel['label']] = [$panel['width_cm'], $panel['height_cm']];
+                }
+
+                $zones = [];
+                foreach (is_array($design->print_zones) ? $design->print_zones : [] as $zone) {
+                    $size = $sizes[$zone['label'] ?? ''] ?? null;
+                    $zones[] = $zone + ['width_cm' => $size[0] ?? null, 'height_cm' => $size[1] ?? null];
+                }
+
+                $prints[$design->custom_design_id] = [
+                    'url' => $design->print_image_url,
+                    'label' => $item->product->name,
+                    'zones' => $zones,
+                ];
             }
 
             // 3. The finish. Either/or, and the texture wins if a hand-edited
@@ -219,6 +286,7 @@ class OrderStockService
             'textures' => $textures,
             'notes' => $notes,
             'prints' => array_values($prints),
+            'warnings' => $warnings,
         ];
     }
 
@@ -316,6 +384,9 @@ class OrderStockService
                 'lines' => $lines,
                 'shortages' => $this->shortages($order),
                 'prints' => $requirements['prints'],
+                // Things worth a look that don't block approval — a print
+                // bigger than the sheet, for one.
+                'warnings' => $requirements['warnings'],
             ];
         }
 
@@ -346,6 +417,7 @@ class OrderStockService
                     ->all(),
                 'shortages' => [],
                 'prints' => [],
+                'warnings' => [],
             ];
         }
 
@@ -369,6 +441,7 @@ class OrderStockService
                 ->all(),
             'shortages' => [],
             'prints' => [],
+            'warnings' => [],
         ];
     }
 

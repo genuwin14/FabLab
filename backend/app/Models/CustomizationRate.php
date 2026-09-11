@@ -64,12 +64,13 @@ class CustomizationRate extends Model
         // Listed smallest first, which is the order every screen shows them
         // in; the shop takes garments up to 5XL.
         //
-        // `area_factor` is how much bigger or smaller the size's printable
-        // panels are than the product's Medium, which is the figure the
-        // product's own print area records. The measured ink scales by it: a
-        // design printed on a 5XL covers the same fraction of a larger panel,
-        // so it takes more ink. Roughly a garment size chart's chest-width
-        // steps, squared; admin-editable, like the surcharge beside it.
+        // `area_factor` is how much bigger or smaller a design prints on this
+        // size than on the product's Medium, which is the figure the
+        // product's own print area records. Measured ink and paper scale by
+        // it. It ships at 1 for every size because the shop presses a cut
+        // transfer, and a 4×2 sticker is 4×2 on a Small and on a 5XL; a shop
+        // that scales the print with the garment can raise it per size on
+        // the pricing screen, beside the surcharge.
         'size_small' => [
             'group' => 'sizes',
             'label' => 'Small',
@@ -78,7 +79,7 @@ class CustomizationRate extends Model
             'icon' => 'bi-dash-square',
             'suffix' => 'per item',
             'default' => 0,
-            'area_factor' => 0.85,
+            'area_factor' => 1.0,
         ],
         'size_medium' => [
             'group' => 'sizes',
@@ -98,7 +99,7 @@ class CustomizationRate extends Model
             'icon' => 'bi-plus-square',
             'suffix' => 'per item',
             'default' => 0,
-            'area_factor' => 1.15,
+            'area_factor' => 1.0,
         ],
         'size_xl' => [
             'group' => 'sizes',
@@ -108,7 +109,7 @@ class CustomizationRate extends Model
             'icon' => 'bi-plus-square-fill',
             'suffix' => 'per item',
             'default' => 0,
-            'area_factor' => 1.3,
+            'area_factor' => 1.0,
         ],
         'size_2xl' => [
             'group' => 'sizes',
@@ -118,7 +119,7 @@ class CustomizationRate extends Model
             'icon' => 'bi-plus-square-fill',
             'suffix' => 'per item',
             'default' => 0,
-            'area_factor' => 1.45,
+            'area_factor' => 1.0,
         ],
         'size_3xl' => [
             'group' => 'sizes',
@@ -128,7 +129,7 @@ class CustomizationRate extends Model
             'icon' => 'bi-plus-square-fill',
             'suffix' => 'per item',
             'default' => 0,
-            'area_factor' => 1.6,
+            'area_factor' => 1.0,
         ],
         'size_4xl' => [
             'group' => 'sizes',
@@ -138,7 +139,7 @@ class CustomizationRate extends Model
             'icon' => 'bi-plus-square-fill',
             'suffix' => 'per item',
             'default' => 0,
-            'area_factor' => 1.75,
+            'area_factor' => 1.0,
         ],
         'size_5xl' => [
             'group' => 'sizes',
@@ -148,7 +149,7 @@ class CustomizationRate extends Model
             'icon' => 'bi-plus-square-fill',
             'suffix' => 'per item',
             'default' => 0,
-            'area_factor' => 1.9,
+            'area_factor' => 1.0,
         ],
     ];
 

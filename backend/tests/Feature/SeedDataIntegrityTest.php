@@ -200,8 +200,16 @@ class SeedDataIntegrityTest extends TestCase
 
         $mug = Product::where('sku', 'MG-WHT-11')->firstOrFail();
 
-        // The sheet and the ink decorate the mug; ordering a plain one hands
-        // over the blank and prints nothing, so neither should move.
+        // The mug's print — its sheet and its ink — is measured off the
+        // design, so its own bill carries neither: a fixed sheet here would
+        // charge a 2×2 sticker a whole A4 on top of the measured piece.
+        $this->assertFalse(
+            $mug->rawMaterials->contains(fn ($m) => str_contains($m->name, 'Transfer Paper') || str_contains($m->name, 'Ink')),
+            'The mug should carry no print consumables of its own; they are measured.'
+        );
+
+        // And whatever it does carry only moves when something is printed:
+        // ordering a plain one hands over the blank and prints nothing.
         foreach ($mug->rawMaterials as $material) {
             $this->assertTrue(
                 (bool) $material->pivot->requires_design,
@@ -287,16 +295,19 @@ class SeedDataIntegrityTest extends TestCase
             $this->assertSame([], CustomizationRate::materialsFor($key), "The '{$key}' option should draw no fixed ink; ink is measured.");
         }
 
-        $this->assertSame([], CustomizationRate::materialsFor('size_medium'));
-
-        // Large and up outgrow the blank's sheet, so every size to 5XL draws
-        // transfer paper — and more of it the bigger the garment.
-        $sheets = fn (string $key) => array_sum(CustomizationRate::materialsFor($key));
-        $this->assertGreaterThan(0, $sheets('size_large'));
-        $this->assertGreaterThan($sheets('size_large'), $sheets('size_5xl'));
-        foreach (['size_xl', 'size_2xl', 'size_3xl', 'size_4xl', 'size_5xl'] as $key) {
-            $this->assertNotEmpty(CustomizationRate::materialsFor($key), "The {$key} size draws no materials.");
+        // No size draws anything: a cut transfer is the same size on every
+        // garment, and the paper it takes is measured off the print.
+        foreach (CustomizationRate::sizes() as $size) {
+            $this->assertSame([], CustomizationRate::materialsFor($size['rate_key']), "The {$size['rate_key']} size should draw no fixed materials; paper is measured.");
         }
+
+        // Which needs the sheet to be stocked as something.
+        $sheet = \App\Models\TransferSheet::current();
+        $this->assertTrue(\App\Models\TransferSheet::configured(), 'The transfer sheet should point at the seeded paper.');
+        $this->assertSame(
+            'Sublimation Transfer Paper (A4)',
+            \App\Models\RawMaterial::find($sheet['raw_material_id'])?->name
+        );
     }
 
     public function test_every_seeded_option_material_resolves_to_a_real_material(): void

@@ -170,6 +170,47 @@
                                     @endforeach
                                 </div>
                             </div>
+
+                            <!-- Panel 4: the transfer sheet, read-only. "Why does this order
+                                 draw 0.09 of a sheet?" — because the print is that fraction
+                                 of the sheet described here, margin included. -->
+                            @php $paperStock = $transferSheet['raw_material_id'] ? ($materialLookup[$transferSheet['raw_material_id']] ?? null) : null; @endphp
+                            <div class="card border-0 shadow-sm pricing-card mt-3 mt-md-4" id="transferSheet">
+                                <div class="card-header bg-white border-0 pt-3 pt-md-4 pb-2 px-3 px-md-4">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <span class="pricing-section-icon"><i class="bi bi-file-earmark-image"></i></span>
+                                        <div>
+                                            <h6 class="fw-bold mb-0 text-dark">Transfer paper</h6>
+                                            <small class="text-muted">
+                                                Every print is cut from a sheet this size and pressed on. An order draws the
+                                                fraction of a sheet each panel's artwork takes, margin included.
+                                            </small>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="card-body px-3 px-md-4 pb-3 pb-md-4">
+                                    <div class="rate-entry py-3 border-top">
+                                        <div class="pricing-row d-flex justify-content-between align-items-start gap-3">
+                                            <div class="flex-grow-1">
+                                                <div class="fw-semibold text-dark">{{ $transferSheet['name'] }} sheet</div>
+                                                <small class="text-muted">
+                                                    @if ($paperStock)
+                                                        Draws from {{ $paperStock->name }}.
+                                                    @else
+                                                        Not linked to stock — measured, but nothing is deducted.
+                                                    @endif
+                                                </small>
+                                            </div>
+                                            <div class="pricing-amount flex-shrink-0 text-end">
+                                                <div class="fw-bold text-dark pricing-amount-value">
+                                                    {{ rtrim(rtrim(number_format($transferSheet['width_cm'], 2, '.', ''), '0'), '.') }} × {{ rtrim(rtrim(number_format($transferSheet['height_cm'], 2, '.', ''), '0'), '.') }} cm
+                                                </div>
+                                                <small class="text-muted d-block mt-1">{{ rtrim(rtrim(number_format($transferSheet['margin_cm'], 2, '.', ''), '0'), '.') }} cm cut margin</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
                         <!-- Panel 2: what the ordered size adds, Small to 5XL -->

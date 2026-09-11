@@ -67,11 +67,12 @@ class BOMSeeder extends Seeder
      * paper inside a booklet — is the item itself and is always drawn.
      */
     private const PRINT_CONSUMABLES = [
+        // No seeded customizable product carries any of these any more — both
+        // the paper and the ink are measured off the design's print. They stay
+        // listed because the rule is "a print consumable on a designable
+        // product waits for a design", and that should hold if an admin puts
+        // one back on a product.
         'Sublimation Transfer Paper (A4)',
-        // No customizable product carries these any more, so in practice only
-        // the paper above is ever flagged. They stay listed because the rule is
-        // "a print consumable on a designable product waits for a design", and
-        // that should hold if ink is ever put back on one.
         'Sublimation Ink (Cyan)',
         'Sublimation Ink (Magenta)',
         'Sublimation Ink (Yellow)',
@@ -89,43 +90,15 @@ class BOMSeeder extends Seeder
                 'Sublimation Transfer Paper (A4)' => 1,
                 ...self::ink(2),
             ],
-            // The seven customizable products below carry no ink of their own.
+            // The seven customizable products (the mugs, the tee, the polos,
+            // the umbrella and the tote) have no bill of materials at all.
             // What gets printed on them is whatever the customer put in the
-            // studio, so their ink comes entirely from the customization BOM —
-            // see CustomizationBOMSeeder. A default split here was charging a
-            // design for black it may never use.
-            //
-            // The sheets stay, because how many a print takes is a property of
-            // the garment rather than of the artwork: a mug takes one whatever
-            // is on it, a polo takes three. They are flagged below so a plain
-            // order still draws none.
-            'MG-WHT-11' => [
-                'Sublimation Transfer Paper (A4)' => 1,
-            ],
-            'MG-BLK-11' => [
-                'Sublimation Transfer Paper (A4)' => 1,
-            ],
-            'TS-CTN-WHT' => [
-                'Sublimation Transfer Paper (A4)' => 2,
-            ],
-            // Three sheets rather than the tee's two: the polo is printed front
-            // and back, and the collar takes a sheet of its own.
-            'PL-PQE-WHT' => [
-                'Sublimation Transfer Paper (A4)' => 3,
-            ],
-            'PL-PQE-NVY' => [
-                'Sublimation Transfer Paper (A4)' => 3,
-            ],
-            // One canopy print, but a big one: the dome is a single panel
-            // wider than any garment here, so it takes four sheets.
-            'UMB-AUT-WHT' => [
-                'Sublimation Transfer Paper (A4)' => 4,
-            ],
-            // Two, one per printable panel, now that the tote unwraps front and
-            // back — see models/bag.js.
-            'TB-CVS-NAT' => [
-                'Sublimation Transfer Paper (A4)' => 2,
-            ],
+            // studio, so both the ink and the transfer paper are measured off
+            // that print — see InkEstimator — rather than listed here. A
+            // default ink split was charging a design for black it may never
+            // use, and a fixed sheet count per garment charged a 2×2 sticker
+            // a whole A4, or three of them on a polo. The blank itself still
+            // leaves product stock, because the blank *is* the product.
             'BK-BKLT-A5' => [
                 'Bond Paper (A4, 80gsm)' => 6,   // 24 pages, 4 up per sheet
                 'Vellum Board (220gsm)' => 1,

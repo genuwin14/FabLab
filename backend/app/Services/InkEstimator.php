@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\CustomDesign;
 use App\Models\InkChannel;
 use App\Models\Product;
+use App\Models\TransferSheet;
 
 /**
  * How much of each ink a design's print takes.
@@ -245,6 +246,178 @@ class InkEstimator
         }
 
         return $draw;
+    }
+
+    /**
+     * Where the artwork sits on each panel of a print.
+     *
+     * For every panel, the smallest box around its non-transparent pixels,
+     * in canvas UV (0..1 of the whole atlas, the same space the panel is
+     * given in). Null for a panel with nothing on it. Keyed like `$zones`.
+     *
+     * This is what the paper draw and the print size on the order screens
+     * come from: the piece the shop cuts from the transfer sheet is this box
+     * plus a margin. Sampled at half the studio's resolution, which places
+     * an edge within a couple of pixels of the atlas — under a millimetre
+     * on a chest.
+     *
+     * @param  array<int, array<string, mixed>>  $zones
+     * @return array<int, array{u0: float, v0: float, u1: float, v1: float}|null>
+     */
+    public function boundingBoxes(string $dataUrl, array $zones): array
+    {
+        $boxes = array_fill(0, count($zones), null);
+        if ($zones === []) {
+            return $boxes;
+        }
+
+        $image = $this->imageFromDataUrl($dataUrl);
+        if (! $image) {
+            return $boxes;
+        }
+
+        try {
+            $side = 512;
+            $sample = imagecreatetruecolor($side, $side);
+            imagealphablending($sample, false);
+            imagesavealpha($sample, true);
+            imagefill($sample, 0, 0, imagecolorallocatealpha($sample, 0, 0, 0, 127));
+            imagecopyresampled($sample, $image, 0, 0, 0, 0, $side, $side, imagesx($image), imagesy($image));
+
+            foreach (array_values($zones) as $index => $zone) {
+                $x0 = max(0, (int) floor($zone['u0'] * $side));
+                $y0 = max(0, (int) floor($zone['v0'] * $side));
+                $x1 = min($side - 1, (int) ceil($zone['u1'] * $side) - 1);
+                $y1 = min($side - 1, (int) ceil($zone['v1'] * $side) - 1);
+
+                $minX = $minY = PHP_INT_MAX;
+                $maxX = $maxY = -1;
+
+                for ($y = $y0; $y <= $y1; $y++) {
+                    for ($x = $x0; $x <= $x1; $x++) {
+                        // Anything more than faintly there counts: a soft
+                        // edge is still cut around.
+                        if ((((imagecolorat($sample, $x, $y) >> 24) & 0x7F)) >= 120) {
+                            continue;
+                        }
+                        if ($x < $minX) $minX = $x;
+                        if ($x > $maxX) $maxX = $x;
+                        if ($y < $minY) $minY = $y;
+                        if ($y > $maxY) $maxY = $y;
+                    }
+                }
+
+                if ($maxX < 0) {
+                    continue;
+                }
+
+                $boxes[$index] = [
+                    'u0' => round($minX / $side, 4),
+                    'v0' => round($minY / $side, 4),
+                    'u1' => round(($maxX + 1) / $side, 4),
+                    'v1' => round(($maxY + 1) / $side, 4),
+                ];
+            }
+
+            imagedestroy($sample);
+        } finally {
+            imagedestroy($image);
+        }
+
+        return $boxes;
+    }
+
+    /**
+     * The transfer paper one item of this design takes.
+     *
+     * The shop prints each panel's artwork on a sheet, cuts the piece out
+     * with a margin, and presses it on. So per panel: the artwork's box in
+     * centimetres, the piece around it, and what fraction of the sheet
+     * that piece is. The fractions add up to the draw, in sheets.
+     *
+     * Centimetres come from the product's printable area: the atlas's
+     * printable panels together cover that many cm², so one unit of atlas
+     * width is the square root of area over the panels' UV area. That
+     * assumes the atlas is drawn to one scale across its panels and in
+     * both directions, which is how the models are measured; a mug wrap
+     * that is wider than it is tall comes out a little off, but close
+     * enough to cut paper by.
+     *
+     * Null when it can't be measured — no print area, no panels boxed, or
+     * no paper linked — and the order then falls back to the bills of
+     * materials.
+     *
+     * @return array{material_id: int, sheets: float, sheet: array<string, mixed>, panels: array<int, array<string, mixed>>}|null
+     */
+    public function paper(CustomDesign $design, Product $product): ?array
+    {
+        if (! TransferSheet::configured()) {
+            return null;
+        }
+
+        $area = $product->printAreaFor($design->recipe['size'] ?? null);
+        $zones = is_array($design->print_zones) ? $design->print_zones : [];
+        if ($area === null || $zones === []) {
+            return null;
+        }
+
+        $uvArea = 0.0;
+        foreach ($zones as $zone) {
+            $uvArea += max(0, ($zone['u1'] ?? 0) - ($zone['u0'] ?? 0)) * max(0, ($zone['v1'] ?? 0) - ($zone['v0'] ?? 0));
+        }
+        if ($uvArea <= 0) {
+            return null;
+        }
+
+        $cmPerUnit = sqrt($area / $uvArea);
+        $sheet = TransferSheet::current();
+        $sheetArea = $sheet['width_cm'] * $sheet['height_cm'];
+
+        $panels = [];
+        $sheets = 0.0;
+
+        foreach ($zones as $zone) {
+            $box = $zone['bbox'] ?? null;
+            if (! is_array($box)) {
+                continue;
+            }
+
+            $width = round(($box['u1'] - $box['u0']) * $cmPerUnit, 2);
+            $height = round(($box['v1'] - $box['v0']) * $cmPerUnit, 2);
+            if ($width <= 0 || $height <= 0) {
+                continue;
+            }
+
+            $pieceWidth = round($width + 2 * $sheet['margin_cm'], 2);
+            $pieceHeight = round($height + 2 * $sheet['margin_cm'], 2);
+            $fraction = round(($pieceWidth * $pieceHeight) / $sheetArea, 4);
+
+            // Either way round on the sheet.
+            $fits = ($pieceWidth <= $sheet['width_cm'] && $pieceHeight <= $sheet['height_cm'])
+                || ($pieceWidth <= $sheet['height_cm'] && $pieceHeight <= $sheet['width_cm']);
+
+            $panels[] = [
+                'label' => $zone['label'] ?? 'Panel',
+                'width_cm' => $width,
+                'height_cm' => $height,
+                'piece_width_cm' => $pieceWidth,
+                'piece_height_cm' => $pieceHeight,
+                'fraction' => $fraction,
+                'fits' => $fits,
+            ];
+            $sheets += $fraction;
+        }
+
+        if ($panels === []) {
+            return null;
+        }
+
+        return [
+            'material_id' => (int) $sheet['raw_material_id'],
+            'sheets' => round($sheets, 4),
+            'sheet' => $sheet,
+            'panels' => $panels,
+        ];
     }
 
     /**

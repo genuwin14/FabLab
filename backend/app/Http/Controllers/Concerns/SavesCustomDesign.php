@@ -58,8 +58,9 @@ trait SavesCustomDesign
     private function recordPrint(CustomDesign $design, string $print, $printableFraction, $zones): void
     {
         $fraction = is_numeric($printableFraction) ? (float) $printableFraction : 1.0;
+        $estimator = app(InkEstimator::class);
 
-        $coverage = app(InkEstimator::class)->measure($print, $fraction);
+        $coverage = $estimator->measure($print, $fraction);
         if ($coverage === null) {
             return;
         }
@@ -70,13 +71,22 @@ trait SavesCustomDesign
             Storage::disk('public')->put($path, $bytes);
         }
 
+        // Each panel also records where its artwork sits, which is what the
+        // paper draw and the print size on the order screens come from.
+        $zones = $this->cleanZones($zones);
+        if ($zones !== null) {
+            foreach ($estimator->boundingBoxes($print, $zones) as $index => $box) {
+                $zones[$index]['bbox'] = $box;
+            }
+        }
+
         // A second save can't be told from the first by wasChanged() on the
         // recipe alone, so the coverage is written unconditionally: the print
         // is whatever the studio last rendered.
         $design->forceFill([
             'ink_coverage' => $coverage,
             'print_image' => $bytes !== false ? $path : $design->print_image,
-            'print_zones' => $this->cleanZones($zones),
+            'print_zones' => $zones,
         ])->save();
     }
 

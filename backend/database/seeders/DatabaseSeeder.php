@@ -30,6 +30,7 @@ class DatabaseSeeder extends Seeder
             // options onto the inks and the LED kit.
             CustomizationBOMSeeder::class,
             InkChannelSeeder::class,
+            TransferSheetSeeder::class,
             // Must follow RawMaterialSeeder: it writes the usage ledger that
             // produces the units_* counters, rather than them being typed in.
             RawMaterialMovementSeeder::class,

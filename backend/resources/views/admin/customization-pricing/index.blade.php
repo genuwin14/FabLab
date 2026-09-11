@@ -216,8 +216,83 @@
                                         <i class="bi bi-info-circle me-1"></i>To calibrate a rate: print a solid square of one colour
                                         at a known size, weigh the bottle before and after, and divide the millilitres used by the
                                         square's area. Each product's printable area is set on its product card; sizes scale it by
-                                        the factors above.
+                                        the factor beside each size surcharge.
                                     </small>
+                                </div>
+                            </div>
+
+                            <!-- Panel 4: the transfer sheet a print is cut from. Paper is
+                                 measured off the artwork the same way ink is: each panel's
+                                 print is boxed, the piece the cutter takes is that box plus the
+                                 margin, and the order draws that fraction of a sheet. -->
+                            <div class="card border-0 shadow-sm pricing-card mt-3 mt-md-4" id="transferSheet">
+                                <div class="card-header bg-white border-0 pt-3 pt-md-4 pb-2 px-3 px-md-4">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <span class="pricing-section-icon"><i class="bi bi-file-earmark-image"></i></span>
+                                        <div>
+                                            <h6 class="fw-bold mb-0 text-dark">Transfer paper</h6>
+                                            <small class="text-muted">
+                                                Every print is cut from a sheet this size and pressed on. An order draws the
+                                                fraction of a sheet each panel's artwork takes, margin included, and a print
+                                                bigger than the sheet is flagged at review.
+                                            </small>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="card-body px-3 px-md-4 pb-3 pb-md-4">
+                                    <div class="rate-entry py-3 border-top">
+                                        <div class="fw-semibold text-dark mb-2">
+                                            <i class="bi bi-box-seam me-1 text-muted"></i>Stocked as
+                                        </div>
+                                        <select class="form-select form-select-sm @error('paper.raw_material_id') is-invalid @enderror"
+                                            name="paper[raw_material_id]" aria-label="Raw material the transfer sheets are stocked as">
+                                            <option value="">Not linked — measured but nothing deducted</option>
+                                            @foreach ($materials as $material)
+                                                <option value="{{ $material->raw_material_id }}"
+                                                    @selected((int) old('paper.raw_material_id', $transferSheet['raw_material_id']) === $material->raw_material_id)>
+                                                    {{ $material->name }} ({{ $material->unit }})
+                                                </option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                    <div class="rate-entry py-3 border-top">
+                                        <div class="row g-2">
+                                            <div class="col-4">
+                                                <label class="form-label small text-muted mb-1" for="paper-width">Sheet width</label>
+                                                <div class="input-group input-group-sm">
+                                                    <input type="number" step="0.01" min="1" max="999.99" id="paper-width"
+                                                        class="form-control text-end @error('paper.width_cm') is-invalid @enderror"
+                                                        name="paper[width_cm]"
+                                                        value="{{ old('paper.width_cm', rtrim(rtrim(number_format($transferSheet['width_cm'], 2, '.', ''), '0'), '.')) }}">
+                                                    <span class="input-group-text bg-white text-muted">cm</span>
+                                                </div>
+                                            </div>
+                                            <div class="col-4">
+                                                <label class="form-label small text-muted mb-1" for="paper-height">Sheet height</label>
+                                                <div class="input-group input-group-sm">
+                                                    <input type="number" step="0.01" min="1" max="999.99" id="paper-height"
+                                                        class="form-control text-end @error('paper.height_cm') is-invalid @enderror"
+                                                        name="paper[height_cm]"
+                                                        value="{{ old('paper.height_cm', rtrim(rtrim(number_format($transferSheet['height_cm'], 2, '.', ''), '0'), '.')) }}">
+                                                    <span class="input-group-text bg-white text-muted">cm</span>
+                                                </div>
+                                            </div>
+                                            <div class="col-4">
+                                                <label class="form-label small text-muted mb-1" for="paper-margin">Cut margin</label>
+                                                <div class="input-group input-group-sm">
+                                                    <input type="number" step="0.01" min="0" max="99.99" id="paper-margin"
+                                                        class="form-control text-end @error('paper.margin_cm') is-invalid @enderror"
+                                                        name="paper[margin_cm]"
+                                                        value="{{ old('paper.margin_cm', rtrim(rtrim(number_format($transferSheet['margin_cm'], 2, '.', ''), '0'), '.')) }}">
+                                                    <span class="input-group-text bg-white text-muted">cm</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <small class="text-muted d-block mt-2">
+                                            A4 is 21 × 29.7 cm, the largest the printers take. The margin is left around the
+                                            artwork on every side when the piece is cut.
+                                        </small>
+                                    </div>
                                 </div>
                             </div>
                         </div>
