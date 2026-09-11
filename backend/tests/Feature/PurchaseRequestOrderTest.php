@@ -239,10 +239,21 @@ class PurchaseRequestOrderTest extends TestCase
         Sanctum::actingAs($this->staff);
         $this->post(route('staff.orders.updateStatus', $order->order_id), [
             'status' => 'processing',
-            'payment_reference' => 'CASH-1',
         ])->assertSessionHas('error');
 
         $this->assertSame('approved', $order->refresh()->status);
+    }
+
+    public function test_a_pr_order_takes_no_cashier_payment(): void
+    {
+        $order = $this->approvedPrOrder();
+
+        Sanctum::actingAs($this->admin);
+        $this->post(route('admin.orders.recordPayment', $order->order_id), [
+            'payment_reference' => 'OR-1',
+        ])->assertSessionHas('error');
+
+        $this->assertNull($order->refresh()->payment_reference);
     }
 
     public function test_staff_complete_a_pr_order_after_delivery(): void

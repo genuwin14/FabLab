@@ -419,10 +419,10 @@ class MeasuredInkDrawTest extends TestCase
         $order = $this->order($this->measured(['cyan' => 0.5]));
         $this->approve($order);
 
+        $order->update(['payment_reference' => 'OR-1']);
         Sanctum::actingAs($this->user('staff', 'st@example.test'));
-        $this->post("/staff/orders/{$order->order_id}/update-status", [
-            'status' => 'processing', 'payment_reference' => 'OR-1',
-        ])->assertRedirect();
+        $this->post("/staff/orders/{$order->order_id}/update-status", ['status' => 'processing'])
+            ->assertRedirect();
 
         $this->assertSame(95.0, $this->stock('cyan'));
         $consumed = RawMaterialMovement::where('raw_material_id', $this->bottles['cyan']->raw_material_id)

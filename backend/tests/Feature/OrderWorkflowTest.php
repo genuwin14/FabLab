@@ -232,11 +232,11 @@ class OrderWorkflowTest extends TestCase
     public function test_staff_advance_one_step_at_a_time(): void
     {
         $order = $this->order('approved');
+        $order->update(['payment_reference' => 'OR-1234']);
         Sanctum::actingAs($this->user('staff', 's@example.test'));
 
-        $this->post("/staff/orders/{$order->order_id}/update-status", [
-            'status' => 'processing', 'payment_reference' => 'OR-1234',
-        ])->assertRedirect();
+        $this->post("/staff/orders/{$order->order_id}/update-status", ['status' => 'processing'])
+            ->assertRedirect();
 
         $this->assertSame('processing', $order->refresh()->status);
         $this->assertSame('OR-1234', $order->payment_reference);
@@ -283,15 +283,49 @@ class OrderWorkflowTest extends TestCase
         $this->assertSame('pending', $order->refresh()->status);
     }
 
-    public function test_processing_requires_a_receipt_number(): void
+    public function test_staff_cannot_start_production_before_payment_is_recorded(): void
     {
         $order = $this->order('approved');
         Sanctum::actingAs($this->user('staff', 's@example.test'));
 
-        $this->post("/staff/orders/{$order->order_id}/update-status", ['status' => 'processing'])
-            ->assertSessionHasErrors('payment_reference');
+        // Staff no longer type the receipt themselves — the admin does, once
+        // the customer has paid — so sending one along changes nothing.
+        $this->post("/staff/orders/{$order->order_id}/update-status", [
+            'status' => 'processing', 'payment_reference' => 'OR-1',
+        ])->assertSessionHas('error');
 
         $this->assertSame('approved', $order->refresh()->status);
+        $this->assertNull($order->payment_reference);
+    }
+
+    // ------------------------------------------------------ payment (admin)
+
+    public function test_admin_records_the_payment_and_the_customer_is_told(): void
+    {
+        \Illuminate\Support\Facades\Notification::fake();
+        $order = $this->order('approved');
+        $this->asAdmin();
+
+        $this->post("/admin/orders/{$order->order_id}/payment", ['payment_reference' => 'OR-1234'])
+            ->assertRedirect()
+            ->assertSessionHas('success');
+
+        $order->refresh();
+        $this->assertSame('OR-1234', $order->payment_reference);
+        $this->assertSame('approved', $order->status);
+        $this->assertTrue($order->isPaid());
+        \Illuminate\Support\Facades\Notification::assertSentTo($this->customer, \App\Notifications\PaymentRecorded::class);
+    }
+
+    public function test_payment_needs_a_receipt_number(): void
+    {
+        $order = $this->order('approved');
+        $this->asAdmin();
+
+        $this->post("/admin/orders/{$order->order_id}/payment", [])
+            ->assertSessionHasErrors('payment_reference');
+
+        $this->assertNull($order->refresh()->payment_reference);
     }
 
     public function test_a_receipt_number_cannot_be_reused_on_another_order(): void
@@ -300,13 +334,79 @@ class OrderWorkflowTest extends TestCase
         $first->update(['payment_reference' => 'OR-1234']);
 
         $second = $this->order('approved');
+        $this->asAdmin();
+
+        $this->post("/admin/orders/{$second->order_id}/payment", ['payment_reference' => 'OR-1234'])
+            ->assertSessionHasErrors('payment_reference');
+
+        $this->assertNull($second->refresh()->payment_reference);
+    }
+
+    public function test_payment_cannot_be_recorded_before_approval(): void
+    {
+        $order = $this->order('pending');
+        $this->asAdmin();
+
+        $this->post("/admin/orders/{$order->order_id}/payment", ['payment_reference' => 'OR-1'])
+            ->assertSessionHas('error');
+
+        $this->assertNull($order->refresh()->payment_reference);
+    }
+
+    public function test_correcting_a_receipt_does_not_tell_the_customer_again(): void
+    {
+        \Illuminate\Support\Facades\Notification::fake();
+        $order = $this->order('processing');
+        $order->update(['payment_reference' => 'OR-1']);
+        $this->asAdmin();
+
+        $this->post("/admin/orders/{$order->order_id}/payment", ['payment_reference' => 'OR-2'])
+            ->assertSessionHas('success');
+
+        $this->assertSame('OR-2', $order->refresh()->payment_reference);
+        \Illuminate\Support\Facades\Notification::assertNothingSent();
+    }
+
+    public function test_a_completed_order_takes_no_payment(): void
+    {
+        $order = $this->order('completed');
+        $this->asAdmin();
+
+        $this->post("/admin/orders/{$order->order_id}/payment", ['payment_reference' => 'OR-1'])
+            ->assertSessionHas('error');
+
+        $this->assertNull($order->refresh()->payment_reference);
+    }
+
+    public function test_the_lists_offer_the_right_step_before_and_after_payment(): void
+    {
+        $order = $this->order('approved');
+        $admin = $this->user('admin', 'a@example.test');
+        $staff = $this->user('staff', 's@example.test');
+
+        Sanctum::actingAs($admin);
+        // The modal's own title is always on the page; the trigger with an
+        // empty receipt is what only an unpaid order carries.
+        $this->get('/admin/orders')->assertOk()->assertSee('data-receipt=""', false)->assertSee('Awaiting payment');
+
+        Sanctum::actingAs($staff);
+        $this->get('/staff/orders')->assertOk()->assertSee('Awaiting payment')->assertDontSee('data-next-status="processing"', false);
+
+        $order->update(['payment_reference' => 'OR-77']);
+
+        $this->get('/staff/orders')->assertOk()->assertSee('Paid')->assertSee('data-next-status="processing"', false)->assertSee('data-receipt="OR-77"', false);
+
+        Sanctum::actingAs($admin);
+        $this->get('/admin/orders')->assertOk()->assertDontSee('data-receipt=""', false)->assertSee('data-receipt="OR-77"', false)->assertSee('Paid');
+    }
+
+    public function test_staff_cannot_record_a_payment(): void
+    {
+        $order = $this->order('approved');
         Sanctum::actingAs($this->user('staff', 's@example.test'));
 
-        $this->post("/staff/orders/{$second->order_id}/update-status", [
-            'status' => 'processing', 'payment_reference' => 'OR-1234',
-        ])->assertSessionHasErrors('payment_reference');
+        $this->post("/admin/orders/{$order->order_id}/payment", ['payment_reference' => 'OR-1']);
 
-        $this->assertSame('approved', $second->refresh()->status);
-        $this->assertNull($second->payment_reference);
+        $this->assertNull($order->refresh()->payment_reference);
     }
 }

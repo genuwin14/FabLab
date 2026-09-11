@@ -138,6 +138,66 @@ class OrderController extends Controller
     }
 
     /**
+     * Record the payment for an approved order: the number on the official
+     * receipt the CSPC Cashier issued once the customer paid against their
+     * transaction slip.
+     *
+     * This is the gate to production for a cashier order. Staff cannot start
+     * making it until the receipt is on the order, and the customer is told
+     * the number because it is what they show to collect the order. The
+     * number can be corrected later — a typo should not be permanent — but
+     * the customer is only told the first time.
+     */
+    public function recordPayment(Request $request, $id)
+    {
+        $order = Order::with('user')->findOrFail($id);
+
+        $request->validate([
+            'payment_reference' => [
+                'required', 'string', 'max:255',
+                // The cashier issues one receipt per payment, so a number
+                // already on another order is a typo or a receipt being
+                // reused — either way this order must not be marked paid on it.
+                function (string $attribute, mixed $value, \Closure $fail) use ($order) {
+                    $clash = Order::where('payment_reference', $value)
+                        ->where('order_id', '!=', $order->order_id)
+                        ->first();
+
+                    if ($clash) {
+                        $fail("Receipt number {$value} is already on order {$clash->order_number}. Check the receipt from the cashier.");
+                    }
+                },
+            ],
+        ], [
+            'payment_reference.required' => 'Enter the number on the receipt the cashier issued.',
+        ]);
+
+        if ($order->isPurchaseRequest()) {
+            return back()->with('error', "Order {$order->order_number} is a Purchase Request — it is paid through procurement, not the cashier.");
+        }
+
+        if (! $order->acceptsPayment()) {
+            $message = match ($order->status) {
+                'pending' => "Order {$order->order_number} hasn't been approved yet — review it first, then record the payment once the customer has paid.",
+                default => "Order {$order->order_number} is {$this->label($order->status)}; its payment can no longer be recorded.",
+            };
+
+            return back()->with('error', $message);
+        }
+
+        $firstTime = blank($order->payment_reference);
+        $order->update(['payment_reference' => $request->payment_reference]);
+
+        if ($firstTime) {
+            \App\Support\Notifier::customer($order->user, new \App\Notifications\PaymentRecorded($order));
+        }
+
+        return back()->with('success', $firstTime && $order->status === 'approved'
+            ? "Payment recorded — receipt {$order->payment_reference} on order {$order->order_number}. Staff can now start production."
+            : "Receipt number on order {$order->order_number} updated to {$order->payment_reference}.");
+    }
+
+    /**
      * Cancel an order that is already past review, returning everything it
      * took: finished stock, raw materials and textures.
      */

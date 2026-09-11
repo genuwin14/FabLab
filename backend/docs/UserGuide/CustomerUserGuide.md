@@ -139,7 +139,7 @@ If anything sold out between adding and checking out, the whole checkout stops w
 
 ### Paying at the CSPC Cashier
 
-The order starts at **Pending**, and staff and admins are notified straight away. An admin reviews it next — [Admin Guide §4](AdminUserGuide.md#4-reviewing-orders). Present your transaction slip at the cashier to pay.
+The order starts at **Pending**, and staff and admins are notified straight away. An admin reviews it next — [Admin Guide §4](AdminUserGuide.md#4-reviewing-orders). Once it is approved, present your transaction slip at the CSPC Cashier to pay.
 
 ### Paying by Purchase Request
 
@@ -162,7 +162,7 @@ Once approved, a PR order is driven by paperwork rather than by the workshop que
 | Status | What it means for you | Who set it |
 | :--- | :--- | :--- |
 | **Pending** | Submitted, waiting for the shop to review it. You can still cancel | The system, at checkout |
-| **Approved** | Accepted for production. A transaction slip has been emailed to you | An admin |
+| **Approved** | Accepted. A transaction slip has been emailed to you — pay at the CSPC Cashier with it. Once the admin records your payment, Details shows your **receipt number** and production can start | An admin |
 | **Processing** | Being made | Staff |
 | **Ready for Pickup** | Waiting for you at the shop — go collect it | Staff |
 | **Completed** | Handed over. Done | Staff |

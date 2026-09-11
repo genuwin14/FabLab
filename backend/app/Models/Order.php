@@ -67,6 +67,37 @@ class Order extends Model
     }
 
     /**
+     * A cashier order counts as paid once an admin has recorded the number
+     * on the official receipt. There is no separate "paid" status: the
+     * receipt number on an approved order is the proof, and it is what the
+     * customer brings to collect the order.
+     */
+    public function isPaid(): bool
+    {
+        return ! $this->isPurchaseRequest() && filled($this->payment_reference);
+    }
+
+    /**
+     * Approved, but the customer has not yet paid at the cashier — or has,
+     * and the admin has not recorded the receipt yet. Staff wait on this.
+     */
+    public function isAwaitingPayment(): bool
+    {
+        return $this->status === 'approved' && ! $this->isPurchaseRequest() && ! $this->isPaid();
+    }
+
+    /**
+     * Whether an admin may record or correct the receipt number: only once
+     * the order is approved, and not after it has been handed over or
+     * cancelled. PR orders are paid through procurement, never the cashier.
+     */
+    public function acceptsPayment(): bool
+    {
+        return ! $this->isPurchaseRequest()
+            && in_array($this->status, ['approved', 'processing', 'ready_for_pickup', 'for_delivery'], true);
+    }
+
+    /**
      * Waiting on the customer to come back with a PR number from procurement.
      */
     public function isAwaitingPr(): bool

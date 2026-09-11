@@ -26,19 +26,21 @@
                 <input type="hidden" name="status" id="updateStatusInput">
 
                 <div class="modal-body p-4 bg-white">
-                    <!-- Receipt Number (Hidden by default) -->
+                    <!-- Payment check (shown when starting production). The admin
+                         recorded the receipt number when the customer paid; this
+                         only confirms it is there before staff cut into stock. -->
                     <div id="paymentRefContainer" class="d-none">
                         <h6 class="order-section-title">
-                            <i class="bi bi-receipt me-2"></i>Receipt Number
+                            <i class="bi bi-receipt me-2"></i>Payment
                         </h6>
-                        <div class="alert alert-warning border-0 d-flex align-items-center mb-3 rounded-3">
-                            <i class="bi bi-exclamation-triangle-fill me-2"></i>
-                            <div class="small fw-bold">Receipt number is required to start processing this order. The customer will show it to collect the order.</div>
+                        <div class="alert alert-success border-0 d-flex align-items-center mb-3 rounded-3">
+                            <i class="bi bi-check-circle-fill me-2"></i>
+                            <div class="small">
+                                <span class="fw-bold">Paid.</span> Receipt number
+                                <span class="font-monospace fw-bold" id="paymentReferenceValue"></span>
+                                was recorded by the admin. Starting production draws the materials below.
+                            </div>
                         </div>
-                        <input type="text"
-                            class="form-control order-field-input"
-                            id="paymentReference" name="payment_reference"
-                            placeholder="Enter Receipt #">
                     </div>
 
                     @include('partials.order-materials-panel', ['panelId' => 'updateMaterialsPanel'])

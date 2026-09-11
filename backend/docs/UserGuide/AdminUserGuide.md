@@ -53,7 +53,7 @@ Revenue counts `completed` orders only — an approved order that hasn't been ha
 
 `/admin/orders` lists every order in the system, newest first, 10 per page. Search by order number, receipt number, or customer name; filter by status or by date (today / this week / this month).
 
-**Only `pending` orders carry a Review button.** Everything else opens read-only, showing the customer, the lines, any customization with its preview, the total, the receipt number staff recorded, and the cancellation reason if there is one.
+**Only `pending` orders carry a Review button.** Everything else opens read-only, showing the customer, the lines, any customization with its preview, the total, the receipt number recorded at payment, and the cancellation reason if there is one.
 
 ### Approving
 
@@ -83,6 +83,20 @@ Approval is **refused** when the order would take any material or texture below 
 - The quantities look sane for the customer and the product.
 - Any customization is something the shop can actually produce.
 - The finished-goods stock covers it; the materials check is automatic.
+
+### Recording the payment
+
+Approval sends the customer their transaction slip; they take it to the **CSPC Cashier**, pay, and walk away with an **official receipt**. Nothing moves until you record that.
+
+An approved cashier order shows **Awaiting payment** under its status and a **Record Payment** button. Open it, type the number on the official receipt, and save. In one step the system:
+
+1. Stores the receipt number on the order — the status stays `approved`, now marked **Paid**.
+2. Notifies and emails the customer that the payment was received, with the receipt number, telling them it is what they show to collect the order.
+3. Unlocks the **Process** button for staff — see [Staff Guide §4](StaffUserGuide.md#4-processing-orders). Until this point staff see *Awaiting payment* instead.
+
+A receipt number can only be on one order; the system refuses one that is already recorded elsewhere and names the order it belongs to. If a number was typed wrongly, the pencil beside it in the **Receipt No** column opens the same dialog to correct it. The customer is not notified again for a correction.
+
+Purchase Request orders never come through here — they are paid through procurement, and the Notice of Award is what starts their production ([Purchase Request orders](#purchase-request-orders)).
 
 ### Cancelling after approval
 

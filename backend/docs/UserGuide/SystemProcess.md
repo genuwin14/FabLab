@@ -339,7 +339,8 @@ flowchart TD
     A["C · Checkout<br/>status: pending<br/>product stock ↓"] --> B{"A · Review"}
     B -- "Approve" --> C["status: approved<br/>materials + textures ↓<br/>slip emailed"]
     B -- "Reject + reason" --> X["status: cancelled<br/>product stock ↑"]
-    C --> D["S · Process<br/>status: processing<br/>receipt number required"]
+    C --> C2["A · Record payment<br/>receipt number on the order"]
+    C2 --> D["S · Process<br/>status: processing<br/>only once paid"]
     D --> E["S · Ready<br/>status: ready_for_pickup<br/>customer notified"]
     E --> F["S · Complete<br/>status: completed<br/>counts as revenue"]
     A -. "C may cancel while pending" .-> X
@@ -390,7 +391,7 @@ Each row offers **exactly one forward step**:
 | Current status | Button | Becomes | Requires |
 | :--- | :--- | :--- | :--- |
 | `pending` | *(none — "Awaiting admin")* | — | — |
-| `approved` | **Process** | `processing` | **A receipt number** |
+| `approved` | **Process** | `processing` | **The admin to have recorded the payment** — an unpaid order shows *Awaiting payment* instead of the button |
 | `processing` | **Ready** | `ready_for_pickup` | — |
 | `ready_for_pickup` | **Complete** | `completed` | — |
 | `completed` / `cancelled` | *(none)* | — | — |
@@ -481,8 +482,8 @@ flowchart LR
     A["C · Checkout"] --> B["Preview slip:<br/>'Present this receipt at<br/>the CSPC Cashier for payment'"]
     B --> C["A · Approve<br/>→ slip emailed as PDF"]
     C --> D["C · Pays at the<br/>CSPC Cashier"]
-    D --> E["S · Process<br/>records the receipt #"]
-    E --> F["Receipt number stored on the order,<br/>searchable, shown to the customer"]
+    D --> E["A · Record payment<br/>types the receipt #"]
+    E --> F["Receipt number stored on the order,<br/>shown to the customer, unlocks staff"]
 ```
 
 | Step | Who | What happens |
@@ -490,10 +491,10 @@ flowchart LR
 | 1 | Customer | The checkout preview slip states: **present this receipt at the CSPC Cashier for payment** |
 | 2 | Admin | Approving emails the **transaction slip** — a PDF carrying the order number as a **Code 128 barcode**, the customer's details, the lines, and the total |
 | 3 | Customer | Pays at the **CSPC Cashier**, presenting the slip. The cashier issues a receipt or transaction number |
-| 4 | Staff | Moving the order to **Processing** opens a dialog demanding the **receipt number**. Enter the number on the receipt the cashier issued — the field is mandatory for this transition |
-| 5 | System | The receipt number is stored on the order, shown in the customer's order details as the number to bring when collecting, and is **searchable** on both the staff and admin order lists |
+| 4 | Admin | **Record Payment** on the approved order: type the number on the official receipt the cashier issued. The customer is notified that their payment was received and told the receipt number is what they bring to collect |
+| 5 | Staff | The order now reads **Paid**; the **Process** button appears and the confirmation dialog repeats the receipt number. The number is **searchable** on both order lists |
 
-**Why the receipt number is mandatory at exactly that point:** it's the gate between "paid for" and "being made", and it's how the shop reconciles takings at end of day. Search any order list by receipt number to find the order it belongs to.
+**Why the payment is recorded by the admin, before staff can start:** it's the gate between "paid for" and "being made", and it's how the shop reconciles takings at end of day. Search any order list by receipt number to find the order it belongs to.
 
 **Getting the receipt.** The slip is emailed automatically on approval, and **View Receipt** on the order card, in the list, or inside the details panel opens the PDF in a new tab at any time. It exists from `approved` onward — pending and cancelled orders have no slip.
 
@@ -726,7 +727,7 @@ A single continuous run that touches every major process in dependency order. Ro
 | 12 | Checkout — *show product stock drop in the admin tab* | C | [C1](#c1-checkout--customer) | 3 |
 | 13 | Admin reviews and approves — *show materials and texture drop* | A | [C2](#c2-review--admin) | 4 |
 | 14 | The emailed transaction slip and the barcode | C | [Part D](#part-d--the-payment-process) | 2 |
-| 15 | Staff process with a receipt number | S | [C3](#c3-production--staff) | 3 |
+| 15 | Admin records the payment, then staff process | A, S | [C3](#c3-production--staff) | 3 |
 | 16 | Ready for pickup → completed | S | [C3](#c3-production--staff) | 2 |
 | 17 | Sales page — *the order now counts as revenue* | A | [G1](#g1-sales) | 2 |
 | 18 | Watchlist → pre-filled PO → delivered → stock returns | S | [Part F](#part-f--the-procurement-process) | 5 |
@@ -740,7 +741,7 @@ These are the points where a viewer understands the system rather than just the 
 
 1. **Chapter 7** — open the category dropdown and show it contains exactly what you made in chapter 3. That's the dependency made visible.
 2. **Chapter 12 → 13** — have the admin product list open in a second tab. Stock drops at checkout, then materials drop at approval. Two separate events, and explaining why is the heart of the system.
-3. **Chapter 15** — try to move the order to Processing with the receipt number field empty, so the demand for it is seen, not just described.
+3. **Chapter 15** — look at the staff list before the payment is recorded, so the *Awaiting payment* badge is seen in place of the Process button, not just described.
 4. **Chapter 18** — show the material's stock figure before and after marking the PO `delivered`. That one click is the entire restock.
 5. **Chapter 20** — deliberately approve an order that outruns its materials so the shortfall message appears on camera.
 
@@ -762,7 +763,7 @@ To force the refused approval: edit the raw material and drop its stock below wh
 | :--- | :--- | :--- |
 | `pending` | System, at checkout | Product stock already deducted |
 | `approved` | **Admin review only** | Raw materials and textures deducted; slip emailed |
-| `processing` | Staff — **receipt number required** | None |
+| `processing` | Staff — **only once the admin has recorded the payment** | None |
 | `ready_for_pickup` | Staff | None |
 | `completed` | Staff | None — now counts as revenue |
 | `cancelled` | Customer (while pending), or Admin | Everything the order took is returned |
@@ -800,7 +801,7 @@ To force the refused approval: edit the raw material and drop its stock below wh
 | :--- | :--- | :--- |
 | Order number | `ORDR-YYYYMMDD-NNNN` | `ORDR-20260827-0001` |
 | Purchase order number | `PO-YYYYMMDD-XXXX` | `PO-20260804-A1B2` |
-| Receipt number | The number on the receipt the CSPC Cashier issued | recorded by staff at Processing |
+| Receipt number | The number on the official receipt the CSPC Cashier issued | recorded by the admin once the customer has paid |
 | PR number | Whatever CSPC procurement issued | entered by the customer to release the order |
 
 ## K6. Who can do what

@@ -92,31 +92,17 @@ class OrderController extends Controller
     {
         $request->validate([
             'status' => 'required|in:processing,ready_for_pickup,completed',
-            // The column is still called payment_reference; to everyone using
-            // the system it is the receipt number the cashier issued, and it
-            // is what the customer shows to collect the order.
-            'payment_reference' => [
-                'required_if:status,processing', 'nullable', 'string', 'max:255',
-                // The cashier issues one receipt per payment, so a receipt
-                // number that is already on another order is a typo or a
-                // receipt being reused — either way this order must not
-                // start production on it.
-                function (string $attribute, mixed $value, \Closure $fail) use ($id) {
-                    $clash = Order::where('payment_reference', $value)
-                        ->where('order_id', '!=', $id)
-                        ->first();
-
-                    if ($clash) {
-                        $fail("Receipt number {$value} is already on order {$clash->order_number}. Check the receipt from the cashier.");
-                    }
-                },
-            ],
-        ], [
-            'payment_reference.required_if' => 'Enter the receipt number from the cashier to start processing this order.',
         ]);
 
         $order = Order::with('user')->findOrFail($id);
         $oldStatus = $order->status;
+
+        // The customer pays at the cashier and the admin records the receipt
+        // number; only then may staff cut into the materials. Staff never
+        // enter the number themselves — see Admin\OrderController::recordPayment.
+        if ($request->status === 'processing' && $order->isAwaitingPayment()) {
+            return back()->with('error', "Order {$order->order_number} hasn't been paid yet — an admin records the receipt number once the customer has paid at the cashier.");
+        }
 
         $transitions = $order->isPurchaseRequest() ? self::PR_TRANSITIONS : self::TRANSITIONS;
         $next = $transitions[$oldStatus] ?? null;
@@ -134,10 +120,6 @@ class OrderController extends Controller
         }
 
         $order->status = $request->status;
-
-        if ($request->filled('payment_reference')) {
-            $order->payment_reference = $request->payment_reference;
-        }
 
         // Starting production is the point the shop actually cuts into its
         // materials. Approval only reserved them — see OrderStockService — so

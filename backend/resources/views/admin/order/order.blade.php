@@ -186,6 +186,17 @@
                                                         <span class="font-monospace small text-muted">
                                                             {{ $order->payment_reference }}
                                                         </span>
+                                                        @if($order->acceptsPayment())
+                                                            {{-- A typo on the receipt should not be permanent. --}}
+                                                            <button type="button" class="btn btn-link btn-sm p-0 ms-1 text-muted btn-record-payment"
+                                                                title="Correct the receipt number"
+                                                                data-bs-toggle="modal" data-bs-target="#recordPaymentModal"
+                                                                data-order-number="{{ $order->order_number }}"
+                                                                data-receipt="{{ $order->payment_reference }}"
+                                                                data-url="{{ route('admin.orders.recordPayment', $order->order_id) }}">
+                                                                <i class="bi bi-pencil-square"></i>
+                                                            </button>
+                                                        @endif
                                                     @else
                                                         <span class="text-muted small">—</span>
                                                     @endif
@@ -227,6 +238,11 @@
                                                         <i class="bi {{ $statusIcon }}" style="font-size: 0.75rem;"></i>
                                                         {{ \App\Models\Order::statusLabel($order->status) }}
                                                     </span>
+                                                    @if($order->isAwaitingPayment())
+                                                        <div class="tiny text-muted mt-1"><i class="bi bi-cash-coin me-1"></i>Awaiting payment</div>
+                                                    @elseif($order->status === 'approved' && $order->isPaid())
+                                                        <div class="tiny text-success fw-semibold mt-1"><i class="bi bi-check-circle-fill me-1"></i>Paid</div>
+                                                    @endif
                                                 </td>
                                                 <td class="text-end pe-4">
                                                     @php
@@ -253,6 +269,18 @@
                                                             <i class="bi bi-x-lg me-1"></i>Close
                                                         </button>
                                                     @else
+                                                        @if($order->isAwaitingPayment())
+                                                            {{-- The customer pays at the cashier against the slip;
+                                                                 recording the receipt number is what lets staff
+                                                                 start production. --}}
+                                                            <button class="btn btn-warning btn-sm table-action-btn px-3 fw-bold shadow-sm btn-record-payment me-1"
+                                                                data-bs-toggle="modal" data-bs-target="#recordPaymentModal"
+                                                                data-order-number="{{ $order->order_number }}"
+                                                                data-receipt=""
+                                                                data-url="{{ route('admin.orders.recordPayment', $order->order_id) }}">
+                                                                <i class="bi bi-cash-coin me-1"></i>Record Payment
+                                                            </button>
+                                                        @endif
                                                         @if($order->isPurchaseRequest() && in_array($order->status, ['approved', 'processing']))
                                                             {{-- The paperwork is what moves a PR order: the NOA
                                                                  starts production, the PO releases delivery. --}}
@@ -341,6 +369,7 @@
     @include('admin.order.components.review-modal')
     @include('admin.order.components.view-modal')
     @include('admin.order.components.pr-documents-modal')
+    @include('admin.order.components.record-payment-modal')
 
     <style>
         /* ============================================

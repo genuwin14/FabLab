@@ -141,6 +141,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     // What the order will draw off the shelf, fetched when the review modal opens.
     Route::get('/admin/orders/{id}/materials', [\App\Http\Controllers\Admin\OrderController::class, 'materials'])->name('admin.orders.materials');
     Route::post('/admin/orders/{id}/cancel', [\App\Http\Controllers\Admin\OrderController::class, 'cancel'])->name('admin.orders.cancel');
+    Route::post('/admin/orders/{id}/payment', [\App\Http\Controllers\Admin\OrderController::class, 'recordPayment'])->name('admin.orders.recordPayment');
     // Purchase Request paperwork: the NOA releases production, the PO delivery.
     Route::post('/admin/orders/{id}/documents/{type}', [\App\Http\Controllers\Admin\OrderController::class, 'uploadDocument'])->name('admin.orders.documents.upload');
     Route::get('/admin/orders/{id}/documents/{type}', [\App\Http\Controllers\Admin\OrderController::class, 'document'])->name('admin.orders.documents.show');

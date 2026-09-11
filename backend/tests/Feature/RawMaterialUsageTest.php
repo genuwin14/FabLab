@@ -337,10 +337,10 @@ class RawMaterialUsageTest extends TestCase
         $this->asAdmin();
         $this->post("/admin/orders/{$order->order_id}/review", ['status' => 'approved']);
 
+        $order->update(['payment_reference' => 'OR-9']);
         $this->asStaff();
-        $this->post("/staff/orders/{$order->order_id}/update-status", [
-            'status' => 'processing', 'payment_reference' => 'OR-9',
-        ])->assertRedirect();
+        $this->post("/staff/orders/{$order->order_id}/update-status", ['status' => 'processing'])
+            ->assertRedirect();
 
         $this->material->refresh();
         // Stock is unchanged from the reservation — the material only ever

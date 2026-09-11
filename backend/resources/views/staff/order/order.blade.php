@@ -227,6 +227,11 @@
                                                         <i class="bi {{ $statusIcon }}" style="font-size: 0.75rem;"></i>
                                                         {{ \App\Models\Order::statusLabel($order->status) }}
                                                     </span>
+                                                    @if($order->isAwaitingPayment())
+                                                        <div class="tiny text-muted mt-1"><i class="bi bi-cash-coin me-1"></i>Awaiting payment</div>
+                                                    @elseif($order->status === 'approved' && $order->isPaid())
+                                                        <div class="tiny text-success fw-semibold mt-1"><i class="bi bi-check-circle-fill me-1"></i>Paid</div>
+                                                    @endif
                                                 </td>
                                                 <td class="text-end pe-4">
                                                     @php
@@ -270,9 +275,16 @@
                                                         <span class="badge bg-light text-muted border table-action-btn px-3 py-2 me-1 fw-semibold small">
                                                             <i class="bi bi-hourglass-split me-1"></i>Awaiting {{ $order->status === 'approved' ? 'NOA' : 'PO' }}
                                                         </span>
+                                                    @elseif($order->isAwaitingPayment())
+                                                        {{-- The customer pays at the cashier and the admin records
+                                                             the receipt number; production waits for that. --}}
+                                                        <span class="badge bg-light text-muted border table-action-btn px-3 py-2 me-1 fw-semibold small">
+                                                            <i class="bi bi-cash-coin me-1"></i>Awaiting payment
+                                                        </span>
                                                     @elseif($nextStatus)
                                                         <button class="btn {{ $btnClass }} btn-sm table-action-btn px-3 fw-bold shadow-sm btn-update-status me-1"
                                                             data-id="{{ $order->order_id }}" data-status="{{ $order->status }}"
+                                                            data-receipt="{{ $order->payment_reference }}"
                                                             data-next-status="{{ $nextStatus }}">
                                                             <i class="bi bi-arrow-right-circle me-1"></i>{{ $btnLabel }}
                                                         </button>
@@ -730,18 +742,19 @@
                     $('#updateStatusForm').attr('action', actionUrl);
 
                     const paymentContainer = $('#paymentRefContainer');
-                    const paymentInput = $('#paymentReference');
                     const confirmText = $('#modalConfirmationText');
 
                     // Starting production is the step that actually cuts into
                     // the shelf — approval only set the materials aside. So it
                     // is the one step worth showing them for; the later ones
-                    // move no stock at all.
+                    // move no stock at all. The receipt number is read off the
+                    // button: the admin recorded it when the customer paid,
+                    // and the list only offers this step once it is there.
                     const materialsPanel = document.getElementById('updateMaterialsPanel');
                     if (nextStatus === 'processing') {
                         paymentContainer.removeClass('d-none');
-                        paymentInput.prop('required', true);
-                        confirmText.text("Please enter the Receipt Number from the Cashier to start processing this order.");
+                        $('#paymentReferenceValue').text($(this).data('receipt') || '—');
+                        confirmText.text("This order has been paid. Confirm to start production.");
                         fetchOrderMaterials(
                             'updateMaterialsPanel',
                             @json(route('staff.orders.materials', ':id')).replace(':id', id)
@@ -749,7 +762,6 @@
                     } else {
                         materialsPanel.classList.add('d-none');
                         paymentContainer.addClass('d-none');
-                        paymentInput.prop('required', false);
 
                         let statusText = nextStatus.replace(/_/g, ' ');
                         statusText = statusText.charAt(0).toUpperCase() + statusText.slice(1);

@@ -55,11 +55,26 @@
                     </div>
                     <i class="bi bi-receipt-cutoff fs-3 text-primary opacity-50"></i>
                 </div>
-                @if(in_array($order->status, ['processing', 'ready_for_pickup', 'for_delivery']))
+                @if(in_array($order->status, ['approved', 'processing', 'ready_for_pickup', 'for_delivery']))
                     <div class="text-muted small mt-2">
                         <i class="bi bi-info-circle me-1"></i>Bring this number to the FabLab to collect your order.
                     </div>
                 @endif
+            </div>
+        @elseif($order->isAwaitingPayment())
+            {{-- Approved but not yet paid: the slip below is what the customer
+                 takes to the cashier, and the receipt number appears here once
+                 the admin records it. --}}
+            <div class="customer-order-details-receipt mb-3">
+                <div class="d-flex justify-content-between align-items-center gap-3">
+                    <div>
+                        <div class="customer-order-details-receipt-label">Awaiting Payment</div>
+                        <div class="small text-dark mt-1">
+                            Pay at the CSPC Cashier with your transaction slip. Your receipt number will show here once it is recorded, and production starts then.
+                        </div>
+                    </div>
+                    <i class="bi bi-cash-coin fs-3 text-primary opacity-50"></i>
+                </div>
             </div>
         @endif
 

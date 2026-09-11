@@ -74,7 +74,7 @@ Each row offers exactly one forward step, so the pipeline can't be skipped:
 | `ready_for_pickup` | **Complete** | `completed` |
 | `completed` / `cancelled` | *(none)* | — |
 
-**Moving to Processing requires a receipt number.** The confirmation dialog asks for it — enter the number on the receipt the cashier issued for the payment. It's stored on the order, shown to the customer as the number to bring when collecting, and is searchable afterwards, which is how you reconcile at end of day.
+**Moving to Processing requires the order to be paid.** The customer pays at the CSPC Cashier against their transaction slip, and an admin records the number on the official receipt — see [Admin Guide §4](AdminUserGuide.md#recording-the-payment). Until then the order shows **Awaiting payment** and the Process button is not offered. Once the receipt number is on the order it shows **Paid**, and the confirmation dialog repeats the number so you can check it against the customer's receipt before cutting into stock. The number is searchable, which is how you reconcile at end of day.
 
 **View** opens the full order: customer details, every line, any customization (with its design preview), the total, and the receipt number.
 
