@@ -17,7 +17,7 @@ use Tests\TestCase;
 
 /**
  * The Purchase Request path, for buyers going through CSPC procurement rather
- * than the cashier. The order is held until procurement issues a PR number,
+ * than PAXS. The order is held until procurement issues a PR number,
  * then the Notice of Award starts production and the Purchase Order releases
  * it for delivery. Nobody at FabLab can jump ahead of the paperwork.
  */

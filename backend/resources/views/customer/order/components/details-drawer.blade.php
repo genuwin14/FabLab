@@ -43,7 +43,7 @@
             <span class="badge {{ $badgeClass }} rounded-pill px-3 py-2">{{ $statusLabel }}</span>
         </div>
 
-        {{-- The receipt number the cashier issued, recorded by staff when the
+        {{-- The receipt number PAXS issued, recorded by staff when the
              order went into production. It is what the customer shows at the
              counter to collect the order, so it gets its own block rather
              than a footnote beside the status. --}}
@@ -64,14 +64,14 @@
             </div>
         @elseif($order->isAwaitingPayment())
             {{-- Approved but not yet paid: the slip below is what the customer
-                 takes to the cashier, and the receipt number appears here once
+                 takes to PAXS, and the receipt number appears here once
                  the admin records it. --}}
             <div class="customer-order-details-receipt mb-3">
                 <div class="d-flex justify-content-between align-items-center gap-3">
                     <div>
                         <div class="customer-order-details-receipt-label">Awaiting Payment</div>
                         <div class="small text-dark mt-1">
-                            Pay at the CSPC Cashier with your transaction slip. Your receipt number will show here once it is recorded, and production starts then.
+                            Pay at PAXS with your transaction slip. Your receipt number will show here once it is recorded, and production starts then.
                         </div>
                     </div>
                     <i class="bi bi-cash-coin fs-3 text-primary opacity-50"></i>

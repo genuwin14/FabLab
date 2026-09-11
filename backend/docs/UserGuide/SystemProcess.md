@@ -331,7 +331,7 @@ This is the spine of the system. Three roles touch one order, in a fixed sequenc
 
 There are **two payment paths**, chosen by the customer at checkout, and they differ in who moves the order through the middle:
 
-- **CSPC Cashier** — the customer pays over the counter. Staff drive production.
+- **PAXS** — the customer pays over the counter. Staff drive production.
 - **Purchase Request** — a department buys through CSPC procurement. The order is held until procurement issues a PR number, and the admin's paperwork drives production. See [Part C-PR](#part-c-pr--the-purchase-request-path).
 
 ```mermaid
@@ -415,7 +415,7 @@ Every transition notifies the customer.
 
 # Part C-PR — The Purchase Request path
 
-For departments buying through CSPC procurement rather than paying at the cashier. Money never changes hands at checkout; **paperwork moves the order instead**, and each document releases the next stage.
+For departments buying through CSPC procurement rather than paying at PAXS. Money never changes hands at checkout; **paperwork moves the order instead**, and each document releases the next stage.
 
 ```mermaid
 flowchart TD
@@ -480,19 +480,19 @@ There is no card form, no payment gateway, and no online charge anywhere in the 
 
 ```mermaid
 flowchart LR
-    A["C · Checkout"] --> B["Preview slip:<br/>'Present this receipt at<br/>the CSPC Cashier for payment'"]
+    A["C · Checkout"] --> B["Preview slip:<br/>'Present this receipt at<br/>the PAXS for payment'"]
     B --> C["A · Approve<br/>→ slip emailed as PDF"]
-    C --> D["C · Pays at the<br/>CSPC Cashier"]
+    C --> D["C · Pays at the<br/>PAXS"]
     D --> E["A · Record payment<br/>types the receipt #"]
     E --> F["Receipt number stored on the order,<br/>shown to the customer, unlocks staff"]
 ```
 
 | Step | Who | What happens |
 | :--- | :--- | :--- |
-| 1 | Customer | The checkout preview slip states: **present this receipt at the CSPC Cashier for payment** |
+| 1 | Customer | The checkout preview slip states: **present this receipt at PAXS for payment** |
 | 2 | Admin | Approving emails the **transaction slip** — a PDF carrying the order number as a **Code 128 barcode**, the customer's details, the lines, and the total |
-| 3 | Customer | Pays at the **CSPC Cashier**, presenting the slip. The cashier issues a receipt or transaction number |
-| 4 | Admin | **Record Payment** on the approved order: type the number on the official receipt the cashier issued. The order becomes `paid`. The customer is notified that their payment was received and told the receipt number is what they bring to collect |
+| 3 | Customer | Pays at **PAXS**, presenting the slip. PAXS issues a receipt or transaction number |
+| 4 | Admin | **Record Payment** on the approved order: type the number on the official receipt PAXS issued. The order becomes `paid`. The customer is notified that their payment was received and told the receipt number is what they bring to collect |
 | 5 | Staff | The order now reads **Paid**, with its own card on the list; the **Process** button appears and the confirmation dialog repeats the receipt number. The number is **searchable** on both order lists |
 
 **Why the payment is recorded by the admin, before staff can start:** it's the gate between "paid for" and "being made", and it's how the shop reconciles takings at end of day. Search any order list by receipt number to find the order it belongs to.
@@ -764,7 +764,7 @@ To force the refused approval: edit the raw material and drop its stock below wh
 | :--- | :--- | :--- |
 | `pending` | System, at checkout | Product stock already deducted |
 | `approved` | **Admin review only** | Raw materials and textures reserved; slip emailed |
-| `paid` | Admin — **records the cashier receipt** | None; the customer is emailed the receipt number |
+| `paid` | Admin — **records PAXS receipt** | None; the customer is emailed the receipt number |
 | `processing` | Staff — **only once the admin has recorded the payment** | None |
 | `ready_for_pickup` | Staff | None |
 | `completed` | Staff | None — now counts as revenue |
@@ -803,7 +803,7 @@ To force the refused approval: edit the raw material and drop its stock below wh
 | :--- | :--- | :--- |
 | Order number | `ORDR-YYYYMMDD-NNNN` | `ORDR-20260827-0001` |
 | Purchase order number | `PO-YYYYMMDD-XXXX` | `PO-20260804-A1B2` |
-| Receipt number | The number on the official receipt the CSPC Cashier issued | recorded by the admin once the customer has paid |
+| Receipt number | The number on the official receipt PAXS issued | recorded by the admin once the customer has paid |
 | PR number | Whatever CSPC procurement issued | entered by the customer to release the order |
 
 ## K6. Who can do what

@@ -154,7 +154,7 @@
 
         <div class="text-center mb-4">
             <p class="small fw-bold mb-0">PAYMENT INSTRUCTION</p>
-            <p class="small text-muted mb-0">Please present this slip at the<br><strong>CSPC Cashier</strong> for
+            <p class="small text-muted mb-0">Please present this slip at<br><strong>PAXS</strong> for
                 payment.</p>
         </div>
 

@@ -97,11 +97,11 @@ class OrderController extends Controller
         $order = Order::with('user')->findOrFail($id);
         $oldStatus = $order->status;
 
-        // The customer pays at the cashier and the admin records the receipt
+        // The customer pays at PAXS and the admin records the receipt
         // number; only then may staff cut into the materials. Staff never
         // enter the number themselves — see Admin\OrderController::recordPayment.
         if ($request->status === 'processing' && $order->isAwaitingPayment()) {
-            return back()->with('error', "Order {$order->order_number} hasn't been paid yet — an admin records the receipt number once the customer has paid at the cashier.");
+            return back()->with('error', "Order {$order->order_number} hasn't been paid yet — an admin records the receipt number once the customer has paid at PAXS.");
         }
 
         $transitions = $order->isPurchaseRequest() ? self::PR_TRANSITIONS : self::TRANSITIONS;

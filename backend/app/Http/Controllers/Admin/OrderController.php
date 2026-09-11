@@ -139,7 +139,7 @@ class OrderController extends Controller
 
     /**
      * Record the payment for an approved order: the number on the official
-     * receipt the CSPC Cashier issued once the customer paid against their
+     * receipt PAXS issued once the customer paid against their
      * transaction slip.
      *
      * This is the gate to production for a cashier order. Staff cannot start
@@ -155,7 +155,7 @@ class OrderController extends Controller
         $request->validate([
             'payment_reference' => [
                 'required', 'string', 'max:255',
-                // The cashier issues one receipt per payment, so a number
+                // PAXS issues one receipt per payment, so a number
                 // already on another order is a typo or a receipt being
                 // reused — either way this order must not be marked paid on it.
                 function (string $attribute, mixed $value, \Closure $fail) use ($order) {
@@ -164,16 +164,16 @@ class OrderController extends Controller
                         ->first();
 
                     if ($clash) {
-                        $fail("Receipt number {$value} is already on order {$clash->order_number}. Check the receipt from the cashier.");
+                        $fail("Receipt number {$value} is already on order {$clash->order_number}. Check the receipt from PAXS.");
                     }
                 },
             ],
         ], [
-            'payment_reference.required' => 'Enter the number on the receipt the cashier issued.',
+            'payment_reference.required' => 'Enter the number on the receipt PAXS issued.',
         ]);
 
         if ($order->isPurchaseRequest()) {
-            return back()->with('error', "Order {$order->order_number} is a Purchase Request — it is paid through procurement, not the cashier.");
+            return back()->with('error', "Order {$order->order_number} is a Purchase Request — it is paid through procurement, not PAXS.");
         }
 
         if (! $order->acceptsPayment()) {
@@ -281,7 +281,7 @@ class OrderController extends Controller
         $order = Order::with('user')->findOrFail($id);
 
         if (! $order->isPurchaseRequest()) {
-            return back()->with('error', "Order {$order->order_number} was paid at the cashier, so it has no {$spec['label']} step.");
+            return back()->with('error', "Order {$order->order_number} was paid at PAXS, so it has no {$spec['label']} step.");
         }
 
         if ($order->status !== $spec['from']) {

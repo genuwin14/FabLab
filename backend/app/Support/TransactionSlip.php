@@ -43,7 +43,7 @@ class TransactionSlip
 
     /**
      * Statuses a slip exists for. An order only earns one once it is approved,
-     * because the slip is what the customer hands the cashier.
+     * because the slip is what the customer hands PAXS.
      */
     public const PRINTABLE_STATUSES = ["approved", "paid", "processing", "ready_for_pickup", "for_delivery", "completed"];
 

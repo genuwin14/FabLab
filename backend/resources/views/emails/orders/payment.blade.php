@@ -20,7 +20,7 @@
     </table>
 
     <p style="margin:0 0 12px;">Thank you — your payment has been recorded and your order is now queued for production.</p>
-    <p style="margin:0 0 12px;">Keep the official receipt from the cashier. Its number is what you will show to collect your order:</p>
+    <p style="margin:0 0 12px;">Keep the official receipt from PAXS. Its number is what you will show to collect your order:</p>
 
     <table role="presentation" cellpadding="0" cellspacing="0" width="100%"
         style="background-color:#fff8e1;border:1px dashed #997404;border-radius:8px;margin:0 0 12px;">

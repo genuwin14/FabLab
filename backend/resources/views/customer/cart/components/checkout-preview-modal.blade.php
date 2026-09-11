@@ -58,7 +58,7 @@
                     <p class="small fw-bold mb-1">WHAT HAPPENS NEXT</p>
                     <p class="small text-muted mb-0">
                         Once an admin approves your order, your <strong>transaction slip</strong> is emailed to you.
-                        Present it at the <strong>CSPC Cashier</strong> to pay, and keep the official receipt —
+                        Present it at <strong>PAXS</strong> to pay, and keep the official receipt —
                         its number is what you show to collect your order.
                     </p>
                 </div>

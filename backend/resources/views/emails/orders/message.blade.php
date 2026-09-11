@@ -21,7 +21,7 @@
 
     <p style="margin:0 0 12px;">Your order has been approved!</p>
     <p style="margin:0 0 12px;">You can find the details of your transaction in the attached PDF slip. Please present
-        this slip at the CSPC Cashier for payment.</p>
+        this slip at PAXS for payment.</p>
     <p style="margin:0 0 12px;">Thank you for choosing CSPC FabLab.</p>
 
     <table role="presentation" cellpadding="0" cellspacing="0" style="margin:24px 0 8px;">

@@ -276,7 +276,7 @@
                                                             <i class="bi bi-hourglass-split me-1"></i>Awaiting {{ $order->status === 'approved' ? 'NOA' : 'PO' }}
                                                         </span>
                                                     @elseif($order->isAwaitingPayment())
-                                                        {{-- The customer pays at the cashier and the admin records
+                                                        {{-- The customer pays at PAXS and the admin records
                                                              the receipt number; production waits for that. --}}
                                                         <span class="badge bg-light text-muted border table-action-btn px-3 py-2 me-1 fw-semibold small">
                                                             <i class="bi bi-cash-coin me-1"></i>Awaiting payment
@@ -640,7 +640,7 @@
                     $('#viewOrderTotal').text('₱' + parseFloat(order.total_amount).toLocaleString('en-US', { minimumFractionDigits: 2 }));
 
                     // The slip only exists once the order is approved; before that
-                    // there is nothing for the cashier to be handed.
+                    // there is nothing for PAXS to be handed.
                     const slipStatuses = @json(\App\Support\TransactionSlip::PRINTABLE_STATUSES);
                     const $printSlip = $('#viewPrintSlip');
 

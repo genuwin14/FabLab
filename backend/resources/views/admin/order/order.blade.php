@@ -270,7 +270,7 @@
                                                         </button>
                                                     @else
                                                         @if($order->isAwaitingPayment())
-                                                            {{-- The customer pays at the cashier against the slip;
+                                                            {{-- The customer pays at PAXS against the slip;
                                                                  recording the receipt number is what lets staff
                                                                  start production. --}}
                                                             <button class="btn btn-warning btn-sm table-action-btn px-3 fw-bold shadow-sm btn-record-payment me-1"

@@ -86,9 +86,9 @@ Approval is **refused** when the order would take any material or texture below 
 
 ### Recording the payment
 
-Approval sends the customer their transaction slip; they take it to the **CSPC Cashier**, pay, and walk away with an **official receipt**. Nothing moves until you record that.
+Approval sends the customer their transaction slip; they take it to **PAXS**, pay, and walk away with an **official receipt**. Nothing moves until you record that.
 
-An approved cashier order shows **Awaiting payment** under its status and a **Record Payment** button. Open it, type the number on the official receipt, and save. In one step the system:
+An approved PAXS order shows **Awaiting payment** under its status and a **Record Payment** button. Open it, type the number on the official receipt, and save. In one step the system:
 
 1. Stores the receipt number on the order and moves it to `paid`.
 2. Notifies and emails the customer that the payment was received, with the receipt number, telling them it is what they show to collect the order.
@@ -121,7 +121,7 @@ The **Upload** button in the orders list always offers whichever document is nex
 
 Staff take it from `for_delivery` with the usual **Complete**. A PR order is *delivered*, not collected, so it never passes through `ready_for_pickup`.
 
-**Hand-off:** approving a cashier order hands it to staff, who take it through `processing` → `ready_for_pickup` → `completed` ([Staff Guide §4](StaffUserGuide.md#4-processing-orders)). The customer watches the same statuses ([Customer Guide §9](CustomerUserGuide.md#9-tracking-your-orders)).
+**Hand-off:** approving a PAXS order hands it to staff, who take it through `processing` → `ready_for_pickup` → `completed` ([Staff Guide §4](StaffUserGuide.md#4-processing-orders)). The customer watches the same statuses ([Customer Guide §9](CustomerUserGuide.md#9-tracking-your-orders)).
 
 ---
 

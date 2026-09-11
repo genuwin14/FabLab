@@ -1,6 +1,6 @@
 {{-- Recording the customer's payment on an approved cashier order.
 
-     The customer pays at the CSPC Cashier against the transaction slip and
+     The customer pays at PAXS against the transaction slip and
      walks away with an official receipt. The admin types that receipt's
      number here; it is what tells staff the order may go into production,
      and what the customer shows at the counter to collect it. Sits with the
@@ -23,7 +23,7 @@
                 <div class="text-white-50 small mt-2">
                     <span id="recordPaymentOrderNumber" class="fw-bold" style="color: #ffc508;"></span>
                     <span class="order-eyebrow-divider mx-1">·</span>
-                    <span id="recordPaymentSubtitle">Paid at the CSPC Cashier</span>
+                    <span id="recordPaymentSubtitle">Paid at PAXS</span>
                 </div>
             </div>
 
@@ -37,7 +37,7 @@
                     <div class="alert alert-warning border-0 d-flex align-items-start mb-3 rounded-3">
                         <i class="bi bi-info-circle-fill me-2 mt-1"></i>
                         <div class="small fw-semibold" id="recordPaymentNote">
-                            Enter the number on the official receipt the cashier issued. Staff can start production
+                            Enter the number on the official receipt PAXS issued. Staff can start production
                             once it is recorded, and the customer will be told it is the number to bring when collecting.
                         </div>
                     </div>
@@ -76,10 +76,10 @@
             this.querySelector('#recordPaymentOrderNumber').textContent = '#' + trigger.getAttribute('data-order-number');
             this.querySelector('#recordPaymentInput').value = existing;
             this.querySelector('#recordPaymentTitle').textContent = correcting ? 'Correct Receipt Number' : 'Record Payment';
-            this.querySelector('#recordPaymentSubtitle').textContent = correcting ? 'Already recorded as paid' : 'Paid at the CSPC Cashier';
+            this.querySelector('#recordPaymentSubtitle').textContent = correcting ? 'Already recorded as paid' : 'Paid at PAXS';
             this.querySelector('#recordPaymentNote').textContent = correcting
                 ? 'Replace the receipt number with the one on the official receipt. The customer is not notified again.'
-                : 'Enter the number on the official receipt the cashier issued. Staff can start production once it is recorded, and the customer will be told it is the number to bring when collecting.';
+                : 'Enter the number on the official receipt PAXS issued. Staff can start production once it is recorded, and the customer will be told it is the number to bring when collecting.';
             this.querySelector('#recordPaymentSubmit').innerHTML = correcting
                 ? '<i class="bi bi-check-lg me-1"></i>Save Receipt Number'
                 : '<i class="bi bi-check-lg me-1"></i>Record Payment';

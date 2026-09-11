@@ -15,7 +15,7 @@ use Illuminate\Support\Facades\Storage;
  * procurement by hand.
  *
  * Kept apart from OrderSeeder so the PR demo data can be laid down on its own,
- * without a second copy of the cashier orders coming with it.
+ * without a second copy of PAXS orders coming with it.
  */
 class PurchaseRequestOrderSeeder extends Seeder
 {

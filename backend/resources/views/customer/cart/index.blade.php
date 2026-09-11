@@ -168,7 +168,7 @@
                                             <input class="form-check-input" type="radio" name="payment_method"
                                                 id="paymentMethodCash" value="cash" checked>
                                             <label class="form-check-label" for="paymentMethodCash">
-                                                <span class="fw-semibold">CSPC Cashier</span>
+                                                <span class="fw-semibold">PAXS</span>
                                                 <span class="d-block text-muted">Pay over the counter against your transaction slip.</span>
                                             </label>
                                         </div>
@@ -187,7 +187,7 @@
                                         <i class="bi bi-info-circle-fill me-2 fs-5 mt-1"></i>
                                         <div class="small">
                                             <strong>Payment Notice:</strong><br>
-                                            After placing your order, a transaction slip will be generated. Please present this slip at the <strong>CSPC Cashier</strong> for payment.
+                                            After placing your order, a transaction slip will be generated. Please present this slip at <strong>PAXS</strong> for payment.
                                         </div>
                                     </div>
 

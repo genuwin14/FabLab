@@ -26,7 +26,7 @@ class Order extends Model
         'pr_deadline' => 'datetime',
     ];
 
-    /** Paid at the CSPC Cashier against the transaction slip. */
+    /** Paid at PAXS against the transaction slip. */
     public const METHOD_CASH = 'cash';
 
     /** Bought through CSPC procurement on a Purchase Request. */
@@ -79,7 +79,7 @@ class Order extends Model
     }
 
     /**
-     * Approved, but the customer has not yet paid at the cashier — or has,
+     * Approved, but the customer has not yet paid at PAXS — or has,
      * and the admin has not recorded the receipt yet. Staff wait on this.
      */
     public function isAwaitingPayment(): bool
@@ -90,7 +90,7 @@ class Order extends Model
     /**
      * Whether an admin may record or correct the receipt number: only once
      * the order is approved, and not after it has been handed over or
-     * cancelled. PR orders are paid through procurement, never the cashier.
+     * cancelled. PR orders are paid through procurement, never PAXS.
      */
     public function acceptsPayment(): bool
     {

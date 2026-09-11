@@ -137,9 +137,9 @@ From here you can:
 
 If anything sold out between adding and checking out, the whole checkout stops with a message naming the product, and nothing is charged or reserved.
 
-### Paying at the CSPC Cashier
+### Paying at PAXS
 
-The order starts at **Pending**, and staff and admins are notified straight away. An admin reviews it next — [Admin Guide §4](AdminUserGuide.md#4-reviewing-orders). Once it is approved, present your transaction slip at the CSPC Cashier to pay.
+The order starts at **Pending**, and staff and admins are notified straight away. An admin reviews it next — [Admin Guide §4](AdminUserGuide.md#4-reviewing-orders). Once it is approved, present your transaction slip at PAXS to pay.
 
 ### Paying by Purchase Request
 
@@ -162,7 +162,7 @@ Once approved, a PR order is driven by paperwork rather than by the workshop que
 | Status | What it means for you | Who set it |
 | :--- | :--- | :--- |
 | **Pending** | Submitted, waiting for the shop to review it. You can still cancel | The system, at checkout |
-| **Approved** | Accepted. A transaction slip has been emailed to you — pay at the CSPC Cashier with it | An admin |
+| **Approved** | Accepted. A transaction slip has been emailed to you — pay at PAXS with it | An admin |
 | **Paid** | Your payment has been recorded. Details shows your **receipt number**, the number to bring when collecting, and production can start | An admin |
 | **Processing** | Being made | Staff |
 | **Ready for Pickup** | Waiting for you at the shop — go collect it | Staff |
