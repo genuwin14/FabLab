@@ -764,7 +764,7 @@ To force the refused approval: edit the raw material and drop its stock below wh
 | :--- | :--- | :--- |
 | `pending` | System, at checkout | Product stock already deducted |
 | `approved` | **Admin review only** | Raw materials and textures reserved; slip emailed |
-| `paid` | Admin — **records PAXS receipt** | None; the customer is emailed the receipt number |
+| `paid` | Admin — **records the PAXS receipt** | None; the customer is emailed the receipt number |
 | `processing` | Staff — **only once the admin has recorded the payment** | None |
 | `ready_for_pickup` | Staff | None |
 | `completed` | Staff | None — now counts as revenue |
