@@ -115,7 +115,7 @@
 
 <!-- Secondary Modal: Design Detail Zoom & 3D Preview -->
 <div class="modal fade order-modal" id="designDetailPopup" tabindex="-1" aria-hidden="true" style="z-index: 1070;">
-    <div class="modal-dialog modal-dialog-centered modal-xl">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content border-0 shadow-lg overflow-hidden">
             <!-- Themed Dark Header -->
             <div class="order-modal-header">

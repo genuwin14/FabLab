@@ -86,7 +86,7 @@
 
 <!-- Secondary Modal: Design Inspection (Zoom + 3D Preview) -->
 <div class="modal fade order-modal" id="designDetailPopup" tabindex="-1" aria-hidden="true" style="z-index: 1070;">
-    <div class="modal-dialog modal-dialog-centered modal-xl">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content border-0 shadow-lg overflow-hidden">
             <div class="order-modal-header">
                 <div class="d-flex align-items-center justify-content-between">

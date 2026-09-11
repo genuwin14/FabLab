@@ -3,12 +3,24 @@
      No panel background — the scene's own dark gradient carries the text —
      so the model keeps the whole width and the details read as an overlay. --}}
 <style>
+    .design-scene { --design-panel-w: min(300px, 44%); }
+
+    /* The renderer centres the model in the whole scene; sliding the canvas
+       (or the snapshot fallback) left by half the panel's width centres it
+       in the space the panel leaves. What slides off the left edge is only
+       background, and the strip it uncovers on the right sits under the
+       panel on the same gradient. */
+    .design-scene > canvas,
+    .design-scene > img#detailPopupImage {
+        transform: translateX(calc(var(--design-panel-w) / -2));
+    }
+
     .design-scene-panel {
         position: absolute;
         top: 16px;
         right: 16px;
         bottom: 16px;
-        width: min(320px, 42%);
+        width: var(--design-panel-w);
         z-index: 3;
         overflow-y: auto;
         overscroll-behavior: contain;
@@ -61,6 +73,9 @@
        bottom instead, given a little tint so the text stays readable over
        whatever part of the model it covers. */
     @media (max-width: 767.98px) {
+        .design-scene > canvas,
+        .design-scene > img#detailPopupImage { transform: none; }
+
         .design-scene-panel {
             top: auto;
             left: 12px;
