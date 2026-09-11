@@ -358,6 +358,46 @@ class ProductVariantStockTest extends TestCase
         $this->assertSame(8, $this->shirt->fresh()->stock);
     }
 
+    public function test_a_new_sized_product_takes_one_figure_per_size(): void
+    {
+        $this->actingAs($this->admin);
+
+        $this->post(route('admin.products.store'), [
+            'name' => 'Polo', 'sku' => 'PL-1', 'category_id' => $this->shirt->category_id,
+            'price' => 150, 'unit' => 'pcs', 'has_sizes' => 1,
+            // The total is read-only on the form and posts whatever the
+            // grid summed to; the cells are what count.
+            'stock' => 12,
+            'variants' => [
+                ProductVariant::keyFor('small', null) => ['stock' => 5],
+                ProductVariant::keyFor('large', null) => ['stock' => 7],
+            ],
+        ])->assertRedirect();
+
+        $polo = Product::where('sku', 'PL-1')->firstOrFail();
+
+        $this->assertCount(8, $polo->variants, 'Eight sizes, no colours yet.');
+        $this->assertSame(5, $polo->variantFor('small', null)->stock);
+        $this->assertSame(7, $polo->variantFor('large', null)->stock);
+        $this->assertSame(0, $polo->variantFor('medium', null)->stock);
+        $this->assertSame(12, $polo->fresh()->stock);
+    }
+
+    public function test_a_new_sized_product_with_no_figures_keeps_its_opening_stock_in_the_first_size(): void
+    {
+        $this->actingAs($this->admin);
+
+        $this->post(route('admin.products.store'), [
+            'name' => 'Polo', 'sku' => 'PL-2', 'category_id' => $this->shirt->category_id,
+            'price' => 150, 'unit' => 'pcs', 'has_sizes' => 1, 'stock' => 30,
+        ])->assertRedirect();
+
+        $polo = Product::where('sku', 'PL-2')->firstOrFail();
+
+        $this->assertSame(30, $polo->variantFor('small', null)->stock);
+        $this->assertSame(30, $polo->fresh()->stock);
+    }
+
     public function test_unassigning_a_colour_moves_its_stock_to_a_cell_that_remains(): void
     {
         $this->setCell('medium', $this->navy, 10);

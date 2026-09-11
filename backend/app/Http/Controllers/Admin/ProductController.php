@@ -111,9 +111,12 @@ class ProductController extends Controller
 
         $product = Product::create($data);
 
-        // A product that comes in sizes gets its grid straight away, with the
-        // opening stock in its first cell for the admin to spread out.
+        // A product that comes in sizes gets its grid straight away. The Add
+        // form offers one figure per size; those land in the cells the grid
+        // creates, and the total follows. Without them the opening stock
+        // sits in the first cell for the admin to spread out.
         $product->ensureVariants();
+        $this->syncVariants($product, $request->input('variants'));
 
         // Redirect to supplier assignment page
         return redirect()->route('admin.products.suppliers.assign', $product->product_id)

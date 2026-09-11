@@ -168,15 +168,26 @@
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label small fw-bold text-muted text-uppercase">Current Stock</label>
-                                    <input type="number" name="stock" class="form-control product-field-input"
+                                    <input type="number" name="stock" id="addStock" class="form-control product-field-input"
                                         placeholder="0" required>
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label small fw-bold text-muted text-uppercase">Low Stock Alert</label>
-                                    <input type="number" name="low_stock_threshold"
+                                    <input type="number" name="low_stock_threshold" id="addLowStock"
                                         class="form-control product-field-input" placeholder="e.g. 20">
                                 </div>
                             </div>
+
+                            {{-- Switching "comes in sizes" on turns Current Stock into the
+                                 read-only total of one figure per size, entered here and
+                                 written into the cells the save creates. --}}
+                            @include('partials.product-variant-grid', [
+                                'gridId' => 'addVariantGrid',
+                                'totalInputId' => 'addStock',
+                                'sizesInputId' => 'addHasSizes',
+                                'sizes' => $sizes,
+                                'allowNew' => true,
+                            ])
 
                             <h6 class="product-section-title mt-4">
                                 <i class="bi bi-bar-chart-fill me-2"></i>Report Tracking
@@ -240,6 +251,20 @@
                 skuInput.classList.add('is-valid');
                 setTimeout(() => skuInput.classList.remove('is-valid'), 1500);
             });
+        }
+
+        // The size grid on a new product: no cells exist yet, so every row is
+        // a fresh figure; the threshold typed above sets the cells' low line.
+        const addSizes = @json($sizes);
+        const addGridProduct = () => ({
+            has_sizes: document.getElementById('addHasSizes').checked,
+            colors: [],
+            variants: [],
+            low_stock_threshold: document.getElementById('addLowStock').value,
+        });
+        if (typeof wireVariantGrid === 'function') {
+            wireVariantGrid('addVariantGrid', addGridProduct(), addSizes);
+            document.getElementById('addHasSizes').onchange = () => renderVariantGrid('addVariantGrid', addGridProduct(), addSizes);
         }
 
         const addProductModal = document.getElementById('addProductModal');

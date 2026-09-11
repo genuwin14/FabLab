@@ -14,11 +14,17 @@
     moves any stock the product had into it), and then the figure can be
     set. That way a figure is never posted for a cell that doesn't exist.
 
+    The Add modal is the exception: there every cell is new, and saving is
+    what creates them all, so with $allowNew the new cells take figures and
+    the save writes them straight into the cells it creates.
+
     Expects: $gridId, $totalInputId, $sizesInputId (the "comes in sizes"
-    checkbox, so the grid follows it live), $sizes (CustomizationRate::sizes()).
+    checkbox, so the grid follows it live), $sizes (CustomizationRate::sizes()),
+    and optionally $allowNew.
 --}}
 <div class="variant-grid" id="{{ $gridId }}" hidden
-    data-total-input="{{ $totalInputId }}" data-sizes-input="{{ $sizesInputId }}">
+    data-total-input="{{ $totalInputId }}" data-sizes-input="{{ $sizesInputId }}"
+    @if(!empty($allowNew)) data-allow-new="1" @endif>
     <h6 class="product-section-title mt-4">
         <i class="bi bi-grid-3x3-gap me-2"></i>Stock by size and colour
     </h6>
@@ -59,6 +65,7 @@
             const total = document.getElementById(grid.dataset.totalInput);
             const sizesInput = document.getElementById(grid.dataset.sizesInput);
             const hasSizes = sizesInput ? sizesInput.checked : !!product.has_sizes;
+            const allowNew = grid.dataset.allowNew === '1';
             const colours = Array.isArray(product.colors) ? product.colors : [];
             const existing = {};
             (product.variants || []).forEach(v => { existing[v.variant_key] = v; });
@@ -105,9 +112,9 @@
                     input.min = '0';
                     input.step = '1';
                     input.className = 'form-control form-control-sm variant-cell';
-                    if (cell) {
+                    if (cell || allowNew) {
                         input.name = `variants[${key}][stock]`;
-                        input.value = cell.stock ?? 0;
+                        input.value = cell ? (cell.stock ?? 0) : 0;
                         input.setAttribute('aria-label', `Stock of ${row.label}${c ? ' in ' + c.name : ''}`);
                     } else {
                         input.disabled = true;
@@ -138,7 +145,9 @@
                 ? 'One figure per size and colour. The Stock field above is their total.'
                 : hasSizes ? 'One figure per size. The Stock field above is their total.'
                 : 'One figure per colour. The Stock field above is their total.';
-            grid.querySelector('.variant-grid-hint').textContent = pending
+            grid.querySelector('.variant-grid-hint').textContent = allowNew
+                ? 'Saving creates these cells with the figures you enter. Assign colours afterwards to stock it per colour as well.'
+                : pending
                 ? (pending === grid.querySelectorAll('.variant-cell').length
                     ? 'Save the product to create these cells; its current stock moves into the first one, and you can spread it from there.'
                     : 'Greyed cells are new. Save the product to create them, then set their stock.')

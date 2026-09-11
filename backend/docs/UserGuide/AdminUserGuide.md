@@ -172,6 +172,7 @@ Tick the textures a customer may apply to this product in the design studio. If 
 
 A garment is not one figure. Tick **Comes in sizes (S–5XL)** on a product that does — a shirt or a polo, not a mug — and assign it the colours it is stocked in under the palette icon. The product then carries a grid: one cell per size and colour, each with its own stock, and the product's **Stock** field becomes the read-only total of the cells.
 
+- **On a new product.** Tick the switch in **Add New Product** and the Current Stock field becomes one figure per size, S to 5XL; saving creates the cells with those figures. Colours are assigned afterwards.
 - **Editing the grid.** Open **Edit** and scroll to **Stock by size and colour**. Type a figure per cell; the total updates as you type. A cell that is new — you have just ticked sizes, or assigned a colour — is greyed until you save, because saving is what creates it. The stock the product had moves into its first cell for you to spread out.
 - **Unassigning a colour** or switching sizes off never loses stock: the cells that disappear pour into a cell that remains, of the same colour where there is one.
 - **Alerts** fire per cell as well as for the total, and name the cell: *Low stock: White Cotton T-Shirt — Navy Blue · 5XL*.
