@@ -69,6 +69,25 @@
                 </div>
             </div>`;
     };
+
+    // The details stay folded under the row until asked for; the toggle
+    // sits on the product cell and flips the row that carries its id.
+    window.orderItemToggleHtml = function (rowId) {
+        return `<button type="button" class="order-item-toggle" data-target="${rowId}" aria-expanded="false">` +
+               `<i class="bi bi-chevron-down"></i><span>Details</span></button>`;
+    };
+
+    document.addEventListener('click', function (event) {
+        const toggle = event.target.closest('.order-item-toggle');
+        if (!toggle) return;
+
+        const row = document.getElementById(toggle.dataset.target);
+        if (!row) return;
+
+        const open = row.classList.toggle('d-none') === false;
+        toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+        toggle.querySelector('span').textContent = open ? 'Hide details' : 'Details';
+    });
 </script>
 
 <style>
@@ -81,7 +100,7 @@
         display: grid;
         grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
         gap: 16px 28px;
-        margin-left: 52px;
+        margin: 0 0 4px;
         padding: 12px 16px 14px;
         background-color: #f8f9fa;
         border: 1px solid rgba(0, 0, 0, 0.05);
@@ -93,6 +112,25 @@
         display: block;
         padding: 8px 12px;
     }
+
+    .order-item-toggle {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        margin-top: 4px;
+        padding: 1px 8px 1px 6px;
+        border: 1px solid rgba(14, 46, 69, 0.18);
+        border-radius: 999px;
+        background-color: #fff;
+        color: #0e2e45;
+        font-size: 0.66rem;
+        font-weight: 600;
+        line-height: 1.5;
+        transition: background-color 0.15s ease, border-color 0.15s ease;
+    }
+    .order-item-toggle:hover { background-color: rgba(255, 197, 8, 0.15); border-color: rgba(255, 197, 8, 0.6); }
+    .order-item-toggle .bi { font-size: 0.6rem; transition: transform 0.15s ease; }
+    .order-item-toggle[aria-expanded="true"] .bi { transform: rotate(180deg); }
     .order-item-details-col { min-width: 0; }
 
     .order-item-details-heading {
@@ -147,6 +185,6 @@
     }
 
     @media (max-width: 767.98px) {
-        .order-item-details { grid-template-columns: 1fr; margin-left: 0; }
+        .order-item-details { grid-template-columns: 1fr; }
     }
 </style>

@@ -227,6 +227,13 @@
                         ? '<span class="badge ms-1" style="background-color: rgba(255, 197, 8, 0.18); color: #997404; font-size: 0.55rem; vertical-align: middle;">TAILORED</span>'
                         : '<span class="badge ms-1" style="background-color: rgba(108, 117, 125, 0.12); color: #6c757d; font-size: 0.55rem; vertical-align: middle;">STANDARD</span>';
 
+                    // The cell the line took and, for a tailored item, what is
+                    // on the design and how it was priced — folded under the
+                    // row until the Details toggle opens it.
+                    const details = window.orderItemDetailsHtml ? window.orderItemDetailsHtml(item) : '';
+                    const detailsRowId = 'adminOrderItem' + (item.order_item_id ?? Math.random().toString(36).slice(2));
+                    const toggleHtml = details ? window.orderItemToggleHtml(detailsRowId) : '';
+
                     tbody.innerHTML += `
                         <tr>
                             <td class="ps-3 py-2">
@@ -237,6 +244,7 @@
                                     <div>
                                         <div class="fw-bold text-dark small">${productName}${customBadge}</div>
                                         <div class="text-muted font-monospace" style="font-size: 0.7rem;">SKU: ${product.sku ?? '-'}</div>
+                                        ${toggleHtml}
                                     </div>
                                 </div>
                             </td>
@@ -246,11 +254,8 @@
                         </tr>
                     `;
 
-                    // The cell the line took and, for a tailored item, what is
-                    // on the design and how it was priced.
-                    const details = window.orderItemDetailsHtml ? window.orderItemDetailsHtml(item) : '';
                     if (details) {
-                        tbody.innerHTML += `<tr class="order-item-details-row"><td colspan="4" class="px-3 pt-0 pb-2 border-0">${details}</td></tr>`;
+                        tbody.innerHTML += `<tr class="order-item-details-row d-none" id="${detailsRowId}"><td colspan="4" class="px-3 pt-0 pb-2 border-0">${details}</td></tr>`;
                     }
                 });
 
