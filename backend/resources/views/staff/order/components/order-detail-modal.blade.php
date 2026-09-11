@@ -138,36 +138,30 @@
             </div>
 
             <div class="modal-body p-4 bg-white">
-                <div class="row g-4">
-                    <div class="col-md-8">
-                        <!-- 3D Viewer Container -->
-                        <div id="staff-three-container"
-                            class="rounded-3 position-relative border overflow-hidden"
-                            style="height: 460px; background: radial-gradient(circle, #1a2a3a 0%, #05111a 100%);">
-                            <div id="preview-loader"
-                                class="position-absolute top-50 start-50 translate-middle text-center text-white"
-                                style="z-index: 2;">
-                                <div class="spinner-border text-warning mb-2" role="status"></div>
-                                <div class="fw-bold text-uppercase opacity-75"
-                                    style="font-size: 0.7rem; letter-spacing: 0.06em;">Initializing 3D Scene...</div>
-                            </div>
-                            <img id="detailPopupImage" src=""
-                                class="img-fluid w-100 h-100 d-none position-absolute top-0 start-0"
-                                style="object-fit: contain; z-index: 1;">
-                        </div>
+                <!-- 3D Viewer Container. The recipe floats inside it on the
+                     right, over the scene, rather than in a column of its own. -->
+                <div id="staff-three-container"
+                    class="rounded-3 position-relative border overflow-hidden design-scene"
+                    style="height: 520px; background: radial-gradient(circle, #1a2a3a 0%, #05111a 100%);">
+                    <div id="preview-loader"
+                        class="position-absolute top-50 start-50 translate-middle text-center text-white"
+                        style="z-index: 2;">
+                        <div class="spinner-border text-warning mb-2" role="status"></div>
+                        <div class="fw-bold text-uppercase opacity-75"
+                            style="font-size: 0.7rem; letter-spacing: 0.06em;">Initializing 3D Scene...</div>
                     </div>
-                    <div class="col-md-4">
-                        <h6 class="order-section-title d-flex justify-content-between align-items-center">
+                    <img id="detailPopupImage" src=""
+                        class="img-fluid w-100 h-100 d-none position-absolute top-0 start-0"
+                        style="object-fit: contain; z-index: 1;">
+
+                    <aside class="design-scene-panel">
+                        <div class="design-scene-panel-title">
                             <span><i class="bi bi-code-slash me-2"></i>Recipe Config</span>
                             <span class="badge rounded-pill"
-                                style="background-color: rgba(255, 197, 8, 0.15); color: #997404; font-size: 0.6rem;">ACTIVE</span>
-                        </h6>
-                        <div class="rounded-3 p-3 overflow-auto border design-recipe-box"
-                            style="height: 410px; background-color: #05111a;">
-                            <pre id="detailPopupRecipe" class="mb-0"
-                                style="white-space: pre-wrap; font-family: 'Courier New', monospace; font-size: 0.7rem; color: #6ee7ff;"></pre>
+                                style="background-color: rgba(255, 197, 8, 0.2); color: #ffc508; font-size: 0.6rem;">ACTIVE</span>
                         </div>
-                    </div>
+                        <pre id="detailPopupRecipe" class="design-scene-recipe mb-0"></pre>
+                    </aside>
                 </div>
             </div>
 
@@ -215,9 +209,10 @@
         .order-modal .modal-table td { white-space: nowrap; }
 
         /* §6c — two fixed-height panels (3D viewer + recipe) shrink */
-        #designDetailPopup #staff-three-container { height: 280px !important; }
-        #designDetailPopup .design-recipe-box { height: 220px !important; }
+        #designDetailPopup #staff-three-container { height: 420px !important; }
     }
 </style>
 
 @include('partials.order-item-details')
+
+@include('partials.design-scene-styles')

@@ -646,8 +646,7 @@
 
             /* 3D design popup: two fixed-height panels stacked = a huge
                modal. Shrink them to phone-friendly heights. */
-            #designDetailPopup #admin-three-container { height: 280px !important; }
-            #designDetailPopup .design-recipe-box { height: 180px !important; }
+            #designDetailPopup #admin-three-container { height: 420px !important; }
             #designDetailPopup .design-charges-box { height: auto !important; max-height: 200px; }
         }
     </style>
