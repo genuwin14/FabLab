@@ -632,6 +632,13 @@
                                 <td class="text-end pe-3 fw-bold text-dark">₱${subtotal.toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
                             </tr>
                         `);
+
+                        // The cell the line took and, for a tailored item, what
+                        // is on the design and how it was priced.
+                        const details = window.orderItemDetailsHtml ? window.orderItemDetailsHtml(item) : '';
+                        if (details) {
+                            tbody.append(`<tr class="order-item-details-row"><td colspan="4" class="px-3 pt-0 pb-2 border-0">${details}</td></tr>`);
+                        }
                     });
 
                     $('#viewOrderTotal').text('₱' + parseFloat(order.total_amount).toLocaleString('en-US', { minimumFractionDigits: 2 }));

@@ -219,3 +219,5 @@
         #designDetailPopup .design-recipe-box { height: 220px !important; }
     }
 </style>
+
+@include('partials.order-item-details')

@@ -24,7 +24,8 @@ class OrderController extends Controller
         $date = (string) $request->input('date', '');
         $perPage = (int) $request->input('per_page', 10);
 
-        $query = Order::with(['user', 'orderItems.product', 'orderItems.customDesign'])->latest();
+        // The detail modal renders each line from this JSON, cell included.
+        $query = Order::with(['user', 'orderItems.product', 'orderItems.customDesign', 'orderItems.productVariant.color'])->latest();
 
         if ($search !== '') {
             $query->where(function ($q) use ($search) {

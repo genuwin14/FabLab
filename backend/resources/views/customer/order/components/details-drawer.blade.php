@@ -128,25 +128,14 @@
                     // recipe; the base is whatever is left of the unit price
                     // once they are taken off, so the lines add up to what
                     // was actually charged even if a rate has moved since.
-                    $recipe = $design?->recipe ?? [];
-                    $elements = $recipe['elements'] ?? [];
-                    $sizeKey = $design ? \App\Models\CustomizationRate::keyForSize($recipe['size'] ?? null) : null;
-                    $sizeLabel = $sizeKey ? \App\Models\CustomizationRate::DEFINITIONS[$sizeKey]['label'] : null;
-                    $sizeShort = $sizeKey ? \App\Models\CustomizationRate::DEFINITIONS[$sizeKey]['short'] : null;
-                    $finishLabel = null;
-                    if ($design) {
-                        if ($texture = $design->texture()) {
-                            $finishLabel = $texture->name . ' texture';
-                        } elseif ($color = $design->color()) {
-                            $finishLabel = $color->name;
-                        } elseif (!empty($recipe['color_hex'])) {
-                            $finishLabel = strtoupper($recipe['color_hex']);
-                        }
-                    }
-                    $textLines = collect($elements['text'] ?? [])->pluck('text')->filter(fn ($t) => trim((string) $t) !== '')->values();
-                    $logoCount = count($elements['logos'] ?? []);
-                    $shapeCount = count($elements['shapes'] ?? []);
-                    $hasLed = !empty($recipe['features']['led_lighting']);
+                    $summary = $design?->summary ?? [];
+                    $sizeLabel = $summary['size'] ?? null;
+                    $sizeShort = $summary['size_short'] ?? null;
+                    $finishLabel = $summary['finish'] ?? null;
+                    $textLines = collect($summary['text'] ?? []);
+                    $logoCount = $summary['logos'] ?? 0;
+                    $shapeCount = $summary['shapes'] ?? 0;
+                    $hasLed = $summary['led_lighting'] ?? false;
                     $breakdown = $design ? $design->price_breakdown : [];
                     $extras = array_sum(array_column($breakdown, 'amount'));
                     $basePrice = $unitPrice - $extras >= 0 ? $unitPrice - $extras : (float) ($product?->price ?? 0);

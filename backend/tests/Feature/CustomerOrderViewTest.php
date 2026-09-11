@@ -148,6 +148,37 @@ class CustomerOrderViewTest extends TestCase
             ->assertSee('₱800.00');
     }
 
+    public function test_a_design_serialises_a_plain_words_summary_for_the_order_screens(): void
+    {
+        $color = \App\Models\Color::create(['name' => 'Navy Blue', 'hex_code' => '#001f3f']);
+        $order = $this->order('approved');
+
+        $design = \App\Models\CustomDesign::create([
+            'user_id' => $this->customer->id,
+            'product_id' => $order->orderItems()->first()->product_id,
+            'recipe' => [
+                'size' => 'large',
+                'color_id' => $color->color_id,
+                'features' => ['led_lighting' => true],
+                'elements' => [
+                    'text' => [['text' => 'JAPAN'], ['text' => '  ']],
+                    'shapes' => [['type' => 'circle']],
+                    'logos' => [],
+                ],
+            ],
+        ]);
+
+        $summary = $design->toArray()['summary'];
+
+        $this->assertSame('Large', $summary['size']);
+        $this->assertSame('L', $summary['size_short']);
+        $this->assertSame('Navy Blue', $summary['finish']);
+        $this->assertSame(['JAPAN'], $summary['text']);
+        $this->assertSame(0, $summary['logos']);
+        $this->assertSame(1, $summary['shapes']);
+        $this->assertTrue($summary['led_lighting']);
+    }
+
     public function test_the_drawer_names_the_size_and_colour_of_a_stock_item(): void
     {
         $order = $this->order('approved');

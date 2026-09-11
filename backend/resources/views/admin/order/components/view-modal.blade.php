@@ -245,6 +245,13 @@
                             <td class="text-end pe-3 fw-bold text-dark">${formatCurrency(subtotal)}</td>
                         </tr>
                     `;
+
+                    // The cell the line took and, for a tailored item, what is
+                    // on the design and how it was priced.
+                    const details = window.orderItemDetailsHtml ? window.orderItemDetailsHtml(item) : '';
+                    if (details) {
+                        tbody.innerHTML += `<tr class="order-item-details-row"><td colspan="4" class="px-3 pt-0 pb-2 border-0">${details}</td></tr>`;
+                    }
                 });
 
                 const reasonSection = document.getElementById('viewReasonSection');
@@ -260,3 +267,5 @@
         });
     })();
 </script>
+
+@include('partials.order-item-details')

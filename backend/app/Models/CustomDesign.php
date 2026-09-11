@@ -40,7 +40,7 @@ class CustomDesign extends Model
      * Ship the itemised charges with the design wherever it is serialised, so
      * the admin order inspector can show why a tailored item costs what it does.
      */
-    protected $appends = ['price_breakdown'];
+    protected $appends = ['price_breakdown', 'summary'];
 
     /** Memoised finish lookups — the breakdown and the price both want them. */
     private ?Texture $resolvedTexture = null;
@@ -267,6 +267,45 @@ class CustomDesign extends Model
         }
 
         return $lines;
+    }
+
+    /**
+     * What the design is, in plain words, for the order screens: the size
+     * and finish the customer picked, every line of text as they typed it,
+     * and how many images and shapes went on. Serialised with the design so
+     * the admin and staff modals, which render from JSON, can say the same
+     * things the customer's own order details say.
+     *
+     * @return array{size: ?string, size_short: ?string, finish: ?string, text: string[], logos: int, shapes: int, led_lighting: bool}
+     */
+    public function getSummaryAttribute(): array
+    {
+        $recipe = $this->recipe ?? [];
+        $elements = $recipe['elements'] ?? [];
+        $sizeKey = CustomizationRate::keyForSize($recipe['size'] ?? null);
+
+        $finish = null;
+        if ($texture = $this->texture()) {
+            $finish = trim(($texture->name ?? 'Texture') . ' texture');
+        } elseif ($color = $this->color()) {
+            $finish = $color->name;
+        } elseif (! empty($recipe['color_hex'])) {
+            $finish = strtoupper($recipe['color_hex']);
+        }
+
+        return [
+            'size' => $sizeKey ? CustomizationRate::DEFINITIONS[$sizeKey]['label'] : null,
+            'size_short' => $sizeKey ? CustomizationRate::DEFINITIONS[$sizeKey]['short'] : null,
+            'finish' => $finish,
+            'text' => collect($elements['text'] ?? [])
+                ->map(fn ($line) => trim((string) ($line['text'] ?? '')))
+                ->filter(fn ($line) => $line !== '')
+                ->values()
+                ->all(),
+            'logos' => count($elements['logos'] ?? []),
+            'shapes' => count($elements['shapes'] ?? []),
+            'led_lighting' => ! empty($recipe['features']['led_lighting']),
+        ];
     }
 
     public function getCalculatedPriceAttribute()
