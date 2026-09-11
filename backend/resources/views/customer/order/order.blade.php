@@ -153,6 +153,39 @@
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
         }
 
+        /* A tailored item unfolds beneath its row: the design as saved, what
+           went on it, and how the price was built up. */
+        .customer-order-details-design {
+            background-color: #f8f9fa;
+            border-radius: 10px;
+            padding: 10px 12px;
+            font-size: 0.8rem;
+        }
+        .customer-order-details-design-preview {
+            background-color: #fff;
+            border: 1px solid rgba(0, 0, 0, 0.06);
+            border-radius: 8px;
+            padding: 6px;
+            text-align: center;
+        }
+        .customer-order-details-design-preview img {
+            max-width: 100%;
+            max-height: 170px;
+            object-fit: contain;
+        }
+        .customer-order-details-design-grid {
+            display: grid;
+            grid-template-columns: 4.5rem minmax(0, 1fr);
+            row-gap: 4px;
+            column-gap: 8px;
+            align-items: start;
+        }
+        .customer-order-details-design-price {
+            border-top: 1px dashed rgba(0, 0, 0, 0.1);
+            padding-top: 8px;
+        }
+        .customer-order-details-design-price > div + div { margin-top: 2px; }
+
         /* ============================================
            Mobile responsiveness ( < lg / 992px )
            See ResponsiveMobileNote.md (§4 toolbar, §5 table)

@@ -115,6 +115,59 @@ class CustomerOrderViewTest extends TestCase
         $this->assertSame($order->order_id, $data['order_id']);
     }
 
+    public function test_the_drawer_describes_a_tailored_item(): void
+    {
+        $order = $this->order('approved');
+        $item = $order->orderItems()->first();
+
+        $design = \App\Models\CustomDesign::create([
+            'user_id' => $this->customer->id,
+            'product_id' => $item->product_id,
+            'recipe' => [
+                'base_style' => 't-shirt',
+                'size' => '2xl',
+                'features' => ['led_lighting' => true],
+                'elements' => [
+                    'text' => [['text' => 'Team FabLab']],
+                    'shapes' => [],
+                    'logos' => [['scale' => 1]],
+                ],
+            ],
+        ]);
+        $item->update(['custom_design_id' => $design->custom_design_id, 'price' => 800]);
+
+        Sanctum::actingAs($this->customer);
+
+        $this->get('/customer/orders')
+            ->assertOk()
+            ->assertSee('Team FabLab')
+            ->assertSee('2XL')
+            ->assertSee('1 uploaded')
+            ->assertSee('Internal LED')
+            ->assertSee('Custom text × 1')
+            ->assertSee('₱800.00');
+    }
+
+    public function test_the_drawer_names_the_size_and_colour_of_a_stock_item(): void
+    {
+        $order = $this->order('approved');
+        $item = $order->orderItems()->first();
+
+        $color = \App\Models\Color::create(['name' => 'Navy Blue', 'hex_code' => '#001f3f']);
+        $variant = \App\Models\ProductVariant::create([
+            'product_id' => $item->product_id, 'size' => 'large', 'color_id' => $color->color_id, 'stock' => 5,
+        ]);
+        $item->update(['product_variant_id' => $variant->product_variant_id, 'quantity' => 3]);
+
+        Sanctum::actingAs($this->customer);
+
+        $this->get('/customer/orders')
+            ->assertOk()
+            ->assertSee('Navy Blue · L')
+            ->assertSee('₱100.00 × 3')
+            ->assertSee('₱300.00');
+    }
+
     public function test_the_page_opens_the_drawer_named_in_the_fragment(): void
     {
         $order = $this->order('approved');

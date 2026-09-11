@@ -15,7 +15,9 @@ class OrderController extends Controller
     public function index()
     {
         $orders = Order::where('user_id', Auth::id())
-            ->with(['orderItems.product']) // Eager load items and products
+            // The details drawer describes each line: the product, the size
+            // and colour cell it took, and the design behind a tailored item.
+            ->with(['orderItems.product', 'orderItems.productVariant.color', 'orderItems.customDesign'])
             ->orderBy('created_at', 'desc')
             ->get();
 
