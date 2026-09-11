@@ -357,9 +357,14 @@ class ProductVariantStockTest extends TestCase
         $this->setCell('5xl', $this->navy, 1);
         $this->actingAs($this->admin);
 
+        // The list carries the cells on the button that opens the grid modal,
+        // and says on it how many are low or empty: the Navy 5XL at one, and
+        // the fourteen cells nothing has been spread into yet.
         $this->get(route('admin.products.index'))
             ->assertOk()
             ->assertSee('by size / colour')
-            ->assertSee('Navy Blue · 5XL');
+            ->assertSee('id="variantBreakdownModal"', false)
+            ->assertSee('&quot;color&quot;:&quot;Navy Blue&quot;', false)
+            ->assertSee('title="15 low or empty"', false);
     }
 }
