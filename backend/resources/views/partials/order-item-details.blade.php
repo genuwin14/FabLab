@@ -93,7 +93,7 @@
 <style>
     /* The details row hangs off the item row above it: no hover tint of its
        own, and its panel is indented to the product name, past the thumbnail. */
-    .order-item-details-row > td { padding-top: 0 !important; }
+    .order-item-details-row > td { padding-top: 0 !important; padding-bottom: 0 !important; }
     .table-hover > tbody > tr.order-item-details-row:hover > * { --bs-table-bg-state: transparent; }
 
     .order-item-details {
@@ -101,13 +101,13 @@
         grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
         gap: 16px 32px;
         margin: 0;
-        padding: 4px 0 8px 52px;
+        padding: 14px 0 16px 52px;
         font-size: 0.78rem;
         line-height: 1.4;
     }
     .order-item-details-plain {
         display: block;
-        padding: 0 0 6px 52px;
+        padding: 6px 0 12px 52px;
     }
 
     .order-item-toggle {
