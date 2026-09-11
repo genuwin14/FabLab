@@ -18,6 +18,12 @@
 
     <!-- Bootstrap 5 CDN -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        /* Bootstrap 5 has no min-width utility, yet a flex column that has to
+           shrink below its content (a truncated name beside a price) needs
+           min-width: 0 — without it the row overflows its card instead. */
+        .min-w-0 { min-width: 0 !important; }
+    </style>
     <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
 
