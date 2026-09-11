@@ -293,4 +293,20 @@ class OrderWorkflowTest extends TestCase
 
         $this->assertSame('approved', $order->refresh()->status);
     }
+
+    public function test_a_payment_reference_cannot_be_reused_on_another_order(): void
+    {
+        $first = $this->order('processing');
+        $first->update(['payment_reference' => 'OR-1234']);
+
+        $second = $this->order('approved');
+        Sanctum::actingAs($this->user('staff', 's@example.test'));
+
+        $this->post("/staff/orders/{$second->order_id}/update-status", [
+            'status' => 'processing', 'payment_reference' => 'OR-1234',
+        ])->assertSessionHasErrors('payment_reference');
+
+        $this->assertSame('approved', $second->refresh()->status);
+        $this->assertNull($second->payment_reference);
+    }
 }

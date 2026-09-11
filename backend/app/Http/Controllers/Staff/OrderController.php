@@ -92,7 +92,22 @@ class OrderController extends Controller
     {
         $request->validate([
             'status' => 'required|in:processing,ready_for_pickup,completed',
-            'payment_reference' => 'required_if:status,processing|nullable|string'
+            'payment_reference' => [
+                'required_if:status,processing', 'nullable', 'string', 'max:255',
+                // The cashier issues one receipt per payment, so a reference
+                // number that is already on another order is a typo or a slip
+                // being reused — either way this order must not start
+                // production on it.
+                function (string $attribute, mixed $value, \Closure $fail) use ($id) {
+                    $clash = Order::where('payment_reference', $value)
+                        ->where('order_id', '!=', $id)
+                        ->first();
+
+                    if ($clash) {
+                        $fail("Reference number {$value} is already on order {$clash->order_number}. Check the slip from the cashier.");
+                    }
+                },
+            ],
         ]);
 
         $order = Order::with('user')->findOrFail($id);
