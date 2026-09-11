@@ -99,18 +99,15 @@
     .order-item-details {
         display: grid;
         grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-        gap: 16px 28px;
-        margin: 0 0 4px;
-        padding: 12px 16px 14px;
-        background-color: #f8f9fa;
-        border: 1px solid rgba(0, 0, 0, 0.05);
-        border-radius: 10px;
+        gap: 16px 32px;
+        margin: 0;
+        padding: 4px 0 8px 52px;
         font-size: 0.78rem;
         line-height: 1.4;
     }
     .order-item-details-plain {
         display: block;
-        padding: 8px 12px;
+        padding: 0 0 6px 52px;
     }
 
     .order-item-toggle {
@@ -185,6 +182,6 @@
     }
 
     @media (max-width: 767.98px) {
-        .order-item-details { grid-template-columns: 1fr; }
+        .order-item-details, .order-item-details-plain { grid-template-columns: 1fr; padding-left: 0; }
     }
 </style>
