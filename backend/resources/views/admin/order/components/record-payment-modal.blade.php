@@ -52,7 +52,8 @@
                         Cancel
                     </button>
                     <button type="submit" class="btn order-btn-save rounded-pill px-4" id="recordPaymentSubmit">
-                        <i class="bi bi-check-lg me-1"></i>Record Payment
+                        <span class="spinner-border spinner-border-sm me-1 d-none" role="status" aria-hidden="true"></span>
+                        <i class="bi bi-check-lg me-1 btn-icon"></i><span class="btn-text">Record Payment</span>
                     </button>
                 </div>
             </form>
@@ -80,13 +81,28 @@
             this.querySelector('#recordPaymentNote').textContent = correcting
                 ? 'Replace the receipt number with the one on the official receipt. The customer is not notified again.'
                 : 'Enter the number on the official receipt PAXS issued. Staff can start production once it is recorded, and the customer will be told it is the number to bring when collecting.';
-            this.querySelector('#recordPaymentSubmit').innerHTML = correcting
-                ? '<i class="bi bi-check-lg me-1"></i>Save Receipt Number'
-                : '<i class="bi bi-check-lg me-1"></i>Record Payment';
+            // Reopening always starts from a live button: a closed-and-reopened
+            // dialog must not be stuck on the spinner from the last submit.
+            const submit = this.querySelector('#recordPaymentSubmit');
+            submit.disabled = false;
+            submit.dataset.mode = correcting ? 'correcting' : 'recording';
+            submit.querySelector('.spinner-border').classList.add('d-none');
+            submit.querySelector('.btn-icon').classList.remove('d-none');
+            submit.querySelector('.btn-text').textContent = correcting ? 'Save Receipt Number' : 'Record Payment';
         });
 
         modal.addEventListener('shown.bs.modal', function () {
             this.querySelector('#recordPaymentInput').focus();
+        });
+
+        // The page reloads on the response, so the button only has to say
+        // that something is happening and refuse a second click meanwhile.
+        modal.querySelector('#recordPaymentForm').addEventListener('submit', function () {
+            const submit = this.querySelector('#recordPaymentSubmit');
+            submit.disabled = true;
+            submit.querySelector('.spinner-border').classList.remove('d-none');
+            submit.querySelector('.btn-icon').classList.add('d-none');
+            submit.querySelector('.btn-text').textContent = submit.dataset.mode === 'correcting' ? 'Saving...' : 'Recording...';
         });
     })();
 </script>
