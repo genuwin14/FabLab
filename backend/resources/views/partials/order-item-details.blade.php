@@ -16,70 +16,137 @@
 
         if (!design && !variantLabel) return '';
 
-        const parts = [];
+        const cellBadge = variantLabel
+            ? `<span class="order-item-cell"><i class="bi bi-tag me-1"></i>${esc(variantLabel)}</span>`
+            : '';
 
-        if (variantLabel) {
-            parts.push(`<span class="badge bg-light text-dark border rounded-pill fw-semibold me-2" style="font-size: 0.65rem;">${esc(variantLabel)}</span>`);
+        // A plain stocked product only has its cell to say.
+        if (!summary) {
+            return `<div class="order-item-details order-item-details-plain">${cellBadge}</div>`;
         }
 
-        if (summary) {
-            const facts = [];
-            if (summary.size) facts.push(['Size', esc(summary.size)]);
-            if (summary.finish) facts.push(['Finish', esc(summary.finish)]);
-            if (summary.text?.length) facts.push(['Text', summary.text.map(line => '&ldquo;' + esc(line) + '&rdquo;').join('<br>')]);
-            if (summary.logos) facts.push(['Images', `${summary.logos} uploaded`]);
-            if (summary.shapes) facts.push(['Shapes', String(summary.shapes)]);
-            if (summary.led_lighting) facts.push(['Lighting', 'Internal LED']);
+        const facts = [];
+        if (summary.size) facts.push(['Size', esc(summary.size)]);
+        if (summary.finish) facts.push(['Finish', esc(summary.finish)]);
+        if (summary.text?.length) facts.push(['Text', summary.text.map(line => '&ldquo;' + esc(line) + '&rdquo;').join('<br>')]);
+        if (summary.logos) facts.push(['Images', `${summary.logos} uploaded`]);
+        if (summary.shapes) facts.push(['Shapes', String(summary.shapes)]);
+        if (summary.led_lighting) facts.push(['Lighting', 'Internal LED']);
 
-            if (facts.length) {
-                parts.push(
-                    '<div class="order-item-facts">' +
-                    facts.map(([label, value]) => `<span class="text-muted">${label}</span><span class="text-dark fw-medium">${value}</span>`).join('') +
-                    '</div>'
-                );
-            }
+        const factsHtml = facts.length
+            ? '<dl class="order-item-facts">' +
+              facts.map(([label, value]) => `<dt>${label}</dt><dd>${value}</dd>`).join('') +
+              '</dl>'
+            : '<div class="text-muted fst-italic">Nothing added to the design.</div>';
 
-            // The base is what is left of the unit price once the extras are
-            // taken off, so the lines add up to what was charged even if a
-            // rate has moved since.
-            const breakdown = Array.isArray(design.price_breakdown) ? design.price_breakdown : [];
-            const unit = Number(item.price) || 0;
-            const extras = breakdown.reduce((sum, line) => sum + (Number(line.amount) || 0), 0);
-            const base = unit - extras >= 0 ? unit - extras : Number(item.product?.price) || 0;
+        // The base is what is left of the unit price once the extras are
+        // taken off, so the lines add up to what was charged even if a
+        // rate has moved since.
+        const breakdown = Array.isArray(design.price_breakdown) ? design.price_breakdown : [];
+        const unit = Number(item.price) || 0;
+        const extras = breakdown.reduce((sum, line) => sum + (Number(line.amount) || 0), 0);
+        const base = unit - extras >= 0 ? unit - extras : Number(item.product?.price) || 0;
 
-            parts.push(
-                '<div class="order-item-price">' +
-                `<div class="d-flex justify-content-between"><span class="text-muted">Base ${esc(item.product?.name || 'product')}</span><span>${money(base)}</span></div>` +
-                breakdown.map(line => `<div class="d-flex justify-content-between"><span class="text-muted">${esc(line.label)}</span><span>+ ${money(line.amount)}</span></div>`).join('') +
-                `<div class="d-flex justify-content-between fw-bold text-dark border-top pt-1 mt-1"><span>Per item</span><span>${money(unit)}</span></div>` +
-                '</div>'
-            );
-        }
+        const priceRows =
+            `<tr><td>Base ${esc(item.product?.name || 'product')}</td><td>${money(base)}</td></tr>` +
+            breakdown.map(line => `<tr><td>${esc(line.label)}</td><td>+ ${money(line.amount)}</td></tr>`).join('') +
+            `<tr class="order-item-price-total"><td>Per item</td><td>${money(unit)}</td></tr>`;
 
-        return `<div class="order-item-details">${parts.join('')}</div>`;
+        return `
+            <div class="order-item-details">
+                <div class="order-item-details-col">
+                    <div class="order-item-details-heading">
+                        <span><i class="bi bi-palette me-1"></i>Design</span>
+                        ${cellBadge}
+                    </div>
+                    ${factsHtml}
+                </div>
+                <div class="order-item-details-col">
+                    <div class="order-item-details-heading">
+                        <span><i class="bi bi-receipt me-1"></i>Price per item</span>
+                    </div>
+                    <table class="order-item-price"><tbody>${priceRows}</tbody></table>
+                </div>
+            </div>`;
     };
 </script>
 
 <style>
+    /* The details row hangs off the item row above it: no hover tint of its
+       own, and its panel is indented to the product name, past the thumbnail. */
+    .order-item-details-row > td { padding-top: 0 !important; }
+    .table-hover > tbody > tr.order-item-details-row:hover > * { --bs-table-bg-state: transparent; }
+
     .order-item-details {
-        background-color: #f8f9fa;
-        border-radius: 8px;
-        padding: 8px 12px;
-        font-size: 0.75rem;
-    }
-    .order-item-details .order-item-facts {
         display: grid;
-        grid-template-columns: 4.5rem minmax(0, 1fr);
-        row-gap: 2px;
-        column-gap: 8px;
-        align-items: start;
-        margin-top: 6px;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+        gap: 16px 28px;
+        margin-left: 52px;
+        padding: 12px 16px 14px;
+        background-color: #f8f9fa;
+        border: 1px solid rgba(0, 0, 0, 0.05);
+        border-radius: 10px;
+        font-size: 0.78rem;
+        line-height: 1.4;
     }
-    .order-item-details .order-item-price {
-        border-top: 1px dashed rgba(0, 0, 0, 0.1);
-        margin-top: 8px;
+    .order-item-details-plain {
+        display: block;
+        padding: 8px 12px;
+    }
+    .order-item-details-col { min-width: 0; }
+
+    .order-item-details-heading {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        margin-bottom: 8px;
+        padding-bottom: 6px;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.07);
+        font-size: 0.62rem;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: #6c757d;
+    }
+
+    .order-item-cell {
+        display: inline-flex;
+        align-items: center;
+        padding: 2px 9px;
+        border: 1px solid rgba(0, 0, 0, 0.1);
+        border-radius: 999px;
+        background-color: #fff;
+        font-size: 0.66rem;
+        font-weight: 600;
+        letter-spacing: 0;
+        text-transform: none;
+        color: #212529;
+    }
+
+    .order-item-facts {
+        display: grid;
+        grid-template-columns: 4.25rem minmax(0, 1fr);
+        column-gap: 10px;
+        row-gap: 4px;
+        margin: 0;
+    }
+    .order-item-facts dt { font-weight: 400; color: #6c757d; }
+    .order-item-facts dd { margin: 0; font-weight: 500; color: #212529; overflow-wrap: anywhere; }
+
+    .order-item-price { width: 100%; border-collapse: collapse; }
+    .order-item-price td { padding: 2px 0; vertical-align: top; }
+    .order-item-price td:first-child { color: #6c757d; padding-right: 12px; }
+    .order-item-price td:last-child { text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
+    .order-item-price .order-item-price-total td {
         padding-top: 6px;
-        max-width: 28rem;
+        margin-top: 4px;
+        border-top: 1px solid rgba(0, 0, 0, 0.12);
+        font-weight: 700;
+        color: #212529;
     }
-    .order-item-details .order-item-price > div + div { margin-top: 2px; }
+
+    @media (max-width: 767.98px) {
+        .order-item-details { grid-template-columns: 1fr; margin-left: 0; }
+    }
 </style>
