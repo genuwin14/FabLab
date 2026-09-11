@@ -224,6 +224,41 @@ class ProductVariantStockTest extends TestCase
         $this->assertSame($this->cell('large', $this->navy)->product_variant_id, CartItem::sole()->product_variant_id);
     }
 
+    public function test_a_design_line_checks_out_by_its_own_key(): void
+    {
+        $this->setCell('large', $this->navy, 5);
+        Sanctum::actingAs($this->customer);
+
+        $this->add(['custom_recipe' => json_encode([
+            'base_style' => 't-shirt', 'size' => 'large', 'color_id' => $this->navy->color_id,
+            'elements' => ['text' => [], 'shapes' => [], 'logos' => []],
+        ])])->assertOk();
+
+        // The page checks out with the line's key, which for a design names
+        // the design and not the cell — the cell is on the line regardless.
+        $line = CartItem::sole();
+        $key = CartItem::keyFor($line->product_id, $line->custom_design_id, $line->product_variant_id);
+        $this->assertSame($this->shirt->product_id . '_custom_' . $line->custom_design_id, $key);
+
+        $this->postJson(route('customer.cart.checkout'), ['selected_items' => [$key]])
+            ->assertOk()
+            ->assertJsonPath('success', true);
+
+        $this->assertSame(0, CartItem::count());
+        $this->assertSame(4, $this->cell('large', $this->navy)->stock);
+        $this->assertSame($line->product_variant_id, \App\Models\OrderItem::sole()->product_variant_id);
+    }
+
+    public function test_a_refused_checkout_tells_the_page_why(): void
+    {
+        Sanctum::actingAs($this->customer);
+
+        $this->postJson(route('customer.cart.checkout'), ['selected_items' => ['999_custom_999']])
+            ->assertStatus(422)
+            ->assertJsonPath('success', false)
+            ->assertJsonPath('message', 'Selected items are no longer available in cart.');
+    }
+
     public function test_a_design_with_a_texture_finish_takes_the_first_colour(): void
     {
         // A texture is printed on a blank; the blank is the product's first colour.

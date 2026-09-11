@@ -204,8 +204,11 @@ class CartController extends Controller
     {
         $selectedItems = $request->input('selected_items', []);
 
+        // The page checks out over AJAX and reads the answer as JSON. A
+        // redirect here would come back as an HTML page and show as a bare
+        // "Checkout failed", so the reason has to travel as JSON too.
         if (empty($selectedItems)) {
-            return redirect()->back()->with('error', 'Please select at least one item to checkout.');
+            return $this->checkoutRefused($request, 'Please select at least one item to checkout.');
         }
 
         $request->validate([
@@ -217,7 +220,7 @@ class CartController extends Controller
         $checkoutLines = $this->linesForKeys($selectedItems);
 
         if ($checkoutLines->isEmpty()) {
-            return redirect()->back()->with('error', 'Selected items are no longer available in cart.');
+            return $this->checkoutRefused($request, 'Selected items are no longer available in cart.');
         }
 
         // A Purchase Request order can't be reviewed until procurement issues a
@@ -313,7 +316,7 @@ class CartController extends Controller
                 )
                 : 'Order placed successfully!';
 
-            if ($request->ajax()) {
+            if ($request->ajax() || $request->wantsJson()) {
                 return response()->json([
                     'success' => true,
                     'message' => $message,
@@ -326,7 +329,7 @@ class CartController extends Controller
         } catch (\Exception $e) {
             \Illuminate\Support\Facades\DB::rollBack();
 
-            if ($request->ajax()) {
+            if ($request->ajax() || $request->wantsJson()) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Checkout failed: ' . $e->getMessage()
@@ -382,6 +385,16 @@ class CartController extends Controller
             ->all();
     }
 
+    /** Turn a checkout down before anything is written, in whichever shape the caller reads. */
+    private function checkoutRefused(Request $request, string $message)
+    {
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json(['success' => false, 'message' => $message], 422);
+        }
+
+        return redirect()->back()->with('error', $message);
+    }
+
     private function lineForKey(string $key): ?CartItem
     {
         if ($key === '') {
@@ -390,11 +403,19 @@ class CartController extends Controller
 
         [$productId, $designId, $variantId] = CartItem::parseKey($key);
 
-        return CartItem::where('user_id', auth()->id())
+        $line = CartItem::where('user_id', auth()->id())
             ->where('product_id', $productId)
-            ->where('custom_design_id', $designId)
-            ->where('product_variant_id', $variantId)
-            ->first();
+            ->where('custom_design_id', $designId);
+
+        // A design's key does not carry a variant: the recipe already names
+        // the size and colour, so the design alone identifies the line. The
+        // line still holds the cell it took, and matching on a null variant
+        // here would find nothing — every custom checkout used to fail on it.
+        if ($designId === null) {
+            $line->where('product_variant_id', $variantId);
+        }
+
+        return $line->first();
     }
 
     /** @param array<int, string> $keys */
