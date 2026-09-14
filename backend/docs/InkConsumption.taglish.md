@@ -1,8 +1,8 @@
-# Paano Kinukwenta ang Ink Consumption (Taglish Reviewer)
+# Paano Kinukwenta ang Ink Consumption
 
-Reviewer ito para sa defense. Step by step kung paano nakukuha ng system
-yung millilitres ng ink na ibabawas sa inventory, bakit ganun ang ginawa,
-at paano sagutin yung mga posibleng tanong ng panel.
+Step by step kung paano nakukuha ng system yung millilitres ng ink na
+ibabawas sa inventory, bakit ganun ang ginawa, at yung mga sagot sa mga
+madalas itanong tungkol dito.
 
 ## Yung one-sentence answer
 
@@ -66,7 +66,7 @@ Ang result: apat na fraction na 0 hanggang 1, isa per channel. Nase-save
 ito sa design bilang `ink_coverage`, at yung flat print mismo naka-save sa
 disk para makita ng reviewer kung ano yung sinukat.
 
-Dalawang bagay na baka kalkalin ng panel:
+Dalawang bagay na dapat malaman dito:
 
 - **Walang ink ang white.** Sa CMYK, white ay 0,0,0,0. Tama yun para sa
   sublimation, kasi walang white ink; yung white ay yung substrate mismo na
@@ -204,10 +204,9 @@ ng mga bagong save.
 version: fixed na millilitre figure per line ng text, per shape, per
 image. Bill of materials yun na nanghuhula sa isang picture. Same ink ang
 sinisingil sa isang tuldok at sa full-panel na photo, sinisingil ng cyan
-ang red text, at walang paraan para i-verify. Yung recommendation ng panel
-na "prices should vary depending on the size of the design", ibig sabihin
-dapat ganun din ang material cost, at measuring lang ang paraan para
-maging totoo yun.
+ang red text, at walang paraan para i-verify. Dahil nagbabago na ang presyo
+depende sa laki ng design, dapat ganun din ang material cost, at measuring
+lang ang paraan para maging totoo yun.
 
 **Bakit CMYK at hindi RGB?** Kasi yun ang kinokonsumo ng printer. Per
 bottle ang stock, at cyan, magenta, yellow at black ang mga bottle. Dapat
@@ -255,7 +254,7 @@ sinusunod ito ng ink.
   pa, proportionally tama ang figures (mas malaki o mas dense na design ay
   laging mas malaki ang ink) pero hindi pa absolutely tama.
 
-## Mga posibleng tanong ng panel
+## Mga madalas itanong
 
 **"Paano niyo nakuha yung ink consumption?"**
 Sinusukat mula sa artwork. Pag na-save ang design, ini-export ng studio

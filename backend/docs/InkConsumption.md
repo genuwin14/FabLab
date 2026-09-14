@@ -1,8 +1,8 @@
 # How Ink Consumption Is Computed
 
-A defense guide. It explains, step by step, how the system arrives at the
-millilitres of ink an order draws from inventory, why it works that way, and
-how to answer the questions a panel is likely to ask.
+This explains, step by step, how the system arrives at the millilitres of
+ink an order draws from inventory, why it works that way, and answers the
+questions most often asked about it.
 
 ## The one-sentence answer
 
@@ -64,7 +64,7 @@ The result is four fractions between 0 and 1, one per channel. These are
 stored on the design as `ink_coverage`, and the flat print itself is kept on
 disk so the reviewer can see what was measured.
 
-Two properties of this that a panel may probe:
+Two properties of this worth knowing:
 
 - **White takes no ink.** In CMYK white is 0,0,0,0. That is correct for
   sublimation, which has no white ink; white is the substrate showing
@@ -195,9 +195,9 @@ only as a fallback for legacy designs; new saves never use it.
 did: a fixed millilitre figure per line of text, per shape, per image. It is
 a bill of materials guessing at a picture. It charges the same ink for a
 single dot and for a full-panel photo, charges cyan for red text, and cannot
-be verified against anything. The panel's recommendation that "prices should
-vary depending on the size of the design" implies the material cost must
-vary the same way, and measuring is the only way to make it do so honestly.
+be verified against anything. Since the price already varies with the size
+of the design, the material cost has to vary the same way, and measuring is
+the only way to make it do so honestly.
 
 **Why CMYK and not RGB?** Because that is what the printer consumes. Stock
 is kept per bottle, and the bottles are cyan, magenta, yellow and black. The
@@ -245,7 +245,7 @@ two-step used for every material, and ink follows it.
   proportionally right (a bigger or denser design always draws more) but not
   absolutely right.
 
-## Likely panel questions
+## Common questions
 
 **"How did you get the ink consumption?"**
 It is measured from the artwork. When a design is saved the studio exports
