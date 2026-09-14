@@ -675,8 +675,8 @@
                     const tbody = document.getElementById('reviewItemsBody');
                     tbody.innerHTML = '';
 
-                    // Keyed by row so the enlarged preview can find the design
-                    // without threading a recipe through an HTML attribute.
+                    // Keyed by row so the Design Inspection popup can find the
+                    // design without threading a recipe through an HTML attribute.
                     window.reviewDesignsByIndex = {};
 
                     items.forEach((item, itemIndex) => {
@@ -695,18 +695,23 @@
                             ? '<span class="badge ms-1" style="background-color: rgba(255, 197, 8, 0.18); color: #997404; font-size: 0.55rem; vertical-align: middle;">TAILORED</span>'
                             : '<span class="badge ms-1" style="background-color: rgba(108, 117, 125, 0.12); color: #6c757d; font-size: 0.55rem; vertical-align: middle;">STANDARD</span>';
 
+                        // Only a tailored line has a model to inspect. A plain
+                        // one's photo is all there is to it, and the thumbnail
+                        // already shows that.
+                        const thumbHtml = isCustom
+                            ? `<div class="rounded border bg-white p-1 me-2 review-item-thumb" style="width: 40px; height: 40px;"
+                                    data-item-index="${itemIndex}" title="Inspect the design in 3D" role="button" tabindex="0">
+                                    <img src="${imgSrc}" class="w-100 h-100 object-fit-cover rounded" alt="">
+                                </div>`
+                            : `<div class="rounded border bg-white p-1 me-2" style="width: 40px; height: 40px;">
+                                    <img src="${imgSrc}" class="w-100 h-100 object-fit-cover rounded" alt="">
+                                </div>`;
+
                         const row = `
                             <tr>
                                 <td class="ps-3 py-2">
                                     <div class="d-flex align-items-center">
-                                        <div class="rounded border bg-white p-1 me-2 review-item-thumb"
-                                            style="width: 40px; height: 40px;"
-                                            data-full-image="${imgSrc}"
-                                            data-item-label="${isCustom ? 'Design — ' : ''}${product.name ?? 'Item'}"
-                                            data-item-index="${itemIndex}"
-                                            title="Click to view larger" role="button" tabindex="0">
-                                            <img src="${imgSrc}" class="w-100 h-100 object-fit-cover rounded" alt="">
-                                        </div>
+                                        ${thumbHtml}
                                         <div>
                                             <div class="fw-bold text-dark small">${product.name ?? '-'}${customBadge}</div>
                                             <div class="text-muted font-monospace" style="font-size: 0.7rem;">SKU: ${product.sku ?? '-'}${variantLabel ? ' · <span class="font-sans-serif fw-semibold text-dark">' + variantLabel + '</span>' : ''}</div>
@@ -724,12 +729,11 @@
                         `;
                         tbody.innerHTML += row;
 
-                        window.reviewDesignsByIndex[itemIndex] = {
-                            // Only a tailored line has a model to build; a plain
-                            // one falls back to the product photo.
-                            design: isCustom ? design : null,
-                            productName: product.name || ''
-                        };
+                        if (isCustom) {
+                            // The popup picks which model to build off the name.
+                            design.product_name = product.name || '';
+                            window.reviewDesignsByIndex[itemIndex] = design;
+                        }
                     });
 
                     // The finished-goods table above says whether there is a
@@ -738,9 +742,6 @@
                     // and dye the product's own bill of materials never
                     // mentions. Only worth showing while approving; cancelling
                     // puts materials back rather than taking them.
-                    // A previous review's design must not linger behind this one.
-                    closeReviewDesignPreview();
-
                     const materialsPanel = document.getElementById('reviewMaterialsPanel');
                     if (mode === 'cancel') {
                         materialsPanel.classList.add('d-none');
@@ -810,9 +811,17 @@
                 );
             }
 
-            // Design Inspection popout — opened from the "View Order" modal's customized items
-            $(document).on('click', '.btn-popout-design', function () {
-                const design = $(this).data('design');
+            /**
+             * Open the Design Inspection popup on a tailored line: the model
+             * rebuilt from its recipe, with the recipe and the charges floating
+             * over the scene. The View modal's thumbnails open it and so do the
+             * Review modal's — one popup and one 3D pipeline for both, stacked
+             * above whichever modal asked.
+             *
+             * `design` is the line's custom design with product_name set by
+             * the caller, which is what picks the model to build.
+             */
+            function openDesignInspection(design) {
                 if (!design) return;
 
                 $('#detailPopupImage').attr('src', design.snapshot || '').removeClass('d-none');
@@ -874,6 +883,25 @@
                         $('#detailPopupImage').removeClass('d-none');
                     }
                 }, 500);
+            }
+
+            // The View modal threads the design through its thumbnail's data attribute.
+            $(document).on('click', '.btn-popout-design', function () {
+                openDesignInspection($(this).data('design'));
+            });
+
+            // The popup opens over the View or Review modal, which Bootstrap
+            // does not cater for: every backdrop gets the same z-index, so the
+            // popup's would sit under the modal it is meant to dim, and that
+            // modal's header and buttons would show through undimmed. Lift the
+            // new backdrop above it — after this event, since Bootstrap appends
+            // the backdrop once the event has fired.
+            $('#designDetailPopup').on('show.bs.modal', function () {
+                setTimeout(() => {
+                    const backdrops = document.querySelectorAll('.modal-backdrop');
+                    const top = backdrops[backdrops.length - 1];
+                    if (top && backdrops.length > 1) top.style.zIndex = '1065';
+                }, 0);
             });
 
             $('#designDetailPopup').on('hidden.bs.modal', function () {
@@ -884,6 +912,13 @@
                 if (typeof renderer !== 'undefined' && renderer) {
                     renderer.dispose();
                     renderer = null;
+                }
+
+                // Bootstrap drops .modal-open from the body when any modal
+                // closes, which would unlock page scrolling behind the modal
+                // still open underneath.
+                if (document.querySelector('.modal.show')) {
+                    document.body.classList.add('modal-open');
                 }
             });
         </script>

@@ -57,7 +57,7 @@ Revenue counts `completed` orders only — an approved order that hasn't been ha
 
 ### Approving
 
-Open **Review**, check the lines and any customization, then **Approve**. In one step the system:
+Open **Review** and check the lines and any customization — clicking a tailored line's thumbnail opens the design in the same 3D inspector the read-only view uses, so you can turn it round before judging its materials. Then **Approve**, and in one step the system:
 
 1. Sets the order to `approved`.
 2. **Reserves raw materials** — for every line, the product's bill of materials × the quantity ordered, plus whatever the design's customization options draw.
