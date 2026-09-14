@@ -626,7 +626,7 @@ class OrderStockService
             $entry['adjusted'] = false;
 
             if (array_key_exists($id, $overrides) && is_numeric($overrides[$id])) {
-                $quantity = round(max(0, (float) $overrides[$id]), 2);
+                $quantity = round(max(0, (float) $overrides[$id]), 4);
 
                 // Only count it as adjusted if it actually differs. Posting the
                 // figure back unchanged is what an untouched form does, and
@@ -666,11 +666,14 @@ class OrderStockService
             ->mapWithKeys(fn (RawMaterial $material) => [
                 $material->raw_material_id => [
                     'model' => $material,
-                    // Two decimals, because that is what the ledger stores. A
-                    // requirement that rounds away to nothing is dropped rather
-                    // than written as a zero-quantity movement, which record()
-                    // would refuse anyway.
-                    'quantity' => round($quantities[$material->raw_material_id], 2),
+                    // Four decimals, the ledger's own precision. It has to be that
+                    // fine because a measured ink draw for a small print is a few
+                    // thousandths of a millilitre — at two places magenta on a 2 × 4
+                    // cm logo rounded to nothing and silently dropped off the order.
+                    // A requirement that still rounds away is dropped rather than
+                    // written as a zero-quantity movement, which record() would
+                    // refuse anyway.
+                    'quantity' => round($quantities[$material->raw_material_id], 4),
                 ],
             ])
             ->filter(fn (array $entry) => $entry['quantity'] > 0)
@@ -679,6 +682,6 @@ class OrderStockService
 
     private function number(float $value): string
     {
-        return rtrim(rtrim(number_format($value, 2, '.', ''), '0'), '.');
+        return rtrim(rtrim(number_format($value, 4, '.', ''), '0'), '.');
     }
 }

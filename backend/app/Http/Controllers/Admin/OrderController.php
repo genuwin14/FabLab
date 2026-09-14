@@ -83,7 +83,7 @@ class OrderController extends Controller
             // material. The service ignores anything the order doesn't already
             // draw, so this only ever narrows or adjusts an existing line.
             'material_quantities' => 'nullable|array',
-            'material_quantities.*' => 'nullable|numeric|min:0|max:99999999.99'
+            'material_quantities.*' => 'nullable|numeric|min:0|max:99999999.9999'
         ]);
 
         $order = Order::with(['user', 'orderItems.product.rawMaterials', 'orderItems.customDesign'])->findOrFail($id);

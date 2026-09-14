@@ -84,7 +84,7 @@
                                     <span id="usageQuantityLabel">Quantity Used</span> <span class="text-danger">*</span>
                                 </label>
                                 <div class="input-group">
-                                    <input type="number" step="0.01" min="0" id="usageQuantity" name="quantity"
+                                    <input type="number" step="0.0001" min="0" id="usageQuantity" name="quantity"
                                         class="form-control material-field-input fw-bold text-dark" required>
                                     <span class="input-group-text material-input-addon usage-unit-addon" id="usageUnitAddon">unit</span>
                                 </div>

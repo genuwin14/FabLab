@@ -18,9 +18,9 @@ class LowStockAlert extends Notification
 
     public function toArray(object $notifiable): array
     {
-        $stock = rtrim(rtrim(number_format($this->item->currentStock(), 2, '.', ''), '0'), '.');
+        $stock = rtrim(rtrim(number_format($this->item->currentStock(), 4, '.', ''), '0'), '.');
         $threshold = (float) $this->item->stockThreshold();
-        $threshold = rtrim(rtrim(number_format($threshold, 2, '.', ''), '0'), '.');
+        $threshold = rtrim(rtrim(number_format($threshold, 4, '.', ''), '0'), '.');
 
         return [
             'category' => 'stock',

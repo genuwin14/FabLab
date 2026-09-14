@@ -116,18 +116,18 @@
                                 @if($delta == 0)
                                     {{-- Display units never leave stock, so there is no delta to sign. --}}
                                     <span title="Tagged as on display; stock unchanged">
-                                        {{ rtrim(rtrim(number_format((float) $movement->quantity, 2), '0'), '.') }}
+                                        {{ rtrim(rtrim(number_format((float) $movement->quantity, 4), '0'), '.') }}
                                         <i class="bi bi-dash-circle ms-1 opacity-50"></i>
                                     </span>
                                 @else
-                                    {{ $delta < 0 ? '−' : '+' }}{{ rtrim(rtrim(number_format(abs($delta), 2), '0'), '.') }}
+                                    {{ $delta < 0 ? '−' : '+' }}{{ rtrim(rtrim(number_format(abs($delta), 4), '0'), '.') }}
                                 @endif
                                 <span class="text-muted fw-normal text-lowercase" style="font-size: 0.72rem;">
                                     {{ $movement->rawMaterial?->unit }}
                                 </span>
                             </td>
                             <td class="text-end text-dark fw-semibold">
-                                {{ rtrim(rtrim(number_format((float) $movement->stock_after, 2), '0'), '.') }}
+                                {{ rtrim(rtrim(number_format((float) $movement->stock_after, 4), '0'), '.') }}
                             </td>
                             <td class="text-muted small">
                                 {{ $movement->actorName() }}
@@ -143,7 +143,7 @@
                                         data-id="{{ $movement->movement_id }}"
                                         data-material="{{ $movement->rawMaterial?->name }}"
                                         data-reason="{{ $movement->reason->shortLabel() }}"
-                                        data-quantity="{{ rtrim(rtrim(number_format((float) $movement->quantity, 2), '0'), '.') }}"
+                                        data-quantity="{{ rtrim(rtrim(number_format((float) $movement->quantity, 4), '0'), '.') }}"
                                         data-unit="{{ $movement->rawMaterial?->unit }}"
                                         title="Reverse this entry">
                                         <i class="bi bi-arrow-counterclockwise text-success"></i>

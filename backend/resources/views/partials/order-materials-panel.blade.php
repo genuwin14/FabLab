@@ -275,7 +275,7 @@
             const inputs = panel.querySelectorAll('.materials-input');
             const resetBtn = panel.querySelector('.materials-reset-btn');
 
-            const round = value => Math.round(value * 100) / 100;
+            const round = value => Math.round(value * 10000) / 10000;
 
             function recalculate() {
                 const problems = [];
@@ -579,7 +579,7 @@
                         if (editThis) {
                             const input = document.createElement('input');
                             input.type = 'number';
-                            input.step = '0.01';
+                            input.step = '0.0001';
                             input.min = '0';
                             input.className = 'form-control form-control-sm text-end materials-input';
                             input.name = `material_quantities[${line.id}]`;

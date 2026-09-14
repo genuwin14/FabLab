@@ -172,6 +172,6 @@ trait RecordsMaterialUsage
 
     private function usageNumber(float $value): string
     {
-        return rtrim(rtrim(number_format($value, 2, '.', ''), '0'), '.');
+        return rtrim(rtrim(number_format($value, 4, '.', ''), '0'), '.');
     }
 }

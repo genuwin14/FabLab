@@ -31,9 +31,9 @@ class RawMaterialMovement extends Model
 
     protected $casts = [
         'reason' => StockMovementReason::class,
-        'quantity' => 'decimal:2',
-        'stock_delta' => 'decimal:2',
-        'stock_after' => 'decimal:2',
+        'quantity' => 'decimal:4',
+        'stock_delta' => 'decimal:4',
+        'stock_after' => 'decimal:4',
     ];
 
     public function rawMaterial(): BelongsTo

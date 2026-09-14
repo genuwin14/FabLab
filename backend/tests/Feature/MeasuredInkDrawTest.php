@@ -168,6 +168,24 @@ class MeasuredInkDrawTest extends TestCase
         return (float) $this->bottles[$channel]->refresh()->stock_quantity;
     }
 
+    public function test_a_trace_of_ink_is_still_drawn(): void
+    {
+        // A small logo: 0.03% magenta of 1000 cm² at 0.01 ml/cm² is 0.003 ml.
+        // At two decimals that rounded to nothing and the bottle dropped off
+        // the order, so a red-and-yellow print showed only its yellow.
+        $order = $this->order($this->measured(['magenta' => 0.0003, 'yellow' => 0.0012]));
+
+        Sanctum::actingAs($this->user('admin', 'a@example.test'));
+        $lines = collect($this->get("/admin/orders/{$order->order_id}/materials")->assertOk()->json('lines'));
+        $this->assertSame('0.003', $lines->firstWhere('id', $this->bottles['magenta']->raw_material_id)['quantity']);
+
+        $this->approve($order);
+
+        $this->assertSame(99.997, $this->stock('magenta'));
+        $this->assertSame(99.988, $this->stock('yellow'));
+        $this->assertEquals(0.003, RawMaterialMovement::where('raw_material_id', $this->bottles['magenta']->raw_material_id)->firstOrFail()->quantity);
+    }
+
     public function test_ink_is_coverage_times_area_times_rate(): void
     {
         // 50% cyan of 1000 cm² at 0.01 ml/cm² = 5 ml; 20% black = 2 ml.
@@ -301,18 +319,18 @@ class MeasuredInkDrawTest extends TestCase
     public function test_paper_is_the_fraction_of_a_sheet_the_cut_piece_takes(): void
     {
         // 4.47 × 8.94 cm of artwork, cut 5.47 × 9.94 with the margin:
-        // 54.37 cm² of an A4's 623.7 = 0.0872 of a sheet, 0.09 in the ledger.
+        // 54.37 cm² of an A4's 623.7 = 0.0872 of a sheet, kept as is in the ledger.
         $this->approve($this->order($this->measured(['cyan' => 0.5])));
 
-        $this->assertSame(99.91, $this->paperStock());
+        $this->assertSame(99.9128, $this->paperStock());
     }
 
     public function test_every_item_takes_its_own_piece_of_paper(): void
     {
-        // 0.0872 × 3 = 0.2616 → 0.26 of a sheet.
+        // 0.0872 × 3 = 0.2616 of a sheet.
         $this->approve($this->order($this->measured(['cyan' => 0.5]), quantity: 3));
 
-        $this->assertSame(99.74, $this->paperStock());
+        $this->assertSame(99.7384, $this->paperStock());
     }
 
     public function test_a_transfer_is_the_same_size_on_every_garment_by_default(): void
@@ -323,8 +341,8 @@ class MeasuredInkDrawTest extends TestCase
         // the ink does.
         $this->approve($this->order($this->measured(['cyan' => 0.5], 'large')));
 
-        // √(1500 / 0.5) = 54.77 cm across: 5.48 × 10.95 artwork, cut 6.48 × 11.95 = 77.44 cm² → 0.1242 → 0.12.
-        $this->assertSame(99.88, $this->paperStock());
+        // √(1500 / 0.5) = 54.77 cm across: 5.48 × 10.95 artwork, cut 6.48 × 11.95 = 77.44 cm² → 0.1242.
+        $this->assertSame(99.8758, $this->paperStock());
     }
 
     public function test_the_bills_no_longer_draw_paper_for_a_measured_print(): void
@@ -340,7 +358,7 @@ class MeasuredInkDrawTest extends TestCase
         $this->approve($this->order($this->measured(['cyan' => 0.5], 'large')));
 
         // Only the measured piece, not two whole sheets on top.
-        $this->assertSame(99.88, $this->paperStock());
+        $this->assertSame(99.8758, $this->paperStock());
     }
 
     public function test_a_design_saved_before_panels_were_boxed_falls_back_to_the_bills(): void
@@ -392,10 +410,10 @@ class MeasuredInkDrawTest extends TestCase
 
         $paper = collect($data['lines'])->firstWhere('id', $this->paper->raw_material_id);
         $this->assertNotNull($paper);
-        $this->assertSame('0.09', $paper['quantity']);
+        $this->assertSame('0.0872', $paper['quantity']);
         $this->assertStringContainsString('Front prints 4.47 × 8.94 cm (1.8 × 3.5 in)', $paper['notes'][0]);
-        // Two decimals in the working, like the ledger it lands in.
-        $this->assertStringContainsString('cut 5.47 × 9.94 cm with the 0.5 cm margin = 0.09 of an A4 sheet', $paper['notes'][0]);
+        // Four decimals in the working, like the ledger it lands in.
+        $this->assertStringContainsString('cut 5.47 × 9.94 cm with the 0.5 cm margin = 0.0872 of an A4 sheet', $paper['notes'][0]);
         $this->assertSame([], $data['warnings']);
 
         // The panel crop carries the same size, for its caption.

@@ -232,7 +232,7 @@ class MaterialsImportPlanner
         return strtolower(preg_replace('/[^a-z0-9]/i', '', $name) ?? '');
     }
 
-    /** Quantities are stored to two decimals, so compare at that resolution. */
+    /** A printed report carries two decimals, so compare at that resolution. */
     private function differs(float $a, float $b): bool
     {
         return round($a, 2) !== round($b, 2);

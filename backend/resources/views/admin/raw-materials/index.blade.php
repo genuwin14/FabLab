@@ -154,7 +154,7 @@
                                                 <td class="fw-bold text-dark">₱{{ number_format($material->cost_per_unit, 2) }}</td>
                                                 <td>
                                                     <span class="fw-bold {{ $material->stock_quantity <= $material->low_stock_threshold ? 'text-danger' : 'text-success' }}">
-                                                        {{ number_format($material->stock_quantity, 2) }}
+                                                        {{ rtrim(rtrim(number_format($material->stock_quantity, 4), '0'), '.') }}
                                                     </span>
                                                 </td>
                                                 <td class="text-muted small">{{ number_format($material->low_stock_threshold, 2) }}</td>

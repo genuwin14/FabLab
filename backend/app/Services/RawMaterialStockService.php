@@ -38,7 +38,7 @@ class RawMaterialStockService
 
         return DB::transaction(function () use ($material, $reason, $quantity, $context) {
             $material = $this->lock($material);
-            $quantity = round($quantity, 2);
+            $quantity = round($quantity, 4);
 
             if ($quantity <= 0) {
                 throw new RuntimeException('Enter a quantity greater than zero.');
@@ -83,13 +83,13 @@ class RawMaterialStockService
     {
         return DB::transaction(function () use ($material, $countedQuantity, $context) {
             $material = $this->lock($material);
-            $countedQuantity = round($countedQuantity, 2);
+            $countedQuantity = round($countedQuantity, 4);
 
             if ($countedQuantity < 0) {
                 throw new RuntimeException('A counted quantity cannot be negative.');
             }
 
-            $delta = round($countedQuantity - (float) $material->stock_quantity, 2);
+            $delta = round($countedQuantity - (float) $material->stock_quantity, 4);
 
             if ($delta == 0.0) {
                 throw new RuntimeException('That count already matches the recorded stock — nothing to correct.');
@@ -204,7 +204,7 @@ class RawMaterialStockService
             foreach ($counters as $key => $reported) {
                 $reason = StockMovementReason::from($key);
                 $column = $reason->bucketColumn();
-                $delta = round($reported - (float) $material->{$column}, 2);
+                $delta = round($reported - (float) $material->{$column}, 4);
 
                 if ($delta == 0.0) {
                     continue;
@@ -221,7 +221,7 @@ class RawMaterialStockService
                 );
             }
 
-            $stockDelta = round($available - (float) $material->stock_quantity, 2);
+            $stockDelta = round($available - (float) $material->stock_quantity, 4);
 
             if ($stockDelta != 0.0) {
                 $written[] = $this->write(
@@ -267,7 +267,7 @@ class RawMaterialStockService
             // Clamped, because a bucket that predates this ledger may already
             // be lower than the entry being unwound.
             $material->update([
-                $bucketColumn => max(0, round((float) $material->{$bucketColumn} + $bucketDelta, 2)),
+                $bucketColumn => max(0, round((float) $material->{$bucketColumn} + $bucketDelta, 4)),
             ]);
         }
 
@@ -277,9 +277,9 @@ class RawMaterialStockService
             'order_id' => $context['order_id'] ?? null,
             'reverses_movement_id' => $reverses,
             'reason' => $reason,
-            'quantity' => round($quantity, 2),
-            'stock_delta' => round($stockDelta, 2),
-            'stock_after' => round((float) $material->stock_quantity, 2),
+            'quantity' => round($quantity, 4),
+            'stock_delta' => round($stockDelta, 4),
+            'stock_after' => round((float) $material->stock_quantity, 4),
             'note' => $context['note'] ?? null,
         ]);
     }
@@ -295,6 +295,6 @@ class RawMaterialStockService
 
     private function number(float $value): string
     {
-        return rtrim(rtrim(number_format($value, 2, '.', ''), '0'), '.');
+        return rtrim(rtrim(number_format($value, 4, '.', ''), '0'), '.');
     }
 }
