@@ -371,6 +371,7 @@ class OrderStockService
                     id: $id,
                     editable: true,
                     notes: $requirements['notes'][$id] ?? [],
+                    ink: $this->inkFor($id),
                 );
             }
 
@@ -412,6 +413,7 @@ class OrderStockService
                         // Already off the shelf, so there is no further
                         // shortage to warn about here.
                         checkStock: false,
+                        ink: $this->inkFor($m->raw_material_id),
                     ))
                     ->values()
                     ->all(),
@@ -436,6 +438,7 @@ class OrderStockService
                     (float) $m->quantity,
                     (float) $m->rawMaterial->stock_quantity,
                     checkStock: false,
+                    ink: $this->inkFor($m->raw_material_id),
                 ))
                 ->values()
                 ->all(),
@@ -449,6 +452,7 @@ class OrderStockService
      * One row of plannedDraw(), formatted for display.
      *
      * @param  array<int, string>  $notes  the working behind a measured figure
+     * @param  array{key: string, label: string, swatch: string}|null  $ink  the channel behind an ink bottle
      * @return array<string, mixed>
      */
     private function line(
@@ -460,6 +464,7 @@ class OrderStockService
         ?int $id = null,
         bool $editable = false,
         array $notes = [],
+        ?array $ink = null,
     ): array {
         return [
             // Named so the form can post a correction back against the right
@@ -469,6 +474,10 @@ class OrderStockService
             'id' => $id,
             'editable' => $editable,
             'notes' => $notes,
+            // The printer channel this bottle feeds, if it is an ink: key,
+            // label and swatch, so the screen can colour the row and show
+            // the reviewer where in the artwork that ink is laid down.
+            'ink' => $ink,
             'name' => $name,
             'unit' => $unit ?? '',
             'quantity' => $this->number($quantity),
@@ -478,6 +487,24 @@ class OrderStockService
             'remaining' => $checkStock ? $this->number(max(0, $stock - $quantity)) : null,
             'short' => $checkStock && $quantity > $stock,
         ];
+    }
+
+    /**
+     * The printer channel a material is linked to, for the screens.
+     *
+     * Null for anything that is not an ink bottle. Read off the live link
+     * rather than the note text so a renamed bottle still gets its swatch.
+     *
+     * @return array{key: string, label: string, swatch: string}|null
+     */
+    private function inkFor(int $materialId): ?array
+    {
+        $channel = array_search($materialId, InkChannel::linkedMaterials(), true);
+        if ($channel === false) {
+            return null;
+        }
+
+        return ['key' => $channel] + InkChannel::CHANNELS[$channel];
     }
 
     /**

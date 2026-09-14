@@ -179,6 +179,11 @@ class MeasuredInkDrawTest extends TestCase
         $lines = collect($this->get("/admin/orders/{$order->order_id}/materials")->assertOk()->json('lines'));
         $this->assertSame('0.003', $lines->firstWhere('id', $this->bottles['magenta']->raw_material_id)['quantity']);
 
+        // Each bottle says which channel it feeds, so the screen can swatch
+        // the row and paint the print with that ink alone; paper does not.
+        $this->assertSame(['key' => 'magenta', 'label' => 'Magenta', 'swatch' => '#ec008c'], $lines->firstWhere('id', $this->bottles['magenta']->raw_material_id)['ink']);
+        $this->assertNull($lines->firstWhere('id', $this->paper->raw_material_id)['ink']);
+
         $this->approve($order);
 
         $this->assertSame(99.997, $this->stock('magenta'));

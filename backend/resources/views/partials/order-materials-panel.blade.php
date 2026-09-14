@@ -124,6 +124,10 @@
                         </button>
                     </div>
                 </div>
+                {{-- One chip per ink the order draws. Picking one repaints the
+                     stage with only that channel's ink, so the reviewer can see
+                     where in the artwork the bottle is actually going. --}}
+                <div class="materials-channel-chips d-flex flex-wrap align-items-center gap-1 mb-1" hidden></div>
                 <div class="materials-print-stage border rounded-3">
                     <img class="materials-print-large" src="" alt="The print this order's ink was measured from">
                 </div>
@@ -197,6 +201,22 @@
         .order-materials .materials-print:hover,
         .order-materials .materials-print.is-open { border-color: #0e2e45; box-shadow: 0 0 0 2px rgba(14, 46, 69, .15); }
         .order-materials .materials-print-preview[hidden] { display: none; }
+
+        /* An ink bottle's row wears its channel's colour, and can jump to
+           the print with only that channel showing. */
+        .order-materials .materials-ink-swatch {
+            display: inline-block; width: 11px; height: 11px; border-radius: 50%;
+            border: 1px solid rgba(0, 0, 0, .25); vertical-align: -1px; margin-right: 6px;
+        }
+        .order-materials .materials-ink-where { font-size: 0.72rem; }
+        .order-materials .materials-channel-chips[hidden] { display: none; }
+        .order-materials .materials-channel-chip {
+            font-size: 0.72rem; line-height: 1.2; padding: 3px 9px; border-radius: 999px;
+            border: 1px solid #dee2e6; background: #fff; color: #495057; cursor: pointer;
+        }
+        .order-materials .materials-channel-chip:hover { border-color: #adb5bd; }
+        .order-materials .materials-channel-chip.is-active { border-color: #0e2e45; box-shadow: 0 0 0 2px rgba(14, 46, 69, .15); color: #0e2e45; font-weight: 600; }
+        .order-materials .materials-channel-chip:disabled { opacity: .4; cursor: default; }
         .order-materials .materials-print-stage { padding: 8px; text-align: center; }
         .order-materials .materials-print-large {
             display: block; margin: 0 auto; max-width: 100%; max-height: 60vh; width: auto; height: auto;
@@ -364,6 +384,67 @@
         }
 
         /**
+         * Repaint a print with only one ink channel.
+         *
+         * Every pixel is split the way the server splits it when it measures
+         * the print — the plain RGB→CMYK conversion, weighted by the pixel's
+         * opacity — and the chosen channel's share is painted in the
+         * channel's colour, heavier where more of it goes down. Transparent
+         * stays transparent: nothing printed there. What comes back is the
+         * artwork the bottle is charged for, and nothing else.
+         *
+         * Resolves to a data URL, or null when the pixels cannot be read (a
+         * cross-origin print); the caller then keeps the full-colour view.
+         */
+        function separateChannel(src, channel, swatch) {
+            return new Promise(resolve => {
+                const img = new Image();
+                img.onload = () => {
+                    try {
+                        const canvas = document.createElement('canvas');
+                        canvas.width = img.naturalWidth;
+                        canvas.height = img.naturalHeight;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0);
+
+                        const image = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                        const d = image.data;
+                        const tint = [parseInt(swatch.slice(1, 3), 16), parseInt(swatch.slice(3, 5), 16), parseInt(swatch.slice(5, 7), 16)];
+
+                        for (let i = 0; i < d.length; i += 4) {
+                            const a = d[i + 3];
+                            if (a === 0) continue;
+
+                            const r = d[i] / 255, g = d[i + 1] / 255, b = d[i + 2] / 255;
+                            const k = 1 - Math.max(r, g, b);
+                            let value;
+                            if (k >= 1) {
+                                value = channel === 'black' ? 1 : 0;
+                            } else if (channel === 'black') {
+                                value = k;
+                            } else {
+                                const c = channel === 'cyan' ? r : channel === 'magenta' ? g : b;
+                                value = (1 - c - k) / (1 - k);
+                            }
+
+                            d[i] = tint[0];
+                            d[i + 1] = tint[1];
+                            d[i + 2] = tint[2];
+                            d[i + 3] = Math.round(a * Math.max(0, Math.min(1, value)));
+                        }
+
+                        ctx.putImageData(image, 0, 0);
+                        resolve(canvas.toDataURL('image/png'));
+                    } catch (e) {
+                        resolve(null);
+                    }
+                };
+                img.onerror = () => resolve(null);
+                img.src = src;
+            });
+        }
+
+        /**
          * Show the order's prints, one thumbnail per panel, and open any of
          * them in the panel's own stage.
          *
@@ -374,7 +455,7 @@
          * so the thumbnails work as a toggle and the stage never has to be
          * hunted for.
          */
-        function wirePrintPreview(panel, prints) {
+        function wirePrintPreview(panel, prints, inks = []) {
             const list = panel.querySelector('.materials-prints-list');
             const preview = panel.querySelector('.materials-print-preview');
             const large = panel.querySelector('.materials-print-large');
@@ -385,6 +466,70 @@
 
             list.innerHTML = '';
             preview.hidden = true;
+
+            // Which ink, if any, the stage is isolating. Kept across panels
+            // so a reviewer checking magenta on the front sees magenta on
+            // the back too. The full-colour chip clears it.
+            let channel = null;
+            const chips = panel.querySelector('.materials-channel-chips');
+            chips.innerHTML = '';
+            chips.hidden = !inks.length;
+
+            const addChip = (ink) => {
+                const chip = document.createElement('button');
+                chip.type = 'button';
+                chip.className = 'materials-channel-chip';
+                chip.dataset.channel = ink ? ink.key : '';
+                if (ink) {
+                    const dot = document.createElement('span');
+                    dot.className = 'materials-ink-swatch';
+                    dot.style.background = ink.swatch;
+                    chip.appendChild(dot);
+                }
+                chip.appendChild(document.createTextNode(ink ? ink.label + ' only' : 'Full colour'));
+                chip.addEventListener('click', () => { channel = ink ? ink.key : null; paint(); });
+                chips.appendChild(chip);
+            };
+            if (inks.length) {
+                addChip(null);
+                inks.forEach(addChip);
+            }
+
+            // Put the open view on the stage in the current channel. A
+            // separation is computed once per view and channel and kept.
+            const paint = () => {
+                const view = views[Number(large.dataset.view)];
+                if (!view || preview.hidden) return;
+
+                chips.querySelectorAll('.materials-channel-chip').forEach(c => c.classList.toggle('is-active', (c.dataset.channel || null) === channel));
+
+                if (channel === null) {
+                    large.src = view.src;
+                    caption.textContent = view.whole
+                        ? 'Every panel\'s artwork on a transparent canvas, nothing of the garment. This is what the printer lays down, and the ink figures above are measured from it.'
+                        : 'This panel\'s artwork on a transparent canvas, nothing of the garment. This is what the printer lays down on it, and the ink figures above are measured from it.';
+                    return;
+                }
+
+                const ink = inks.find(i => i.key === channel);
+                view.separations = view.separations || {};
+                const ready = view.separations[channel] || (view.separations[channel] = separateChannel(view.src, channel, ink.swatch));
+                const wanted = channel;
+                ready.then(url => {
+                    if (channel !== wanted || large.dataset.view !== String(views.indexOf(view))) return;
+                    if (url === null) {
+                        // The pixels could not be read, so no channel can be
+                        // shown for this print; say so by greying the chips.
+                        channel = null;
+                        chips.querySelectorAll('.materials-channel-chip').forEach(c => { c.disabled = !!c.dataset.channel; });
+                        paint();
+                        return;
+                    }
+                    large.src = url;
+                    caption.textContent = 'Only the ' + ink.label.toLowerCase() + ' the printer lays down ' + (view.whole ? 'across every panel' : 'on this panel')
+                        + ', heavier where the colour is darker. Everything else is left out — this is the artwork the ' + ink.label + ' figure above is charged for.';
+                });
+            };
 
             // One entry per thumbnail: what to show large, what to call it,
             // and which whole print it came from.
@@ -438,15 +583,12 @@
                     large.style.height = Math.round(cap) + 'px';
                     large.style.width = 'auto';
                 };
-                large.src = view.src;
                 large.dataset.view = String(index);
                 open.href = view.printUrl;
                 title.textContent = view.name;
-                caption.textContent = view.whole
-                    ? 'Every panel\'s artwork on a transparent canvas, nothing of the garment. This is what the printer lays down, and the ink figures above are measured from it.'
-                    : 'This panel\'s artwork on a transparent canvas, nothing of the garment. This is what the printer lays down on it, and the ink figures above are measured from it.';
                 view.thumb.classList.add('is-open');
                 preview.hidden = false;
+                paint();
                 preview.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
             };
 
@@ -498,6 +640,21 @@
             close.onclick = () => {
                 preview.hidden = true;
                 views.forEach(v => v.thumb && v.thumb.classList.remove('is-open'));
+            };
+
+            // An ink row asks for its channel on whichever view is open, or
+            // the first if none is. Thumbnails arrive as their prints load,
+            // so a click before then does nothing rather than half a view.
+            return {
+                showChannel(key) {
+                    channel = key;
+                    if (preview.hidden) {
+                        if (views.length) show(0);
+                        return;
+                    }
+                    paint();
+                    preview.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+                },
             };
         }
 
@@ -564,6 +721,13 @@
 
                         const cells = row.querySelectorAll('td');
                         cells[0].querySelector('.materials-name').textContent = line.name;
+                        if (line.ink) {
+                            const dot = document.createElement('span');
+                            dot.className = 'materials-ink-swatch';
+                            dot.style.background = line.ink.swatch;
+                            dot.title = line.ink.label + ' channel';
+                            cells[0].insertBefore(dot, cells[0].firstChild);
+                        }
                         // A measured ink line explains itself: coverage,
                         // area, rate. Shown at every stage, because "why
                         // 9ml of cyan?" is as fair a question at the bench
@@ -574,6 +738,18 @@
                             note.textContent = text;
                             cells[0].appendChild(note);
                         });
+                        // Where in the artwork this bottle goes: the print,
+                        // with only this channel painted. Only where there is
+                        // a print to paint.
+                        if (line.ink && (data.prints || []).length) {
+                            const where = document.createElement('button');
+                            where.type = 'button';
+                            where.className = 'btn btn-link p-0 text-decoration-none materials-ink-where';
+                            where.innerHTML = '<i class="bi bi-eye me-1"></i>';
+                            where.appendChild(document.createTextNode('Show where the ' + line.ink.label.toLowerCase() + ' prints'));
+                            where.addEventListener('click', () => panel.printPreview && panel.printPreview.showChannel(line.ink.key));
+                            cells[0].appendChild(where);
+                        }
                         cells[2].textContent = line.stock + unit;
 
                         if (editThis) {
@@ -633,7 +809,8 @@
 
                     const prints = data.prints || [];
                     panel.querySelector('.materials-prints').classList.toggle('d-none', !prints.length);
-                    wirePrintPreview(panel, prints);
+                    const inks = data.lines.filter(l => l.ink).map(l => l.ink);
+                    panel.printPreview = wirePrintPreview(panel, prints, inks);
 
                     panel.querySelector('.materials-note').textContent = data.note;
                     content.classList.remove('d-none');
