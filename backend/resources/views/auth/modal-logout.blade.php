@@ -1,167 +1,73 @@
 <!-- Logout Confirmation Modal -->
-<div class="modal fade logout-modal" id="logoutModal" tabindex="-1" aria-labelledby="logoutModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered logout-modal-dialog">
-        <div class="modal-content border-0 shadow-lg overflow-hidden">
-            <!-- Themed Header -->
-            <div class="logout-modal-header">
-                <div class="logout-modal-icon">
-                    <i class="bi bi-box-arrow-right"></i>
-                </div>
-                <h5 class="modal-title fw-bold mb-1 text-white" id="logoutModalLabel">Sign Out</h5>
-                <p class="text-white-50 small mb-0">End your current session</p>
-            </div>
+{{-- Shared by customer, staff and admin — the script below swaps the body and
+     footer for a "Logging out…" state, so .logout-modal-body,
+     .logout-loading-state, .logout-modal-footer and .logout-form are JS
+     hooks, not just styling. --}}
+<div class="modal fade qv-modal logout-modal" id="logoutModal" tabindex="-1" aria-labelledby="logoutModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" style="max-width: 400px;">
+        <div class="modal-content">
+            <div class="modal-body p-4 p-lg-5 pb-0 pb-lg-0 text-center logout-modal-body">
+                <button type="button" class="qv-close" data-bs-dismiss="modal" aria-label="Close">
+                    <i class="bi bi-x-lg"></i>
+                </button>
 
-            <!-- Confirmation Body -->
-            <div class="modal-body p-4 logout-modal-body">
-                <p class="text-dark mb-0 text-center">
+                <span class="qv-icon qv-icon-primary mb-4">
+                    <i class="bi bi-box-arrow-right"></i>
+                </span>
+
+                <span class="qv-eyebrow d-block mx-auto mb-3" style="width: fit-content;">Account</span>
+                <h5 id="logoutModalLabel" class="qv-title mb-2">Sign Out</h5>
+                <p class="text-muted small mb-0">
                     Are you sure you want to sign out? You'll need to log in again to continue.
                 </p>
             </div>
 
             <!-- Loading State (hidden by default) -->
-            <div class="logout-loading-state d-none p-4 text-center">
+            <div class="logout-loading-state d-none p-4 p-lg-5 text-center">
                 <div class="logout-spinner mb-3">
                     <div class="spinner-border" role="status" style="color: #ffc508;">
                         <span class="visually-hidden">Loading...</span>
                     </div>
                 </div>
-                <h6 class="fw-bold text-dark mb-1">Logging out...</h6>
+                <h6 class="qv-title mb-1">Logging out...</h6>
                 <p class="text-muted small mb-0">Securing your session, please wait.</p>
             </div>
 
             <!-- Footer with actions -->
-            <div class="logout-modal-footer">
-                <button type="button" class="btn btn-light fw-semibold rounded-pill px-4 logout-cancel-btn"
-                    data-bs-dismiss="modal">
-                    Cancel
-                </button>
-                <form action="{{ route('logout') }}" method="POST" class="m-0 logout-form">
-                    @csrf
-                    <button type="submit" class="btn fw-semibold rounded-pill px-4 logout-confirm-btn">
-                        <i class="bi bi-box-arrow-right me-2"></i>Sign Out
+            <div class="logout-modal-footer px-4 px-lg-5 pt-4 pb-4 pb-lg-5">
+                <div class="qv-actions">
+                    <form action="{{ route('logout') }}" method="POST" class="m-0 d-grid logout-form">
+                        @csrf
+                        <button type="submit" class="btn btn-primary btn-lg shadow-sm logout-confirm-btn">
+                            <i class="bi bi-box-arrow-right me-2"></i> Sign Out
+                        </button>
+                    </form>
+                    <button type="button" class="btn btn-light py-2 small" data-bs-dismiss="modal">
+                        Cancel
                     </button>
-                </form>
+                </div>
             </div>
         </div>
     </div>
 </div>
 
 <style>
-    .logout-modal-dialog {
-        max-width: 400px;
-    }
-
-    .logout-modal .modal-content {
-        border-radius: 18px;
-    }
-
-    .logout-modal-footer .btn {
-        white-space: nowrap;
-    }
-
-    /* Mobile: stack buttons full-width so they never overflow */
-    @media (max-width: 400px) {
-        .logout-modal-footer {
-            flex-direction: column-reverse;
-            gap: 8px !important;
-        }
-
-        .logout-modal-footer .btn,
-        .logout-modal-footer .logout-form {
-            width: 100%;
-        }
-
-        .logout-modal-footer .logout-form .btn {
-            width: 100%;
-        }
-
-        .logout-modal-header {
-            padding: 22px 18px 16px !important;
-        }
-
-        .logout-modal-body {
-            padding: 1rem !important;
-        }
-    }
-
-    /* Dark themed header matching sidebar/navbar */
-    .logout-modal-header {
-        background: linear-gradient(135deg, #05111a 0%, #0e2e45 100%);
-        padding: 28px 24px 20px;
-        text-align: center;
-        position: relative;
-    }
-
-    .logout-modal-header::after {
-        content: '';
-        position: absolute;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        height: 1px;
-        background: linear-gradient(90deg, transparent, rgba(255, 197, 8, 0.3), transparent);
-    }
-
-    .logout-modal-icon {
-        width: 56px;
-        height: 56px;
-        margin: 0 auto 14px;
-        border-radius: 16px;
-        background: rgba(255, 197, 8, 0.12);
-        border: 1px solid rgba(255, 197, 8, 0.25);
-        color: #ffc508;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1.5rem;
-    }
-
-    .logout-modal-body {
-        background-color: #fff;
-    }
-
-    .logout-loading-state {
-        background-color: #fff;
-    }
-
-    .logout-spinner .spinner-border {
+    .logout-modal .logout-spinner .spinner-border {
         width: 2.5rem;
         height: 2.5rem;
         border-width: 3px;
     }
 
-    .logout-modal-footer {
-        background-color: #fff;
-        padding: 16px 24px 24px;
-        display: flex;
-        justify-content: center;
-        gap: 10px;
-        border-top: 1px solid rgba(0, 0, 0, 0.05);
-    }
-
-    .logout-cancel-btn {
-        background-color: #f1f4f8;
-        border: 1px solid #e9ecef;
-        color: #6c757d;
-        transition: all 0.2s ease;
-    }
-    .logout-cancel-btn:hover {
-        background-color: #e9ecef;
-        color: #0e2e45;
-    }
-
-    .logout-confirm-btn {
-        background-color: #0e2e45;
-        border: 1px solid #0e2e45;
-        color: #fff;
-        transition: all 0.2s ease;
-    }
-    .logout-confirm-btn:hover {
+    /* Gold on hover, the way the sidebar's own sign-out link behaves. */
+    .logout-modal .logout-confirm-btn:hover,
+    .logout-modal .logout-confirm-btn:focus {
         background-color: #ffc508;
         border-color: #ffc508;
         color: #0e2e45;
     }
-    .logout-confirm-btn:disabled {
+
+    .logout-modal .logout-confirm-btn:disabled {
         opacity: 0.7;
         cursor: not-allowed;
     }

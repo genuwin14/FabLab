@@ -65,20 +65,29 @@
     </div>
 
     <!-- Verification Mode Selection Modal -->
-    <div class="modal fade" id="methodSelectionModal" tabindex="-1" aria-labelledby="methodSelectionModalLabel"
+    {{-- Same shape as the verification modal on login/register — Quick View
+         chrome on the dark surface this page needs. --}}
+    <div class="modal fade qv-modal" id="methodSelectionModal" tabindex="-1" aria-labelledby="methodSelectionModalLabel"
         aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
-        <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-dialog modal-dialog-centered" style="max-width: 440px;">
             <div class="modal-content modal-content-dark"
                 style="background-color: #0d2235; color: white; border: 1px solid rgba(255,255,255,0.1);">
-                <div class="modal-header border-bottom border-white border-opacity-10">
-                    <h5 class="modal-title fw-bold" id="methodSelectionModalLabel">Select Recovery Method</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
-                        aria-label="Close"></button>
-                </div>
-                <div class="modal-body text-center p-4">
+                <div class="modal-body text-center p-4 p-lg-5">
+                    <button type="button" class="qv-close qv-close-dark" data-bs-dismiss="modal"
+                        aria-label="Close"><i class="bi bi-x-lg"></i></button>
+
+                    <span class="qv-icon qv-icon-accent mb-4"
+                        style="background: rgba(255,197,8,.14); color: #ffc508;">
+                        <i class="bi bi-key-fill"></i>
+                    </span>
+
+                    <span class="qv-eyebrow d-block mx-auto mb-3"
+                        style="width: fit-content; background: rgba(255,255,255,.12); color: #fff;">Recovery</span>
+                    <h5 class="qv-title text-white mb-2" id="methodSelectionModalLabel">Select Recovery Method</h5>
+
                     <div class="mb-4">
-                        <p class="mb-0 text-white-50">Account found! <br> How would you like to receive your password reset
-                            code?</p>
+                        <p class="mb-0 text-white-50 small">Account found. How would you like to receive your password
+                            reset code?</p>
                     </div>
 
                     <div class="d-flex flex-column gap-3">
@@ -88,7 +97,7 @@
                             <input type="hidden" name="verification_mode" value="">
 
                             <button type="button"
-                                class="btn btn-outline-light d-flex align-items-center justify-content-between p-3 position-relative verification-option w-100 mb-3"
+                                class="btn btn-outline-light d-flex align-items-center justify-content-between p-3 rounded-3 position-relative verification-option w-100 mb-3"
                                 onclick="selectMethod('sms', this)">
                                 <div class="d-flex align-items-center gap-3">
                                     <i class="bi bi-chat-square-dots-fill fs-4 text-accent"></i>
@@ -101,7 +110,7 @@
                             </button>
 
                             <button type="button"
-                                class="btn btn-outline-light d-flex align-items-center justify-content-between p-3 position-relative verification-option w-100"
+                                class="btn btn-outline-light d-flex align-items-center justify-content-between p-3 rounded-3 position-relative verification-option w-100"
                                 onclick="selectMethod('email', this)">
                                 <div class="d-flex align-items-center gap-3">
                                     <i class="bi bi-envelope-fill fs-4 text-accent"></i>
@@ -192,7 +201,7 @@
             #methodSelectionModal .verification-option small {
                 font-size: 0.7rem;
             }
-            #methodSelectionModal .modal-title {
+            #methodSelectionModal .qv-title {
                 font-size: 1rem;
             }
         }

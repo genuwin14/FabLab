@@ -1,19 +1,11 @@
-<div class="modal fade profile-modal" id="profileModal" tabindex="-1" aria-labelledby="profileModalLabel" aria-hidden="true">
+<div class="modal fade qv-modal profile-modal" id="profileModal" tabindex="-1" aria-labelledby="profileModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg">
-        <div class="modal-content border-0 shadow-lg overflow-hidden">
-            <!-- Themed Dark Header -->
-            <div class="profile-modal-header">
-                <div class="d-flex align-items-center justify-content-between">
-                    <div class="d-flex align-items-center gap-2">
-                        <span class="profile-eyebrow">Account</span>
-                        <span class="profile-eyebrow-divider">/</span>
-                        <h5 class="modal-title fw-bold mb-0 text-white" id="profileModalLabel">My Profile</h5>
-                    </div>
-                    <button type="button" class="profile-close-btn" data-bs-dismiss="modal" aria-label="Close">
-                        <i class="bi bi-x-lg"></i>
-                    </button>
-                </div>
-            </div>
+        <div class="modal-content">
+            {{-- No header bar: the close floats over the rail, and the title
+                 sits above the fields, the way the shop's Quick View does it. --}}
+            <button type="button" class="qv-close" data-bs-dismiss="modal" aria-label="Close">
+                <i class="bi bi-x-lg"></i>
+            </button>
 
             <div class="modal-body p-0 bg-white">
                 <form action="{{ route('customer.profile.update') }}" method="POST" enctype="multipart/form-data">
@@ -22,7 +14,7 @@
 
                     <div class="row g-0">
                         <!-- Left: Photo & Identity -->
-                        <div class="col-md-4 profile-side-panel p-4 text-center d-flex flex-column justify-content-center">
+                        <div class="col-md-4 qv-rail profile-side-panel p-4 text-center d-flex flex-column justify-content-center">
                             <div class="mb-3 position-relative d-inline-block mx-auto">
                                 <div class="profile-avatar-frame">
                                     <img src="{{ auth()->user() && auth()->user()->photo ? (Str::startsWith(auth()->user()->photo, 'http') ? auth()->user()->photo : asset('storage/' . auth()->user()->photo)) : 'https://ui-avatars.com/api/?name=' . urlencode(auth()->user()->fullname ?? 'Customer') . '&background=0e2e45&color=ffc508' }}"
@@ -47,6 +39,11 @@
 
                         <!-- Right: Form Fields -->
                         <div class="col-md-8 p-4">
+                            <div class="mb-4">
+                                <span class="qv-eyebrow">Account</span>
+                                <h3 class="qv-title h4 mb-0 mt-2" id="profileModalLabel">My Profile</h3>
+                            </div>
+
                             <h6 class="profile-section-title">
                                 <i class="bi bi-person-vcard me-2"></i>Personal Information
                             </h6>
@@ -185,12 +182,14 @@
                     </div>
 
                     <div class="profile-modal-footer">
-                        <button type="button" class="btn profile-btn-cancel rounded-pill px-4" data-bs-dismiss="modal">
-                            Cancel
-                        </button>
-                        <button type="submit" class="btn profile-btn-save rounded-pill px-4">
-                            <i class="bi bi-check2 me-1"></i>Save Changes
-                        </button>
+                        <div class="qv-actions qv-actions-row w-100">
+                            <button type="button" class="btn btn-light py-2 small" data-bs-dismiss="modal">
+                                Cancel
+                            </button>
+                            <button type="submit" class="btn btn-primary shadow-sm profile-btn-save">
+                                <i class="bi bi-check2 me-1"></i>Save Changes
+                            </button>
+                        </div>
                     </div>
                 </form>
             </div>
@@ -199,48 +198,9 @@
 </div>
 
 <style>
-    .profile-modal .modal-content { border-radius: 18px; }
-
-    .profile-modal-header {
-        background: linear-gradient(135deg, #05111a 0%, #0e2e45 100%);
-        padding: 18px 24px;
-        position: relative;
-    }
-    .profile-modal-header::after {
-        content: '';
-        position: absolute;
-        bottom: 0; left: 0; right: 0;
-        height: 1px;
-        background: linear-gradient(90deg, transparent, rgba(255, 197, 8, 0.3), transparent);
-    }
-    .profile-eyebrow {
-        font-size: 0.7rem;
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 0.08em;
-        color: rgba(255, 197, 8, 0.85);
-    }
-    .profile-eyebrow-divider { color: rgba(255, 255, 255, 0.2); font-weight: 300; }
-
-    .profile-close-btn {
-        background: rgba(255, 255, 255, 0.06);
-        border: 1px solid rgba(255, 255, 255, 0.08);
-        color: rgba(255, 255, 255, 0.85);
-        width: 32px;
-        height: 32px;
-        border-radius: 50%;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 0.85rem;
-        transition: all 0.2s ease;
-    }
-    .profile-close-btn:hover {
-        background: rgba(255, 197, 8, 0.12);
-        color: #ffc508;
-        border-color: rgba(255, 197, 8, 0.3);
-    }
-
+    /* The card, the close button and the eyebrow now come from the shared
+       .qv-modal theme in layout/app.blade.php. What is left here is the
+       parts of this modal that theme does not cover. */
     .profile-side-panel {
         background-color: #f8f9fa;
         border-right: 1px solid rgba(0, 0, 0, 0.05);
@@ -363,21 +323,7 @@
         justify-content: flex-end;
         gap: 10px;
     }
-    .profile-btn-cancel {
-        background-color: #f1f4f8;
-        border: 1px solid #e9ecef;
-        color: #6c757d;
-        font-weight: 600;
-    }
-    .profile-btn-cancel:hover {
-        background-color: #e9ecef;
-        color: #0e2e45;
-    }
     .profile-btn-save {
-        background-color: #0e2e45;
-        border: 1px solid #0e2e45;
-        color: #fff;
-        font-weight: 600;
         transition: all 0.2s ease;
     }
     .profile-btn-save:hover {
@@ -391,8 +337,7 @@
        spacing/type so the modal isn't cramped on a phone. */
     @media (max-width: 991.98px) {
         .profile-modal .modal-dialog { margin: 0.5rem; }
-        .profile-modal .modal-title { font-size: 1rem; }
-        .profile-modal-header { padding: 14px 16px; }
+        .profile-modal .qv-title { font-size: 1.05rem; }
         .profile-modal-footer { padding: 12px 16px; }
         .profile-modal .profile-side-panel { padding: 1.25rem !important; }
         .profile-modal .col-md-8.p-4 { padding: 1.25rem !important; }

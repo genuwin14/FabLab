@@ -163,29 +163,35 @@
     </div>
 
     <!-- Verification Mode Selection Modal -->
-    <div class="modal fade" id="verificationModal" tabindex="-1" aria-labelledby="verificationModalLabel" aria-hidden="true"
+    {{-- The Quick View shape — floating close, eyebrow over the title, icon
+         tile — on the dark surface this page needs, since a white card on the
+         #05111a auth background would glare. --}}
+    <div class="modal fade qv-modal" id="verificationModal" tabindex="-1" aria-labelledby="verificationModalLabel" aria-hidden="true"
         data-bs-backdrop="static" data-bs-keyboard="false">
-        <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-dialog modal-dialog-centered" style="max-width: 440px;">
             <div class="modal-content modal-content-dark"
                 style="background-color: #0d2235; color: white; border: 1px solid rgba(255,255,255,0.1);">
-                <div class="modal-header border-bottom border-white border-opacity-10">
-                    <h5 class="modal-title fw-bold" id="verificationModalLabel">Verify Your Account</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
-                        aria-label="Close"></button>
-                </div>
-                <div class="modal-body text-center p-4">
+                <div class="modal-body text-center p-4 p-lg-5">
+                    <button type="button" class="qv-close qv-close-dark" data-bs-dismiss="modal"
+                        aria-label="Close"><i class="bi bi-x-lg"></i></button>
+
+                    <span class="qv-icon qv-icon-accent mb-4"
+                        style="background: rgba(255,197,8,.14); color: #ffc508;">
+                        <i class="bi bi-shield-lock-fill"></i>
+                    </span>
+
+                    <span class="qv-eyebrow d-block mx-auto mb-3"
+                        style="width: fit-content; background: rgba(255,255,255,.12); color: #fff;">Security</span>
+                    <h5 class="qv-title text-white mb-2" id="verificationModalLabel">Verify Your Account</h5>
+
                     <div class="mb-4">
-                        <!-- <div class="bg-primary bg-opacity-25 rounded-circle d-inline-flex align-items-center justify-content-center p-3 mb-3"
-                                        style="width: 80px; height: 80px;">
-                                        <i class="bi bi-shield-lock-fill fs-1 text-primary"></i>
-                                    </div> -->
-                        <p class="mb-0 text-white-50">To secure your account, we need to verify your identity. <br> How
-                            would you like to receive your verification code?</p>
+                        <p class="mb-0 text-white-50 small">To secure your account, we need to verify your identity.
+                            How would you like to receive your verification code?</p>
                     </div>
 
                     <div class="d-flex flex-column gap-3">
                         <button type="button"
-                            class="btn btn-outline-light d-flex align-items-center justify-content-between p-3 position-relative verification-option"
+                            class="btn btn-outline-light d-flex align-items-center justify-content-between p-3 rounded-3 position-relative verification-option"
                             onclick="selectVerification('sms', this)">
                             <div class="d-flex align-items-center gap-3">
                                 <i class="bi bi-chat-square-dots-fill fs-4 text-accent"></i>
@@ -198,7 +204,7 @@
                         </button>
 
                         <button type="button"
-                            class="btn btn-outline-light d-flex align-items-center justify-content-between p-3 position-relative verification-option"
+                            class="btn btn-outline-light d-flex align-items-center justify-content-between p-3 rounded-3 position-relative verification-option"
                             onclick="selectVerification('email', this)">
                             <div class="d-flex align-items-center gap-3">
                                 <i class="bi bi-envelope-fill fs-4 text-accent"></i>
@@ -291,7 +297,7 @@
             #verificationModal .verification-option small {
                 font-size: 0.7rem;
             }
-            #verificationModal .modal-title {
+            #verificationModal .qv-title {
                 font-size: 1rem;
             }
         }

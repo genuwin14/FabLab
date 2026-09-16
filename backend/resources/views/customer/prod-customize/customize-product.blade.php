@@ -40,20 +40,26 @@
     </div>
 
     <!-- Product Guidance Modal -->
-    <div class="modal fade" id="productRequiredModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="productRequiredModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content border-0 shadow-lg bg-dark text-white rounded-4">
-                <div class="modal-body p-5 text-center">
-                    <div class="mb-4">
-                        <h4 class="fw-bold text-white mb-2">Base Product Required</h4>
-                        <p class="text-white-50">To add your design to the cart, you must first select a base product from our shop. This ensures we have the correct pricing and material for your order.</p>
-                    </div>
+    <div class="modal fade qv-modal" id="productRequiredModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="productRequiredModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" style="max-width: 440px;">
+            <div class="modal-content">
+                <div class="modal-body p-4 p-lg-5 text-center">
+                    <span class="qv-icon qv-icon-primary mb-4">
+                        <i class="bi bi-bag-check"></i>
+                    </span>
 
-                    <div class="d-grid gap-2">
-                        <a href="{{ route('customer.shop') }}" class="btn btn-accent rounded-pill py-2 fw-bold">
-                            <i class="bi bi-shop me-2"></i> Browse Shop & Selection
+                    <span class="qv-eyebrow d-block mx-auto mb-3" style="width: fit-content;">Customizer</span>
+                    <h4 id="productRequiredModalLabel" class="qv-title mb-2">Base Product Required</h4>
+                    <p class="text-muted small mb-4">
+                        To add your design to the cart, you must first select a base product from our shop. This
+                        ensures we have the correct pricing and material for your order.
+                    </p>
+
+                    <div class="qv-actions">
+                        <a href="{{ route('customer.shop') }}" class="btn btn-primary btn-lg shadow-sm">
+                            <i class="bi bi-shop me-2"></i> Browse Shop &amp; Selection
                         </a>
-                        <button type="button" class="btn btn-link text-white-50 text-decoration-none small" data-bs-dismiss="modal">
+                        <button type="button" class="btn btn-light py-2 small" data-bs-dismiss="modal">
                             Just let me preview the customizer
                         </button>
                     </div>
