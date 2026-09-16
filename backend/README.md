@@ -119,13 +119,22 @@ GOOGLE_REDIRECT_URI=http://localhost:8000/auth/google/callback
 Get credentials from [Google Cloud Console → APIs & Services → Credentials](https://console.cloud.google.com/apis/credentials). If you leave these blank, normal email/password login still works.
 
 ### 4.5 (Optional) Configure SMS gateway
-OTP and phone verification send through **[PhilSMS](https://philsms.com/)**, read by `app/Services/SmsService.php`. These keys are **not** in `.env.example`, so add them yourself if you want real delivery:
+OTP and phone verification go through `app/Services/SmsService.php`, which picks one of three drivers from `SMS_DRIVER`:
+
+| `SMS_DRIVER` | What happens |
+| :--- | :--- |
+| `log` | **Default.** Nothing is sent; the message is written to `storage/logs/laravel.log`, which is enough to complete a registration locally. |
+| `macrodroid` | An Android phone on your desk texts the code from its own SIM. Free, works on `localhost`, ideal for a live demo — see [docs/MacroDroidSms.md](docs/MacroDroidSms.md). |
+| `philsms` | Real SMS through the paid [PhilSMS](https://philsms.com/) gateway. Use this in production. |
+
+For PhilSMS, add the keys yourself — they are **not** in `.env.example`:
 ```env
+SMS_DRIVER=philsms
 PHILSMS_API_TOKEN=your-api-token-here
 PHILSMS_SENDER=FabLabs
 PHILSMS_URL=https://dashboard.philsms.com/api/v3
 ```
-Leave them out for local testing — the OTP is still generated and written to `storage/logs/laravel.log`, which is enough to complete a registration.
+Whichever you pick, check it before you rely on it: `php artisan sms:test 09171234567`.
 
 ### 4.6 (Optional) Configure email
 By default `.env.example` ships with `MAIL_MAILER=log` — outgoing emails (e.g., password-reset codes) are written to `storage/logs/laravel.log` instead of being sent. To enable real email, set `MAIL_MAILER=smtp` and fill in the `MAIL_HOST`, `MAIL_PORT`, `MAIL_USERNAME`, `MAIL_PASSWORD` lines with credentials from your SMTP provider (Gmail SMTP, Mailtrap, SendGrid, etc.).
@@ -272,7 +281,7 @@ If all five pass, the system is set up correctly.
 | **`419 Page Expired`** on login forms | `APP_KEY` was changed after sessions were created. Clear `storage/framework/sessions/*` and your browser cookies. |
 | **Pages render unstyled** | The CSS comes from a CDN — check the machine's internet connection. |
 | **Images return 404** | You skipped `php artisan storage:link`. |
-| **OTP never arrives during registration** | The PhilSMS keys aren't set ([§4.5](#45-optional-configure-sms-gateway)). For local dev, check `storage/logs/laravel.log` — the OTP is logged there. |
+| **OTP never arrives during registration** | Run `php artisan sms:test 09…` to see which driver is live and why it failed ([§4.5](#45-optional-configure-sms-gateway)). On the `log` driver the OTP is in `storage/logs/laravel.log` — registration can still be completed from there. |
 | **`Class "GD" not found` (PDF/image export)** | Enable `extension=gd` in `php.ini`. |
 | **Slow first page-load** | Run `php artisan config:cache && php artisan route:cache` in production. Skip in dev (changes won't pick up). |
 
