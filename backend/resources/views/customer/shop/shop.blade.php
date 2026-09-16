@@ -156,6 +156,7 @@
                                                 data-stock="{{ $product->stock }}"
                                                 data-unit="{{ $product->unit }}"
                                                 data-sku="{{ $product->sku }}"
+                                                data-customizable="{{ $product->is_customizable ? 1 : 0 }}"
                                                 data-brand="{{ $product->brand }}">
                                             <i class="bi bi-eye me-lg-1"></i> <span class="d-none d-lg-inline">Quick View</span>
                                         </button>
@@ -503,7 +504,7 @@
                 max-width: none;
             }
             #qv-image {
-                max-height: 160px !important;
+                max-height: 200px !important;
             }
             #quickViewModal .p-4,
             #quickViewModal .p-lg-5 {
@@ -664,6 +665,11 @@
 
                 const stock = parseInt(data.stock);
                 const unit = data.unit;
+
+                // The rail's detail list, under the image.
+                $('#qv-meta-category').text(data.category);
+                $('#qv-meta-unit').text(unit);
+                $('#qv-customizable').prop('hidden', String(data.customizable) !== '1');
                 const stockStatus = $('#qv-stock-status');
                 const addBtn = $('#qv-add-to-cart-btn');
                 addBtn.data('id', data.id);

@@ -813,6 +813,210 @@
         .modal .modal-content.modal-content-dark .modal-body::-webkit-scrollbar-thumb:hover {
             background: rgba(255, 255, 255, 0.38);
         }
+
+        /* ==================================================================
+           Quick View modal theme  (.qv-modal)
+
+           The shop's Quick View settled on a look the rest of the customer
+           side now shares: a light card with no header bar, a floating close,
+           an eyebrow badge above a large title, muted spec tiles, and a stack
+           of pill actions with the primary one on top.
+
+           It is opt-in — a modal gets it by carrying `qv-modal` on the .modal
+           element. Nothing without the class is touched, which is how the
+           admin and staff dark-header modals stay exactly as they were.
+           ================================================================== */
+        .qv-modal .modal-content {
+            border: 0;
+            border-radius: 1rem;
+            overflow: hidden;
+            background-color: #fff;
+            box-shadow: 0 1.5rem 3rem rgba(5, 17, 26, 0.22);
+        }
+
+        /* There is no header bar to hold the close button, so it floats over
+           the content in the corner. Light by default because it usually sits
+           on the image rail; .qv-close-dark is for the 3D preview's stage. */
+        .qv-modal .qv-close {
+            position: absolute;
+            top: 0.75rem;
+            right: 0.75rem;
+            z-index: 3;
+            width: 34px;
+            height: 34px;
+            padding: 0;
+            border: 0;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.85rem;
+            line-height: 1;
+            background: rgba(255, 255, 255, 0.85);
+            color: #0e2e45;
+            transition: background-color 0.15s ease, color 0.15s ease;
+        }
+
+        .qv-modal .qv-close:hover {
+            background: #0e2e45;
+            color: #fff;
+        }
+
+        .qv-modal .qv-close-dark {
+            background: rgba(255, 255, 255, 0.12);
+            color: #fff;
+        }
+
+        .qv-modal .qv-close-dark:hover {
+            background: #ffc508;
+            color: #05111a;
+        }
+
+        /* The rail: the tinted column that carries the image or illustration. */
+        .qv-modal .qv-rail {
+            background-color: #f8f9fa;
+        }
+
+        .qv-modal .qv-eyebrow {
+            display: inline-block;
+            background: #eef1f4;
+            color: #0e2e45;
+            border-radius: 999px;
+            padding: 0.35rem 0.85rem;
+            font-size: 0.68rem;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+        }
+
+        .qv-modal .qv-title {
+            font-weight: 700;
+            color: #212529;
+        }
+
+        /* Section label. The Quick View reached for `tracking-wider`, which is
+           a Tailwind class this app never loads, so the letter-spacing it was
+           asking for lives here instead. */
+        .qv-modal .qv-label {
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: rgba(14, 46, 69, 0.75);
+            margin-bottom: 0.5rem;
+        }
+
+        /* Spec tile — a muted caption over a bold value. */
+        .qv-modal .qv-tile {
+            border: 1px solid #e9ecef;
+            border-radius: 0.75rem;
+            background: #fff;
+            padding: 0.5rem;
+            text-align: center;
+        }
+
+        .qv-modal .qv-tile-label {
+            font-size: 0.68rem;
+            color: #6c757d;
+            margin-bottom: 0.1rem;
+        }
+
+        .qv-modal .qv-tile-value {
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: #0e2e45;
+        }
+
+        /* Label/value rows, for the detail list that fills the rail under an
+           image. Dashed rules so they read as data, not as more buttons. */
+        .qv-modal .qv-meta-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.75rem;
+            padding: 0.45rem 0;
+            border-bottom: 1px dashed #e3e7eb;
+            font-size: 0.78rem;
+        }
+
+        .qv-modal .qv-meta-row:last-child {
+            border-bottom: 0;
+        }
+
+        .qv-modal .qv-meta-key {
+            color: #6c757d;
+            white-space: nowrap;
+        }
+
+        .qv-modal .qv-meta-val {
+            font-weight: 700;
+            color: #0e2e45;
+            text-align: right;
+        }
+
+        /* The round icon a confirmation dialog leads with. */
+        .qv-modal .qv-icon {
+            width: 72px;
+            height: 72px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.85rem;
+        }
+
+        .qv-modal .qv-icon-danger {
+            background: rgba(220, 53, 69, 0.1);
+            color: #dc3545;
+        }
+
+        .qv-modal .qv-icon-success {
+            background: rgba(25, 135, 84, 0.1);
+            color: #198754;
+        }
+
+        .qv-modal .qv-icon-accent {
+            background: rgba(255, 197, 8, 0.18);
+            color: #9a7400;
+        }
+
+        .qv-modal .qv-icon-primary {
+            background: rgba(14, 46, 69, 0.08);
+            color: #0e2e45;
+        }
+
+        /* Actions: a full-width stack of pills, primary on top. Grid rather
+           than d-grid so the gap is part of the theme, not each modal. */
+        .qv-modal .qv-actions {
+            display: grid;
+            gap: 0.5rem;
+        }
+
+        .qv-modal .qv-actions .btn {
+            border-radius: 999px;
+            font-weight: 700;
+        }
+
+        .qv-modal .qv-actions .btn-lg {
+            padding-top: 0.8rem;
+            padding-bottom: 0.8rem;
+        }
+
+        /* The variant that lays its actions out in a row instead of a stack,
+           for a dialog whose buttons are peers rather than a primary and an
+           escape hatch. */
+        .qv-modal .qv-actions-row {
+            grid-auto-flow: column;
+            grid-auto-columns: 1fr;
+        }
+
+        /* Side-by-side actions stack on a narrow phone rather than squeezing
+           (ResponsiveMobileNote.md §6c). */
+        @media (max-width: 575.98px) {
+            .qv-modal .qv-actions-row {
+                grid-auto-flow: row;
+            }
+        }
     </style>
 </body>
 
