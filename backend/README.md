@@ -298,7 +298,11 @@ Read the guides in [docs/UserGuide/](docs/UserGuide/):
 
 ## 12. Production Deployment Notes
 
-This guide targets **local development**. For a production deployment, additionally:
+This guide targets **local development**. Deploying to Hostinger shared hosting has
+its own step-by-step guide — [docs/Deployment.md](docs/Deployment.md) — which covers
+the document root, hPanel settings, cron jobs and the go-live checklist in full.
+
+The short version, for any production host:
 
 - Set `APP_ENV=production` and `APP_DEBUG=false` in `.env`.
 - Set `APP_URL` to your real domain (e.g., `https://inventory.example.com`).
