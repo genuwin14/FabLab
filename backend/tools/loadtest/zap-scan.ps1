@@ -10,7 +10,11 @@
 
     then run
 
-        .\zap-scan.ps1 -Target http://127.0.0.1:8080 -ReportDir C:\FabLab\backend\docs\testing\zap
+        .\zap-scan.ps1 -Target http://127.0.0.1:8080
+
+    Reports are written to backend/docs/testing/zap unless -ReportDir says
+    otherwise. Paths are resolved relative to this script, so the checkout
+    can live anywhere.
 
     The script builds a ZAP context around the target, registers the seeded
     customer account with form-based authentication (ZAP fills the Laravel
@@ -24,7 +28,7 @@ param(
     [string] $Target     = 'http://127.0.0.1:8080',
     [string] $Email      = 'customer@gmail.com',
     [string] $Password   = 'password',
-    [string] $ReportDir  = 'C:\FabLab\backend\docs\testing\zap',
+    [string] $ReportDir  = (Join-Path $PSScriptRoot '..\..\docs\testing\zap'),
     [int]    $MaxScanMinutes = 25
 )
 
@@ -50,6 +54,9 @@ $escaped = [regex]::Escape($Target)
 
 Write-Host "ZAP $((Zap '/JSON/core/view/version/').version) at $Zap"
 New-Item -ItemType Directory -Force $ReportDir | Out-Null
+# ZAP writes the report itself, so it needs a real absolute path, not one
+# still carrying '..' segments.
+$ReportDir = (Resolve-Path $ReportDir).Path
 
 # --- Context ---------------------------------------------------------
 $contextName = 'FabLab'
