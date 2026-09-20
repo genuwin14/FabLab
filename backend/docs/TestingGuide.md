@@ -222,7 +222,7 @@ start C:\FabLab\backend\docs\testing\zap\zap-report.html
 | Look for | Should be | What it means |
 | :--- | :--- | :--- |
 | **High** | `0` | No serious security holes |
-| **Medium** | A few | Missing safety settings, not broken code — [the fixes are listed here](Testing.md#34-recommended-fixes) |
+| **Medium** | A few | Missing safety settings, not broken code — [the fixes are listed here](Testing.md#35-recommended-fixes) |
 | **Low / Informational** | Several | Minor notes |
 
 You will also see about a hundred "page not found" errors on strange addresses like `/%5C%5C*%7C/`. Ignore them — the scanner guesses addresses out of the page's JavaScript, and those guesses aren't real pages.

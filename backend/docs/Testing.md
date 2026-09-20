@@ -20,6 +20,7 @@ All raw artefacts live under [backend/docs/testing/](testing/):
 | `testing/jmeter/results-run1-no-config-cache.jtl` | The first run, kept as evidence of the config race described below |
 | `testing/jmeter/html-report-run1-no-config-cache/` | Dashboard for that first run |
 | `testing/zap/zap-report.html` | Full OWASP ZAP report (HTML) |
+| `testing/zap-20260920/` | A repeat scan run on 20 September 2026 — see [§3.4](#34-repeat-scan-20-september-2026) |
 | `testing/zap/zap-report.json` / `.md` | Same report as JSON and Markdown |
 | `testing/screenshots/` | Screenshots of the JMeter and ZAP desktop apps |
 | `../tools/loadtest/fablab-load-test.jmx` | The JMeter test plan (open it in JMeter to re-run) |
@@ -190,7 +191,24 @@ The active scan also confirmed two protections that are working as intended:
 *Figure 8 – The generated HTML report header. Its Summary of Alerts counts alert types (3 Medium, 7 Low, 6 Informational); the table in section 3.2 counts instances across URLs.*
 
 
-### 3.4 Recommended fixes
+### 3.4 Repeat scan, 20 September 2026
+
+The scan was run again two weeks later, against the code as it stood on 20 September, on the same machine and through the same [zap-scan.ps1](../tools/loadtest/zap-scan.ps1). It reported the same result:
+
+| | 6 September | 20 September |
+| :--- | ---: | ---: |
+| High | 0 | 0 |
+| Medium | 3 | 3 |
+| Low | 7 | 7 |
+| Informational | 6 | 6 |
+| Distinct alert types | 16 | 16 |
+| Alert instances | 153 | 152 |
+
+The one-instance difference is spider coverage, not a fixed or a new finding: the second crawl reached 95 endpoints where the first reached 94, and picked up one fewer session-management response. No alert type appeared or disappeared.
+
+The reports for that run are kept separately in `testing/zap-20260920/` so that the figures quoted in this document stay tied to the 6 September evidence and its screenshots.
+
+### 3.5 Recommended fixes
 
 All of the Medium findings are fixed by one small HTTP middleware that adds response headers, plus `integrity` attributes on the CDN script tags:
 
