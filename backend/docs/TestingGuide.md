@@ -1,462 +1,335 @@
-# FabLab – Performance and Security Testing: User Guide
+# How to Test FabLab — Step by Step
 
-How to run the load test and the security scan **on any Windows machine**, starting from one that has none of the tools installed.
+Two tests, on any Windows computer:
 
-This is the **procedure**. The **results** of the run recorded on 6 September 2026 — the tables, the graphs and what they mean — are in [Testing.md](Testing.md). Read this one when you need to reproduce the run on a different computer, produce fresh screenshots, or re-test after a change.
+- **Speed test (JMeter)** — 50 people use the site at the same time. Does it stay fast?
+- **Security test (OWASP ZAP)** — a scanner attacks the site on purpose. Can it break in?
 
-Nothing below hardcodes a path. Three scripts in [tools/loadtest/](../tools/loadtest/) find what the machine actually has and adapt:
+Follow the steps in order. Copy and paste each command.
 
-| Script | What it does |
-| :--- | :--- |
-| [testing-env.ps1](../tools/loadtest/testing-env.ps1) | Finds the JDK, JMeter, ZAP and XAMPP wherever they were installed, and sets up the window to use them |
-| [make-apache-conf.ps1](../tools/loadtest/make-apache-conf.ps1) | Builds a throwaway Apache config that serves this app on port 8080, without touching the machine's own XAMPP setup |
-| [zap-scan.ps1](../tools/loadtest/zap-scan.ps1) | Drives OWASP ZAP through its REST API so the whole scan is one command |
+**This guide = how to run the tests. [Testing.md](Testing.md) = what the tests found.**
 
 | | |
 | :--- | :--- |
-| Time needed | ~30 min to install the tools, 5 min setup, 2 min for JMeter, 50–60 min for the full ZAP scan |
-| You will produce | A JMeter HTML dashboard, a ZAP report in HTML/JSON/Markdown, and screenshots |
-| Everything lands in | `backend/docs/testing/` inside the checkout on that machine |
-
-> **Before the day**, read [§9 Running this as a live demo](#9-running-this-as-a-live-demo). The full ZAP scan takes an hour; nobody is going to watch that. There are cut-down settings that finish in about ten minutes and still show the tools working.
+| Installing the tools | About 30 minutes, once |
+| Speed test | 2 minutes |
+| Security test | About 1 hour (there is a 10-minute version — see [Step 8](#step-8-short-version-for-a-live-demo)) |
 
 ---
 
-## 0. What the machine needs before you start
+## Before you start
 
-This guide assumes the FabLab application **already runs** on the target machine — XAMPP installed, the database created and migrated, and the site opening in a browser. Getting to that point is a different job, covered by the [README](../README.md). Check it first:
+The FabLab website must already work on this computer. Check:
 
 ```powershell
-cd <wherever the checkout is>\backend
-php artisan --version          # should print the Laravel version
-php artisan migrate:status     # should list migrations, all Ran
+cd C:\FabLab\backend
+php artisan --version
 ```
 
-If either fails, stop and fix that first. Load-testing an application that doesn't run yet just produces a page of errors.
+If that prints a version number, you're fine. If it doesn't, set the app up first using the [README](../README.md) — there is no point testing a site that doesn't run yet.
 
-You also need about **1.5 GB of free disk** and, for the installs, an internet connection.
-
----
-
-## 1. Install the four tools
-
-Install these on the machine that will do the testing. Versions below are the ones the recorded run used — a **newer version works fine**, but if you use one, say so when you present the numbers, because tool versions affect timings.
-
-| Tool | Version used | Where to get it | How to install |
-| :--- | :--- | :--- | :--- |
-| **Eclipse Temurin JDK** | 17 | <https://adoptium.net/temurin/releases/?version=17> | Pick **Windows / x64 / JDK / .msi** and run it. JMeter and ZAP are both Java programs; nothing works without this. |
-| **Apache JMeter** | 5.6.3 | <https://jmeter.apache.org/download_jmeter.cgi> (the **Binary** zip), or the exact version from <https://archive.apache.org/dist/jmeter/binaries/> | Not an installer — **unzip it** to `C:\fablab-tools\`, giving `C:\fablab-tools\apache-jmeter-5.6.3\` |
-| **OWASP ZAP** | 2.17.0 | <https://www.zaproxy.org/download/> (Windows 64-bit installer), or <https://github.com/zaproxy/zaproxy/releases> for a specific version | Run the installer, accept the defaults |
-| **XAMPP** | Apache 2.4 + PHP 8.2 | <https://www.apachefriends.org/download.html> | Already present if the app runs — see §0 |
-
-**Where to put things.** `testing-env.ps1` looks in `C:\fablab-tools\` first, then in the other usual places (`C:\tools`, `C:\Program Files\...`, your Downloads folder). Unzipping JMeter into `C:\fablab-tools` means everything is found with no arguments. Anywhere else is fine too — you'll just pass a `-JMeterHome` flag once.
-
-> **Doing this without internet on the day?** JMeter and ZAP both run from an extracted folder. Copy `C:\fablab-tools\` onto a USB stick beforehand, along with the JDK `.msi` (that one does need installing). Then only the JDK step needs running on the client machine.
+> Replace `C:\FabLab` with wherever the folder actually is on that computer. Everything below uses that same folder.
 
 ---
 
-## 2. Set up the PowerShell window
+## Step 1 — Install the tools
 
-**Every** PowerShell window you use for testing starts with this. Open PowerShell, go to the scripts folder, and **dot-source** the environment script:
+Download and install these three. (XAMPP is already there, or the app wouldn't run.)
+
+| # | Tool | Where to get it | What to do |
+| :-- | :--- | :--- | :--- |
+| 1 | **Java (Temurin JDK 17)** | <https://adoptium.net/temurin/releases/?version=17> | Choose **Windows · x64 · JDK · .msi** and run it. The other two tools need this. |
+| 2 | **Apache JMeter 5.6.3** | <https://jmeter.apache.org/download_jmeter.cgi> | Download the **Binary** zip. Don't install — just **unzip it to `C:\fablab-tools`** |
+| 3 | **OWASP ZAP** | <https://www.zaproxy.org/download/> | Windows 64-bit installer. Click Next until it finishes. |
+
+That's it. Nothing needs configuring.
+
+> **No internet on the day?** Copy the `C:\fablab-tools` folder onto a USB stick beforehand, plus the Java `.msi` file. Only Java needs actually installing.
+
+---
+
+## Step 2 — Open PowerShell and set it up
+
+Open PowerShell, then run these two lines:
 
 ```powershell
-cd <checkout>\backend\tools\loadtest
+cd C:\FabLab\backend\tools\loadtest
 . .\testing-env.ps1
 ```
 
-The leading `. ` (dot, space) matters. Without it the script runs in its own scope and everything it sets vanishes when it finishes.
+> The `. ` at the start (dot, then a space) is important. Without it, nothing works afterwards.
 
-It prints what it found:
+You should see something like:
 
 ```
 FabLab testing environment
 --------------------------
   Application  C:\FabLab\backend
-  JDK          C:\Program Files\Eclipse Adoptium\jdk-17.0.20.101-hotspot  [openjdk version "17.0.20.1" 2026-08-18]
-  JMeter       C:\tools\apache-jmeter-5.6.3\bin\jmeter.bat
+  JDK          C:\Program Files\Eclipse Adoptium\jdk-17...
+  JMeter       C:\fablab-tools\apache-jmeter-5.6.3\bin\jmeter.bat
   ZAP          C:\Program Files\ZAP\Zed Attack Proxy\zap-2.17.0.jar
   XAMPP        C:\xampp
 
-All four found. Next: build the Apache config with
-    .\make-apache-conf.ps1
+All four found.
 ```
 
-Anything it can't find is printed in red with a line telling you what to install or which flag to pass. To point it at non-standard locations:
+**All four must be found.** If one says `NOT FOUND` in red, the message tells you what to do. Usually it just means the tool was put somewhere unusual, so tell the script where:
 
 ```powershell
-. .\testing-env.ps1 -JdkHome 'D:\jdk-17' -JMeterHome 'D:\apache-jmeter-5.6.3' -ZapHome 'D:\ZAP' -XamppHome 'D:\xampp'
+. .\testing-env.ps1 -JMeterHome 'D:\apache-jmeter-5.6.3'
 ```
 
-For the rest of this guide, these variables exist in your window and are used in every command:
-
-| Variable | What it holds |
-| :--- | :--- |
-| `$env:JAVA_HOME`, `$env:PATH` | The JDK, so plain `java` works |
-| `$JMeter` | Full path to `jmeter.bat` |
-| `$ZapJar` | Full path to `zap-<version>.jar` |
-| `$XamppRoot` | The XAMPP installation |
-| `$AppRoot` | The `backend/` folder of the checkout |
+**Keep this window open.** You'll use it again. If you close it, run these two lines again in the new one.
 
 ---
 
-## 3. Prepare the system under test
+## Step 3 — Start the test server
 
-Do all five steps. Steps 3.2 and 3.3 are the ones people skip, and skipping either makes the results *wrong*, not merely different.
+The tests can't use `php artisan serve` — it only handles one person at a time, so a test of 50 people would just measure them queuing.
 
-### 3.1 Serve the app through Apache, not `artisan serve`
-
-`php artisan serve` is single-threaded on Windows. Point 50 virtual users at it and every request queues behind the one in front, so you measure the queue, not the application. Both tests must go through Apache.
-
-You could edit the machine's XAMPP configuration — but on someone else's computer that means restarting their Apache service (which needs administrator rights) and disturbing whatever else they use XAMPP for. Instead, generate a **throwaway config** that runs a second, independent Apache on port 8080:
+Build a test server setup (this does **not** change the computer's own XAMPP):
 
 ```powershell
 .\make-apache-conf.ps1
 ```
 
-It copies XAMPP's own `httpd.conf` and changes four things in the copy: `Listen 80` becomes `Listen 8080`, the vhosts and SSL includes are commented out (so port 443 stays free for the real XAMPP), and its own PID file, logs and a `<VirtualHost *:8080>` pointing at this app's `public/` folder are appended. Everything else — above all the PHP module, which XAMPP loads via `conf/extra/httpd-xampp.conf` — is inherited unchanged, which is why the copy works on any machine where XAMPP itself works.
-
-The script checks the port is free, writes the config to `%USERPROFILE%\fablab-test\`, runs Apache's own syntax check, and prints the command to start it. If 8080 is taken, or XAMPP is on another drive:
+It will say `Syntax OK` and print a command. **Open a second PowerShell window** and run this in it:
 
 ```powershell
-.\make-apache-conf.ps1 -XamppRoot D:\xampp -Port 8090
+& "C:\xampp\apache\bin\httpd.exe" -f "$env:USERPROFILE\fablab-test\httpd-fablab.conf" -D FOREGROUND
 ```
 
-Start it in **its own PowerShell window** and leave that window open — it runs in the foreground, so **Ctrl+C** stops it:
+Leave that window open — the server runs inside it. Press **Ctrl+C** in it when you're finished testing.
 
-```powershell
-& "$XamppRoot\apache\bin\httpd.exe" -f "$env:USERPROFILE\fablab-test\httpd-fablab.conf" -D FOREGROUND
-```
+Also start **MySQL** from the XAMPP Control Panel.
 
-No administrator rights are needed, and the XAMPP service on port 80 is untouched. Start **MySQL** from the XAMPP Control Panel as usual, then check the site answers:
+Now check it works: open <http://127.0.0.1:8080> in a browser. You should see the FabLab home page.
 
-```powershell
-(Invoke-WebRequest http://127.0.0.1:8080/ -UseBasicParsing).StatusCode   # 200
-```
+---
 
-> If you used a different `-Port`, use it everywhere below too: `-Jport=` for JMeter and `-Target` for ZAP.
+## Step 4 — Get the app ready
 
-### 3.2 Cache the configuration — this is not optional
+Back in the **first** window, three things:
 
-```powershell
-cd $AppRoot
-php artisan config:cache
-```
-
-Without this, roughly **1 request in 20 fails with HTTP 500** under concurrency. Apache on Windows runs PHP as a threaded module, and Laravel's `.env` loader uses `putenv()`/`getenv()`, which are shared across the threads of one process. When 50 requests bootstrap at the same instant they race on that shared environment, and some end up reading Laravel's *defaults* instead of your `.env` — you'll see `Unknown database 'laravel'` and `Database file at path [fablab_db] does not exist` in `storage/logs/laravel.log`. With the config cached, `env()` is never called at request time and the race disappears. [Testing.md §2.2](Testing.md#22-run-1--5-of-requests-failed-with-http-500) has the evidence from both runs.
-
-> From here until §6, any change to `.env` has **no effect** until you re-run `config:cache`.
-
-### 3.3 Send mail to the log, not to Gmail
-
-ZAP's active scan fuzzes the **register** and **forgot password** forms, which means submitting them hundreds of times. In `.env`:
+**a) Turn off email.** The security scanner fills in the sign-up and forgot-password forms hundreds of times. If email is on, it sends hundreds of real emails. Open `C:\FabLab\backend\.env` in Notepad and change one line:
 
 ```env
 MAIL_MAILER=log
 ```
 
-then `php artisan config:cache` again. Mail now goes to `storage/logs/laravel.log`. Skip this and the scan sends real email through whatever account is configured.
+**b) Lock in the settings.** Without this, about 1 in every 20 requests fails during the speed test. (Why: [Testing.md](Testing.md#22-run-1--5-of-requests-failed-with-http-500).)
 
-### 3.4 Have the seeded accounts in place
+```powershell
+cd C:\FabLab\backend
+php artisan config:cache
+```
 
-Both tests sign in as the seeded customer, `customer@gmail.com` / `password` (see `database/seeders/UserSeeder.php`). If the database is empty or stale:
+**c) Reset the test data.** The tests sign in as `customer@gmail.com` / `password`.
 
 ```powershell
 php artisan migrate:fresh --seed
 ```
 
-> On a client machine this **erases their data**. If the database has anything worth keeping, back it up first (`mysqldump`), or create a separate database for testing and point `.env` at it.
-
-### 3.5 Optional but tidy
-
-Set `APP_URL=http://127.0.0.1:8080` while testing so anything the app generates absolutely (mail links, PDF slips) points at the instance actually under test. Put it back afterwards, along with `MAIL_MAILER`.
+> ⚠️ This **deletes everything in the database**. On the client's computer, make sure there's nothing in there they want to keep.
 
 ---
 
-## 4. Part A — Load testing with JMeter
-
-### 4.1 What the plan does
-
-[fablab-load-test.jmx](../tools/loadtest/fablab-load-test.jmx) simulates one customer session per thread. Opened in the JMeter GUI its tree reads:
-
-```
-FabLab Load Test
-├── User Defined Variables      host, port, email, password
-├── HTTP Request Defaults       ${host}:${port}
-├── HTTP Cookie Manager         per-thread cookies, NOT cleared between loops
-├── HTTP Header Manager
-└── Thread Group "Customers"    ${users} threads, ${rampup}s ramp-up, ${loops} loops
-    ├── Once Only Controller "Login once per user"
-    │   ├── GET /login          → Regex Extractor pulls name="_token" value="(...)"  into ${csrf}
-    │   └── POST /login         email + password + _token
-    │       └── Response Assertion  "Landed on the shop"  (/customer/shop)
-    ├── GET / (landing)
-    ├── GET /customer/shop
-    ├── GET /customer/cart
-    ├── GET /customer/orders
-    ├── GET /customer/customize
-    ├── GET /notifications/poll
-    ├── Uniform Random Timer    500 ms + up to 1000 ms think time
-    ├── View Results Tree
-    ├── Summary Report
-    └── Aggregate Report
-```
-
-Two details matter for realism. The **cookie manager is per thread and is not cleared between iterations**, so each virtual user logs in once and then holds its own Laravel session for all ten loops, exactly like a real browser. The **CSRF token is extracted from the live login page**, so the plan survives Laravel's token rotation instead of hardcoding a token that would expire.
-
-Every parameter has a default and can be overridden from the command line:
-
-| Property | Default | Override with |
-| :--- | :--- | :--- |
-| `host` | `127.0.0.1` | `-Jhost=...` |
-| `port` | `8080` | `-Jport=...` |
-| `users` | `50` | `-Jusers=...` |
-| `rampup` | `10` (seconds) | `-Jrampup=...` |
-| `loops` | `10` | `-Jloops=...` |
-| `email` / `password` | seeded customer | `-Jemail=... -Jpassword=...` |
-
-50 users × 10 loops × 6 pages, plus the two login requests per user, is **3,100 samples**.
-
-### 4.2 The headless run (this is the one that produces the report)
-
-Run JMeter from the command line, not the GUI, when you want numbers you can quote — the GUI's own rendering steals CPU from the load generator.
+## Step 5 — Run the speed test
 
 ```powershell
-cd $AppRoot
-
-# -e -o refuses to write into an existing non-empty folder, so clear it first
+cd C:\FabLab\backend
 Remove-Item -Recurse -Force docs\testing\jmeter\html-report -ErrorAction SilentlyContinue
-Remove-Item -Force docs\testing\jmeter\results.jtl -ErrorAction SilentlyContinue
 
 & $JMeter -n -t tools\loadtest\fablab-load-test.jmx `
   -l docs\testing\jmeter\results.jtl `
   -e -o docs\testing\jmeter\html-report `
-  -Jhost=127.0.0.1 -Jport=8080 -Jusers=50 -Jrampup=10 -Jloops=10
+  -Jusers=50 -Jrampup=10 -Jloops=10
 ```
 
-| Flag | Meaning |
-| :--- | :--- |
-| `-n` | Non-GUI (headless) |
-| `-t` | The test plan to run |
-| `-l` | Where to write the raw sample log (`.jtl`) |
-| `-e -o` | After the run, generate the HTML dashboard into this folder |
+Takes about 2 minutes. It pretends to be 50 customers who log in, then browse the shop, cart, orders, customizer and notifications over and over.
 
-It takes about two minutes. JMeter prints a summary line every 30 seconds and finishes with a total; then open the dashboard:
+See the results:
 
 ```powershell
 start docs\testing\jmeter\html-report\index.html
 ```
 
-### 4.3 The GUI run (this is the one that produces the screenshots)
+**What to look at:**
 
-For a defense you also want to *show* the tool working:
+| Look for | Should be | What it means |
+| :--- | :--- | :--- |
+| **Errors** | `0.00%` | Nothing broke |
+| **Average** | Under 1 second | Pages load fast even with 50 people |
+| **Throughput** | ~25 per second | How much the site handles |
+
+Logging in is always the slowest step. That's normal — it's the password check doing its job.
+
+> The numbers **will be different on a different computer** — that depends on the computer's speed. What should stay the same is `0.00%` errors. Always say which computer your numbers came from.
+
+### Want screenshots of it running?
+
+Open the app version instead, and press the green **Start** arrow:
 
 ```powershell
-& $JMeter -t "$AppRoot\tools\loadtest\fablab-load-test.jmx"
+& $JMeter -t "C:\FabLab\backend\tools\loadtest\fablab-load-test.jmx"
 ```
 
-1. Click the green **Start** arrow (or Ctrl+R).
-2. While it runs, the counter at the top right shows active threads — **50/50** at full ramp. Screenshot the **Summary Report** here; that's Figure 1 in [Testing.md](Testing.md#24-run-3--jmeter-gui-run-screenshots).
-3. When it stops, screenshot **Summary Report** (per-page averages, error %, throughput) and **Aggregate Report** (median, 90th, 95th, 99th percentiles).
-4. Open **View Results Tree**, click any sample, and use the **Response Body** tab to show it returned real HTML with HTTP 200.
-
-Expect the GUI run to be a little slower than the headless one (947 ms average versus 757 ms on the recorded runs) — that's the GUI's overhead, not the application's.
-
-### 4.4 Reading the result
-
-Look at three things, in this order:
-
-1. **Error %** — must be `0.00%`. Anything else means the config isn't cached (§3.2) or MySQL fell over.
-2. **Average and 90% Line per page** — the recorded run was 757 ms average across 3,100 samples, with no single request above 2.3 s.
-3. **Throughput** — 25.6 requests/second sustained over the 121-second run.
-
-`POST /login` is always the slowest step by a wide margin. That is bcrypt hashing plus session regeneration, and it is supposed to be slow.
-
-> **The client machine will not produce the same numbers**, and that's expected — response times track CPU, disk and RAM. What should hold on any machine is the *shape*: 0.00% errors, login slowest, throughput steady across the run. If you quote timings from a different machine, say which machine.
+Watch the counter at the top right climb to **50/50**. Screenshot the **Summary Report** and the **Aggregate Report** tabs.
 
 ---
 
-## 5. Part B — Security testing with OWASP ZAP
+## Step 6 — Run the security test
 
-### 5.1 Start ZAP with its API open
-
-Open a **second** PowerShell window (Apache is still running in the first), set the environment up again, and start ZAP:
+**a) Start ZAP.** Open a **third** PowerShell window:
 
 ```powershell
-cd <checkout>\backend\tools\loadtest
+cd C:\FabLab\backend\tools\loadtest
 . .\testing-env.ps1
 & java -jar "$ZapJar" -port 8090 -config api.key=fablabzap
 ```
 
-The ZAP desktop window opens (choose **No, I do not want to persist this session** when asked). `-port 8090` is ZAP's own proxy/API port — nothing to do with the app on 8080 — and `api.key=fablabzap` is the key the script authenticates with. Leave ZAP's window open and visible: you will screenshot it while the scan runs.
+ZAP's window opens. Choose **"No, I do not want to persist this session."** Leave it open — it's nice to screenshot while it works.
 
-To run without the desktop window, add `-daemon`.
-
-### 5.2 Run the scan script
-
-In a **third** window:
+**b) Start the scan.** Go back to the **first** window:
 
 ```powershell
-cd <checkout>\backend\tools\loadtest
-. .\testing-env.ps1
+cd C:\FabLab\backend\tools\loadtest
 .\zap-scan.ps1 -Target http://127.0.0.1:8080
 ```
 
-| Parameter | Default | Notes |
-| :--- | :--- | :--- |
-| `-Zap` | `http://127.0.0.1:8090` | Where ZAP's API is listening |
-| `-ApiKey` | `fablabzap` | Must match what you started ZAP with |
-| `-Target` | `http://127.0.0.1:8080` | The app under test |
-| `-Email` / `-Password` | seeded customer | The account ZAP logs in as |
-| `-ReportDir` | `backend/docs/testing/zap` | Resolved relative to the script, so the checkout can live anywhere |
-| `-MaxScanMinutes` | `25` | Cap **per active-scan phase** |
-
-Two phases at 25 minutes each means the whole thing takes **50–60 minutes**. The script prints a percentage every 10 seconds so you can see it is alive:
+Now wait — about an hour. It prints its progress every 10 seconds so you know it's alive:
 
 ```
   spider (anonymous)            100%
   active scan (anonymous)        34%
 ```
 
-### 5.3 What the script is doing, step by step
+It scans twice: first as a stranger who isn't logged in, then as a logged-in customer. That second pass is the important one — it's checking the pages only customers can reach.
 
-You will be asked this. The script performs, through ZAP's REST API, exactly what a person would do by hand in the ZAP desktop:
+**c) Read the report.**
 
-1. **Creates a context** called `FabLab` covering the target, and **excludes** `/logout` and `/login/google` from both the spider and the scanner. Without those exclusions the scanner logs itself out mid-scan, or wanders off into Google's sign-in pages.
-2. **Registers `_token` as an anti-CSRF token** (`acsrf/addOptionToken`). This is what makes the rest work against Laravel: before each login attempt, ZAP re-fetches the login page and substitutes a fresh token.
-3. **Configures form-based authentication** against `POST /login` with `email={%username%}&password={%password%}&_token=ZAP`, using cookie-based session management, and tells ZAP how to recognise each state — logged **in** by the presence of `/logout`, logged **out** by the presence of `name="password"`.
-4. **Creates the user** `customer` with the seeded credentials and enables it.
-5. **Sets limits**: spider 5 minutes, active scan `-MaxScanMinutes`, 6 threads per host.
-6. **Phase 1 — anonymous.** Spiders from `/`, then active-scans everything found. This is the attack surface a stranger sees: landing page, login, register, forgot-password, verify-code.
-7. **Phase 2 — as the customer.** Spiders and active-scans from `/customer/shop` *as the authenticated user*, covering shop, cart, checkout, orders, customiser, saved designs, notifications and settings.
-8. **Writes the reports** as `zap-report.html`, `.json` and `.md`, then prints the alert counts by risk and the total number of messages.
+```powershell
+start C:\FabLab\backend\docs\testing\zap\zap-report.html
+```
 
-While phase 1 runs, screenshot ZAP's **Active Scan** tab — you'll see the fuzzed POSTs to `/login`, `/register` and `/forgot-password/send` going past. During phase 2, the same tab shows fuzzed POSTs to `/customer/profile` *with a session cookie attached*, which is the proof that the authenticated scan really was authenticated.
+**What to look at:**
 
-### 5.4 Reading the report
+| Look for | Should be | What it means |
+| :--- | :--- | :--- |
+| **High** | `0` | No serious security holes |
+| **Medium** | A few | Missing safety settings, not broken code — [the fixes are listed here](Testing.md#34-recommended-fixes) |
+| **Low / Informational** | Several | Minor notes |
 
-Open `docs\testing\zap\zap-report.html`. Work top down:
-
-1. **Summary of Alerts** — the headline. High must be **0**. The recorded run found 0 High, 3 Medium, 7 Low, 6 Informational *alert types*.
-2. Watch the difference between **alert types and instances**. ZAP's summary table counts types; expand one and you'll see it listed once per URL. "CSP header not set" is one type but 100-odd instances, because it's missing on every page. [Testing.md §3.2](Testing.md#32-results) gives both counts so the two tables don't look contradictory.
-3. **Read what each Medium actually is.** All three in the recorded run are missing hardening headers and missing CDN `integrity=` attributes — configuration, not a flaw in the application logic. The fixes are listed in [Testing.md §3.4](Testing.md#34-recommended-fixes).
-4. **Check the negatives, because they're the real finding.** Nothing appeared from the SQL injection, XSS, path traversal, remote file inclusion, command injection or external redirect rule families, against either the public forms or the authenticated pages.
-5. **Ignore the spider noise.** You'll see a hundred or so 404s on nonsense URLs like `/%5C%5C*%7C/`. ZAP's spider extracts anything path-shaped out of inline JavaScript, including regular-expression fragments. They are not routes.
-
-Two protections you can demonstrate from the report rather than assert:
-
-- **CSRF held.** Every forged POST ZAP sent without a valid `_token` came back **HTTP 419**. Filter the History tab by 419 to show it.
-- **Validation held.** Fuzzing register/forgot-password/verify-code created no rows — the users, orders, products, notifications and designs tables held the same counts before and after.
-
-### 5.5 A note on the `XSRF-TOKEN` cookie finding
-
-ZAP reports "Cookie without HttpOnly flag" against `XSRF-TOKEN`. This is **by design in Laravel**: that cookie has to be readable by JavaScript so the front end can echo it back as a header. The session cookie itself, `laravel-session`, *is* HttpOnly — expand the alert and you'll see only `XSRF-TOKEN` listed. Say so before the panel asks.
+You will also see about a hundred "page not found" errors on strange addresses like `/%5C%5C*%7C/`. Ignore them — the scanner guesses addresses out of the page's JavaScript, and those guesses aren't real pages.
 
 ---
 
-## 6. Afterwards — put the machine back
+## Step 7 — Put the computer back
 
-This matters more on someone else's computer than on your own. In order:
+Important on someone else's computer. In the first window:
 
 ```powershell
-cd $AppRoot
-
-# 1. The active scan created junk rows (registrations, password-reset attempts)
-php artisan migrate:fresh --seed
-
-# 2. Restore .env: MAIL_MAILER=smtp, and APP_URL if you changed it
-
-# 3. Stop caching config, or later .env edits will silently do nothing
-php artisan config:clear
+cd C:\FabLab\backend
+php artisan migrate:fresh --seed    # clears the junk accounts the scan created
+php artisan config:clear            # lets .env work normally again
 ```
 
 Then:
 
-- **Ctrl+C** the Apache window, and confirm no stray `httpd` is left holding the port: `Get-Process httpd`. The two that belong to their XAMPP service are fine; yours is the one started from `%USERPROFILE%\fablab-test`.
-- Close ZAP, declining to save the session.
-- Delete `%USERPROFILE%\fablab-test\` if you want the generated config and logs gone.
-- Copy `backend\docs\testing\` off the machine — that folder is the evidence, and it's the only thing you need to take with you.
+1. Change `MAIL_MAILER` back to `smtp` in `.env`.
+2. Press **Ctrl+C** in the server window (Step 3).
+3. Close ZAP — don't save the session.
+4. **Copy the `C:\FabLab\backend\docs\testing` folder onto a USB stick.** That folder is your proof. It's the only thing you need to take with you.
 
-Step 3 is the one that bites. If you leave the config cached, someone will spend an afternoon wondering why an `.env` change has no effect.
-
----
-
-## 7. Troubleshooting
-
-| Symptom | Cause | Fix |
-| :--- | :--- | :--- |
-| `testing-env.ps1` prints NOT FOUND for a tool that is installed | It's in a folder the script doesn't search | Re-run with the matching flag, e.g. `-JMeterHome 'D:\apache-jmeter-5.6.3'` |
-| `$JMeter` and friends are empty after running the script | It wasn't dot-sourced | `. .\testing-env.ps1` — leading dot and space |
-| `...ps1 cannot be loaded because running scripts is disabled` | PowerShell execution policy on that machine | `Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass`, then re-run. Per-process, so nothing is changed permanently |
-| `java` not recognised | JDK missing, or the window wasn't set up | Install Temurin 17; run `. .\testing-env.ps1` in that window |
-| `make-apache-conf.ps1`: "Port 8080 is already in use" | Something else holds it | It names the process — stop it, or re-run with `-Port 8090` and use that port everywhere |
-| `make-apache-conf.ps1`: "No Apache config at ..." | XAMPP is somewhere else | `-XamppRoot D:\xampp` |
-| Apache starts, but every page is a 500 | App not working on this machine yet | Go back to §0; check `storage/logs/laravel.log` |
-| JMeter: ~5% of samples fail with 500 | Config not cached; threads racing on `.env` | `php artisan config:cache` — §3.2 |
-| JMeter: `Login did not redirect to /customer/shop` on every thread | Seeded customer missing, or wrong `-Jemail`/`-Jpassword` | `php artisan migrate:fresh --seed` |
-| JMeter: `_token` comes back as `TOKEN_NOT_FOUND` | `GET /login` didn't return the form — app down, or wrong port | Open `http://127.0.0.1:8080/login` in a browser |
-| JMeter: "cannot write to existing folder" | `-e -o` won't overwrite | Delete `docs\testing\jmeter\html-report` first |
-| Response times are terrible and throughput is ~1 req/s | You're testing `artisan serve`, not Apache | Point at port 8080 — §3.1 |
-| `zap-scan.ps1` fails on the first API call | ZAP not started, wrong port, or wrong API key | Confirm `http://127.0.0.1:8090` opens; `-ApiKey` must match `api.key=` |
-| ZAP scan finds almost nothing under `/customer` | It got logged out | Check the `/logout` exclusion survived, and that the logged-in indicator still matches the markup |
-| Real emails arrive during the ZAP scan | `MAIL_MAILER` still `smtp` | Set it to `log` **and** re-run `config:cache` — §3.3 |
-| Windows Firewall prompts when JMeter or ZAP starts | Normal | Allow on **private** networks only; everything here is loopback anyway |
+> Don't skip `config:clear`. If you do, later changes to `.env` will seem to do nothing, and it's a confusing problem to track down.
 
 ---
 
-## 8. Where the evidence ends up
+## Step 8 — Short version for a live demo
 
-All paths relative to `backend/`:
-
-| Path | What it is |
-| :--- | :--- |
-| `docs/testing/jmeter/results.jtl` | Raw sample log, final headless run |
-| `docs/testing/jmeter/html-report/index.html` | JMeter dashboard for that run |
-| `docs/testing/jmeter/results-run1-no-config-cache.jtl` | The failing first run, kept as evidence for §3.2 |
-| `docs/testing/jmeter/html-report-run1-no-config-cache/` | Dashboard for that first run |
-| `docs/testing/zap/zap-report.html` / `.json` / `.md` | The ZAP report in three formats |
-| `docs/testing/screenshots/` | The eight figures used in [Testing.md](Testing.md) |
-
-**A fresh run overwrites these.** If you want to keep the committed 6 September evidence alongside a new run, copy the folder aside first, or point the scripts elsewhere: `-o docs\testing\jmeter\html-report-clientdevice` for JMeter, `-ReportDir` for ZAP.
-
----
-
-## 9. Running this as a live demo
-
-The full procedure takes an hour, most of it ZAP grinding away with nothing to look at. For a demo, run the real thing beforehand and present the committed report — then show the tools working live with cut-down settings.
-
-**Ten-minute version:**
+Nobody will sit through a one-hour scan. For a live demo, show the finished report you already have, then run short versions so people can watch the tools work:
 
 ```powershell
-# JMeter: 20 users, 3 loops -- about 40 seconds, still visibly concurrent
-& $JMeter -t "$AppRoot\tools\loadtest\fablab-load-test.jmx"     # then Start, in the GUI
-#   or headless:
+# Speed test: 20 people, about 40 seconds
 & $JMeter -n -t tools\loadtest\fablab-load-test.jmx -l docs\testing\jmeter\demo.jtl `
   -e -o docs\testing\jmeter\html-report-demo -Jusers=20 -Jloops=3
 
-# ZAP: 4 minutes per phase instead of 25
+# Security scan: 4 minutes per pass instead of 25
 .\zap-scan.ps1 -Target http://127.0.0.1:8080 -MaxScanMinutes 4 `
-  -ReportDir "$AppRoot\docs\testing\zap-demo"
+  -ReportDir C:\FabLab\backend\docs\testing\zap-demo
 ```
 
-Be straight about what changed: a 4-minute active scan covers a fraction of ZAP's rule set, so it is a demonstration that the scan runs, not a result. The result is the full run in [Testing.md](Testing.md).
+**Show it in this order:**
 
-**What's worth showing, in order:** JMeter's thread counter climbing to 20/20 → the Summary Report's 0.00% error column → ZAP's Active Scan tab with fuzzed POSTs going past → the History tab filtered to **419**, which is CSRF rejecting every forged request → the committed `zap-report.html` with **0 High**.
+1. JMeter's counter climbing to **20/20** — 20 people at once.
+2. The **0.00% error** column.
+3. ZAP's **Active Scan** tab, attacks scrolling past.
+4. ZAP's **History** tab, filtered to **419** — every fake request being rejected. This is the protection working, live.
+5. The full report from before, showing **0 High**.
 
-**Have ready before you start:** Apache running, MySQL running, ZAP already launched (it takes ~30 seconds), the JMeter GUI already open on the plan, and a browser tab on the committed report.
+Say clearly that the short scan only proves the tool runs. The real result is the full scan in [Testing.md](Testing.md).
+
+**Have ready before you begin:** the server running, MySQL running, ZAP already open (it's slow to start), and the full report open in a browser tab.
 
 ---
 
-## Appendix — the recorded run
+## If something goes wrong
 
-[Testing.md](Testing.md) quotes results from 6 September 2026 on the development machine. For reference, that machine had:
+| What you see | What it means | What to do |
+| :--- | :--- | :--- |
+| `NOT FOUND` in red at Step 2 | A tool isn't where the script looked | Re-run with the path, e.g. `. .\testing-env.ps1 -JMeterHome 'D:\apache-jmeter-5.6.3'` |
+| `$JMeter` seems empty | You forgot the dot | Run `. .\testing-env.ps1` — dot, space, then the name |
+| `running scripts is disabled` | Windows is blocking scripts | Run `Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass`, then try again. This only affects this window |
+| `java is not recognized` | Java isn't installed, or this window wasn't set up | Install Java (Step 1), then run Step 2 in this window |
+| `Port 8080 is already in use` | Something else is using it | The message names it. Close it, or use `.\make-apache-conf.ps1 -Port 8090` — then use `8090` everywhere instead |
+| `No Apache config at...` | XAMPP is on another drive | `.\make-apache-conf.ps1 -XamppRoot D:\xampp` |
+| Every page shows an error | The app isn't working on this computer | Go back to **Before you start** |
+| About 5% of the speed test fails | You skipped Step 4b | `php artisan config:cache` |
+| Every login fails in JMeter | The test accounts are missing | `php artisan migrate:fresh --seed` |
+| `cannot write to existing folder` | The results folder is already there | Delete `docs\testing\jmeter\html-report` and run again |
+| Everything is very slow, ~1 per second | You're testing `artisan serve`, not the test server | Use port **8080** — Step 3 |
+| ZAP script fails immediately | ZAP isn't running yet | Do Step 6a first, and wait for ZAP's window to open |
+| Real emails start arriving | You skipped Step 4a | Set `MAIL_MAILER=log`, then run `php artisan config:cache` again |
+| Windows Firewall pops up | Normal | Click Allow (private networks). Everything stays on this computer anyway |
 
-| | |
+---
+
+## If they ask you questions
+
+**"Why not just use `php artisan serve`?"**
+It handles one request at a time. A 50-person test against it would only measure people waiting in line, not the website.
+
+**"How does the test log in?"**
+The same way a person does. It opens the login page, reads the hidden security token off the form, and sends it back with the email and password — so it's a real login, not a shortcut.
+
+**"How do you know the security scan was really logged in?"**
+It's scanning customer-only pages like the cart and the order list. Those redirect you to the login page if you're not signed in, so if it can see them, it's signed in.
+
+**"What does '0 High' mean?"**
+The scanner found no serious security holes. The Medium items are missing safety settings on the web server, not mistakes in the code.
+
+**"Did the scan prove anything actually works?"**
+Yes, two things. Every fake request it sent was rejected with a `419` error — that's the protection against forged requests doing its job. And after hundreds of attempts at the sign-up and password-reset forms, not one bad record got into the database.
+
+**"Why is the `XSRF-TOKEN` cookie flagged?"**
+Laravel is supposed to do that — the browser needs to read that one. The actual login cookie is protected, and the report shows only `XSRF-TOKEN` listed.
+
+**"Can you run it again right now?"**
+Yes — that's what this guide is for. The short version takes about 10 minutes (Step 8).
+
+---
+
+## Where everything lives
+
+| What | Where |
 | :--- | :--- |
-| JDK | `C:\Program Files\Eclipse Adoptium\jdk-17.0.20.101-hotspot` |
-| JMeter 5.6.3 | `C:\tools\apache-jmeter-5.6.3\bin\jmeter.bat` |
-| ZAP 2.17.0 | `C:\Program Files\ZAP\Zed Attack Proxy\zap-2.17.0.jar` |
-| Apache config | `C:\tools\httpd-fablab.conf` (hand-written; `make-apache-conf.ps1` now generates the same thing) |
-| Checkout | `C:\FabLab\backend` |
-| Stack | Laravel 12, PHP 8.2.12, MySQL 8 via XAMPP, Apache 2.4.58 |
+| Speed test results | `backend\docs\testing\jmeter\html-report\index.html` |
+| Security report | `backend\docs\testing\zap\zap-report.html` |
+| Screenshots | `backend\docs\testing\screenshots\` |
+| The test scripts | `backend\tools\loadtest\` |
 
-Related documents: [Testing.md](Testing.md) (the results and what they mean) · [Deployment.md](Deployment.md) (getting the app onto a real server) · [README](../README.md) (installing and running it locally).
+A new test **overwrites** the old results. To keep both, copy the `docs\testing` folder somewhere else first.
+
+---
+
+**Related:** [Testing.md](Testing.md) — the full results and what they mean · [Deployment.md](Deployment.md) — putting the site on a real server · [README](../README.md) — installing the app.
