@@ -10,7 +10,7 @@
 
     then run
 
-        .\zap-scan.ps1 -Target http://127.0.0.1:8080 -ReportDir C:\FabLab\docs\testing\zap
+        .\zap-scan.ps1 -Target http://127.0.0.1:8080 -ReportDir C:\FabLab\backend\docs\testing\zap
 
     The script builds a ZAP context around the target, registers the seeded
     customer account with form-based authentication (ZAP fills the Laravel
@@ -24,7 +24,7 @@ param(
     [string] $Target     = 'http://127.0.0.1:8080',
     [string] $Email      = 'customer@gmail.com',
     [string] $Password   = 'password',
-    [string] $ReportDir  = 'C:\FabLab\docs\testing\zap',
+    [string] $ReportDir  = 'C:\FabLab\backend\docs\testing\zap',
     [int]    $MaxScanMinutes = 25
 )
 

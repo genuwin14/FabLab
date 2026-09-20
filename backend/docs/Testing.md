@@ -9,6 +9,8 @@ This document records two rounds of testing:
 1. **Load testing with Apache JMeter 5.6.3** – 50 concurrent customers browsing the shop.
 2. **Security testing with OWASP ZAP 2.17.0** – automated spider and active scan, first anonymously and then logged in as a customer.
 
+**To run either test yourself**, follow the [Testing Guide](TestingGuide.md) — it covers the tool paths, how the app has to be served, the exact commands, and how to put the machine back afterwards.
+
 All raw artefacts live under [backend/docs/testing/](testing/):
 
 | Path | What it is |

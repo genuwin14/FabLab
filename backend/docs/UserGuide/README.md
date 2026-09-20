@@ -12,7 +12,7 @@ There is a fourth document that cuts across all three: the **[System Process Gui
 
 The three guides describe one shared system, so they cross-reference each other constantly. When a section ends with a **Hand-off** note, it tells you which role picks the work up next and links to the exact section they'll be reading.
 
-Related documents: the [README](../../README.md) (installing and running the app).
+Related documents: the [README](../../README.md) (installing and running the app) and the [Testing Guide](../TestingGuide.md) (running the JMeter load test and the OWASP ZAP security scan).
 
 ---
 
