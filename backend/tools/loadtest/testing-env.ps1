@@ -52,6 +52,12 @@ param(
 $ErrorActionPreference = 'Stop'
 $problems = @()
 
+# Dot-sourcing is what makes the variables below survive into the caller's
+# window. Run plainly (.\testing-env.ps1) everything is found, reported, and
+# then thrown away -- and the failure only shows up later as an empty $JMeter.
+# Catch it here instead.
+$dotSourced = $MyInvocation.InvocationName -eq '.'
+
 function Find-First {
     param([string[]] $Patterns)
     foreach ($p in $Patterns) {
@@ -164,10 +170,24 @@ if ($problems) {
     Write-Host ''
     Write-Host 'Not ready yet:' -ForegroundColor Yellow
     $problems | ForEach-Object { Write-Host "  - $_" -ForegroundColor Yellow }
+}
+
+if (-not $dotSourced) {
     Write-Host ''
-} else {
+    Write-Host '  NOTHING WAS SAVED -- you missed the dot.' -ForegroundColor Red
+    Write-Host ''
+    Write-Host '  This window still has no $JMeter or $ZapJar, so the next command' -ForegroundColor Red
+    Write-Host '  will fail with "The expression after ''&'' ... was not valid".' -ForegroundColor Red
+    Write-Host ''
+    Write-Host '  Run it again exactly like this (dot, space, then the name):' -ForegroundColor Yellow
+    Write-Host ''
+    Write-Host '      . .\testing-env.ps1' -ForegroundColor White
+    Write-Host ''
+} elseif (-not $problems) {
     Write-Host ''
     Write-Host 'All four found. Next: build the Apache config with' -ForegroundColor Green
     Write-Host '    .\make-apache-conf.ps1' -ForegroundColor Green
+    Write-Host ''
+} else {
     Write-Host ''
 }

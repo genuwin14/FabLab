@@ -57,7 +57,7 @@ cd C:\FabLab\backend\tools\loadtest
 . .\testing-env.ps1
 ```
 
-> The `. ` at the start (dot, then a space) is important. Without it, nothing works afterwards.
+> The `. ` at the start (dot, then a space) is important. Without it the script still runs and still says it found everything, but it keeps none of it, and Step 5 fails. It will warn you if you miss it.
 
 You should see something like:
 
@@ -135,6 +135,11 @@ php artisan migrate:fresh --seed
 ---
 
 ## Step 5 — Run the speed test
+
+> **Same window as Step 2?** If you opened a new one, or closed the old one, run Step 2's two lines again first. Otherwise this fails with *"The expression after '&' ... was not valid"*, which just means `$JMeter` is empty. Quick check — this should print a path, not a blank line:
+> ```powershell
+> $JMeter
+> ```
 
 ```powershell
 cd C:\FabLab\backend
@@ -278,7 +283,8 @@ Say clearly that the short scan only proves the tool runs. The real result is th
 | What you see | What it means | What to do |
 | :--- | :--- | :--- |
 | `NOT FOUND` in red at Step 2 | A tool isn't where the script looked | Re-run with the path, e.g. `. .\testing-env.ps1 -JMeterHome 'D:\apache-jmeter-5.6.3'` |
-| `$JMeter` seems empty | You forgot the dot | Run `. .\testing-env.ps1` — dot, space, then the name |
+| `The expression after '&' ... was not valid` | This window hasn't been set up, so `$JMeter` is empty | Do [Step 2](#step-2--open-powershell-and-set-it-up) again **in this window**, then run the command again |
+| `testing-env.ps1` says *NOTHING WAS SAVED* | It was run without the leading dot | Run `. .\testing-env.ps1` — dot, space, then the name |
 | `running scripts is disabled` | Windows is blocking scripts | Run `Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass`, then try again. This only affects this window |
 | `java is not recognized` | Java isn't installed, or this window wasn't set up | Install Java (Step 1), then run Step 2 in this window |
 | `Port 8080 is already in use` | Something else is using it | The message names it. Close it, or use `.\make-apache-conf.ps1 -Port 8090` — then use `8090` everywhere instead |
