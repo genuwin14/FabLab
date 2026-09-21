@@ -46,7 +46,7 @@ Collect these first — stopping halfway to hunt for a credential is how deploym
 - [ ] A domain name, already pointed at the Hostinger nameservers (check **hPanel → Domains**; DNS can take a few hours to propagate).
 - [ ] The full project folder on your machine, with the app working locally.
 - [ ] Google OAuth credentials (Client ID + Secret) from the Google Cloud console — you will add a new redirect URI in [§11](#11-google-sign-in).
-- [ ] The PhilSMS API token, if you are switching SMS on ([§12](#12-sms)).
+- [ ] The PhilSMS API token or the UniSMS secret key, if you are switching SMS on ([§12](#12-sms)).
 - [ ] Decide now: **fresh empty database, or a copy of your local data?** ([§8.3](#83-schema-and-data))
 
 ---
@@ -504,6 +504,7 @@ you listed can sign in. Publish it before a demo.
 | :--- | :--- |
 | `log` | Default and safe. Messages are written to `storage/logs/` and nothing is sent. Start here. |
 | `philsms` | Real SMS through the paid gateway. Set `PHILSMS_API_TOKEN` and `PHILSMS_SENDER`. |
+| `unisms` | Real SMS through UniSMS. Set `UNISMS_API_KEY` and `UNISMS_SENDER`, and register the delivery-receipt webhook — see [UniSms.md](UniSms.md). |
 | `macrodroid` | An Android phone sends from its own SIM. **Not viable here** — it needs a webhook the phone can reach, and a phone on a home Wi-Fi network is not reachable from Hostinger's servers. Use `philsms` in production. |
 
 Test before you rely on it:

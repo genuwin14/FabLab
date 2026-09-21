@@ -24,10 +24,10 @@ None of this needs new code. It is all committed and tested.
 
 | Piece | Where | State |
 | :--- | :--- | :--- |
-| Driver-switchable SMS service | [`app/Services/SmsService.php`](../app/Services/SmsService.php) | Done — `macrodroid`, `philsms` and `log` drivers |
+| Driver-switchable SMS service | [`app/Services/SmsService.php`](../app/Services/SmsService.php) | Done — `macrodroid`, `philsms`, `unisms` and `log` drivers |
 | Settings | [`config/sms.php`](../config/sms.php) | Done — read through `config()`, so `config:cache` is safe |
 | Test command | `php artisan sms:test` | Done — prints the driver, the webhook, and why a send failed |
-| Automated tests | [`tests/Feature/SmsSendingTest.php`](../tests/Feature/SmsSendingTest.php) | 16 passing |
+| Automated tests | [`tests/Feature/SmsSendingTest.php`](../tests/Feature/SmsSendingTest.php) | 20 passing |
 | Where it is called | Registration, OTP resend, password reset | Done |
 
 The `.env` on this machine **already has a webhook URL saved** from the last

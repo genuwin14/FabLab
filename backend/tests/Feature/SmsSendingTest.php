@@ -158,6 +158,69 @@ class SmsSendingTest extends TestCase
         });
     }
 
+    private function uniSms(array $overrides = []): SmsService
+    {
+        config([
+            'sms.driver' => 'unisms',
+            'sms.country_code' => '63',
+            'sms.drivers.unisms' => array_merge([
+                'url' => 'https://unismsapi.com/api',
+                'key' => 'test-key',
+                'sender' => 'FabLabs',
+                'timeout' => 15,
+                'webhook_secret' => 'test-secret',
+            ], $overrides),
+        ]);
+
+        return new SmsService();
+    }
+
+    public function test_unisms_posts_with_basic_auth_and_an_e164_recipient(): void
+    {
+        Http::fake(['*' => Http::response(['message' => ['reference_id' => 'msg_abc']], 201)]);
+
+        $this->assertTrue($this->uniSms()->send('09171234567', 'Your FabLab code is 123456'));
+
+        Http::assertSent(function (Request $request) {
+            return $request->url() === 'https://unismsapi.com/api/sms'
+                // The key is the Basic username with an empty password — not a
+                // bearer token, which is what PhilSMS takes.
+                && $request->hasHeader('Authorization', 'Basic ' . base64_encode('test-key:'))
+                // Unlike PhilSMS, UniSMS wants the plus.
+                && $request['recipient'] === '+639171234567'
+                && $request['content'] === 'Your FabLab code is 123456'
+                && $request['sender_id'] === 'FabLabs';
+        });
+    }
+
+    public function test_unisms_refuses_to_call_without_a_key(): void
+    {
+        Http::fake();
+
+        $this->assertFalse($this->uniSms(['key' => ''])->send('09171234567', 'hi'));
+
+        Http::assertNothingSent();
+    }
+
+    public function test_unisms_rejects_an_over_long_message_before_spending_the_call(): void
+    {
+        Http::fake();
+
+        // 671 characters — UniSMS caps a message at 670 and 422s the rest.
+        $this->assertFalse($this->uniSms()->send('09171234567', str_repeat('a', 671)));
+        $this->assertTrue($this->uniSms()->send('09171234567', str_repeat('a', 670)));
+
+        Http::assertSentCount(1);
+    }
+
+    public function test_a_rejected_unisms_send_is_a_failure_not_an_exception(): void
+    {
+        // What an empty credit balance or an unregistered sender looks like.
+        Http::fake(['*' => Http::response(['errors' => 'Insufficient credits'], 422)]);
+
+        $this->assertFalse($this->uniSms()->send('09171234567', 'hi'));
+    }
+
     public function test_an_unknown_driver_fails_loudly_rather_than_pretending(): void
     {
         Http::fake();

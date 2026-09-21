@@ -11,6 +11,8 @@ return [
     |                its own SIM. Laravel makes an outbound HTTP call, so this
     |                works from localhost with no public URL of its own.
     | 'philsms'    — the paid PhilSMS gateway.
+    | 'unisms'     — the UniSMS gateway (unismsapi.com). Prepaid credits, and a
+    |                Sender ID registered on the account before anything sends.
     | 'log'        — writes the message to the Laravel log and reports success.
     |                Use it in development so nothing is actually sent.
     |
@@ -65,6 +67,25 @@ return [
             'token' => env('PHILSMS_API_TOKEN'),
             'sender' => env('PHILSMS_SENDER', 'FabLabs'),
             'timeout' => (int) env('PHILSMS_TIMEOUT', 15),
+        ],
+
+        'unisms' => [
+            'url' => env('UNISMS_URL', 'https://unismsapi.com/api'),
+
+            // The secret key from the dashboard. It goes in as the HTTP Basic
+            // *username*, with an empty password — not as a bearer token.
+            'key' => env('UNISMS_API_KEY'),
+
+            // Has to be a Sender ID already approved on the account; UniSMS
+            // rejects the send outright if it is not.
+            'sender' => env('UNISMS_SENDER', 'FabLabs'),
+
+            'timeout' => (int) env('UNISMS_TIMEOUT', 15),
+
+            // From the dashboard's Webhooks page. UniSMS repeats it in the
+            // 'webhook-secret-key' header of every delivery receipt. Left
+            // blank, /api/webhooks/unisms turns every call away.
+            'webhook_secret' => env('UNISMS_WEBHOOK_SECRET'),
         ],
 
         'log' => [

@@ -53,6 +53,7 @@ class SmsService
             return match ($this->driver) {
                 'macrodroid' => $this->sendViaMacroDroid($recipient, $message),
                 'philsms' => $this->sendViaPhilSms($recipient, $message),
+                'unisms' => $this->sendViaUniSms($recipient, $message),
                 'log' => $this->sendViaLog($recipient, $message),
                 default => $this->unknownDriver(),
             };
@@ -141,6 +142,63 @@ class SmsService
     }
 
     /**
+     * Hand the message to UniSMS (unismsapi.com).
+     *
+     * Unlike PhilSMS this is HTTP Basic, with the secret key as the username
+     * and no password, and it wants the recipient in E.164 — leading plus and
+     * all. A 201 means UniSMS accepted and queued it; whether the network
+     * actually delivered it arrives later on the webhook.
+     */
+    private function sendViaUniSms(string $recipient, string $message): bool
+    {
+        $key = (string) ($this->config['key'] ?? '');
+
+        if ($key === '') {
+            Log::error('SMS (unisms): UNISMS_API_KEY is not set.');
+
+            return false;
+        }
+
+        // UniSMS caps a message at 670 characters and 422s anything longer,
+        // so there is no point spending the call.
+        if (mb_strlen($message) > 670) {
+            Log::error('SMS (unisms): message is ' . mb_strlen($message) . ' characters; the limit is 670.');
+
+            return false;
+        }
+
+        $recipient = '+' . $this->toInternational($recipient);
+
+        $response = Http::timeout((int) ($this->config['timeout'] ?? 15))
+            ->withBasicAuth($key, '')
+            ->acceptJson()
+            ->post(rtrim((string) ($this->config['url'] ?? ''), '/') . '/sms', [
+                'recipient' => $recipient,
+                'content' => $message,
+                'sender_id' => $this->config['sender'] ?? 'FabLabs',
+            ]);
+
+        if ($response->successful()) {
+            // Logged so a delivery receipt on the webhook, which carries only
+            // this id, can be traced back to the message that caused it.
+            $reference = (string) ($response->json('message.reference_id') ?? 'unknown');
+
+            Log::info("SMS (unisms) accepted for {$recipient}. Reference: {$reference}");
+
+            return true;
+        }
+
+        // 429 carries how long to wait; the rest are a bad key, an
+        // unregistered sender, or an empty credit balance.
+        $retry = $response->header('x-retry-after-ms');
+        $suffix = $retry !== '' ? " Retry after: {$retry}ms." : '';
+
+        Log::error("SMS (unisms) failed for {$recipient}. Status: {$response->status()}. Body: {$response->body()}{$suffix}");
+
+        return false;
+    }
+
+    /**
      * Development driver: record the message instead of spending a text.
      */
     private function sendViaLog(string $recipient, string $message): bool
@@ -156,7 +214,7 @@ class SmsService
 
     private function unknownDriver(): bool
     {
-        Log::error("SMS driver \"{$this->driver}\" is not one of: macrodroid, philsms, log.");
+        Log::error("SMS driver \"{$this->driver}\" is not one of: macrodroid, philsms, unisms, log.");
 
         return false;
     }
