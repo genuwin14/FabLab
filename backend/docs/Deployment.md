@@ -145,6 +145,34 @@ Use this if your plan does not expose the root-folder setting.
    if (file_exists($maintenance = __DIR__.'/../fablab/storage/framework/maintenance.php')) {
    ```
 
+### Option C — everything in `public_html`, behind a front-door `.htaccess`
+
+Use this when the plan gives you neither SSH nor the root-folder setting, which
+is the usual shape of the cheapest tier. It is what the ready-made release
+package is built for.
+
+1. Upload and extract the whole project into `~/public_html/`, so that
+   `public_html/artisan` and `public_html/.htaccess` both exist.
+2. That top-level `.htaccess` rewrites every request into `public/`:
+
+   ```apache
+   RewriteEngine On
+   RewriteCond %{REQUEST_URI} !^/public/
+   RewriteRule ^(.*)$ public/$1 [L]
+   ```
+
+   Nothing outside `public/` can be fetched, because nothing outside `public/`
+   is ever reached — `/.env` resolves to `public/.env`, which does not exist.
+   The condition is what stops the rewrite looping on its own output. The same
+   file then denies `.env`, `composer.lock`, `*.sql` and `*.zip` by name, so a
+   rewrite that somehow failed still could not hand them out.
+3. Delete any `default.php` or placeholder `index.html` Hostinger left behind in
+   `public_html`, or it may be served instead of the app.
+
+The trade-off is that the application sits inside the webroot, which makes that
+`.htaccess` load-bearing. Check it with the test below before anyone else has
+the URL.
+
 > Whichever option you pick, confirm the guard works: browsing to
 > `https://<your-domain>/.env` must return **403 or 404**, never a file download.
 > If it downloads, stop and fix the layout before going any further.
@@ -242,8 +270,9 @@ SESSION_SECURE_COOKIE=true
 SANCTUM_STATEFUL_DOMAINS=your-domain.com,www.your-domain.com
 
 CACHE_STORE=database
-QUEUE_CONNECTION=database
+QUEUE_CONNECTION=database   # sync if the plan has no per-minute cron — §9.2
 FILESYSTEM_DISK=local
+FILESYSTEM_PUBLIC_ROOT=      # public/storage if you have no shell — §8.4
 BROADCAST_CONNECTION=log
 
 MAIL_MAILER=smtp
@@ -356,6 +385,19 @@ php artisan storage:link
 Run it via the cron trick from §8.1 if you have no SSH. To confirm it worked,
 open any product image on the live site — a broken image here almost always
 means a missing symlink.
+
+**No shell at all? Point the disk at the webroot instead.** The File Manager
+cannot create a symlink, and `storage:link` needs a command line. Set
+
+```ini
+FILESYSTEM_PUBLIC_ROOT=public/storage
+```
+
+in `.env` and the `public` disk writes to `public/storage` as an ordinary
+folder, which the web server already serves. The URLs do not change, because
+`Storage::url()` is built from `APP_URL` rather than from the path on disk.
+Carry any files you already have across by copying `storage/app/public/` into
+`public/storage/` once, before you zip the release.
 
 ### 8.5 Move inline images onto disk (optional)
 
