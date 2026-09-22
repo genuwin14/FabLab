@@ -2,3 +2,7 @@
 # The leading slash anchors this to the repository root, so the user
 # guides in backend/docs/ are still tracked.
 /docs/
+
+# Built deployment packages (zips, database dumps). Rebuildable, and the
+# .env inside carries live credentials, so it never goes in the repo.
+/release/
