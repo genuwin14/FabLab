@@ -1,5 +1,12 @@
 <?php
 
+// Where the "public" disk writes. Left empty, uploads go to storage/app/public
+// and are served to the browser through the public/storage symlink. A host that
+// cannot create that symlink (shared hosting with no shell) sets
+// FILESYSTEM_PUBLIC_ROOT=public/storage instead, so the disk writes to a real
+// folder inside the webroot and the same URLs keep working.
+$publicDiskRoot = env('FILESYSTEM_PUBLIC_ROOT');
+
 return [
 
     /*
@@ -40,7 +47,7 @@ return [
 
         'public' => [
             'driver' => 'local',
-            'root' => storage_path('app/public'),
+            'root' => $publicDiskRoot ? base_path($publicDiskRoot) : storage_path('app/public'),
             'url' => rtrim(env('APP_URL', 'http://localhost'), '/').'/storage',
             'visibility' => 'public',
             'throw' => false,
