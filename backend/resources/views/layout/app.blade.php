@@ -495,6 +495,158 @@
         });
     </script>
 
+    <!-- ==================================================================
+         Notification toasts (admin / staff / customer)
+
+         The bell's poll (partials/notification-bell) hands every
+         notification that has arrived since the reader last looked to
+         showNotificationToast(), whatever page they are on. Clicking one
+         goes through notifications.open, like the bell's own items.
+         ================================================================== -->
+    <style>
+        .notif-toast {
+            --notif-tone: #ffc508;
+            --bs-toast-bg: #0e2e45;
+            --bs-toast-color: #fff;
+            --bs-toast-border-color: rgba(255, 255, 255, 0.08);
+            --bs-toast-max-width: 370px;
+            --bs-toast-border-radius: 12px;
+            width: 370px;
+            max-width: calc(100vw - 2rem);
+            border-left: 4px solid var(--notif-tone);
+            box-shadow: 0 0.75rem 2rem rgba(5, 17, 26, 0.35);
+            overflow: hidden;
+        }
+
+        .notif-toast-warning { --notif-tone: #ffb020; }
+        .notif-toast-danger { --notif-tone: #ff5c6a; }
+
+        .notif-toast-link {
+            display: flex;
+            gap: 12px;
+            flex: 1 1 auto;
+            min-width: 0;
+            padding: 12px 6px 12px 14px;
+            color: inherit;
+            text-decoration: none;
+        }
+
+        .notif-toast-link:hover,
+        .notif-toast-link:focus-visible {
+            background: rgba(255, 255, 255, 0.04);
+            color: inherit;
+        }
+
+        .notif-toast-icon {
+            flex-shrink: 0;
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.08);
+            color: var(--notif-tone);
+            font-size: 1.05rem;
+        }
+
+        .notif-toast-content {
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+        }
+
+        .notif-toast-meta {
+            font-size: 0.64rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: var(--notif-tone);
+        }
+
+        .notif-toast-time:not(:empty)::before {
+            content: '·';
+            margin: 0 0.35em;
+        }
+
+        .notif-toast-time {
+            font-weight: 500;
+            text-transform: none;
+            letter-spacing: 0;
+            color: rgba(255, 255, 255, 0.45);
+        }
+
+        .notif-toast-title {
+            margin-top: 2px;
+            font-size: 0.86rem;
+            font-weight: 600;
+            line-height: 1.3;
+            overflow-wrap: anywhere;
+        }
+
+        .notif-toast-body {
+            margin-top: 2px;
+            font-size: 0.78rem;
+            line-height: 1.35;
+            color: rgba(255, 255, 255, 0.72);
+            overflow: hidden;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow-wrap: anywhere;
+        }
+
+        .notif-toast-close {
+            flex-shrink: 0;
+            margin: 12px 12px 0 0;
+            font-size: 0.65rem;
+        }
+    </style>
+
+    <script>
+        window.showNotificationToast = function (item) {
+            const container = document.querySelector('.toast-container');
+            if (!item || !container || !window.bootstrap) return;
+
+            const toast = document.createElement('div');
+            toast.className = 'toast notif-toast notif-toast-' + (item.tone || 'info');
+            toast.setAttribute('role', 'status');
+            toast.setAttribute('aria-live', 'polite');
+            toast.setAttribute('aria-atomic', 'true');
+            toast.innerHTML =
+                '<div class="d-flex align-items-start">' +
+                    '<a class="notif-toast-link">' +
+                        '<span class="notif-toast-icon"><i></i></span>' +
+                        '<span class="notif-toast-content">' +
+                            '<span class="notif-toast-meta"><span class="notif-toast-category"></span><span class="notif-toast-time"></span></span>' +
+                            '<span class="notif-toast-title"></span>' +
+                            '<span class="notif-toast-body"></span>' +
+                        '</span>' +
+                    '</a>' +
+                    '<button type="button" class="btn-close btn-close-white notif-toast-close" data-bs-dismiss="toast" aria-label="Close"></button>' +
+                '</div>';
+
+            // Filled in as text, never as markup: titles and bodies carry
+            // names and offices that customers typed.
+            toast.querySelector('.notif-toast-link').href = item.url || '#';
+            toast.querySelector('.notif-toast-icon i').className = 'bi ' + (item.icon || 'bi-bell');
+            toast.querySelector('.notif-toast-category').textContent = item.category_label || 'Notification';
+            toast.querySelector('.notif-toast-time').textContent = item.time || '';
+            toast.querySelector('.notif-toast-title').textContent = item.title || '';
+
+            const body = toast.querySelector('.notif-toast-body');
+            if (item.body) {
+                body.textContent = item.body;
+            } else {
+                body.remove();
+            }
+
+            container.appendChild(toast);
+            toast.addEventListener('hidden.bs.toast', function () { toast.remove(); });
+            bootstrap.Toast.getOrCreateInstance(toast, { delay: 8000 }).show();
+        };
+    </script>
+
     <!-- Global Alert / Confirm Modal Script -->
     <script>
         (function () {

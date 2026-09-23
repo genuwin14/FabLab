@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Notifications\OutOfStockAlert;
 use Illuminate\Http\Request;
+use Illuminate\Notifications\DatabaseNotification;
 use Illuminate\Support\Carbon;
 
 class NotificationController extends Controller
@@ -33,24 +35,48 @@ class NotificationController extends Controller
     {
         $user = $request->user();
 
-        $items = $user->notifications()->latest()->limit(10)->get()->map(function ($n) {
-            return [
-                'id' => $n->id,
-                'title' => $n->data['title'] ?? 'Notification',
-                'body' => $n->data['body'] ?? '',
-                'icon' => $n->data['icon'] ?? 'bi-bell',
-                // Through open(), never the stored link itself: see Notifier::link().
-                'url' => route('notifications.open', $n->id),
-                'category' => $n->data['category'] ?? 'general',
-                'time' => $n->created_at->diffForHumans(),
-                'read' => $n->read_at !== null,
-            ];
-        });
+        $items = $user->notifications()->latest()->limit(10)->get()
+            ->map(fn (DatabaseNotification $n) => $this->present($n, (string) $user->role));
 
         return response()->json([
             'unread_count' => $user->unreadNotifications()->count(),
             'items' => $items,
         ]);
+    }
+
+    /**
+     * One notification as the bell's dropdown and its toasts draw it.
+     */
+    private function present(DatabaseNotification $n, string $role): array
+    {
+        $category = $n->data['category'] ?? 'general';
+
+        return [
+            'id' => $n->id,
+            'title' => $n->data['title'] ?? 'Notification',
+            'body' => $n->data['body'] ?? '',
+            'icon' => $n->data['icon'] ?? 'bi-bell',
+            // Through open(), never the stored link itself: see Notifier::link().
+            'url' => route('notifications.open', $n->id),
+            'category' => $category,
+            // The page it is about, as the reader's own sidebar names it.
+            'category_label' => match ($category) {
+                'order' => match ($role) { 'admin' => 'All Orders', 'staff' => 'Orders', default => 'My Orders' },
+                'stock' => $role === 'staff' ? 'Inventory Logs' : 'Stock Monitoring',
+                'purchase' => 'Purchase Orders',
+                'user' => $role === 'admin' ? 'Users' : 'Accounts',
+                'design' => 'Custom Design',
+                default => 'Notification',
+            },
+            // How loudly a toast says it: running out is worse than running low.
+            'tone' => match (true) {
+                $n->type === OutOfStockAlert::class => 'danger',
+                $category === 'stock' => 'warning',
+                default => 'info',
+            },
+            'time' => $n->created_at->diffForHumans(),
+            'read' => $n->read_at !== null,
+        ];
     }
 
     /**

@@ -204,7 +204,7 @@ Every status change notifies all staff and admins, so the whole team sees a deli
 
 ## 11. Notifications
 
-The bell refreshes every 30 seconds and holds your ten most recent items; **View all** opens the full list, 20 per page. As staff you receive:
+The bell refreshes every 30 seconds and holds your ten most recent items; **View all** opens the full list, 20 per page. A new notification also pops up as a toast in the bottom-right corner of whatever page you are on, for about eight seconds; click it to open the page it refers to. If several arrive at once you get the three newest and one "N more" toast, and a toast is never shown twice. Stock alerts stand out: amber for low stock, red for out of stock. As staff you receive:
 
 | Notification | Raised when |
 | :--- | :--- |

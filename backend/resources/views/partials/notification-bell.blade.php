@@ -117,6 +117,8 @@
         const POLL_URL = @json(route('notifications.poll'));
         const READ_ALL_URL = @json(route('notifications.readAll'));
         const INDEX_URL = @json(route('notifications.index'));
+        // Per reader, so two accounts sharing a browser keep separate tallies.
+        const SEEN_KEY = 'fablab:notifications-seen:' + @json($notifUser?->id);
         const csrf = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
 
         const badge = root.querySelector('[data-notif-badge]');
@@ -153,7 +155,12 @@
 
         function getJson(url) {
             if (window.axios) return window.axios.get(url).then(function (r) { return r.data; });
-            return fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' } }).then(function (r) { return r.json(); });
+            return fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' } }).then(function (r) {
+                // A lapsed session answers 401; treat it as no news rather
+                // than as an empty list.
+                if (!r.ok) throw new Error('poll ' + r.status);
+                return r.json();
+            });
         }
 
         function post(url) {
@@ -161,10 +168,63 @@
             return fetch(url, { method: 'POST', headers: { 'X-CSRF-TOKEN': csrf, 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' } });
         }
 
+        // ---- Toasts --------------------------------------------------------
+        // Which notifications this reader has already been shown, kept in
+        // localStorage so moving between pages or tabs never repeats a toast.
+        let seenInMemory = null;
+
+        function readSeen() {
+            try {
+                const raw = window.localStorage.getItem(SEEN_KEY);
+                return raw ? JSON.parse(raw) : null;
+            } catch (e) {
+                return seenInMemory;
+            }
+        }
+
+        function writeSeen(ids) {
+            seenInMemory = ids;
+            try { window.localStorage.setItem(SEEN_KEY, JSON.stringify(ids)); } catch (e) { /* private window: this page only */ }
+        }
+
+        // Toast every unread notification this reader hasn't been shown yet.
+        // The first poll a browser ever makes only records the list as it
+        // stands, so an old backlog never bursts onto the screen at once.
+        function toastArrivals(items) {
+            const ids = items.map(function (it) { return it.id; });
+            const seen = readSeen();
+
+            if (!Array.isArray(seen)) {
+                writeSeen(ids);
+                return;
+            }
+
+            const fresh = items.filter(function (it) { return !it.read && seen.indexOf(it.id) === -1; });
+            writeSeen(ids.concat(seen.filter(function (id) { return ids.indexOf(id) === -1; })).slice(0, 100));
+
+            if (!fresh.length || typeof window.showNotificationToast !== 'function') return;
+
+            // More than three at once becomes one "and N more" toast on top.
+            const extra = fresh.length - 3;
+            if (extra > 0) {
+                window.showNotificationToast({
+                    title: extra + ' more new notification' + (extra === 1 ? '' : 's'),
+                    body: 'Open the bell to see them all.',
+                    icon: 'bi-bell',
+                    url: INDEX_URL,
+                    category_label: 'Notifications',
+                });
+            }
+
+            // Oldest first, so the newest lands nearest the corner.
+            fresh.slice(0, 3).reverse().forEach(function (it) { window.showNotificationToast(it); });
+        }
+
         function poll() {
             getJson(POLL_URL).then(function (data) {
                 setBadge(data.unread_count || 0);
                 renderItems(data.items || []);
+                toastArrivals(data.items || []);
             }).catch(function () { /* ignore transient errors */ });
         }
 
@@ -182,7 +242,23 @@
         }
 
         window.refreshNotifications = poll;
-        poll();
-        setInterval(poll, 30000);
+
+        // Wait for the page: the toast renderer and Bootstrap both load at
+        // the bottom of the layout, after this navbar.
+        function start() {
+            poll();
+            setInterval(poll, 30000);
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', start);
+        } else {
+            start();
+        }
+
+        // Coming back to the tab catches up now, not at the next tick.
+        document.addEventListener('visibilitychange', function () {
+            if (document.visibilityState === 'visible') poll();
+        });
     })();
 </script>

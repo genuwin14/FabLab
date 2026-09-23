@@ -201,7 +201,7 @@ The slip is available once the order reaches Approved, and stays available throu
 
 ## 12. Notifications
 
-The **bell** in the top bar carries an unread count and refreshes every 30 seconds. Click it for your ten most recent notifications, or **View all** for the full list (20 per page).
+The **bell** in the top bar carries an unread count and refreshes every 30 seconds. Click it for your ten most recent notifications, or **View all** for the full list (20 per page). A new notification also pops up as a toast in the bottom-right corner of whatever page you are on, for about eight seconds; click it to open the page it refers to. If several arrive at once you get the three newest and one "N more" toast, and a toast is never shown twice.
 
 You'll be notified when your order status changes. From the list you can click a notification to open the order it refers to, **mark all as read**, or delete individual items.
 

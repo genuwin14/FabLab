@@ -307,7 +307,7 @@ Prefer disabling to deleting: it revokes access without touching order history.
 
 ## 16. Notifications
 
-The bell refreshes every 30 seconds and holds the ten most recent items; **View all** pages through the rest, 20 at a time. Admins receive everything staff do:
+The bell refreshes every 30 seconds and holds the ten most recent items; **View all** pages through the rest, 20 at a time. A new notification also pops up as a toast in the bottom-right corner of whatever page you are on, for about eight seconds; click it to open the page it refers to. If several arrive at once you get the three newest and one "N more" toast, and a toast is never shown twice. Stock alerts stand out: amber for low stock, red for out of stock. Admins receive everything staff do:
 
 | Notification | Raised when |
 | :--- | :--- |

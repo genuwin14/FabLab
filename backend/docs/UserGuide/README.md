@@ -168,7 +168,7 @@ Low-stock and out-of-stock notifications fire for **products, raw materials, and
 
 ## 9. Notification reference
 
-The bell in the top bar polls every 30 seconds and shows the ten most recent items; the full page at `/notifications` pages through them 20 at a time. Every role has a personal on/off switch in Settings — turning it off stops all in-app notifications for that account.
+The bell in the top bar polls every 30 seconds, and again whenever you come back to the tab, and shows the ten most recent items; the full page at `/notifications` pages through them 20 at a time. Anything that arrived since you last looked also pops up as a toast on whatever page you are on, for every role — red for out of stock, amber for low stock. Every role has a personal on/off switch in Settings — turning it off stops all in-app notifications for that account.
 
 | Event | Goes to | Links to |
 | :--- | :--- | :--- |
