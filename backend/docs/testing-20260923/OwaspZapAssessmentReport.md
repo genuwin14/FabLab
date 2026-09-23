@@ -30,6 +30,22 @@ password-reset forms sent no real email).
 
 ---
 
+## 1.1 The OWASP ZAP desktop app in action
+
+![ZAP active scan attacking the FabLab site](screenshots/zap-app-02-active-scan.png)
+
+*Figure A — OWASP ZAP 2.17.0 running an active scan against the FabLab site. The Active Scan tab lists the attack requests being sent to `/login`, `/register` and `/forgot-password`.*
+
+![ZAP Alerts — 0 High](screenshots/zap-app-04-alerts.png)
+
+*Figure B — ZAP's Alerts panel after the scan: 13 alert types, and the risk flags in the status bar read **0 High**, 3 Medium, 6 Low, 4 Informational.*
+
+The site tree and request history are also saved
+(`screenshots/zap-app-01-sites-history.png`). These desktop-app screenshots are
+the same kind of spider + active scan described in [§5](#5-local-copy--active-attack-scan-result).
+
+---
+
 ## 2. Results against the checklist
 
 | # | Activity | Result | Basis |

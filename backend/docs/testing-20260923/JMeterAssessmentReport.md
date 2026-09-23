@@ -32,6 +32,24 @@ these tests except for read-only browsing and logins.
 
 ---
 
+## 1.1 The JMeter desktop app in action
+
+![JMeter running the FabLab test — 40 of 40 threads active](screenshots/jmeter-app-02-running-threads.png)
+
+*Figure A — Apache JMeter 5.6.3 running the FabLab load test. Top-right: 40 of 40 virtual users active, clock running.*
+
+![JMeter Summary Report — 0.00% errors](screenshots/jmeter-app-04-summary-report.png)
+
+*Figure B — The Summary Report inside JMeter after the run: 1,280 samples, **0.00% Error %** on every request.*
+
+These desktop-app screenshots come from a 40-user run of the same plan, captured
+to show the tool itself; the headline figures in [§3](#3-the-numbers) are from
+the full 50-user run. The Aggregate Report, View Results Tree and the loaded test
+plan are also saved (`screenshots/jmeter-app-03-aggregate-report.png`,
+`jmeter-app-05-results-tree.png`, `jmeter-app-01-test-plan.png`).
+
+---
+
 ## 2. Results against the checklist
 
 | # | Activity | Result | Basis (measured) |
