@@ -83,11 +83,14 @@
                 </div>
             </div>
 
-            <form method="POST" id="closePrForm" class="m-0">
+            {{-- novalidate: the required-reason check below replaces the
+                 browser's bubble, and also refuses a reason of only spaces. --}}
+            <form method="POST" id="closePrForm" class="m-0" novalidate>
                 @csrf
                 <div class="modal-body p-4 bg-white">
-                    <h6 class="order-section-title">
+                    <h6 class="order-section-title d-flex align-items-center">
                         <i class="bi bi-exclamation-triangle me-2 text-danger"></i>Reason for Closing
+                        <span class="order-required-pill ms-2">Required</span>
                     </h6>
 
                     <div class="alert alert-warning border-0 d-flex align-items-start mb-3 rounded-3">
@@ -107,15 +110,18 @@
                     @endphp
                     <div class="mb-2 d-flex flex-wrap gap-1">
                         @foreach($closeReasons as $reason)
-                            <button type="button" class="order-reason-chip"
-                                onclick="document.getElementById('closePrReason').value = '{{ $reason }}'">
+                            <button type="button" class="order-reason-chip" data-reason-for="closePrReason"
+                                data-reason="{{ $reason }}">
                                 {{ $reason }}
                             </button>
                         @endforeach
                     </div>
 
                     <textarea name="reason" id="closePrReason" class="form-control order-field-input" rows="3"
-                        placeholder="Tell the customer why this is being closed..." required></textarea>
+                        maxlength="1000" aria-describedby="closePrReasonHelp" data-required-reason required
+                        placeholder="Tell the customer why this is being closed..."></textarea>
+                    <div class="invalid-feedback">Give a reason before closing. The customer reads it on their order.</div>
+                    <div class="form-text" id="closePrReasonHelp">The customer sees this reason on their order.</div>
                 </div>
 
                 <div class="order-modal-footer">
@@ -167,6 +173,9 @@
             this.querySelector('#closePrForm').action = trigger.getAttribute('data-url');
             this.querySelector('#closePrOrderNumber').textContent = '#' + trigger.getAttribute('data-order-number');
             this.querySelector('#closePrReason').value = '';
+            this.querySelector('#closePrReason').classList.remove('is-invalid');
         });
     })();
 </script>
+
+@include('admin.order.components.required-reason')

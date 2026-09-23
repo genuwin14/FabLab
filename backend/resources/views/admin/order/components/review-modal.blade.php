@@ -63,9 +63,15 @@
                     @include('partials.order-materials-panel', ['panelId' => 'reviewMaterialsPanel'])
 
                     <!-- Cancellation Reason (Hidden by default) -->
+                    {{-- Rejecting or cancelling always needs a reason: the
+                         customer reads it on their order. submitReview()
+                         checks it before sending, because the form goes
+                         out by script and the browser's own `required`
+                         check never runs for that. --}}
                     <div id="cancellationSection" class="d-none">
-                        <h6 class="order-section-title">
+                        <h6 class="order-section-title d-flex align-items-center">
                             <i class="bi bi-exclamation-triangle me-2 text-danger"></i>Cancellation Reason
+                            <span class="order-required-pill ms-2">Required</span>
                         </h6>
                         <div class="alert alert-warning border-0 d-flex align-items-center mb-3 rounded-3">
                             <i class="bi bi-exclamation-triangle-fill me-2"></i>
@@ -82,14 +88,17 @@
                                 ];
                             @endphp
                             @foreach($commonReasons as $reason)
-                                <button type="button" class="order-reason-chip"
-                                    onclick="document.getElementById('reviewReason').value = '{{ $reason }}'">
+                                <button type="button" class="order-reason-chip" data-reason-for="reviewReason"
+                                    data-reason="{{ $reason }}">
                                     {{ $reason }}
                                 </button>
                             @endforeach
                         </div>
                         <textarea name="reason" id="reviewReason" class="form-control order-field-input" rows="3"
+                            maxlength="1000" aria-describedby="reviewReasonHelp" data-required-reason
                             placeholder="e.g., Insufficient stock for item X..."></textarea>
+                        <div class="invalid-feedback">Give a reason before cancelling. The customer reads it on their order.</div>
+                        <div class="form-text" id="reviewReasonHelp">The customer sees this reason on their order.</div>
                     </div>
                 </div>
 
@@ -147,6 +156,7 @@
         confirmBox.classList.remove('d-flex');
         document.getElementById('reviewReason').required = false;
         document.getElementById('reviewReason').value = '';
+        document.getElementById('reviewReason').classList.remove('is-invalid');
     }
 
     /**
@@ -169,6 +179,11 @@
     }
 
     function submitReview(status) {
+        // No reason, no cancellation — and the modal stays open to take one.
+        if (status === 'cancelled' && !window.requireReason(document.getElementById('reviewReason'))) {
+            return;
+        }
+
         document.getElementById('reviewStatus').value = status;
         document.getElementById('reviewOrderForm').submit();
     }
@@ -188,6 +203,15 @@
     }
 
     document.addEventListener('DOMContentLoaded', function () {
+        // This form only ever goes out through submitReview() and
+        // submitReviewWithLoading(). With a single editable material line,
+        // Enter in that box would otherwise submit it natively — as an
+        // approval, since that is the status field's default — even halfway
+        // through rejecting.
+        document.getElementById('reviewOrderForm')?.addEventListener('submit', function (event) {
+            event.preventDefault();
+        });
+
         const reviewModal = document.getElementById('reviewOrderModal');
         if (reviewModal) {
             reviewModal.addEventListener('hidden.bs.modal', function () {
@@ -198,6 +222,7 @@
                 confirmBox.classList.remove('d-flex');
                 document.getElementById('reviewReason').value = '';
                 document.getElementById('reviewReason').required = false;
+                document.getElementById('reviewReason').classList.remove('is-invalid');
 
                 const btn = document.getElementById('btnApproveOrder');
                 if (btn) {
@@ -269,3 +294,5 @@
     }
     #reviewItemsBody .review-item-thumb:hover::after { opacity: 1; }
 </style>
+
+@include('admin.order.components.required-reason')

@@ -46,13 +46,15 @@ class OrderController extends Controller
     {
         $request->validate([
             'status' => 'required|in:approved,cancelled',
-            'reason' => 'nullable|string|required_if:status,cancelled',
+            // The customer reads it on their order, so a rejection always
+            // carries one. The modal checks too; this is the backstop.
+            'reason' => 'nullable|string|max:1000|required_if:status,cancelled',
             // What the reviewer corrected the ink estimate to, keyed on the
             // material. The service ignores anything the order doesn't already
             // draw, so this only ever narrows or adjusts an existing line.
             'material_quantities' => 'nullable|array',
             'material_quantities.*' => 'nullable|numeric|min:0|max:99999999.9999'
-        ]);
+        ], $this->reasonMessages('rejecting'));
 
         $order = Order::with(['user', 'orderItems.product.rawMaterials', 'orderItems.customDesign'])->findOrFail($id);
 
@@ -177,8 +179,8 @@ class OrderController extends Controller
     public function cancel(Request $request, $id, OrderStockService $stock)
     {
         $request->validate([
-            'reason' => 'required|string',
-        ]);
+            'reason' => 'required|string|max:1000',
+        ], $this->reasonMessages('cancelling'));
 
         $order = Order::with(['user', 'orderItems.product.rawMaterials', 'orderItems.customDesign'])->findOrFail($id);
 
@@ -315,8 +317,8 @@ class OrderController extends Controller
     public function closePurchaseRequest(Request $request, $id, \App\Services\PurchaseRequestService $purchaseRequests)
     {
         $request->validate([
-            'reason' => 'required|string',
-        ]);
+            'reason' => 'required|string|max:1000',
+        ], $this->reasonMessages('closing'));
 
         $order = Order::with(['user', 'orderItems.product'])->findOrFail($id);
 
@@ -337,5 +339,22 @@ class OrderController extends Controller
     private function label(string $status): string
     {
         return str_replace('_', ' ', $status);
+    }
+
+    /**
+     * Say what is missing in the admin's words, not Laravel's ("The reason
+     * field is required when status is cancelled.").
+     *
+     * @return array<string, string>
+     */
+    private function reasonMessages(string $doing): array
+    {
+        $missing = "Give a reason for {$doing} this order. The customer reads it on their order.";
+
+        return [
+            'reason.required' => $missing,
+            'reason.required_if' => $missing,
+            'reason.max' => 'Keep the reason under 1,000 characters.',
+        ];
     }
 }
