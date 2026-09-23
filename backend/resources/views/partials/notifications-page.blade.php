@@ -56,7 +56,8 @@
                         </div>
                         <div class="flex-grow-1 min-w-0">
                             <div class="d-flex flex-wrap align-items-center gap-2">
-                                <a href="{{ $data['url'] ?? '#' }}" class="fw-semibold text-decoration-none text-dark">
+                                {{-- open() marks it read and redirects on this host. --}}
+                                <a href="{{ route('notifications.open', $n->id) }}" class="fw-semibold text-decoration-none text-dark">
                                     {{ $data['title'] ?? 'Notification' }}
                                 </a>
                                 <span class="badge rounded-pill {{ $meta['class'] }}" style="font-size: 0.65rem;">{{ $meta['label'] }}</span>

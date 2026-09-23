@@ -18,7 +18,8 @@
         <li>
             <div class="notification-list" data-notif-list>
                 @foreach($notifItems as $n)
-                    <a href="{{ $n->data['url'] ?? route('notifications.index') }}"
+                    {{-- open() marks it read and redirects on this host. --}}
+                    <a href="{{ route('notifications.open', $n->id) }}"
                         class="notification-item {{ $n->read_at ? '' : 'unread' }}" data-notif-item data-notif-id="{{ $n->id }}">
                         <span class="notification-item-icon"><i class="bi {{ $n->data['icon'] ?? 'bi-bell' }}"></i></span>
                         <span class="notification-item-body">
@@ -116,7 +117,6 @@
         const POLL_URL = @json(route('notifications.poll'));
         const READ_ALL_URL = @json(route('notifications.readAll'));
         const INDEX_URL = @json(route('notifications.index'));
-        const READ_URL_TEMPLATE = @json(route('notifications.read', ['id' => '__ID__']));
         const csrf = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
 
         const badge = root.querySelector('[data-notif-badge]');
@@ -141,7 +141,7 @@
             }
             if (empty) empty.setAttribute('hidden', '');
             list.innerHTML = items.map(function (it) {
-                return '<a href="' + (it.url || INDEX_URL) + '" class="notification-item ' + (it.read ? '' : 'unread') + '" data-notif-item data-notif-id="' + esc(it.id) + '">'
+                return '<a href="' + esc(it.url || INDEX_URL) + '" class="notification-item ' + (it.read ? '' : 'unread') + '" data-notif-item data-notif-id="' + esc(it.id) + '">'
                     + '<span class="notification-item-icon"><i class="bi ' + esc(it.icon || 'bi-bell') + '"></i></span>'
                     + '<span class="notification-item-body">'
                     + '<span class="notification-item-title">' + esc(it.title) + '</span>'
@@ -168,17 +168,8 @@
             }).catch(function () { /* ignore transient errors */ });
         }
 
-        if (list) {
-            list.addEventListener('click', function (e) {
-                const a = e.target.closest('[data-notif-item]');
-                if (!a) return;
-                e.preventDefault();
-                const id = a.getAttribute('data-notif-id');
-                const href = a.getAttribute('href') || INDEX_URL;
-                const go = function () { window.location.href = href; };
-                post(READ_URL_TEMPLATE.replace('__ID__', encodeURIComponent(id))).then(go).catch(go);
-            });
-        }
+        // Items are plain links to notifications.open, which marks the
+        // notification read on the way through — nothing to intercept.
 
         if (markAll) {
             markAll.addEventListener('click', function (e) {

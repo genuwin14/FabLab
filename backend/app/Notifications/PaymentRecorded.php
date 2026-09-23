@@ -36,7 +36,7 @@ class PaymentRecorded extends Notification
             'icon' => 'bi-receipt',
             'title' => "Order {$this->order->order_number}",
             'body' => "Payment received — receipt number {$this->order->payment_reference}. Bring it to collect your order.",
-            'url' => route('customer.orders.index') . '#order-' . $this->order->order_id,
+            'url' => route('customer.orders.index', [], false) . '#order-' . $this->order->order_id,
             'order_id' => $this->order->order_id,
         ];
     }

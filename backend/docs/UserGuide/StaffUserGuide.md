@@ -215,7 +215,7 @@ The bell refreshes every 30 seconds and holds your ten most recent items; **View
 | **Purchase order status changed** | Anyone moves a PO |
 | **Purchase order overdue** | A sent or confirmed PO passes its expected delivery date |
 
-Click any notification to jump to the page it refers to. Mark all as read, or delete items individually.
+Click any notification to jump to the page it refers to — a new order opens the order list filtered to that order — and it is marked read on the way. Mark all as read, or delete items individually.
 
 Alerts fire on the crossing, not on every movement below the line, so a shortage tells you once rather than on repeat. The [inventory watchlist](#6-inventory-watchlist) is the standing view of everything currently short.
 

@@ -18,7 +18,7 @@ class CustomDesignSubmitted extends Notification
     {
         $customer = $this->design->user->fullname ?? 'A customer';
         $product = $this->design->product->name ?? 'a product';
-        $url = ($notifiable->role ?? 'staff') === 'admin' ? route('admin.dashboard') : route('staff.dashboard');
+        $url = \App\Support\Notifier::routeFor($notifiable, 'dashboard');
 
         return [
             'category' => 'design',

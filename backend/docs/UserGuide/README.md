@@ -172,13 +172,15 @@ The bell in the top bar polls every 30 seconds and shows the ten most recent ite
 
 | Event | Goes to | Links to |
 | :--- | :--- | :--- |
-| New order placed | Staff + Admins | Their orders list |
-| New custom design saved | Staff + Admins | The design |
-| New customer registered | Staff + Admins | The customer |
-| Order status changed | The customer who owns it | Their orders page |
+| New order placed | Staff + Admins | Their orders list, filtered to that order |
+| New custom design saved | Staff + Admins | Their dashboard |
+| New customer registered | Staff + Admins | The Users list filtered to that customer (admins); the dashboard (staff) |
+| Order status changed | The customer who owns it | That order's details on their orders page |
 | Low stock / Out of stock | Staff + Admins | The inventory watchlist |
 | Purchase order status changed | Staff + Admins | That PO |
 | Purchase order overdue | Staff + Admins | That PO |
+
+Clicking a notification marks it read and opens its page on whichever address you are signed in on.
 
 The overdue check runs daily at 07:00 and flags POs still `sent` or `confirmed` past their expected delivery date, once each. It needs Laravel's scheduler running on the server — see [README §8](../../README.md#8-run-the-app).
 

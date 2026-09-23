@@ -318,6 +318,8 @@ The bell refreshes every 30 seconds and holds the ten most recent items; **View 
 | **Purchase order status changed** | Anyone moves a PO |
 | **Purchase order overdue** | A sent or confirmed PO passes its expected delivery date |
 
+Click a notification to open the page it refers to; it is marked read on the way. A new order opens All Orders filtered to that order, and a new customer opens Users filtered to them.
+
 Alerts fire on the crossing, not on every movement below the line. The [inventory watchlist](#11-inventory-watchlist) is the standing view of everything currently short.
 
 ---

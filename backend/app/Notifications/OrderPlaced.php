@@ -37,7 +37,7 @@ class OrderPlaced extends Notification
             'body' => 'We received your order worth ₱' . number_format((float) $this->order->total_amount, 2) . '.',
             // Fragment opens this order's details drawer on arrival, rather
             // than leaving the customer to find it in the list.
-            'url' => route('customer.orders.index') . '#order-' . $this->order->order_id,
+            'url' => route('customer.orders.index', [], false) . '#order-' . $this->order->order_id,
             'order_id' => $this->order->order_id,
         ];
     }

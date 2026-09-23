@@ -39,7 +39,8 @@ class NotificationController extends Controller
                 'title' => $n->data['title'] ?? 'Notification',
                 'body' => $n->data['body'] ?? '',
                 'icon' => $n->data['icon'] ?? 'bi-bell',
-                'url' => $n->data['url'] ?? null,
+                // Through open(), never the stored link itself: see Notifier::link().
+                'url' => route('notifications.open', $n->id),
                 'category' => $n->data['category'] ?? 'general',
                 'time' => $n->created_at->diffForHumans(),
                 'read' => $n->read_at !== null,
@@ -50,6 +51,21 @@ class NotificationController extends Controller
             'unread_count' => $user->unreadNotifications()->count(),
             'items' => $items,
         ]);
+    }
+
+    /**
+     * Follow a notification: mark it read and go where it points.
+     *
+     * Every link to a notification's page comes through here — the bell,
+     * the notifications list, the toasts — so the redirect is always built
+     * on the host the reader is signed in on, whatever was stored.
+     */
+    public function open(Request $request, string $id)
+    {
+        $notification = $request->user()->notifications()->findOrFail($id);
+        $notification->markAsRead();
+
+        return redirect()->to(\App\Support\Notifier::link($notification->data['url'] ?? null));
     }
 
     /**

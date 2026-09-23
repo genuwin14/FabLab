@@ -24,7 +24,8 @@ class NewOrderPlaced extends Notification
             'icon' => 'bi-cart-plus',
             'title' => "New order {$this->order->order_number}",
             'body' => "{$customer} placed an order worth ₱" . number_format((float) $this->order->total_amount, 2) . '.',
-            'url' => Notifier::routeFor($notifiable, 'orders.index'),
+            // The list filtered to this order, rather than the whole list.
+            'url' => Notifier::routeFor($notifiable, 'orders.index', ['search' => $this->order->order_number]),
         ];
     }
 }

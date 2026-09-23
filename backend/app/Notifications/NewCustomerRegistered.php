@@ -16,9 +16,11 @@ class NewCustomerRegistered extends Notification
 
     public function toArray(object $notifiable): array
     {
+        // Paths, not whole URLs: see Notifier::link(). The admin's opens the
+        // user list on this customer; staff have no user list.
         $url = ($notifiable->role ?? 'staff') === 'admin'
-            ? route('admin.users.index')
-            : route('staff.dashboard');
+            ? route('admin.users.index', ['search' => $this->customer->email], false)
+            : route('staff.dashboard', [], false);
 
         return [
             'category' => 'user',
