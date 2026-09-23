@@ -285,7 +285,7 @@ class PurchaseOrderController extends Controller
             ]);
         }
 
-        return redirect()->route('staff.purchase.index')->with('success', 'Purchase Order created successfully (Draft).');
+        return redirect()->route('staff.purchase.index')->with('success', 'Purchase Order added as a draft.');
     }
 
     public function show($id)

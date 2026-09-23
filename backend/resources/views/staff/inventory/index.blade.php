@@ -146,7 +146,7 @@
                                             </div>
                                             @if($supplierId !== 'no_supplier')
                                                 <a href="{{ route('staff.purchase.create', ['supplier_id' => $supplierId]) }}" class="btn btn-primary btn-sm rounded-pill px-3 flex-shrink-0">
-                                                    Create Validated PO
+                                                    Add PO
                                                 </a>
                                             @endif
                                         </div>

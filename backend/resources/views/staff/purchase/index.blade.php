@@ -143,9 +143,9 @@
                                     </a>
                                     <button type="button"
                                         class="btn btn-primary d-flex align-items-center justify-content-center gap-2 rounded-2 px-3"
-                                        data-bs-toggle="modal" data-bs-target="#createPOModal" title="Create PO">
+                                        data-bs-toggle="modal" data-bs-target="#createPOModal" title="Add PO">
                                         <i class="bi bi-plus-lg small"></i>
-                                        <span class="small fw-bold d-none d-lg-inline">Create PO</span>
+                                        <span class="small fw-bold d-none d-lg-inline">Add PO</span>
                                     </button>
                                 </div>
                             </form>
@@ -248,7 +248,7 @@
         </div>
     </div>
 
-    <!-- Create Purchase Order Modal -->
+    <!-- Add Purchase Order Modal -->
     <div class="modal fade purchase-modal" id="createPOModal" tabindex="-1" aria-labelledby="createPOModalLabel"
         aria-hidden="true">
         <div class="modal-dialog modal-xl modal-dialog-centered">
@@ -260,7 +260,7 @@
                             <span class="purchase-eyebrow">Staff</span>
                             <span class="purchase-eyebrow-divider">/</span>
                             <h5 class="modal-title fw-bold mb-0 text-white" id="createPOModalLabel">
-                                Create Purchase Order
+                                Add Purchase Order
                             </h5>
                         </div>
                         <button type="button" class="purchase-close-btn" data-bs-dismiss="modal" aria-label="Close">
@@ -389,7 +389,7 @@
                             Cancel
                         </button>
                         <button type="submit" class="btn purchase-btn-save rounded-pill px-4" id="saveBtn">
-                            <i class="bi bi-check-lg me-1"></i>Create Purchase Order
+                            <i class="bi bi-check-lg me-1"></i>Add Purchase Order
                         </button>
                     </div>
                 </form>
@@ -579,7 +579,7 @@
                 margin-bottom: 0;
             }
 
-            /* Create-PO modal (modal-xl, 2-column + dynamic items table). */
+            /* Add-PO modal (modal-xl, 2-column + dynamic items table). */
             .modal-title { font-size: 1rem; }
             .modal-body { font-size: 0.85rem; }
             .modal .form-label,

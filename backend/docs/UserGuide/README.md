@@ -36,7 +36,7 @@ FABLAB is a small production shop. The system covers four jobs:
 | Approve or reject an order | — | — | **Yes** |
 | Move an order through production | — | **Yes** | — |
 | Edit catalog items | — | Edit only | Create, edit, delete |
-| Create purchase orders | — | Yes | Yes |
+| Add purchase orders | — | Yes | Yes |
 | Reports and user management | — | — | **Yes** |
 
 The full breakdown is in [Who can do what](#10-who-can-do-what).
@@ -96,7 +96,7 @@ Procurement is shared: staff and admins have identical purchase-order powers.
 | :-- | :--- | :--- | :--- |
 | 1 | Something drops to or below its low-stock threshold | — | Products also raise a Low stock notification automatically |
 | 2 | Check the inventory watchlist, grouped by default supplier | Staff or Admin | [Staff §6](StaffUserGuide.md#6-inventory-watchlist) · [Admin §11](AdminUserGuide.md#11-inventory-watchlist) |
-| 3 | Create a PO for that supplier — lines are pre-filled from the shortfall | Staff or Admin | [Staff §10](StaffUserGuide.md#10-purchase-orders) · [Admin §12](AdminUserGuide.md#12-purchase-orders) |
+| 3 | Add a PO for that supplier — lines are pre-filled from the shortfall | Staff or Admin | [Staff §10](StaffUserGuide.md#10-purchase-orders) · [Admin §12](AdminUserGuide.md#12-purchase-orders) |
 | 4 | Send it to the supplier, then mark it `confirmed` when they agree | Staff or Admin | same |
 | 5 | Mark `delivered` when the goods arrive — **this is what puts stock back in** | Staff or Admin | same |
 

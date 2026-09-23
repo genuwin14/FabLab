@@ -173,9 +173,9 @@ One unit of texture stock is deducted per ordered unit when an admin approves an
 
 Every PO with its number, supplier, total cost, status, and expected delivery date. Search by PO number or supplier name; filter by status or date; status tabs carry counts.
 
-### Creating one
+### Adding one
 
-1. Click **Create PO**.
+1. Click **Add PO**.
 2. Pick the **supplier**.
 3. Add **lines**. Each line is one product, raw material, or texture, with a quantity and a cost per unit. The item picker is restricted to things that supplier actually provides.
 4. Optionally set an **expected delivery date** — this is what the overdue alert watches.

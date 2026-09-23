@@ -541,7 +541,7 @@ Restocking. Staff and admins have **identical** powers here.
 flowchart TD
     A["Item falls to or below<br/>its low-stock threshold"] --> B["Low stock notification<br/>→ staff + admins"]
     B --> C["Inventory watchlist<br/>grouped by default supplier"]
-    C --> D["Create PO for that supplier<br/>lines pre-filled from the shortfall<br/>status: draft"]
+    C --> D["Add PO for that supplier<br/>lines pre-filled from the shortfall<br/>status: draft"]
     D --> E["sent — emailed/phoned to supplier"]
     E --> F["confirmed — supplier acknowledged"]
     F --> G["delivered — goods arrived<br/>EVERY LINE ADDED TO STOCK"]
@@ -562,9 +562,9 @@ An item crosses its low-stock threshold and raises a notification to every staff
 
 Items with no default supplier sit in their own group and can't be pre-filled. **Only an admin can assign one** (`Assign default supplier` on the admin watchlist) — for a product you must also give the agreed cost.
 
-## F3. Create the purchase order
+## F3. Add the purchase order
 
-1. **Create PO**, or start from a supplier group on the watchlist.
+1. **Add PO**, or start from a supplier group on the watchlist.
 2. Pick the **supplier**.
 3. Add **lines** — each is one product, raw material, or texture with a quantity and cost per unit. The picker only offers what that supplier actually provides.
 4. Optionally set an **expected delivery date** — this is what the overdue alert watches.
