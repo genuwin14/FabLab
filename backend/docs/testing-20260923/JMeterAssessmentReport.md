@@ -82,10 +82,6 @@ The live site answered every request, with the public pages well under half a
 second. (The first `GET /login` per user carries the one-time TLS/DNS warm-up,
 which is why its maximum is higher.)
 
-![Live site — JMeter statistics, 0.00% errors](screenshots/jmeter-live-01-statistics.png)
-
-*Figure 1 — Live site, 10 concurrent users: 0.00% errors.*
-
 ### 3.2 Local — 50 concurrent users (browsing journey)
 
 Login once, then the landing page, shop, cart, orders, customizer and the
@@ -106,10 +102,6 @@ notification poll, over and over: 3,100 requests.
 Throughput ~28.6 requests/second with 50 users active; no request exceeded 2.9
 seconds; the median page under 50 concurrent users was ~0.5 s.
 
-![Local — JMeter statistics, 50 users, 0.00% errors](screenshots/jmeter-local-01-statistics.png)
-
-*Figure 2 — Local copy, 50 concurrent users: 3,100 requests, 0.00% errors.*
-
 ### 3.3 Local — order processing (60 orders)
 
 Six distinct customers, each ordering a different in-stock product, ten times
@@ -124,10 +116,6 @@ over: log in, add to cart, check out as a cash/personal order.
 
 **59 of 60 orders were placed successfully.** The single failure is explained
 below.
-
-![Local — order processing statistics](screenshots/jmeter-order-01-statistics.png)
-
-*Figure 3 — Order processing: 60 orders, 1 checkout failed (0.7% overall).*
 
 ---
 

@@ -70,10 +70,8 @@ were sent.**
 | Low | 6 |
 | Informational | 4 |
 
-![Live site — ZAP alert summary, 0 High](screenshots/zap-live-01-alert-summary.png)
-
-*Figure 1 — Live site alert summary: 0 High. (The numbers on the summary card
-count individual instances across pages; the table above counts distinct types.)*
+(The instance counts on ZAP's own summary card are higher — it counts each
+alert once per page; the table above counts distinct alert types.)
 
 Distinct findings on the live site:
 
@@ -86,10 +84,6 @@ Distinct findings on the live site:
   `XSRF-TOKEN` cookie without HttpOnly (by design), big-redirect body.
 - **Informational** — suspicious comments, cache-control notes, session and
   modern-web-app identification. No security impact.
-
-![Live site — ZAP alert list](screenshots/zap-live-02-alerts.png)
-
-*Figure 2 — The live-site alert list; nothing above Medium.*
 
 Note the deployment hides more than the local copy: the Hostinger CDN suppresses
 the Apache version banner, and HTTPS makes the session cookie `Secure`.
@@ -131,10 +125,6 @@ input it found.
 | Low | 7 |
 | Informational | 6 |
 
-![Local — ZAP alert summary, 0 High](screenshots/zap-local-01-alert-summary.png)
-
-*Figure 3 — Local active-scan alert summary: 0 High.*
-
 - **Medium (3)** — Content-Security-Policy header not set, missing
   anti-clickjacking header, Sub-Resource-Integrity missing on CDN scripts.
 - **Low (7)** — `Server` and `X-Powered-By` version leaks, in-page banner leak
@@ -145,10 +135,6 @@ input it found.
   last one is a note, **not** a confirmed hole: the `search` and `category` query
   strings are reflected into the page, but ZAP raised **no XSS alert**, because
   Blade escapes them.
-
-![Local — ZAP alert list](screenshots/zap-local-02-alerts.png)
-
-*Figure 4 — Local active-scan alert list; nothing above Medium.*
 
 **Nothing in the SQL-injection, cross-site-scripting, path-traversal,
 command-injection or remote-file-inclusion families produced an alert.**
