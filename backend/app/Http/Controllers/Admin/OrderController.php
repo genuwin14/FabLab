@@ -31,6 +31,7 @@ class OrderController extends Controller
             $query->where(function ($q) use ($search) {
                 $q->where('order_number', 'like', "%{$search}%")
                     ->orWhere('payment_reference', 'like', "%{$search}%")
+                    ->orWhere('office', 'like', "%{$search}%")
                     ->orWhereHas('user', function ($u) use ($search) {
                         $u->where('fullname', 'like', "%{$search}%");
                     });

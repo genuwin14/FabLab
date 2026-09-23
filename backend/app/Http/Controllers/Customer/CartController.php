@@ -25,7 +25,16 @@ class CartController extends Controller
     {
         $this->absorbSessionCart();
 
-        return view('customer.cart.index', ['cart' => $this->cartForView()]);
+        return view('customer.cart.index', [
+            'cart' => $this->cartForView(),
+            // Offered back as the customer types, so someone who orders for
+            // the same office every time does not have to spell it out again.
+            'pastOffices' => \App\Models\Order::where('user_id', auth()->id())
+                ->whereNotNull('office')
+                ->distinct()
+                ->orderBy('office')
+                ->pluck('office'),
+        ]);
     }
 
     /**
@@ -213,9 +222,25 @@ class CartController extends Controller
 
         $request->validate([
             'payment_method' => 'nullable|in:' . implode(',', \App\Models\Order::METHODS),
+            'ordered_for' => 'nullable|in:personal,office',
+            'office' => 'nullable|string|max:255',
+        ], [
+            'office.max' => 'The office name is too long — keep it under 255 characters.',
         ]);
 
         $method = $request->input('payment_method', \App\Models\Order::METHOD_CASH);
+
+        // Who the order is for. A Purchase Request is filed by an office, so
+        // one is required there whatever the form said; a PAXS order is
+        // personal unless the customer names an office.
+        $forOffice = $method === \App\Models\Order::METHOD_PR || $request->input('ordered_for') === 'office';
+        $office = $forOffice ? \Illuminate\Support\Str::squish((string) $request->input('office')) : '';
+
+        if ($forOffice && $office === '') {
+            return $this->checkoutRefused($request, $method === \App\Models\Order::METHOD_PR
+                ? 'A Purchase Request is filed by an office. Enter which office this order is for.'
+                : 'Enter which office this order is for.');
+        }
 
         $checkoutLines = $this->linesForKeys($selectedItems);
 
@@ -263,6 +288,7 @@ class CartController extends Controller
                         'user_id' => auth()->id(),
                         'status' => $status,
                         'payment_method' => $method,
+                        'office' => $office !== '' ? $office : null,
                         'pr_deadline' => $prDeadline,
                         'total_amount' => $total,
                     ]);

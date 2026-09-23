@@ -248,7 +248,7 @@
                 border-radius: 0 !important;
             }
             .data-table-card .table {
-                min-width: 760px;
+                min-width: 880px;
             }
             .data-table-card .table th,
             .data-table-card .table td {
@@ -461,6 +461,14 @@
 
                                         <div class="card-body p-3 d-flex flex-column">
                                             <div class="mb-3">
+                                                <div class="d-flex justify-content-between align-items-center gap-3 mb-1">
+                                                    <span class="text-muted small text-nowrap">Ordered for</span>
+                                                    <span class="fw-medium text-end text-truncate" title="{{ $order->ordered_for }}">{{ $order->ordered_for }}</span>
+                                                </div>
+                                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                                    <span class="text-muted small">Paid through</span>
+                                                    <span class="fw-medium">{{ $order->channel_label }}</span>
+                                                </div>
                                                 <div class="d-flex justify-content-between align-items-center mb-1">
                                                     <span class="text-muted small">Total Amount</span>
                                                     <span
@@ -593,6 +601,7 @@
                                         <thead>
                                             <tr class="bg-primary bg-opacity-10">
                                                 <th class="ps-4 py-3 text-primary small text-uppercase fw-bold border-0">Order ID</th>
+                                                <th class="py-3 text-primary small text-uppercase fw-bold border-0">Ordered For</th>
                                                 {{-- No Date column: the order number carries its date (ORDR-YYYYMMDD-####). --}}
                                                 <th class="py-3 text-primary small text-uppercase fw-bold border-0">Items</th>
                                                 <th class="py-3 text-primary small text-uppercase fw-bold border-0">Total</th>
@@ -620,6 +629,7 @@
                                                     data-status="{{ $order->status }}"
                                                     data-created-at="{{ $order->created_at->toDateString() }}">
                                                     <td class="ps-4 py-3 fw-bold text-dark">#{{ $order->order_number }}</td>
+                                                    <td>@include('partials.order-ordered-for')</td>
                                                     <td class="fw-bold text-dark">{{ $order->orderItems->sum('quantity') }}</td>
                                                     <td class="fw-bold text-primary">₱{{ number_format($order->total_amount, 2) }}</td>
                                                     <td>

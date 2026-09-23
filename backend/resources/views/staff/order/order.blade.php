@@ -94,7 +94,7 @@
                                             </span>
                                             <input type="text" name="search" value="{{ $search }}" autocomplete="off"
                                                 class="form-control border-start-0 rounded-end-2 ps-0"
-                                                placeholder="Search by Order ID, Receipt No, or Customer...">
+                                                placeholder="Search by Order ID, Receipt No, Customer, or Office...">
                                         </div>
                                     </div>
                                 </div>
@@ -157,6 +157,8 @@
                                                 Order ID</th>
                                             <th class="py-3 text-primary small text-uppercase fw-bold border-0">Receipt No
                                             </th>
+                                            {{-- Also carries who the order is for, under the email:
+                                                 a column of its own no longer fits a laptop screen. --}}
                                             <th class="py-3 text-primary small text-uppercase fw-bold border-0">Customer
                                             </th>
                                             {{-- No Date column: the order number carries its date (ORDR-YYYYMMDD-####). --}}
@@ -193,7 +195,7 @@
                                                 </td>
                                                 <td>
                                                     <div class="d-flex align-items-center gap-2">
-                                                        <div class="rounded-circle fw-bold d-flex align-items-center justify-content-center"
+                                                        <div class="rounded-circle fw-bold d-flex align-items-center justify-content-center flex-shrink-0"
                                                             style="width: 36px; height: 36px; background-color: #0e2e45; color: #ffc508; font-size: 0.78rem; letter-spacing: 0.02em;">
                                                             {{ strtoupper(substr($order->user->fullname ?? 'G', 0, 2)) }}
                                                         </div>
@@ -202,6 +204,7 @@
                                                                 {{ $order->user->fullname ?? 'Guest' }}
                                                             </div>
                                                             <small class="text-muted">{{ $order->user->email ?? '' }}</small>
+                                                            <div class="mt-1">@include('partials.order-ordered-for')</div>
                                                         </div>
                                                     </div>
                                                 </td>
@@ -587,7 +590,8 @@
                     $('#customerAvatar').text(name.substring(0, 2).toUpperCase());
 
                     $('#viewOrderDate').text(new Date(order.created_at).toLocaleString());
-                    $('#viewPaymentMethod').text('Cash on Pickup');
+                    $('#viewOrderedFor').text(order.ordered_for || 'Personal');
+                    $('#viewChannel').text(order.channel_label || 'PAXS');
 
                     $('#viewPaymentRef').text(order.payment_reference || '—');
 

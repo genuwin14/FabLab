@@ -164,7 +164,7 @@
                                     <div class="mb-3">
                                         <label class="form-label fw-semibold small text-uppercase text-muted">How are you paying?</label>
 
-                                        <div class="payment-method-option mb-2">
+                                        <div class="checkout-option mb-2">
                                             <input class="form-check-input" type="radio" name="payment_method"
                                                 id="paymentMethodCash" value="cash" checked>
                                             <label class="form-check-label" for="paymentMethodCash">
@@ -173,7 +173,7 @@
                                             </label>
                                         </div>
 
-                                        <div class="payment-method-option">
+                                        <div class="checkout-option">
                                             <input class="form-check-input" type="radio" name="payment_method"
                                                 id="paymentMethodPr" value="pr">
                                             <label class="form-check-label" for="paymentMethodPr">
@@ -200,6 +200,46 @@
                                             <strong>Purchase Request:</strong><br>
                                             File your PR with <strong>{{ config('fablab.procurement_email') }}</strong>, then enter the PR number on your order.
                                             You have <strong>{{ config('fablab.pr_deadline_days') }} days</strong> — the order is held until the number arrives, and closes if it doesn't.
+                                        </div>
+                                    </div>
+
+                                    {{-- Who the order is for. A Purchase Request is filed by an
+                                         office, so choosing one selects Office and locks Personal
+                                         out — see syncOrderedFor() below. --}}
+                                    <div class="mb-3">
+                                        <label class="form-label fw-semibold small text-uppercase text-muted">Who is this order for?</label>
+
+                                        <div class="checkout-option mb-2">
+                                            <input class="form-check-input" type="radio" name="ordered_for"
+                                                id="orderedForPersonal" value="personal" checked>
+                                            <label class="form-check-label" for="orderedForPersonal">
+                                                <span class="fw-semibold">Personal</span>
+                                                <span class="d-block text-muted">You are buying this for yourself.</span>
+                                            </label>
+                                        </div>
+
+                                        <div class="checkout-option">
+                                            <input class="form-check-input" type="radio" name="ordered_for"
+                                                id="orderedForOffice" value="office">
+                                            <label class="form-check-label" for="orderedForOffice">
+                                                <span class="fw-semibold">Office</span>
+                                                <span class="d-block text-muted">For a CSPC office or department.</span>
+                                            </label>
+                                        </div>
+
+                                        <div class="mt-2 d-none" id="officeField">
+                                            <label for="officeInput" class="visually-hidden">Office name</label>
+                                            <input type="text" id="officeInput" class="form-control" maxlength="255"
+                                                list="officeSuggestions" autocomplete="off"
+                                                placeholder="e.g. Office of the Registrar">
+                                            <datalist id="officeSuggestions">
+                                                @foreach($pastOffices as $pastOffice)
+                                                    <option value="{{ $pastOffice }}"></option>
+                                                @endforeach
+                                            </datalist>
+                                            <div class="form-text d-none" id="officePrHint">
+                                                A Purchase Request is filed by an office, so name the office buying this.
+                                            </div>
                                         </div>
                                     </div>
 
@@ -233,7 +273,7 @@
     @include('customer.cart.components.approval-modal')
 
     <style>
-        .payment-method-option {
+        .checkout-option {
             display: flex;
             gap: 10px;
             align-items: flex-start;
@@ -243,14 +283,18 @@
             cursor: pointer;
             transition: border-color 0.15s ease, background-color 0.15s ease;
         }
-        .payment-method-option:hover { background-color: #f8f9fa; }
-        .payment-method-option:has(input:checked) {
+        .checkout-option:hover { background-color: #f8f9fa; }
+        .checkout-option:has(input:checked) {
             border-color: var(--bs-primary, #0e2e45);
             background-color: rgba(14, 46, 69, 0.04);
         }
-        .payment-method-option .form-check-input { margin-top: 0.15rem; flex-shrink: 0; }
-        .payment-method-option .form-check-label { cursor: pointer; font-size: 0.875rem; }
-        .payment-method-option .form-check-label .text-muted { font-size: 0.78rem; line-height: 1.3; }
+        .checkout-option .form-check-input { margin-top: 0.15rem; flex-shrink: 0; }
+        .checkout-option .form-check-label { cursor: pointer; font-size: 0.875rem; }
+        .checkout-option .form-check-label .text-muted { font-size: 0.78rem; line-height: 1.3; }
+        /* Personal while a Purchase Request is chosen: shown, but out of reach. */
+        .checkout-option:has(input:disabled) { opacity: 0.5; cursor: not-allowed; }
+        .checkout-option:has(input:disabled):hover { background-color: transparent; }
+        .checkout-option:has(input:disabled) .form-check-label { cursor: not-allowed; }
 
         /* Hide spin buttons */
         .cart-quantity::-webkit-outer-spin-button,
@@ -382,15 +426,67 @@
                 updateSummary();
             });
 
+            // --- Who the order is for ---
+            // A Purchase Request is always an office's, so choosing it selects
+            // Office and takes Personal off the table until PAXS is back.
+            function syncOrderedFor() {
+                const isPr = $('input[name="payment_method"]:checked').val() === 'pr';
+
+                if (isPr) {
+                    $('#orderedForOffice').prop('checked', true);
+                }
+                $('#orderedForPersonal').prop('disabled', isPr);
+
+                $('#officeField').toggleClass('d-none', !$('#orderedForOffice').is(':checked'));
+                $('#officePrHint').toggleClass('d-none', !isPr);
+            }
+
+            function orderedFor() {
+                const forOffice = $('#orderedForOffice').is(':checked');
+
+                return {
+                    forOffice: forOffice,
+                    office: forOffice ? $.trim($('#officeInput').val()) : '',
+                };
+            }
+
+            // The browser may restore the radios on a back-navigation.
+            syncOrderedFor();
+
+            $('input[name="ordered_for"]').on('change', function () {
+                syncOrderedFor();
+                if (orderedFor().forOffice && !orderedFor().office) {
+                    $('#officeInput').trigger('focus');
+                }
+            });
+
             // --- Preview & Checkout Logic ---
             $('#checkoutBtn').on('click', function(e) {
                 e.preventDefault();
-                
+
                 const selectedItems = $('.item-checkbox:checked');
                 if (selectedItems.length === 0) {
                      showToast('Please select at least one item.', 'error');
                      return;
                 }
+
+                // Asked here rather than after Confirm, so the preview slip
+                // never shows an order the server would turn down.
+                const isPr = $('input[name="payment_method"]:checked').val() === 'pr';
+                const buyer = orderedFor();
+                if (buyer.forOffice && !buyer.office) {
+                    showToast(isPr
+                        ? 'A Purchase Request is filed by an office. Enter which office this order is for.'
+                        : 'Enter which office this order is for.', 'error');
+                    $('#officeInput').trigger('focus');
+                    return;
+                }
+
+                $('#previewOrderedFor').text(buyer.forOffice ? buyer.office : 'Personal');
+                $('#previewChannel').text(isPr ? 'Procurement' : 'PAXS');
+                $('[data-preview-next]').each(function () {
+                    this.hidden = $(this).data('preview-next') !== (isPr ? 'pr' : 'cash');
+                });
 
                 // Populate Preview Modal
                 const previewBody = $('#previewItemsBody');
@@ -430,6 +526,11 @@
                     const show = $(this).data('notice') === method;
                     $(this).toggleClass('d-none', !show).toggleClass('d-flex', show);
                 });
+
+                syncOrderedFor();
+                if (method === 'pr' && !orderedFor().office) {
+                    $('#officeInput').trigger('focus');
+                }
             });
 
             // Confirm Place Order
@@ -449,7 +550,9 @@
                     data: {
                         _token: "{{ csrf_token() }}",
                         selected_items: selectedItems,
-                        payment_method: $('input[name="payment_method"]:checked').val() || 'cash'
+                        payment_method: $('input[name="payment_method"]:checked').val() || 'cash',
+                        ordered_for: $('input[name="ordered_for"]:checked').val() || 'personal',
+                        office: orderedFor().office
                     },
                     success: function(response) {
                         if (response.success) {

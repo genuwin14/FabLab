@@ -430,6 +430,8 @@ class PurchaseRequestOrderTest extends TestCase
         $this->post(route('customer.cart.checkout'), [
             'selected_items' => [$this->cartKey()],
             'payment_method' => $method,
+            // A Purchase Request is always filed by an office.
+            'office' => $method === Order::METHOD_PR ? 'Office of the Registrar' : null,
         ]);
 
         return Order::latest('order_id')->first();

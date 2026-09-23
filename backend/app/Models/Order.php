@@ -13,6 +13,7 @@ class Order extends Model
         'user_id',
         'status',
         'payment_method',
+        'office',
         'total_amount',
         'payment_reference',
         'pr_number',
@@ -25,6 +26,12 @@ class Order extends Model
     protected $casts = [
         'pr_deadline' => 'datetime',
     ];
+
+    /**
+     * The admin and staff order modals render from the order's JSON, so the
+     * two labels below travel with it rather than being rebuilt in script.
+     */
+    protected $appends = ['channel_label', 'ordered_for'];
 
     /** Paid at PAXS against the transaction slip. */
     public const METHOD_CASH = 'cash';
@@ -65,6 +72,29 @@ class Order extends Model
     public function isPurchaseRequest(): bool
     {
         return $this->payment_method === self::METHOD_PR;
+    }
+
+    /**
+     * How the order is paid for, in the office's own words: over the counter
+     * at PAXS, or through CSPC procurement on a Purchase Request.
+     */
+    public function getChannelLabelAttribute(): string
+    {
+        return $this->isPurchaseRequest() ? 'Procurement' : 'PAXS';
+    }
+
+    /**
+     * Who the order is for: the office buying it, or the customer themself.
+     * Checkout will not take a Purchase Request without an office, so one
+     * lacking it predates the question rather than being a personal order.
+     */
+    public function getOrderedForAttribute(): string
+    {
+        if (filled($this->office)) {
+            return $this->office;
+        }
+
+        return $this->isPurchaseRequest() ? 'Office not recorded' : 'Personal';
     }
 
     /**

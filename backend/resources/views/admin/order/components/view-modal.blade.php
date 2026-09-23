@@ -42,6 +42,16 @@
                             style="font-size: 0.65rem; letter-spacing: 0.05em;">Total Amount</div>
                         <div class="fw-bold text-primary mt-1" id="viewTotal">₱0.00</div>
                     </div>
+                    <div class="col-md-8">
+                        <div class="text-uppercase fw-bold text-muted"
+                            style="font-size: 0.65rem; letter-spacing: 0.05em;">Ordered For</div>
+                        <div class="fw-semibold text-dark small mt-1 text-break" id="viewOrderedFor">—</div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="text-uppercase fw-bold text-muted"
+                            style="font-size: 0.65rem; letter-spacing: 0.05em;">Paid Through</div>
+                        <div class="fw-semibold text-dark small mt-1" id="viewChannel">—</div>
+                    </div>
                 </div>
 
                 <!-- Items -->
@@ -190,6 +200,8 @@
                 document.getElementById('viewOrderDate').textContent = formatDate(order.created_at);
                 document.getElementById('viewPaymentRef').textContent = order.payment_reference || '—';
                 document.getElementById('viewTotal').textContent = formatCurrency(order.total_amount);
+                document.getElementById('viewOrderedFor').textContent = order.ordered_for || 'Personal';
+                document.getElementById('viewChannel').textContent = order.channel_label || 'PAXS';
 
                 const tbody = document.getElementById('viewItemsBody');
                 tbody.innerHTML = '';

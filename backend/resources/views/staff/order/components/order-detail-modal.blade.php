@@ -43,6 +43,16 @@
                             style="font-size: 0.65rem; letter-spacing: 0.05em;">Total Amount</div>
                         <div class="fw-bold text-primary mt-1" id="viewOrderTotal">₱0.00</div>
                     </div>
+                    <div class="col-md-8">
+                        <div class="text-uppercase fw-bold text-muted"
+                            style="font-size: 0.65rem; letter-spacing: 0.05em;">Ordered For</div>
+                        <div class="fw-semibold text-dark small mt-1 text-break" id="viewOrderedFor">—</div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="text-uppercase fw-bold text-muted"
+                            style="font-size: 0.65rem; letter-spacing: 0.05em;">Paid Through</div>
+                        <div class="fw-semibold text-dark small mt-1" id="viewChannel">—</div>
+                    </div>
                 </div>
 
                 <!-- Customer Details -->
@@ -65,10 +75,6 @@
                             <span class="d-inline-flex align-items-center gap-1">
                                 <i class="bi bi-geo-alt"></i>
                                 <span id="viewCustomerAddress">—</span>
-                            </span>
-                            <span class="d-inline-flex align-items-center gap-1">
-                                <i class="bi bi-credit-card"></i>
-                                <span id="viewPaymentMethod">Cash on Pickup</span>
                             </span>
                         </div>
                     </div>

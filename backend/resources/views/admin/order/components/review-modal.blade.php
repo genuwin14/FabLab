@@ -16,8 +16,10 @@
                         <i class="bi bi-x-lg"></i>
                     </button>
                 </div>
-                <div class="text-white-50 small mt-2">
-                    Customer: <span id="reviewCustomerName" class="text-white fw-bold"></span>
+                <div class="d-flex flex-wrap column-gap-3 row-gap-1 text-white-50 small mt-2">
+                    <span>Customer: <span id="reviewCustomerName" class="text-white fw-bold"></span></span>
+                    <span>Ordered for: <span id="reviewOrderedFor" class="text-white fw-bold"></span></span>
+                    <span>Paid through: <span id="reviewChannel" class="text-white fw-bold"></span></span>
                 </div>
             </div>
 

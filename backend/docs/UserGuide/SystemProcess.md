@@ -354,9 +354,10 @@ flowchart TD
 **Where:** `/customer/cart` · **Detail:** [Customer §8](CustomerUserGuide.md#8-checking-out)
 
 1. Tick the lines to buy — part of a cart is fine, the rest stays.
-2. Review the **preview slip**, then confirm.
-3. The system re-verifies stock for every selected line, creates the order with a number of the form **`ORDR-YYYYMMDD-NNNN`** (the sequence restarts each day), **deducts product stock**, and clears only those lines from the cart.
-4. The customer lands on **My Orders** with the order at **Pending**.
+2. Choose the payment path, and say **who the order is for**: Personal, or an office by name. A Purchase Request must name its office.
+3. Review the **preview slip**, then confirm.
+4. The system re-verifies stock for every selected line, creates the order with a number of the form **`ORDR-YYYYMMDD-NNNN`** (the sequence restarts each day), **deducts product stock**, and clears only those lines from the cart.
+5. The customer lands on **My Orders** with the order at **Pending**.
 
 If anything sold out between adding and checking out, the **whole checkout stops** with a message naming the product — nothing is charged or reserved.
 

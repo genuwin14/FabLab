@@ -20,11 +20,20 @@
                     <p class="text-muted small" id="receiptDate"></p>
                 </div>
 
-                <!-- Customer Info -->
+                <!-- Customer Info. The last two lines are filled from the
+                     cart's choices when the preview opens. -->
                 <div class="mb-3 small">
-                    <div class="d-flex justify-content-between">
+                    <div class="d-flex justify-content-between gap-3">
                         <span class="text-muted">Customer:</span>
                         <span class="fw-bold text-dark text-end">{{ auth()->user()->fullname }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between gap-3">
+                        <span class="text-muted text-nowrap">Ordered for:</span>
+                        <span class="fw-bold text-dark text-end text-break" id="previewOrderedFor">Personal</span>
+                    </div>
+                    <div class="d-flex justify-content-between gap-3">
+                        <span class="text-muted text-nowrap">Paid through:</span>
+                        <span class="fw-bold text-dark text-end" id="previewChannel">PAXS</span>
                     </div>
                 </div>
 
@@ -56,10 +65,16 @@
                      made-up reference is shown here. --}}
                 <div class="text-center mb-2">
                     <p class="small fw-bold mb-1">WHAT HAPPENS NEXT</p>
-                    <p class="small text-muted mb-0">
+                    {{-- The cart shows the one matching the chosen payment. --}}
+                    <p class="small text-muted mb-0" data-preview-next="cash">
                         Once an admin approves your order, your <strong>transaction slip</strong> is emailed to you.
                         Present it at <strong>PAXS</strong> to pay, and keep the official receipt —
                         its number is what you show to collect your order.
+                    </p>
+                    <p class="small text-muted mb-0" data-preview-next="pr" hidden>
+                        File your Purchase Request with <strong>{{ config('fablab.procurement_email') }}</strong>,
+                        then enter the <strong>PR number</strong> on your order in My Orders. The order is held
+                        until the number arrives.
                     </p>
                 </div>
 

@@ -58,7 +58,8 @@ Two things to take from this:
 
 ### Finding an order
 
-- **Search** matches the order number, the receipt number, or the customer's name.
+- **Search** matches the order number, the receipt number, the customer's name, or the office.
+- Under each customer's email, a **PAXS** or **Procurement** tag says how the order is paid, next to who it is for: **Personal**, or the office named at checkout. **View** repeats both.
 - **Filter** by status, or by date (today / this week / this month).
 - Status tabs across the top carry live counts.
 

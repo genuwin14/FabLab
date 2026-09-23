@@ -51,7 +51,9 @@ Revenue counts `completed` orders only — an approved order that hasn't been ha
 
 ## 4. Reviewing orders
 
-`/admin/orders` lists every order in the system, newest first, 10 per page. Search by order number, receipt number, or customer name; filter by status or by date (today / this week / this month).
+`/admin/orders` lists every order in the system, newest first, 10 per page. Search by order number, receipt number, customer name, or office; filter by status or by date (today / this week / this month).
+
+Under each customer's email the list shows how the order is paid — a **PAXS** or **Procurement** tag — and who it is for: **Personal**, or the office the customer named at checkout. The Review and View windows repeat both.
 
 **Only `pending` orders carry a Review button.** Everything else opens read-only, showing the customer, the lines, any customization with its preview, the total, the receipt number recorded at payment, and the cancellation reason if there is one.
 

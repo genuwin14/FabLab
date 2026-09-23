@@ -93,11 +93,12 @@ class OrderSeeder extends Seeder
             'price' => 180.00,
         ]);
 
-        // Order 4: READY FOR PICKUP
+        // Order 4: READY FOR PICKUP (an office paying over the counter)
         $o4 = Order::create([
             'order_number' => Order::nextOrderNumber(),
             'user_id' => $customer->id,
             'status' => 'ready_for_pickup',
+            'office' => 'Office of the Registrar',
             'payment_reference' => 'OR-' . rand(100000, 999999),
             'total_amount' => 6000.00,
         ]);
@@ -113,6 +114,7 @@ class OrderSeeder extends Seeder
             'order_number' => Order::nextOrderNumber(now()->subMonth()),
             'user_id' => $customer->id,
             'status' => 'completed',
+            'office' => 'College of Engineering and Architecture',
             'payment_reference' => 'OR-' . rand(100000, 999999),
             'total_amount' => 14500.00,
             'created_at' => now()->subMonth(),

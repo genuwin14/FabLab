@@ -131,9 +131,10 @@ From here you can:
 
 1. Tick the lines you want to buy. You can check out part of your cart and leave the rest.
 2. Choose **how you're paying** — see below.
-3. Review the preview slip, then confirm.
-4. The system re-verifies stock for every selected line, creates the order under a number like `ORDR-20260827-0001` (the date it was placed plus that day’s sequence), deducts the stock, and clears just those lines from your cart.
-5. You land on **My Orders**.
+3. Say **who the order is for**: **Personal**, or an **Office** — type the office's name, and any office you ordered for before is offered back as you type. A Purchase Request is always filed by an office, so choosing it selects Office for you.
+4. Review the preview slip, then confirm.
+5. The system re-verifies stock for every selected line, creates the order under a number like `ORDR-20260827-0001` (the date it was placed plus that day’s sequence), deducts the stock, and clears just those lines from your cart.
+6. You land on **My Orders**.
 
 If anything sold out between adding and checking out, the whole checkout stops with a message naming the product, and nothing is charged or reserved.
 
@@ -157,7 +158,7 @@ Once approved, a PR order is driven by paperwork rather than by the workshop que
 
 ## 9. Tracking your orders
 
-**My Orders** lists your orders newest first, with their lines and totals.
+**My Orders** lists your orders newest first, with their lines and totals. Each one says who it is for — Personal or the office's name — and whether it is paid at **PAXS** or through **Procurement**.
 
 | Status | What it means for you | Who set it |
 | :--- | :--- | :--- |
