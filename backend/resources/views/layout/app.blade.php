@@ -826,6 +826,30 @@
         });
     </script>
 
+    <!-- Rows-per-page dropdowns (admin / staff tables)
+
+         A <select data-per-page="per_page"> reloads the page with its value
+         in that query parameter, keeping every other filter and dropping the
+         page number so the new size starts on page 1. A table that pages
+         under other names says so: data-per-page="log_per_page"
+         data-page-param="log_page".
+
+         One listener here rather than an onchange on each select: an inline
+         handler looks names up on the element and on document before window,
+         and document.URL is the page address as a string — so `new URL(...)`
+         in there threw, and every one of these dropdowns did nothing. -->
+    <script>
+        document.addEventListener('change', function (event) {
+            var select = event.target;
+            if (!(select instanceof HTMLSelectElement) || !select.dataset.perPage) return;
+
+            var url = new URL(window.location.href);
+            url.searchParams.set(select.dataset.perPage, select.value);
+            url.searchParams.delete(select.dataset.pageParam || 'page');
+            window.location.href = url.toString();
+        });
+    </script>
+
     <style>
         /* Global Tooltip Styling */
         .tooltip {

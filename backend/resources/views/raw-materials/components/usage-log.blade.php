@@ -174,7 +174,7 @@
                 <div class="d-flex align-items-center gap-2 flex-shrink-0">
                     <label for="logPerPageSelect" class="text-muted small mb-0">Rows per page:</label>
                     <select id="logPerPageSelect" class="form-select form-select-sm rounded-pill w-auto"
-                        onchange="(function(v){const u=new URL(window.location.href);u.searchParams.set('log_per_page',v);u.searchParams.set('tab','log');u.searchParams.delete('log_page');window.location.href=u.toString();})(this.value)">
+                        data-per-page="log_per_page" data-page-param="log_page">
                         @foreach([10, 25, 50, 100] as $size)
                             <option value="{{ $size }}" {{ (int) request()->query('log_per_page', 10) === $size ? 'selected' : '' }}>
                                 {{ $size }}

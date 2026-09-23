@@ -182,9 +182,9 @@
                                      rides the table's single horizontal scrollbar. -->
                                 <div class="pagination-bar border-top d-flex justify-content-between align-items-center gap-2 p-3">
                                     <div class="d-flex align-items-center gap-2 flex-shrink-0">
-                                        <label class="text-muted small mb-0">Rows per page:</label>
-                                        <select class="form-select form-select-sm rounded-pill w-auto"
-                                            onchange="(function(v){const u=new URL(window.location.href);u.searchParams.set('per_page',v);u.searchParams.delete('page');window.location.href=u.toString();})(this.value)">
+                                        <label for="perPageSelect" class="text-muted small mb-0">Rows per page:</label>
+                                        <select id="perPageSelect" class="form-select form-select-sm rounded-pill w-auto"
+                                            data-per-page="per_page">
                                             @foreach([10, 25, 50, 100] as $size)
                                                 <option value="{{ $size }}" {{ $perPage == $size ? 'selected' : '' }}>{{ $size }}</option>
                                             @endforeach
