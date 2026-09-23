@@ -218,4 +218,4 @@ known one-time fixes.
 
 **Reproduce:** see [TestingGuide.md](../TestingGuide.md). Scripts:
 `tools/loadtest/zap-scan-passive.ps1` (live) and `tools/loadtest/zap-scan.ps1`
-(local). Full reports are in this folder under `zap-live/` and `zap-local/`.
+(local). The screenshots in `screenshots/` are the evidence.

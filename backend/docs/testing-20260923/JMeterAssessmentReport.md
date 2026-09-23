@@ -176,5 +176,4 @@ database deadlock under simultaneous checkouts, which has a known, minimal fix.
 
 **How to reproduce:** see [TestingGuide.md](../TestingGuide.md). The plans used
 here are `tools/loadtest/fablab-live-test.jmx`, `fablab-load-test.jmx` and
-`fablab-order-test.jmx`; raw results are in this folder under `jmeter-live/`,
-`jmeter-local/` and `jmeter-order/`.
+`fablab-order-test.jmx`. The screenshots in `screenshots/` are the evidence.

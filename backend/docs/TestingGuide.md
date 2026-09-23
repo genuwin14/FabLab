@@ -7,7 +7,7 @@ Two tests, on any Windows computer:
 
 Follow the steps in order. Copy and paste each command.
 
-**This guide = how to run the tests. [Testing.md](Testing.md) = what the tests found.**
+**This guide = how to run the tests. The [assessment reports](testing-20260923/) = what the tests found.**
 
 | | |
 | :--- | :--- |
@@ -117,7 +117,7 @@ Back in the **first** window, three things:
 MAIL_MAILER=log
 ```
 
-**b) Lock in the settings.** Without this, about 1 in every 20 requests fails during the speed test. (Why: [Testing.md](Testing.md#22-run-1--5-of-requests-failed-with-http-500).)
+**b) Lock in the settings.** Without this, about 1 in every 20 requests fails during the speed test. (Why: a threaded Apache races on reading `.env` under load, and some requests fall back to the wrong database and return HTTP 500. `config:cache` bakes the settings so `.env` is never read per request.)
 
 ```powershell
 cd C:\FabLab\backend
@@ -222,7 +222,7 @@ start C:\FabLab\backend\docs\testing\zap\zap-report.html
 | Look for | Should be | What it means |
 | :--- | :--- | :--- |
 | **High** | `0` | No serious security holes |
-| **Medium** | A few | Missing safety settings, not broken code — [the fixes are listed here](Testing.md#35-recommended-fixes) |
+| **Medium** | A few | Missing safety settings, not broken code — [the fixes are in the OWASP ZAP report](testing-20260923/OwaspZapAssessmentReport.md#6-findings-and-recommendations) |
 | **Low / Informational** | Several | Minor notes |
 
 You will also see about a hundred "page not found" errors on strange addresses like `/%5C%5C*%7C/`. Ignore them — the scanner guesses addresses out of the page's JavaScript, and those guesses aren't real pages.
@@ -272,7 +272,7 @@ Nobody will sit through a one-hour scan. For a live demo, show the finished repo
 4. ZAP's **History** tab, filtered to **419** — every fake request being rejected. This is the protection working, live.
 5. The full report from before, showing **0 High**.
 
-Say clearly that the short scan only proves the tool runs. The real result is the full scan in [Testing.md](Testing.md).
+Say clearly that the short scan only proves the tool runs. The real result is the full scan in the [OWASP ZAP report](testing-20260923/OwaspZapAssessmentReport.md).
 
 **Have ready before you begin:** the server running, MySQL running, ZAP already open (it's slow to start), and the full report open in a browser tab.
 
@@ -338,4 +338,4 @@ A new test **overwrites** the old results. To keep both, copy the `docs\testing`
 
 ---
 
-**Related:** [Testing.md](Testing.md) — the full results and what they mean · [Deployment.md](Deployment.md) — putting the site on a real server · [README](../README.md) — installing the app.
+**Related:** the [JMeter](testing-20260923/JMeterAssessmentReport.md) and [OWASP ZAP](testing-20260923/OwaspZapAssessmentReport.md) assessment reports — the results · [Deployment.md](Deployment.md) — putting the site on a real server · [README](../README.md) — installing the app.

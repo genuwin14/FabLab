@@ -660,7 +660,7 @@ The Single plan is sized for a defence, a pilot, or a lab with light traffic. Th
 signals that it is time to move to a VPS or a higher shared tier:
 
 - Load testing showed the app is comfortable at ~50 concurrent shop users on a
-  single Apache instance ([Testing.md](Testing.md)) — but that was dedicated
+  single Apache instance ([load testing](testing-20260923/JMeterAssessmentReport.md)) — but that was dedicated
   local hardware, not a shared server with neighbours competing for CPU.
 - Receipt emails feeling slow because cron cannot run every minute (§9.2).
 - Uploaded designs pushing `storage/` toward the 10 GB ceiling.
