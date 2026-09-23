@@ -135,12 +135,35 @@
                                         title="Reset filters">
                                         <i class="bi bi-arrow-clockwise text-primary"></i>
                                     </a>
-                                    <button type="button"
-                                        class="btn btn-primary d-flex align-items-center justify-content-center gap-2 rounded-2 px-3"
-                                        title="Export">
-                                        <i class="bi bi-download small"></i>
-                                        <span class="small fw-bold d-none d-lg-inline">Export</span>
-                                    </button>
+                                    {{-- The export carries the filters the list is showing, so the
+                                         file holds the same orders as the screen — every page. --}}
+                                    @php $exportQuery = array_filter(compact('search', 'status', 'date'), fn ($value) => $value !== ''); @endphp
+                                    <div class="dropdown">
+                                        <button type="button"
+                                            class="btn btn-primary d-flex align-items-center justify-content-center gap-2 rounded-2 px-3 dropdown-toggle"
+                                            data-bs-toggle="dropdown" aria-expanded="false" title="Export">
+                                            <i class="bi bi-download small"></i>
+                                            <span class="small fw-bold d-none d-lg-inline">Export</span>
+                                        </button>
+                                        <ul class="dropdown-menu dropdown-menu-end border-0 shadow">
+                                            <li><h6 class="dropdown-header">Export the orders shown</h6></li>
+                                            <li>
+                                                <a class="dropdown-item d-flex align-items-center gap-2" href="{{ route('admin.orders.export', ['format' => 'pdf'] + $exportQuery) }}">
+                                                    <i class="bi bi-file-earmark-pdf text-danger"></i>PDF
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <a class="dropdown-item d-flex align-items-center gap-2" href="{{ route('admin.orders.export', ['format' => 'docx'] + $exportQuery) }}">
+                                                    <i class="bi bi-file-earmark-word text-primary"></i>Word
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <a class="dropdown-item d-flex align-items-center gap-2" href="{{ route('admin.orders.export', ['format' => 'csv'] + $exportQuery) }}">
+                                                    <i class="bi bi-file-earmark-spreadsheet text-success"></i>Excel (CSV)
+                                                </a>
+                                            </li>
+                                        </ul>
+                                    </div>
                                 </div>
                             </form>
                         </div>

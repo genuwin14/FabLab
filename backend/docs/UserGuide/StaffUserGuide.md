@@ -62,6 +62,7 @@ Two things to take from this:
 - Under each customer's email, a **PAXS** or **Procurement** tag says how the order is paid, next to who it is for: **Personal**, or the office named at checkout. **View** repeats both.
 - **Filter** by status, or by date (today / this week / this month).
 - Status tabs across the top carry live counts.
+- **Export** downloads the orders the filters show — every page, not just the one on screen — as PDF, Word, or a CSV for Excel.
 
 ### Moving an order forward
 

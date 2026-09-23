@@ -55,6 +55,8 @@ Revenue counts `completed` orders only — an approved order that hasn't been ha
 
 Under each customer's email the list shows how the order is paid — a **PAXS** or **Procurement** tag — and who it is for: **Personal**, or the office the customer named at checkout. The Review and View windows repeat both.
 
+**Export** downloads the orders the filters are showing — every page of them, not just the one on screen — as a **PDF**, a **Word** document, or a **CSV** for Excel, named `orders-YYYY-MM-DD`. Each row carries the order number, date, customer, who it is for, PAXS or Procurement, the items, the receipt or PR number, the status, and the total; the heading repeats the filters, and the summary gives the count and the value of the orders not cancelled.
+
 **Only `pending` orders carry a Review button.** Everything else opens read-only, showing the customer, the lines, any customization with its preview, the total, the receipt number recorded at payment, and the cancellation reason if there is one.
 
 ### Approving

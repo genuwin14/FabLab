@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Services\OrderList;
 use App\Services\OrderStockService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -12,52 +13,18 @@ use App\Models\Order;
 class OrderController extends Controller
 {
     use \App\Http\Controllers\Concerns\ShowsOrderMaterials;
+    use \App\Http\Controllers\Concerns\ExportsOrders;
 
-    public function index(Request $request)
+    public function index(Request $request, OrderList $list)
     {
-        // Cast rather than lean on input()'s default: submitting the filter form
-        // with a field cleared sends `status=`, which ConvertEmptyStringsToNull
-        // turns into null. The key is present, so the default never applies, and
-        // an un-cast null would sail past the !== '' guard into a
-        // `where status is null` that matches no order at all.
-        $search = (string) $request->input('search', '');
-        $status = (string) $request->input('status', '');
-        $date = (string) $request->input('date', '');
+        $filters = $list->filters($request);
+        ['search' => $search, 'status' => $status, 'date' => $date] = $filters;
         $perPage = (int) $request->input('per_page', 10);
 
-        $query = Order::with(['user', 'orderItems'])->latest();
-
-        if ($search !== '') {
-            $query->where(function ($q) use ($search) {
-                $q->where('order_number', 'like', "%{$search}%")
-                    ->orWhere('payment_reference', 'like', "%{$search}%")
-                    ->orWhere('office', 'like', "%{$search}%")
-                    ->orWhereHas('user', function ($u) use ($search) {
-                        $u->where('fullname', 'like', "%{$search}%");
-                    });
-            });
-        }
-
-        if ($status !== '') {
-            $query->where('status', $status);
-        }
-
-        if ($date !== '') {
-            switch ($date) {
-                case 'today':
-                    $query->whereDate('created_at', today());
-                    break;
-                case 'week':
-                    $query->whereBetween('created_at', [now()->startOfWeek(), now()->endOfWeek()]);
-                    break;
-                case 'month':
-                    $query->whereMonth('created_at', now()->month)
-                        ->whereYear('created_at', now()->year);
-                    break;
-            }
-        }
-
-        $orders = $query->paginate($perPage)->withQueryString();
+        $orders = $list->query($filters)
+            ->with(['user', 'orderItems'])
+            ->paginate($perPage)
+            ->withQueryString();
 
         $statusCounts = Order::selectRaw('status, COUNT(*) as total')
             ->groupBy('status')

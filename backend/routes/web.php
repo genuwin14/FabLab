@@ -137,6 +137,8 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
     // Admin Routes/Orders
     Route::get('/admin/orders', [\App\Http\Controllers\Admin\OrderController::class, 'index'])->name('admin.orders.index');
+    // The orders the list's filters show, as PDF, Word or CSV.
+    Route::get('/admin/orders/export/{format}', [\App\Http\Controllers\Admin\OrderController::class, 'export'])->whereIn('format', \App\Services\Reports\OrdersExport::FORMATS)->name('admin.orders.export');
     Route::post('/admin/orders/{id}/review', [\App\Http\Controllers\Admin\OrderController::class, 'review'])->name('admin.orders.review');
     // What the order will draw off the shelf, fetched when the review modal opens.
     Route::get('/admin/orders/{id}/materials', [\App\Http\Controllers\Admin\OrderController::class, 'materials'])->name('admin.orders.materials');
@@ -180,6 +182,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/staff/dashboard', [\App\Http\Controllers\Staff\DashboardController::class, 'index'])->name('staff.dashboard');
     // Staff Routes/Orders
     Route::get('/staff/orders', [\App\Http\Controllers\Staff\OrderController::class, 'index'])->name('staff.orders.index');
+    Route::get('/staff/orders/export/{format}', [\App\Http\Controllers\Staff\OrderController::class, 'export'])->whereIn('format', \App\Services\Reports\OrdersExport::FORMATS)->name('staff.orders.export');
     Route::post('/staff/orders/{id}/update-status', [\App\Http\Controllers\Staff\OrderController::class, 'updateStatus'])->name('staff.orders.updateStatus');
     Route::get('/staff/orders/{id}/materials', [\App\Http\Controllers\Staff\OrderController::class, 'materials'])->name('staff.orders.materials');
     Route::get('/staff/orders/{id}/receipt', [\App\Http\Controllers\Staff\OrderController::class, 'receipt'])->name('staff.orders.receipt');
