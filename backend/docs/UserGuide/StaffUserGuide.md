@@ -125,6 +125,8 @@ Filter by search term, item type, or stock status (low versus completely out). I
 
 Items with no default supplier are grouped separately and can't be pre-filled into a PO. Only an admin can attach one ([Admin Guide §11](AdminUserGuide.md#11-inventory-watchlist)).
 
+The **Inventory logs** link in the sidebar carries a red count of what is on this list, updated on its own every 30 seconds as stock moves.
+
 ---
 
 ## 7. Products

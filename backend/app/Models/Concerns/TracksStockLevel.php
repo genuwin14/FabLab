@@ -38,4 +38,14 @@ trait TracksStockLevel
     {
         return $this->unit ?: 'pcs';
     }
+
+    /**
+     * At or below its low-stock line: what Stock Monitoring lists, what the
+     * dashboards count and what the sidebar badge shows. An item with no
+     * threshold is never on it.
+     */
+    public function scopeNeedsRestock(\Illuminate\Database\Eloquent\Builder $query): \Illuminate\Database\Eloquent\Builder
+    {
+        return $query->whereColumn($this->stockColumn(), '<=', 'low_stock_threshold');
+    }
 }

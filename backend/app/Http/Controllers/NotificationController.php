@@ -31,7 +31,7 @@ class NotificationController extends Controller
     /**
      * JSON feed polled by the navbar bell.
      */
-    public function poll(Request $request)
+    public function poll(Request $request, \App\Services\StockWatch $stock)
     {
         $user = $request->user();
 
@@ -41,6 +41,8 @@ class NotificationController extends Controller
         return response()->json([
             'unread_count' => $user->unreadNotifications()->count(),
             'items' => $items,
+            // The sidebar's Stock Monitoring badge. Only the team watches stock.
+            'stock_watch' => in_array($user->role, ['admin', 'staff'], true) ? $stock->count() : null,
         ]);
     }
 

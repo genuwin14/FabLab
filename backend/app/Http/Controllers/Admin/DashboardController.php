@@ -30,9 +30,9 @@ class DashboardController extends Controller
             ->sum('total_amount');
         $pendingOrdersCount = Order::where('status', 'pending')->count();
 
-        $lowStockProducts = Product::whereColumn('stock', '<=', 'low_stock_threshold')->count();
-        $lowStockMaterials = RawMaterial::whereColumn('stock_quantity', '<=', 'low_stock_threshold')->count();
-        $lowStockTextures = Texture::whereColumn('stock_quantity', '<=', 'low_stock_threshold')->count();
+        $lowStockProducts = Product::needsRestock()->count();
+        $lowStockMaterials = RawMaterial::needsRestock()->count();
+        $lowStockTextures = Texture::needsRestock()->count();
         $lowStockCount = $lowStockProducts + $lowStockMaterials + $lowStockTextures;
 
         // Month-over-month growth indicators

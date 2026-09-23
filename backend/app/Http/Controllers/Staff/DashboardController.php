@@ -26,9 +26,9 @@ class DashboardController extends Controller
             ->count();
 
         // ---------------- Stock Alerts ----------------
-        $lowStockProducts = Product::whereColumn('stock', '<=', 'low_stock_threshold')->count();
-        $lowStockMaterials = RawMaterial::whereColumn('stock_quantity', '<=', 'low_stock_threshold')->count();
-        $lowStockTextures = Texture::whereColumn('stock_quantity', '<=', 'low_stock_threshold')->count();
+        $lowStockProducts = Product::needsRestock()->count();
+        $lowStockMaterials = RawMaterial::needsRestock()->count();
+        $lowStockTextures = Texture::needsRestock()->count();
 
         $incomingPOCount = PurchaseOrder::whereIn('status', ['sent', 'confirmed'])->count();
 
@@ -61,7 +61,7 @@ class DashboardController extends Controller
 
         // Critical stock — products closest to or below threshold
         $criticalStockProducts = Product::with('category')
-            ->whereColumn('stock', '<=', 'low_stock_threshold')
+            ->needsRestock()
             ->orderByRaw('(stock / NULLIF(low_stock_threshold, 0)) ASC')
             ->take(5)
             ->get();

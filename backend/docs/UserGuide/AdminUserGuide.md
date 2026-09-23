@@ -239,6 +239,8 @@ This register is the source for the equipment report in [§14](#14-reports), so 
 
 `/admin/inventory` shows only what has fallen to or below its low-stock threshold — products, raw materials, and textures together. Filter by search, item type, or stock status (low versus out).
 
+The **Stock Monitoring** link in the sidebar carries a red count of what is on this list — the same number as the Stock Alerts card on the dashboard — and it updates on its own every 30 seconds, as stock moves.
+
 Items are grouped by **default supplier**, and each group offers a straight jump into a pre-filled purchase order ([§12](#12-purchase-orders)).
 
 **Assign default supplier** — the admin-only action here. Anything sitting in the "no supplier" group can't be reordered automatically; assign one and it joins that supplier's group. For a product you must also give the agreed **cost**; for raw materials and textures the supplier is simply set.

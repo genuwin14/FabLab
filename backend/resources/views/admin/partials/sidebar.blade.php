@@ -72,6 +72,7 @@
                     data-sidebar-tooltip="true" title="Stock Monitoring">
                     <i class="bi bi-graph-up-arrow me-2"></i>
                     <span class="sidebar-label">Stock Monitoring</span>
+                    @include('partials.stock-watch-badge')
                 </a>
             </li>
             <li class="nav-item">

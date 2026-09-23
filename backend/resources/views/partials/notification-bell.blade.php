@@ -220,10 +220,22 @@
             fresh.slice(0, 3).reverse().forEach(function (it) { window.showNotificationToast(it); });
         }
 
+        // The Stock Monitoring badge, in both copies of the sidebar. Customers'
+        // polls carry no count, and their sidebar has no badge.
+        function setStockBadge(count) {
+            if (typeof count !== 'number') return;
+            document.querySelectorAll('[data-stock-badge]').forEach(function (stockBadge) {
+                const number = stockBadge.querySelector('[data-stock-count]');
+                if (number) number.textContent = count > 99 ? '99+' : count;
+                stockBadge.toggleAttribute('hidden', count <= 0);
+            });
+        }
+
         function poll() {
             getJson(POLL_URL).then(function (data) {
                 setBadge(data.unread_count || 0);
                 renderItems(data.items || []);
+                setStockBadge(data.stock_watch);
                 toastArrivals(data.items || []);
             }).catch(function () { /* ignore transient errors */ });
         }

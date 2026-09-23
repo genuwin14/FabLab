@@ -93,6 +93,7 @@
                     data-sidebar-tooltip="true" title="Inventory logs">
                     <i class="bi bi-clipboard-data me-2"></i>
                     <span class="sidebar-label">Inventory logs</span>
+                    @include('partials.stock-watch-badge')
                 </a>
             </li>
         </ul>

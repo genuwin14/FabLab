@@ -21,7 +21,7 @@ class InventoryController extends Controller
         $stockStatus = $request->query('stock_status', '');
 
         // 1. Get low stock Products
-        $lowStockProducts = Product::whereColumn('stock', '<=', 'low_stock_threshold')
+        $lowStockProducts = Product::needsRestock()
             ->with([
                 'suppliers' => function ($query) {
                     $query->wherePivot('is_default', true);
@@ -37,7 +37,7 @@ class InventoryController extends Controller
             });
 
         // 2. Get low stock Raw Materials
-        $lowStockMaterials = RawMaterial::whereColumn('stock_quantity', '<=', 'low_stock_threshold')
+        $lowStockMaterials = RawMaterial::needsRestock()
             ->with('supplier')
             ->get()
             ->map(function($item) {
@@ -49,7 +49,7 @@ class InventoryController extends Controller
             });
 
         // 3. Get low stock Textures
-        $lowStockTextures = Texture::whereColumn('stock_quantity', '<=', 'low_stock_threshold')
+        $lowStockTextures = Texture::needsRestock()
             ->with('supplier')
             ->get()
             ->map(function($item) {
