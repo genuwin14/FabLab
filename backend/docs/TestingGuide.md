@@ -7,7 +7,7 @@ Two tests, on any Windows computer:
 
 Follow the steps in order. Copy and paste each command.
 
-**This guide = how to run the tests. The [assessment reports](testing-20260923/) = what the tests found.**
+**This guide = how to run the tests. The [assessment reports](testing/) = what the tests found.**
 
 | | |
 | :--- | :--- |
@@ -222,7 +222,7 @@ start C:\FabLab\backend\docs\testing\zap\zap-report.html
 | Look for | Should be | What it means |
 | :--- | :--- | :--- |
 | **High** | `0` | No serious security holes |
-| **Medium** | A few | Missing safety settings, not broken code — [the fixes are in the OWASP ZAP report](testing-20260923/OwaspZapAssessmentReport.md#6-findings-and-recommendations) |
+| **Medium** | A few | Missing safety settings, not broken code — [the fixes are in the OWASP ZAP report](testing/OwaspZapAssessmentReport.md) |
 | **Low / Informational** | Several | Minor notes |
 
 You will also see about a hundred "page not found" errors on strange addresses like `/%5C%5C*%7C/`. Ignore them — the scanner guesses addresses out of the page's JavaScript, and those guesses aren't real pages.
@@ -272,7 +272,7 @@ Nobody will sit through a one-hour scan. For a live demo, show the finished repo
 4. ZAP's **History** tab, filtered to **419** — every fake request being rejected. This is the protection working, live.
 5. The full report from before, showing **0 High**.
 
-Say clearly that the short scan only proves the tool runs. The real result is the full scan in the [OWASP ZAP report](testing-20260923/OwaspZapAssessmentReport.md).
+Say clearly that the short scan only proves the tool runs. The real result is the full scan in the [OWASP ZAP report](testing/OwaspZapAssessmentReport.md).
 
 **Have ready before you begin:** the server running, MySQL running, ZAP already open (it's slow to start), and the full report open in a browser tab.
 
@@ -338,4 +338,4 @@ A new test **overwrites** the old results. To keep both, copy the `docs\testing`
 
 ---
 
-**Related:** the [JMeter](testing-20260923/JMeterAssessmentReport.md) and [OWASP ZAP](testing-20260923/OwaspZapAssessmentReport.md) assessment reports — the results · [Deployment.md](Deployment.md) — putting the site on a real server · [README](../README.md) — installing the app.
+**Related:** the [JMeter](testing/JMeterAssessmentReport.md) and [OWASP ZAP](testing/OwaspZapAssessmentReport.md) assessment reports — the results · [Deployment.md](Deployment.md) — putting the site on a real server · [README](../README.md) — installing the app.
