@@ -99,6 +99,27 @@ class PasswordResetTest extends TestCase
         );
     }
 
+    /** The code page used to name the email address even when the code was texted. */
+    public function test_the_code_page_says_where_the_code_went(): void
+    {
+        $this->user();
+        Mail::fake();
+        $this->mock(SmsService::class, fn (MockInterface $mock) => $mock->shouldReceive('send')->andReturn(true));
+
+        $this->post('/forgot-password/send', ['email' => 'c@example.test', 'verification_mode' => 'sms']);
+        $this->get('/forgot-password/verify')
+            ->assertOk()
+            ->assertSee('phone number ending in')
+            ->assertSee('6789')
+            ->assertDontSee('c@example.test');
+
+        $this->post('/forgot-password/send', ['email' => 'c@example.test', 'verification_mode' => 'email']);
+        $this->get('/forgot-password/verify')
+            ->assertOk()
+            ->assertSee('c@example.test')
+            ->assertDontSee('phone number ending in');
+    }
+
     public function test_a_wrong_code_is_rejected(): void
     {
         $this->user();

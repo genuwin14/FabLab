@@ -25,8 +25,13 @@
                         <div class="mb-4">
                             <h4 class="fw-bold text-primary">Enter Security Code</h4>
                             <p class="text-muted small">
-                                We sent a 6-digit code to: <br>
-                                <span class="text-primary fw-bold">{{ session('password_reset_email') }}</span>
+                                @if ($phoneEnding ?? null)
+                                    We texted a 6-digit code to your phone number ending in: <br>
+                                    <span class="text-primary fw-bold">{{ $phoneEnding }}</span>
+                                @else
+                                    We sent a 6-digit code to: <br>
+                                    <span class="text-primary fw-bold">{{ session('password_reset_email') }}</span>
+                                @endif
                             </p>
                         </div>
 

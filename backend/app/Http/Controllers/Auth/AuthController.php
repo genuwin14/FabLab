@@ -285,6 +285,7 @@ class AuthController extends Controller
             'password_reset_otp' => $otp,
             'password_reset_email' => $user->email,
             'password_reset_expires' => now()->addMinutes(10),
+            'password_reset_mode' => $request->verification_mode,
         ]);
 
         // Worded the way UniSMS insists on for a code text; see register().
@@ -310,7 +311,15 @@ class AuthController extends Controller
         if (!session('password_reset_email')) {
             return redirect()->route('password.request');
         }
-        return view('auth.verify-reset-code'); // We might need to create this or reuse verify-code
+
+        // Say where the code actually went. A texted code shows the phone's last
+        // four digits, as the sign-up code page does, not the email address.
+        $phoneEnding = null;
+        if (session('password_reset_mode') === 'sms') {
+            $phoneEnding = substr((string) User::where('email', session('password_reset_email'))->value('contact_number'), -4);
+        }
+
+        return view('auth.verify-reset-code', ['phoneEnding' => $phoneEnding]);
     }
     public function verifyResetCode(Request $request)
     {
@@ -367,7 +376,7 @@ class AuthController extends Controller
         }
 
         // Clear session
-        session()->forget(['password_reset_otp', 'password_reset_email', 'password_reset_expires', 'password_reset_token', 'password_reset_verified_email']);
+        session()->forget(['password_reset_otp', 'password_reset_email', 'password_reset_expires', 'password_reset_mode', 'password_reset_token', 'password_reset_verified_email']);
 
         return redirect()->route('login')->with('status', 'Password has been reset successfully. Please login.');
     }
