@@ -18,7 +18,7 @@ Everything a customer can do in the FABLAB Inventory Monitoring System: creating
 2. Fill in **Full Name**, **Email**, **Contact Number**, and a **Password** — at least 8 characters, typed twice.
 3. Choose how you want your verification code delivered: **SMS** to your phone, or **Email**.
 4. Submit. A 6-digit code is sent by the method you chose.
-5. Type the code on the verification page. Your account activates and you land on the Shop.
+5. Type the code on the verification page. Your account activates and you land on the Shop. **The code expires 10 minutes after it's sent.** If you're too late, tap **Resend Code** for a new one.
 
 Notes:
 

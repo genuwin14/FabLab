@@ -21,8 +21,20 @@ class OtpController extends Controller
 
         $user = $request->user();
 
+        // A code lives ten minutes from when it was sent (AuthController::register
+        // and resend() below). With no expiry on record (a code from before this
+        // rule, or another browser) it counts as expired, and Resend Code
+        // issues a fresh one.
+        $expires = session('phone_verification_expires');
+
+        if (! $expires || now()->greaterThan($expires)) {
+            return back()->withErrors(['otp' => 'This code has expired. Tap Resend Code to get a new one.'])
+                ->with('verification_mode', $request->verification_mode);
+        }
+
         if ($user->phone_verification_code === $request->otp) {
             $user->phone_verification_code = null;
+            session()->forget('phone_verification_expires');
 
             // Verify the channel the code actually went to, and only that one.
             // Access is granted on either (see AuthController::authenticated),
@@ -53,7 +65,11 @@ class OtpController extends Controller
             'phone_verification_code' => $otp,
         ]);
 
-        $message = "Your new FABLAB verification code is: {$otp}";
+        // A fresh code gets a fresh ten minutes; the wording is the one UniSMS
+        // requires (see AuthController::register).
+        session(['phone_verification_expires' => now()->addMinutes(10)]);
+
+        $message = "Your FABLAB OTP code is {$otp} for account verification. Please do not share. Expires in 10 minutes.";
 
         if ($mode === 'email') {
             \Illuminate\Support\Facades\Mail::raw($message, function ($mail) use ($user) {

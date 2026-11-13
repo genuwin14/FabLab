@@ -179,7 +179,7 @@ php artisan serve
 1. Go to `http://127.0.0.1:8000/register`.
 2. Fill the form with a **real mobile number you are holding**.
 3. Click Create Account — a modal asks **SMS or Email**. Choose **SMS**.
-4. The 6-digit code arrives as a text: *"Your FABLAB verification code is: 123456"*.
+4. The 6-digit code arrives as a text: *"Your FABLAB OTP code is 123456 for account verification. Please do not share. Expires in 10 minutes."*
 5. Type it on the verify page. **Resend** on that page goes through the same
    path, so it is worth testing once too.
 
@@ -243,7 +243,7 @@ php artisan config:clear
 ```
 
 Every "sent" message then goes to `storage/logs/laravel.log` as
-`SMS (log driver) to 09…: Your FABLAB verification code is: 123456`, and nothing
+`SMS (log driver) to 09…: Your FABLAB OTP code is 123456 for account verification. …`, and nothing
 is ever sent. This is the safe default — leave the system on `log` whenever you
 are not actively demonstrating SMS, so a stray test does not text a stranger.
 

@@ -32,7 +32,7 @@ class TestPasswordResetEmail extends Command
         // entry is created, so this code cannot actually reset a password —
         // it only proves the mail leg of the flow works.
         $otp = str_pad(rand(0, 999999), 6, '0', STR_PAD_LEFT);
-        $message = "Your FABLAB password reset code is: {$otp}";
+        $message = "Your FABLAB OTP code is {$otp} for password reset. Please do not share. Expires in 10 minutes.";
 
         $this->info("Sending password reset code to {$email}...");
         $this->line("Subject: FABLAB Password Reset Code");

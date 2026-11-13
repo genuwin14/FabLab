@@ -31,7 +31,7 @@ class TestResendOtpEmail extends Command
         // Mirrors the OTP format in OtpController::resend. Nothing is written
         // to the database — this only proves the mail leg of the flow works.
         $otp = str_pad(rand(0, 999999), 6, '0', STR_PAD_LEFT);
-        $message = "Your new FABLAB verification code is: {$otp}";
+        $message = "Your FABLAB OTP code is {$otp} for account verification. Please do not share. Expires in 10 minutes.";
 
         $this->info("Sending resent verification code to {$email}...");
         $this->line("Subject: FABLAB Verification Code");

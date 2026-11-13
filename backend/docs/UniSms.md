@@ -98,6 +98,26 @@ If it fails, the reason is in `storage/logs/laravel.log`, verbatim from UniSMS:
 | Status `429` | Too fast. The log line includes how long to wait. |
 | `message is N characters; the limit is 670` | The message was too long and was not sent. |
 
+### A code text has to follow UniSMS's format
+
+Any text that carries a code is screened. Unless it names the **brand**, the
+**code**, **what it is for** and **when it expires**, UniSMS accepts it (the
+log says `accepted`) and then fails it with *"Unacceptable content: OTP does
+not follow valid format"*. Nothing arrives, and the reason shows only under
+**Messages** on the dashboard or on a delivery receipt (§4). The default
+`sms:test` message has no code in it, so it passes either way and proves
+nothing about this.
+
+FabLab's code texts follow the example UniSMS gives:
+
+```
+Your FABLAB OTP code is 123456 for account verification. Please do not share. Expires in 10 minutes.
+Your FABLAB OTP code is 123456 for password reset. Please do not share. Expires in 10 minutes.
+```
+
+Keep that shape if you reword them, and keep the expiry true. Both kinds of
+code really do expire ten minutes after they are sent.
+
 ---
 
 ## 4. Delivery receipts (optional)

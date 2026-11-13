@@ -98,7 +98,12 @@ class AuthController extends Controller
 
         Auth::login($user);
 
-        $message = "Your FABLAB verification code is: {$otp}";
+        // UniSMS fails a code text that doesn't name the brand, the code, its
+        // purpose and when it expires, so the code really does expire: the
+        // same ten-minute window as a password reset, checked in OtpController.
+        session(['phone_verification_expires' => now()->addMinutes(10)]);
+
+        $message = "Your FABLAB OTP code is {$otp} for account verification. Please do not share. Expires in 10 minutes.";
 
         if ($validated['verification_mode'] === 'email') {
             // Send via Email
@@ -282,7 +287,8 @@ class AuthController extends Controller
             'password_reset_expires' => now()->addMinutes(10),
         ]);
 
-        $message = "Your FABLAB password reset code is: {$otp}";
+        // Worded the way UniSMS insists on for a code text; see register().
+        $message = "Your FABLAB OTP code is {$otp} for password reset. Please do not share. Expires in 10 minutes.";
 
         if ($request->verification_mode === 'email') {
             \Illuminate\Support\Facades\Mail::raw($message, function ($mail) use ($user) {

@@ -625,7 +625,7 @@ Files download as `inventory-materials[-department]-YYYY-MM-DD` and `inventory-e
 
 1. `/register` → full name, email, contact number, password (8+ characters, twice).
 2. Choose delivery for the verification code: **SMS** or **email**.
-3. Enter the 6-digit code. The account activates and lands on the shop.
+3. Enter the 6-digit code (**expires 10 minutes after it's sent**; Resend Code issues a new one). The account activates and lands on the shop.
 
 **Google sign-up** creates an already-verified customer instantly — no code, no phone step.
 
