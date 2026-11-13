@@ -28,6 +28,10 @@
         <env name="MAIL_MAILER" value="array"/>
         <env name="QUEUE_CONNECTION" value="sync"/>
         <env name="SESSION_DRIVER" value="array"/>
+        <!-- Never the real gateway: .env may hold a live UniSMS key with paid
+             credits. Tests that exercise a driver set it and fake HTTP. -->
+        <env name="SMS_DRIVER" value="log"/>
+        <env name="UNISMS_API_KEY" value=""/>
         <env name="PULSE_ENABLED" value="false"/>
         <env name="TELESCOPE_ENABLED" value="false"/>
         <env name="NIGHTWATCH_ENABLED" value="false"/>
