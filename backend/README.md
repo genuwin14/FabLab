@@ -310,6 +310,8 @@ Read the guides in [docs/UserGuide/](docs/UserGuide/):
 This guide targets **local development**. Deploying to Hostinger shared hosting has
 its own step-by-step guide — [docs/Deployment.md](docs/Deployment.md) — which covers
 the document root, hPanel settings, cron jobs and the go-live checklist in full.
+The CSPC server runs FabLab on Docker instead: [docs/DockerDeployment.md](docs/DockerDeployment.md),
+driven by the `docker/fablab.sh` script.
 
 The short version, for any production host:
 

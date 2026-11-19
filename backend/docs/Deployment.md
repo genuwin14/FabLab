@@ -15,6 +15,9 @@ The local development setup is a different document — see the
 [README](../README.md). Everything here assumes the app already runs on your
 machine.
 
+> **Hosting on the CSPC server instead?** That setup runs on Docker and has its
+> own guide: [DockerDeployment.md](DockerDeployment.md).
+
 ---
 
 ## 1. What the plan gives you, and what it does not
