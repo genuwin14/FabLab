@@ -1,0 +1,112 @@
+# FabLab on Docker: the three containers from the CSPC ICTU hosting request.
+#
+#   fablab-app        Apache + PHP: the website. Port 80 inside the container.
+#   fablab-scheduler  The same image, running `php artisan schedule:work`.
+#   fablab-db         MySQL, reachable only by the two containers above.
+#
+# Settings come from .env in this folder, which ./fablab.sh install writes.
+# Run everything through ./fablab.sh. The full guide is
+# ../docs/DockerDeployment.md.
+
+name: fablab
+
+services:
+  fablab-app:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+      args:
+        PHP_VERSION: ${PHP_VERSION:-8.2}
+    image: fablab-app:latest
+    container_name: fablab-app
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      # Fixed by this setup, so they are not in .env.
+      DB_CONNECTION: mysql
+      DB_HOST: fablab-db
+      DB_PORT: "3306"
+    ports:
+      - "${APP_BIND:-0.0.0.0}:${APP_PORT:-8080}:80"
+    # Apache runs as www-data, so it needs this to listen on port 80.
+    sysctls:
+      net.ipv4.ip_unprivileged_port_start: 0
+    volumes:
+      - storage:/var/www/html/storage/app
+      - logs:/var/www/html/storage/logs
+    depends_on:
+      fablab-db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "-o", "/dev/null", "http://localhost/up"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      # The first start runs every migration before Apache starts.
+      start_period: 180s
+    logging: &logging
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "5"
+
+  fablab-scheduler:
+    image: fablab-app:latest
+    # Built by fablab-app above. It is never on Docker Hub.
+    pull_policy: never
+    container_name: fablab-scheduler
+    restart: unless-stopped
+    command: ["php", "artisan", "schedule:work"]
+    # A small init process, so `docker stop` ends schedule:work at once
+    # instead of waiting 10 seconds and killing it.
+    init: true
+    env_file: .env
+    environment:
+      DB_CONNECTION: mysql
+      DB_HOST: fablab-db
+      DB_PORT: "3306"
+    volumes:
+      - storage:/var/www/html/storage/app
+      - logs:/var/www/html/storage/logs
+    depends_on:
+      # fablab-app turns healthy only after its migrations have run.
+      fablab-app:
+        condition: service_healthy
+    logging: *logging
+
+  fablab-db:
+    image: mysql:${MYSQL_VERSION:-8.0}
+    container_name: fablab-db
+    restart: unless-stopped
+    environment:
+      # Used only when the database volume is first created. Changing them
+      # in .env later does not change the database (see the guide's
+      # Troubleshooting section).
+      MYSQL_DATABASE: ${DB_DATABASE:-fablab_db}
+      MYSQL_USER: ${DB_USERNAME:-fablab}
+      MYSQL_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD is empty in docker/.env. Run ./fablab.sh install}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:?DB_ROOT_PASSWORD is empty in docker/.env. Run ./fablab.sh install}
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+    volumes:
+      - db-data:/var/lib/mysql
+    # No ports: the database is not reachable from outside Docker.
+    healthcheck:
+      # Over TCP on purpose. While MySQL sets up a new volume it runs a
+      # temporary server with networking off, which must not count as ready.
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "--silent"]
+      interval: 5s
+      timeout: 5s
+      retries: 60
+      start_period: 30s
+    logging: *logging
+
+volumes:
+  # Uploaded designs, product photos, profile pictures and order PDFs.
+  storage:
+    name: fablab-storage
+  logs:
+    name: fablab-logs
+  db-data:
+    name: fablab-db-data

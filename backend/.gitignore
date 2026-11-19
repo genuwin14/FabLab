@@ -23,3 +23,6 @@
 Homestead.json
 Homestead.yaml
 Thumbs.db
+
+# Backups made by docker/fablab.sh (database dumps, uploads, settings).
+/docker/backups/

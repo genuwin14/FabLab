@@ -1,0 +1,46 @@
+# What `docker build` leaves out of the FabLab image (see docker/Dockerfile).
+#
+# public/gbl/ is deliberately NOT listed: the 3D models are gitignored, but
+# the image needs them, so they are copied in from the working folder.
+
+# Secrets and local settings. The containers get theirs from docker/.env at
+# run time, so no key or password is ever baked into the image.
+.env
+.env.*
+!.env.example
+docker/.env
+docker/backups
+
+# Rebuilt inside the image.
+vendor
+node_modules
+public/build
+public/hot
+public/storage
+bootstrap/cache/*.php
+
+# Uploads, logs and caches live in volumes or are made at start-up.
+storage/app/public/*
+storage/app/private/*
+storage/framework/cache/*
+storage/framework/sessions/*
+storage/framework/testing
+storage/framework/views/*
+storage/logs/*
+storage/pail
+database/*.sqlite
+
+# Not needed to run the site.
+tests
+tools
+docs
+phpunit.xml
+.phpunit.cache
+.phpunit.result.cache
+*.log
+dev.bat
+dev.ps1
+.idea
+.vscode
+.fleet
+.zed
