@@ -19,6 +19,15 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // An https:// site keeps every link and form on https://, even when
+        // the request reached PHP as plain HTTP. That happens behind a
+        // reverse proxy that ends HTTPS but doesn't send X-Forwarded-Proto.
+        // Without this, pages point back to http:// and browsers block the
+        // mixed content.
+        if (str_starts_with((string) config('app.url'), 'https://')) {
+            \Illuminate\Support\Facades\URL::forceScheme('https');
+        }
+
         \Illuminate\Pagination\Paginator::useBootstrapFive();
 
         // Stock alerts cover everything the shop counts, not just products.
