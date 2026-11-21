@@ -21,6 +21,9 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 // Socialite Routes
 Route::get('/login/google', [AuthController::class, 'redirectToGoogle'])->name('auth.google');
 Route::get('/login/google/callback', [AuthController::class, 'handleGoogleCallback']);
+// The deployment guides, docker/.env.example and fablab.sh give Google this
+// address instead, so it must reach the same handler.
+Route::get('/auth/google/callback', [AuthController::class, 'handleGoogleCallback']);
 
 // Forgot Password Routes
 Route::get('/forgot-password', [AuthController::class, 'showForgotPasswordForm'])->name('password.request');
