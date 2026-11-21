@@ -8,9 +8,7 @@ PHP), `fablab-scheduler` and `fablab-db` (MySQL).
 ## Quick start (Linux server with Docker and Compose v2)
 
 ```bash
-cd backend                                    # the folder with artisan in it
-unzip /path/to/fablab-gbl.zip -d public/gbl/  # the 3D models: not in git, handed over separately
-cd docker
+cd backend/docker                # backend/ is the folder with artisan in it
 ./fablab.sh install              # settings, image, containers, first admin
 ```
 

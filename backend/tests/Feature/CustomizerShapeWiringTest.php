@@ -67,14 +67,7 @@ class CustomizerShapeWiringTest extends TestCase
 
     public function test_every_offered_shape_has_its_model_file(): void
     {
-        // public/gbl is gitignored — the GLBs run to tens of megabytes each and
-        // are provisioned per environment rather than committed. So this can
-        // only check a machine that actually has them; on a fresh clone there is
-        // nothing to check rather than something to fail.
-        if (glob(base_path('public/gbl/*.glb')) === []) {
-            $this->markTestSkipped('No GLBs provisioned in public/gbl on this machine.');
-        }
-
+        // The GLBs are committed in public/gbl, so every checkout has them.
         foreach ($this->shapes() as $shape) {
             $this->assertFileExists(
                 base_path('public/gbl/' . self::SHAPE_ASSETS[$shape]),

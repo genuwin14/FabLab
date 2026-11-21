@@ -6,6 +6,9 @@
 *.md diff=markdown
 *.php diff=php
 
+# The 3D customiser models in public/gbl/: binary, never line-ending converted.
+*.glb binary
+
 /.github export-ignore
 CHANGELOG.md export-ignore
 .styleci.yml export-ignore

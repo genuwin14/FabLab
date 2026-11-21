@@ -57,17 +57,11 @@ forwards plain HTTP to port 8080 ([§7](#7-https-and-the-subdomain)).
       running, the site sends mail through `smtp.gmail.com:587`, texts through
       `unismsapi.com`, and uses Google sign-in. If the campus needs an HTTP
       proxy for outbound traffic, set it in Docker first ([§13](#13-troubleshooting)).
-- [ ] **The source code**: the FabLab git repository.
-- [ ] **The 3D model files**, handed over separately (see below).
+- [ ] **The source code**: the FabLab git repository. It includes the 3D
+      models for the customiser, so the clone is about 150 MB.
 - [ ] **DNS**: `fablab.cspc.edu.ph` pointing at your reverse proxy.
 - [ ] For later, not needed to start: the Gmail sending account and its App
       Password, the Google sign-in client, the UniSMS API key.
-
-> **Why the 3D models come separately.** The 3D customiser draws products from
-> `.glb` model files, 132 MB in total, one of them 83 MB. That is too big for
-> git, so the repository does not have them. You get them as
-> `fablab-gbl.zip`. Without them the site works, but the customiser shows an
-> empty stage.
 
 ---
 
@@ -81,12 +75,9 @@ git clone <the FabLab repository URL> /srv/fablab
 cd /srv/fablab/backend          # the folder that contains "artisan"
 ```
 
-Put the 3D models into `public/gbl/`, so that you have
-`/srv/fablab/backend/public/gbl/t-shirt.glb` and so on. They come as
-`fablab-gbl.zip` (about 110 MB), with the `.glb` files at the top of the zip:
+The 3D models for the customiser come with the code, in `public/gbl/`:
 
 ```bash
-unzip /path/to/fablab-gbl.zip -d public/gbl/
 ls public/gbl/        # bag.glb cup.glb polo.glb t-shirt.glb tote_bag.glb umbreella_open.glb
 ```
 
@@ -411,8 +402,7 @@ cd backend/docker && ./fablab.sh update
 4. Recreates the containers. As `fablab-app` starts, it runs any new database
    migrations by itself, before it serves a page.
 
-The site is down for about a minute while the containers swap. The 3D models in
-`public/gbl/` are not touched by `git pull`, so they stay where they are.
+The site is down for about a minute while the containers swap.
 
 If an update goes wrong, restore the backup it took:
 `./fablab.sh restore backups/<date-time>` (the newest folder), after putting the
@@ -580,7 +570,7 @@ themselves in the first lines of `fablab-app`'s log.
 | Logging in "works" but you land back on the login page | `SESSION_SECURE_COOKIE=true` while the site is still plain HTTP. Set it to `false`, or finish [§7](#7-https-and-the-subdomain). |
 | Mixed-content warnings, or forms post to `http://` | The proxy does not send `X-Forwarded-Proto`, or its address is not in `TRUSTED_PROXIES`. With an `https://` `APP_URL` the app keeps links on https even then. Check `APP_URL` first. |
 | Uploads fail with "413 Request Entity Too Large" | The reverse proxy's body-size limit. Nginx needs `client_max_body_size 20m;`. |
-| The 3D customiser shows an empty stage | `public/gbl/` was empty when the image was built. Copy the models in ([§3](#3-put-the-code-on-the-server)), then `./fablab.sh update`. |
+| The 3D customiser shows an empty stage | `public/gbl/` was empty when the image was built. Bring the models back with `git pull`, or with `git checkout -- public/gbl` (in `backend/`) if they were deleted, then `./fablab.sh update`. |
 | E-mail never arrives | Run `./fablab.sh artisan smtp:test you@example.com`. It shows the SMTP error. Usually the App Password, or the server cannot reach `smtp.gmail.com:587`. |
 | "Permission denied" under `storage/` | Only happens if you replaced a volume with a folder on the server (a bind mount). That folder must belong to uid 33: `sudo chown -R 33:33 <folder>`. |
 | Settings changes do nothing | Run `./fablab.sh restart`, not `docker restart`. Settings are read when a container is created. |

@@ -1,7 +1,6 @@
 # What `docker build` leaves out of the FabLab image (see docker/Dockerfile).
 #
-# public/gbl/ is deliberately NOT listed: the 3D models are gitignored, but
-# the image needs them, so they are copied in from the working folder.
+# public/gbl/ is deliberately NOT listed: the image needs the 3D models.
 
 # Secrets and local settings. The containers get theirs from docker/.env at
 # run time, so no key or password is ever baked into the image.

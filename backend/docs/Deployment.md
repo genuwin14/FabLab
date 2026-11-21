@@ -95,7 +95,7 @@ Check this list before you zip anything:
 | :--- | :--- | :--- |
 | `vendor/` | **Yes** | Not in git. Without it there is no Laravel. |
 | `public/build/` | Only if you built it | Not in git. Optional — see above. Skipping it costs you the Poppins font and nothing else. |
-| `public/gbl/` | **Yes** | Not in git. ~132 MB of `.glb` product models for the 3D customiser. |
+| `public/gbl/` | **Yes** | ~132 MB of `.glb` product models for the 3D customiser. |
 | `public/img/`, `public/js/` | Yes | ~7 MB of shop imagery and the customiser scripts. |
 | `storage/app/public/` | Yes, structure only | Create the empty `designs/`, `products/`, `profile-photos/`, `textures/` folders. Upload existing files only if you are carrying local data over. |
 | `node_modules/` | **No** | Build-time only. Tens of thousands of files — it would eat the inode allowance for nothing. |
@@ -634,7 +634,7 @@ failed on a real deployment.
 | Login redirects back to login | Session cookie rejected | `SESSION_DOMAIN`, `SANCTUM_STATEFUL_DOMAINS`, and `SESSION_SECURE_COOKIE` vs actual HTTPS. |
 | Site unstyled | The jsDelivr CDN is unreachable, or `public/build/` is stale | Open the browser console and look for blocked CDN requests. If you deployed a bundle, re-run `npm run build` and re-upload `public/build/`. |
 | Images 404 under `/storage/...` | Symlink missing | §8.4. |
-| 3D customiser shows nothing | `public/gbl/` not uploaded | It is gitignored — §3.1. |
+| 3D customiser shows nothing | `public/gbl/` not uploaded | Upload it — §3.1. |
 | Config change has no effect | Cached config | `php artisan config:clear`, then `config:cache`. |
 | Receipts never arrive | No queue worker | §9.2. Check the `jobs` table — rows piling up confirm it. |
 | `redirect_uri_mismatch` | Google URI mismatch | §11. |

@@ -130,8 +130,9 @@ check_models() {
     [ ${#missing[@]} -eq 0 ] && return 0
 
     warn "3D customiser models missing from $APP_DIR/public/gbl/: ${missing[*]}"
-    note "They are not in git (one is over 80 MB). Unzip fablab-gbl.zip into"
-    note "backend/public/gbl/ and run this again, or the customiser stays empty."
+    note "They are part of the git repository: git pull brings them, and"
+    note "git checkout -- public/gbl (run in backend/) restores deleted ones."
+    note "Run this again afterwards, or the customiser stays empty."
     if [ "${1:-}" = yes ] || confirm "Build without them anyway?"; then
         return 0
     fi
