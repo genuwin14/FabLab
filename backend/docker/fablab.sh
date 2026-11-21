@@ -20,7 +20,7 @@ APP_DIR=$(cd .. && pwd)
 ENV_FILE=$DOCKER_DIR/.env
 BACKUP_ROOT=$DOCKER_DIR/backups
 
-# The 3D customiser's models. Too big for git, so they are copied in by hand.
+# The 3D customiser's models, kept in git under public/gbl/.
 MODELS=(t-shirt.glb polo.glb tote_bag.glb cup.glb umbreella_open.glb)
 
 if [ -t 1 ]; then

@@ -11,8 +11,10 @@ backups, updates.
 
 > **Estimated time**: about 30 minutes, most of it the first image build.
 
-Other guides: the developer's local setup is the [README](../README.md), and the
-earlier shared-hosting setup is [Deployment.md](Deployment.md) (Hostinger).
+Other guides: the short version of this one is the [README](../../README.md) at
+the top of the folder. The developer's local setup is
+[backend/README.md](../README.md), and the earlier shared-hosting setup is
+[Deployment.md](Deployment.md) (Hostinger).
 
 ---
 
@@ -57,8 +59,8 @@ forwards plain HTTP to port 8080 ([§7](#7-https-and-the-subdomain)).
       running, the site sends mail through `smtp.gmail.com:587`, texts through
       `unismsapi.com`, and uses Google sign-in. If the campus needs an HTTP
       proxy for outbound traffic, set it in Docker first ([§13](#13-troubleshooting)).
-- [ ] **The source code**: the FabLab git repository. It includes the 3D
-      models for the customiser, so the clone is about 150 MB.
+- [ ] **The source code**: the FabLab git repository, or the FabLab zip. Both
+      include the 3D models for the customiser.
 - [ ] **DNS**: `fablab.cspc.edu.ph` pointing at your reverse proxy.
 - [ ] For later, not needed to start: the Gmail sending account and its App
       Password, the Google sign-in client, the UniSMS API key.
@@ -74,6 +76,9 @@ sudo mkdir -p /srv/fablab && sudo chown "$USER" /srv/fablab
 git clone <the FabLab repository URL> /srv/fablab
 cd /srv/fablab/backend          # the folder that contains "artisan"
 ```
+
+Received a zip instead? `sudo unzip FabLab-<date>.zip -d /srv` makes the same
+`/srv/fablab`. Then run `sudo chown -R "$USER": /srv/fablab`.
 
 The 3D models for the customiser come with the code, in `public/gbl/`:
 
@@ -403,6 +408,10 @@ cd backend/docker && ./fablab.sh update
    migrations by itself, before it serves a page.
 
 The site is down for about a minute while the containers swap.
+
+Installing from zips rather than git? The
+[README](../../README.md#7-installing-a-new-version) at the top of the folder
+has the steps.
 
 If an update goes wrong, restore the backup it took:
 `./fablab.sh restore backups/<date-time>` (the newest folder), after putting the
