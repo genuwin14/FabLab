@@ -164,15 +164,15 @@
 
     <!-- Verification Mode Selection Modal -->
     {{-- The Quick View shape — floating close, eyebrow over the title, icon
-         tile — on the dark surface this page needs, since a white card on the
-         #05111a auth background would glare. --}}
+         tile — on a white card, as the panel asked of the verification box,
+         like the code page it leads to. --}}
     <div class="modal fade qv-modal" id="verificationModal" tabindex="-1" aria-labelledby="verificationModalLabel" aria-hidden="true"
         data-bs-backdrop="static" data-bs-keyboard="false">
         <div class="modal-dialog modal-dialog-centered" style="max-width: 440px;">
-            <div class="modal-content modal-content-dark"
-                style="background-color: #0d2235; color: white; border: 1px solid rgba(255,255,255,0.1);">
+            <div class="modal-content verify-choice-card"
+                style="background-color: #ffffff; color: #0e2e45; border: 0;">
                 <div class="modal-body text-center p-4 p-lg-5">
-                    <button type="button" class="qv-close qv-close-dark" data-bs-dismiss="modal"
+                    <button type="button" class="qv-close" data-bs-dismiss="modal"
                         aria-label="Close"><i class="bi bi-x-lg"></i></button>
 
                     <span class="qv-icon qv-icon-accent mb-4"
@@ -181,39 +181,39 @@
                     </span>
 
                     <span class="qv-eyebrow d-block mx-auto mb-3"
-                        style="width: fit-content; background: rgba(255,255,255,.12); color: #fff;">Security</span>
-                    <h5 class="qv-title text-white mb-2" id="verificationModalLabel">Verify Your Account</h5>
+                        style="width: fit-content; background: rgba(14,46,69,.08); color: #0e2e45;">Security</span>
+                    <h5 class="qv-title text-primary mb-2" id="verificationModalLabel">Verify Your Account</h5>
 
                     <div class="mb-4">
-                        <p class="mb-0 text-white-50 small">To secure your account, we need to verify your identity.
+                        <p class="mb-0 text-muted small">To secure your account, we need to verify your identity.
                             How would you like to receive your verification code?</p>
                     </div>
 
                     <div class="d-flex flex-column gap-3">
                         <button type="button"
-                            class="btn btn-outline-light d-flex align-items-center justify-content-between p-3 rounded-3 position-relative verification-option"
+                            class="btn verify-choice-option d-flex align-items-center justify-content-between p-3 rounded-3 position-relative verification-option"
                             onclick="selectVerification('sms', this)">
                             <div class="d-flex align-items-center gap-3">
                                 <i class="bi bi-chat-square-dots-fill fs-4 text-accent"></i>
                                 <div class="text-start">
                                     <h6 class="mb-0 fw-bold">Via SMS</h6>
-                                    <small class="text-white-50">Code sent to mobile number</small>
+                                    <small class="text-muted">Code sent to mobile number</small>
                                 </div>
                             </div>
-                            <i class="bi bi-chevron-right text-white-50"></i>
+                            <i class="bi bi-chevron-right text-muted"></i>
                         </button>
 
                         <button type="button"
-                            class="btn btn-outline-light d-flex align-items-center justify-content-between p-3 rounded-3 position-relative verification-option"
+                            class="btn verify-choice-option d-flex align-items-center justify-content-between p-3 rounded-3 position-relative verification-option"
                             onclick="selectVerification('email', this)">
                             <div class="d-flex align-items-center gap-3">
                                 <i class="bi bi-envelope-fill fs-4 text-accent"></i>
                                 <div class="text-start">
                                     <h6 class="mb-0 fw-bold">Via Email</h6>
-                                    <small class="text-white-50">Code sent to email address</small>
+                                    <small class="text-muted">Code sent to email address</small>
                                 </div>
                             </div>
-                            <i class="bi bi-chevron-right text-white-50"></i>
+                            <i class="bi bi-chevron-right text-muted"></i>
                         </button>
                     </div>
                 </div>
@@ -334,9 +334,16 @@
             border-color: #ffc508 !important;
         }
 
+        .verify-choice-option {
+            background-color: #ffffff;
+            border: 1px solid #e3e7ec;
+            color: #0e2e45;
+        }
+
         .verification-option:hover {
-            background-color: rgba(255, 255, 255, 0.05);
+            background-color: rgba(255, 197, 8, 0.08);
             border-color: #ffc508;
+            color: #0e2e45;
         }
 
         .text-accent {
