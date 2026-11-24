@@ -485,8 +485,10 @@ tripping the host's process limits.
 > two longer at checkout and turns a mail-server outage into a checkout error, so
 > prefer the cron if you can get it.
 >
-> The scheduler cron does **not** have this problem in the same way — its tasks
-> only need to fire once a day, so any interval of an hour or less is fine.
+> The scheduler cron is less fussy, but not by much. A task only runs when
+> `schedule:run` happens in the minute it is due (00:15, 01:30 and 07:00), so
+> every 5 or every 15 minutes still catches all three, while hourly does not: it
+> would silently skip the 00:15 PR closing and the 01:30 monthly threshold retune.
 
 ### 9.3 Timezone
 
