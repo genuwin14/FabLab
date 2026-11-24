@@ -89,7 +89,7 @@ function loadDesignRecipe(recipe) {
                 const html = `
                     <div class="customizer-item p-3 border border-white-10 rounded bg-dark-glass mb-3" data-zone="${txt.zone || defaultZoneId()}">
                         <div class="d-flex justify-content-between align-items-center mb-2">
-                            <span class="tiny text-white-50 fw-bold">TEXT ELEMENT</span>
+                            <span class="tiny text-white-50 fw-bold">TEXT ELEMENT <span class="ms-1 element-fee" style="color: #ffc508;">+${formatPeso(CustomizerPricing.elementFee('text', txt.scale))}</span></span>
                             <button type="button" class="btn btn-link text-danger p-0 delete-btn"><i class="bi bi-trash"></i></button>
                         </div>
                         <input type="text" class="form-control form-control-sm bg-dark border-white-10 text-white text-input mb-2 shadow-none" placeholder="Enter text..." value="${(txt.text || '').replace(/"/g, '&quot;')}">
@@ -149,7 +149,7 @@ function loadDesignRecipe(recipe) {
                 const html = `
                     <div class="customizer-item p-3 border border-white-10 rounded bg-dark-glass mb-3" data-zone="${shp.zone || defaultZoneId()}">
                         <div class="d-flex justify-content-between align-items-center mb-2">
-                            <span class="tiny text-white-50 fw-bold">SHAPE ELEMENT</span>
+                            <span class="tiny text-white-50 fw-bold">SHAPE ELEMENT <span class="ms-1 element-fee" style="color: #ffc508;">+${formatPeso(CustomizerPricing.elementFee('shape', shp.scale))}</span></span>
                             <button type="button" class="btn btn-link text-danger p-0 delete-btn"><i class="bi bi-trash"></i></button>
                         </div>
                         <div class="row g-2 mb-2">

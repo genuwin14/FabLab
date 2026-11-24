@@ -29,17 +29,17 @@ class CustomizationRate extends Model
         'text' => [
             'group' => 'elements',
             'label' => 'Custom text',
-            'description' => 'Charged once per line of text a customer adds to a design.',
+            'description' => 'Charged per line of text, in proportion to the size it is printed at. Half size costs half this, double size costs double.',
             'icon' => 'bi-fonts',
-            'suffix' => 'each',
+            'suffix' => 'each at 1× size',
             'default' => 50,
         ],
         'shape' => [
             'group' => 'elements',
             'label' => 'Custom shape',
-            'description' => 'Charged once per circle or line a customer adds to a design.',
+            'description' => 'Charged per circle or line, in proportion to the size it is printed at. Half size costs half this, double size costs double.',
             'icon' => 'bi-circle-square',
-            'suffix' => 'each',
+            'suffix' => 'each at 1× size',
             'default' => 30,
         ],
         'logo' => [

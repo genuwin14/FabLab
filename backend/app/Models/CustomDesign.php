@@ -18,6 +18,19 @@ class CustomDesign extends Model
     public const LOGO_MIN_SCALE = 0.1;
     public const LOGO_MAX_SCALE = 5.0;
 
+    /**
+     * The Size slider ranges for text and shapes, matching the studio's own.
+     *
+     * The panel asked for customization prices to vary with the size of the
+     * design, so a line of text and a shape are charged the way an uploaded
+     * image is: their rate at 1× size, in proportion to the size they are
+     * printed at. Left at 1×, they cost what they always did.
+     */
+    public const TEXT_MIN_SCALE = 0.5;
+    public const TEXT_MAX_SCALE = 4.0;
+    public const SHAPE_MIN_SCALE = 0.1;
+    public const SHAPE_MAX_SCALE = 5.0;
+
     protected $primaryKey = 'custom_design_id';
 
     protected $fillable = [
@@ -160,6 +173,45 @@ class CustomDesign extends Model
     }
 
     /**
+     * The Size slider value of each text line, or each shape, clamped to its
+     * slider's range — so a hand-edited recipe can't buy a free or negative one.
+     *
+     * @param  'text'|'shapes'  $kind
+     * @return list<float>
+     */
+    private function elementScales(string $kind): array
+    {
+        [$min, $max] = $kind === 'text'
+            ? [self::TEXT_MIN_SCALE, self::TEXT_MAX_SCALE]
+            : [self::SHAPE_MIN_SCALE, self::SHAPE_MAX_SCALE];
+
+        $elements = $this->recipe['elements'][$kind] ?? [];
+
+        return array_map(function ($element) use ($min, $max) {
+            $scale = is_array($element) && is_numeric($element['scale'] ?? null) ? (float) $element['scale'] : 1.0;
+
+            return max($min, min($max, $scale));
+        }, is_array($elements) ? array_values($elements) : []);
+    }
+
+    /**
+     * "Custom text × 2", and when any is printed bigger or smaller than 1×,
+     * at what sizes: "Custom text × 2 at 1×, 2.5× size".
+     *
+     * @param  list<float>  $scales
+     */
+    private static function sizedLabel(string $label, array $scales): string
+    {
+        $text = $label . ' × ' . count($scales);
+
+        $allAtOne = collect($scales)->every(fn (float $scale) => abs($scale - 1.0) < 0.0001);
+
+        return $allAtOne
+            ? $text
+            : $text . ' at ' . implode(', ', array_map(fn (float $scale) => self::formatScale($scale) . '×', $scales)) . ' size';
+    }
+
+    /**
      * How many units of each customization option this design uses, as
      * `rate_key => units`.
      *
@@ -168,9 +220,10 @@ class CustomDesign extends Model
      * for a charge, or by its bill of materials for a draw on the shelf.
      * Options the design doesn't use are absent rather than zero.
      *
-     * Uploaded images count as their Size slider value rather than as one
-     * each, because that is what they actually cost in ink — and it keeps the
-     * material draw in step with the fee, which already scales the same way.
+     * Text, shapes and uploaded images count as their Size slider values
+     * rather than as one each, because that is what they actually cost in
+     * ink — and it keeps the material draw in step with the fee, which scales
+     * the same way.
      *
      * @return array<string, float>
      */
@@ -179,12 +232,12 @@ class CustomDesign extends Model
         $elements = $this->recipe['elements'] ?? [];
         $units = [];
 
-        if ($textCount = count($elements['text'] ?? [])) {
-            $units['text'] = (float) $textCount;
+        if ($textScale = array_sum($this->elementScales('text'))) {
+            $units['text'] = round($textScale, 4);
         }
 
-        if ($shapeCount = count($elements['shapes'] ?? [])) {
-            $units['shape'] = (float) $shapeCount;
+        if ($shapeScale = array_sum($this->elementScales('shapes'))) {
+            $units['shape'] = round($shapeScale, 4);
         }
 
         $logoScale = 0.0;
@@ -217,19 +270,18 @@ class CustomDesign extends Model
         $elements = $this->recipe['elements'] ?? [];
         $lines = [];
 
-        $textCount = count($elements['text'] ?? []);
-        if ($textCount > 0) {
+        // Text and shapes, each charged at the size it is printed at.
+        if ($textScales = $this->elementScales('text')) {
             $lines[] = [
-                'label' => "Custom text × {$textCount}",
-                'amount' => round($textCount * CustomizationRate::amountFor('text'), 2),
+                'label' => self::sizedLabel('Custom text', $textScales),
+                'amount' => round(array_sum($textScales) * CustomizationRate::amountFor('text'), 2),
             ];
         }
 
-        $shapeCount = count($elements['shapes'] ?? []);
-        if ($shapeCount > 0) {
+        if ($shapeScales = $this->elementScales('shapes')) {
             $lines[] = [
-                'label' => "Custom shapes × {$shapeCount}",
-                'amount' => round($shapeCount * CustomizationRate::amountFor('shape'), 2),
+                'label' => self::sizedLabel('Custom shapes', $shapeScales),
+                'amount' => round(array_sum($shapeScales) * CustomizationRate::amountFor('shape'), 2),
             ];
         }
 

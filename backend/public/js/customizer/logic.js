@@ -33,6 +33,14 @@ const CustomizerPricing = {
     LOGO_MIN_SCALE: 0.1,
     LOGO_MAX_SCALE: 5,
 
+    // Text and shapes are charged the same way: their rate at 1× size, in
+    // proportion to their Size slider. Mirrors CustomDesign::TEXT_* and
+    // SHAPE_* — the sliders' own ranges.
+    SCALE_RANGES: {
+        text: [0.5, 4],
+        shape: [0.1, 5]
+    },
+
     rate(key) {
         const configured = (typeof CustomizerConfig !== 'undefined' && CustomizerConfig.rates)
             ? CustomizerConfig.rates[key]
@@ -51,6 +59,28 @@ const CustomizerPricing = {
     logoFee(scale) {
         const fee = this.rate('logo') * this.normalisedLogoScale(scale);
         return Math.round(fee * 100) / 100;
+    },
+
+    /** A text line's or a shape's Size, clamped to its slider. */
+    normalisedScale(key, scale) {
+        const [min, max] = this.SCALE_RANGES[key];
+        const value = parseFloat(scale);
+        if (!Number.isFinite(value)) return 1;
+        return Math.max(min, Math.min(max, value));
+    },
+
+    /** What one text line or shape costs at its Size. */
+    elementFee(key, scale) {
+        return Math.round(this.rate(key) * this.normalisedScale(key, scale) * 100) / 100;
+    },
+
+    /**
+     * Every text line, or every shape, together: rounded once for the lot,
+     * as CustomDesign's price breakdown rounds its line.
+     */
+    elementsFee(key, elements) {
+        const sizes = elements.reduce((sum, element) => sum + this.normalisedScale(key, element.scale), 0);
+        return Math.round(this.rate(key) * sizes * 100) / 100;
     }
 };
 
@@ -191,14 +221,23 @@ function refreshLogoFeeLabels() {
         const scale = $(this).find('.scale-range').val();
         $(this).find('.logo-fee').text('+' + formatPeso(CustomizerPricing.logoFee(scale)));
     });
+
+    // Text and shapes follow their own Size slider the same way.
+    [['#textList', 'text'], ['#shapeList', 'shape']].forEach(([list, key]) => {
+        $(list + ' .customizer-item').each(function () {
+            const scale = $(this).find('.scale-range').val();
+            $(this).find('.element-fee').text('+' + formatPeso(CustomizerPricing.elementFee(key, scale)));
+        });
+    });
 }
 
 function calculateCustomPrice() {
     const basePrice = (typeof CustomizerConfig !== 'undefined' && CustomizerConfig.productPrice) ? CustomizerConfig.productPrice : 0;
     let extra = 0;
 
-    extra += textElements.length * CustomizerPricing.rate('text');
-    extra += shapeElements.length * CustomizerPricing.rate('shape');
+    // Priced by size, like the images: a line of text at 2× costs twice one at 1×.
+    extra += CustomizerPricing.elementsFee('text', textElements);
+    extra += CustomizerPricing.elementsFee('shape', shapeElements);
     extra += logoElements.reduce((sum, logo) => sum + CustomizerPricing.logoFee(logo.scale), 0);
 
     refreshLogoFeeLabels();
