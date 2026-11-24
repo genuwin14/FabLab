@@ -59,28 +59,32 @@ class AuthController extends Controller
             'verification_mode' => ['required', 'in:sms,email'],
         ]);
 
-        $otp = str_pad(rand(0, 999999), 6, '0', STR_PAD_LEFT);
+        $otp = str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
 
         $existingUser = User::where('email', $validated['email'])->first();
 
         if ($existingUser) {
-            if ($existingUser->phone_verified) {
-                // Email belongs to a verified user -> throw error
+            // Only a customer account that never verified anything can be
+            // signed up for again: someone retrying a registration they never
+            // finished. Any account verified on either channel (an email
+            // sign-up, a Google one, staff made with users:create) and any
+            // staff or admin account is taken. Going on would overwrite its
+            // password and sign a stranger in as its owner.
+            if (\App\Support\PhoneVerification::hasVerifiedChannel($existingUser) || $existingUser->role !== 'customer') {
                 throw ValidationException::withMessages([
                     'email' => ['The email has already been taken.'],
                 ]);
-            } else {
-                // Email exists but unverified -> Update details and resend OTP
-                $user = $existingUser;
-                $user->update([
-                    'fullname' => $validated['name'],
-                    'contact_number' => $validated['phone'],
-                    'password' => Hash::make($validated['password']),
-                    'role' => 'customer',
-                    'phone_verification_code' => $otp,
-                    // Keep phone_verified as false
-                ]);
             }
+
+            // Email exists but unverified -> Update details and resend OTP
+            $user = $existingUser;
+            $user->update([
+                'fullname' => $validated['name'],
+                'contact_number' => $validated['phone'],
+                'password' => Hash::make($validated['password']),
+                'phone_verification_code' => $otp,
+                // Keep phone_verified as false
+            ]);
         } else {
             // New User
             $user = User::create([
@@ -101,7 +105,13 @@ class AuthController extends Controller
         // UniSMS fails a code text that doesn't name the brand, the code, its
         // purpose and when it expires, so the code really does expire: the
         // same ten-minute window as a password reset, checked in OtpController.
-        session(['phone_verification_expires' => now()->addMinutes(10)]);
+        // The channel is recorded here rather than trusted from the code form
+        // later (see PhoneVerification), so the code proves what it went to.
+        session([
+            'phone_verification_expires' => now()->addMinutes(10),
+            'verification_channel' => $validated['verification_mode'],
+        ]);
+        session()->forget('pending_contact_number');
 
         $message = "Your FABLAB OTP code is {$otp} for account verification. Please do not share. Expires in 10 minutes.";
 
@@ -152,10 +162,17 @@ class AuthController extends Controller
 
         $user = $request->user();
         $user->contact_number = $validated['contact_number'];
+        // A number typed in is not a number proven. The account is already
+        // verified by its Google email, so proving the phone is offered, not
+        // forced: the code page has a Skip for now.
+        $user->phone_verified = false;
         $user->save();
 
-        return redirect()->route($user->homeRoute())
-            ->with('success', 'Thanks — we can reach you about your orders now.');
+        \App\Support\PhoneVerification::send($user, 'sms');
+
+        return redirect()->route('verify.code')
+            ->with('verification_mode', 'sms')
+            ->with('success', 'Number saved. Enter the code we texted to verify it, or skip for now.');
     }
 
     /**
@@ -218,7 +235,8 @@ class AuthController extends Controller
                 'password' => null,
                 'role' => 'customer',
                 'email_verified_at' => now(),
-                'phone_verified' => true,
+                // Google proves the email, never a phone: there isn't one yet.
+                'phone_verified' => false,
                 'contact_number' => '',
                 'photo' => $googleUser->getAvatar(), // Store URL directly
             ]);
@@ -277,7 +295,7 @@ class AuthController extends Controller
         ]);
 
         $user = User::where('email', $request->email)->first();
-        $otp = str_pad(rand(0, 999999), 6, '0', STR_PAD_LEFT);
+        $otp = str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
 
         // The code lives in the session rather than a password_resets row —
         // it's single-device by design and expires with the window below.

@@ -28,8 +28,20 @@ class ProfileController extends Controller
 
         $user->fullname = $validated['fullname'];
         $user->email = $validated['email'];
-        $user->contact_number = $validated['contact_number'] ?? $user->contact_number;
         $user->address = $validated['address'] ?? $user->address;
+
+        // A new number has to prove it receives texts. One replacing a
+        // verified number waits until it does, so the account never trades a
+        // proven number for an unproven one; one replacing an unverified
+        // number (or none) is saved now and verified when the code comes in.
+        $newNumber = trim((string) ($validated['contact_number'] ?? ''));
+        $numberChanged = $newNumber !== '' && $newNumber !== trim((string) $user->contact_number);
+        $numberWaits = $numberChanged && $user->phone_verified;
+
+        if ($numberChanged && ! $numberWaits) {
+            $user->contact_number = $newNumber;
+            $user->phone_verified = false;
+        }
 
         // Customer specific fields
         $user->degree = $validated['degree'] ?? $user->degree;
@@ -49,6 +61,16 @@ class ProfileController extends Controller
         }
 
         $user->save();
+
+        if ($numberChanged) {
+            \App\Support\PhoneVerification::send($user, 'sms', $numberWaits ? $newNumber : null);
+
+            return redirect()->route('verify.code')
+                ->with('verification_mode', 'sms')
+                ->with('success', $numberWaits
+                    ? 'Profile updated. Enter the code we texted to your new number to switch to it.'
+                    : 'Profile updated. Enter the code we texted to verify your number.');
+        }
 
         return redirect()->back()->with('success', 'Profile updated successfully.');
     }

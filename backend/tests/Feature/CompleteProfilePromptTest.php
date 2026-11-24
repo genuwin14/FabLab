@@ -35,15 +35,35 @@ class CompleteProfilePromptTest extends TestCase
         $this->get('/complete-profile')->assertOk()->assertSee('Contact Number', false);
     }
 
-    public function test_saving_the_number_lands_them_in_the_shop(): void
+    /**
+     * The number is kept, and texted a code so it can be proven too. Proving
+     * it is offered, not forced: the account is verified by its Google email,
+     * so the code page can be skipped straight into the shop.
+     */
+    public function test_saving_the_number_texts_it_a_code_and_lets_them_skip(): void
     {
+        $sent = [];
+        $this->mock(\App\Services\SmsService::class, function ($mock) use (&$sent) {
+            $mock->shouldReceive('send')->andReturnUsing(function ($to, $message) use (&$sent) {
+                $sent[] = $to;
+
+                return true;
+            });
+        });
+
         $user = $this->googleCustomer();
         Sanctum::actingAs($user);
 
         $this->post('/complete-profile', ['contact_number' => '09171234567'])
-            ->assertRedirect(route('customer.shop'));
+            ->assertRedirect(route('verify.code'));
 
-        $this->assertSame('09171234567', $user->refresh()->contact_number);
+        $user->refresh();
+        $this->assertSame('09171234567', $user->contact_number);
+        $this->assertFalse((bool) $user->phone_verified, 'Typed in, not yet proven.');
+        $this->assertSame(['09171234567'], $sent);
+
+        $this->get(route('verify.code'))->assertOk()->assertSee('Skip for now');
+        $this->get(route('customer.shop'))->assertOk();
     }
 
     public function test_the_number_is_required_when_submitting(): void

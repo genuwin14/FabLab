@@ -20,13 +20,25 @@
                         {{-- A white card, on the panel's recommendation: the verification box is
                              the one auth surface asked to read as paper rather than glass. --}}
 
+                        @php
+                            // Where the code went, as the server recorded it when sending
+                            // (App\Support\PhoneVerification), then the older flash.
+                            $codeChannel = session('verification_channel') ?? session('verification_mode', request('verification_mode'));
+                            $pendingNumber = session('pending_contact_number');
+                            $verifiedAlready = \App\Support\PhoneVerification::hasVerifiedChannel(auth()->user());
+                        @endphp
+
                         <!-- Header -->
                         <div class="mb-4">
-                            <h4 class="fw-bold text-primary">Verification Required</h4>
+                            <h4 class="fw-bold text-primary">{{ $verifiedAlready ? 'Verify Your Phone' : 'Verification Required' }}</h4>
                             <p class="text-muted small">
-                                @if (session('verification_mode') == 'email')
+                                @if ($codeChannel == 'email')
                                     Enter the 6-digit code sent to your email address: <br>
                                     <span class="text-primary fw-bold">{{ auth()->user()->email }}</span>
+                                @elseif (filled($pendingNumber))
+                                    Enter the 6-digit code sent to your new number ending in: <br>
+                                    <span class="text-primary fw-bold">{{ substr($pendingNumber, -4) }}</span><br>
+                                    Your current number stays on your account until then.
                                 @else
                                     Enter the 6-digit code sent to your phone number ending in: <br>
                                     <span class="text-primary fw-bold">{{ substr(auth()->user()->contact_number, -4) }}</span>
@@ -72,6 +84,27 @@
                                     style="font-size: inherit;">Resend Code</button>
                             </form>
                             </p>
+
+                            {{-- Not every network gets the texts (the SMS sender reaches some
+                                 networks only), so an account still getting in can use the
+                                 other channel. A new number can only be proven by text. --}}
+                            @if (! filled($pendingNumber) && ! $verifiedAlready)
+                                <form action="{{ route('verify.code.resend') }}" method="POST" class="mt-2">
+                                    @csrf
+                                    <input type="hidden" name="verification_mode" value="{{ $codeChannel == 'email' ? 'sms' : 'email' }}">
+                                    <button type="submit" class="btn btn-link p-0 small text-muted text-decoration-none border-0 bg-transparent">
+                                        {{ $codeChannel == 'email' ? 'Text the code to my phone instead' : 'Email the code to me instead' }}
+                                    </button>
+                                </form>
+                            @endif
+
+                            {{-- An account already verified one way only needs this to prove
+                                 its phone, which is offered, never forced. --}}
+                            @if ($verifiedAlready)
+                                <a href="{{ route(auth()->user()->homeRoute()) }}" class="d-inline-block mt-3 small text-muted fw-semibold">
+                                    Skip for now
+                                </a>
+                            @endif
                         </div>
                     </div>
                 </div>

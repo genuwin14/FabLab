@@ -64,7 +64,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     | Admin only
     |--------------------------------------------------------------------------
     */
-    Route::middleware('role:admin')->group(function () {
+    Route::middleware(['role:admin', 'verified.account'])->group(function () {
 
     // Admin Routes/Dashboard
     Route::get('/admin/dashboard', [\App\Http\Controllers\Admin\DashboardController::class, 'index'])->name('admin.dashboard');
@@ -183,7 +183,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     | unable to finish an order.
     |--------------------------------------------------------------------------
     */
-    Route::middleware('role:staff,admin')->group(function () {
+    Route::middleware(['role:staff,admin', 'verified.account'])->group(function () {
 
     // Staff Routes/Dashboard
     Route::get('/staff/dashboard', [\App\Http\Controllers\Staff\DashboardController::class, 'index'])->name('staff.dashboard');
@@ -235,7 +235,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     | Customer only
     |--------------------------------------------------------------------------
     */
-    Route::middleware('role:customer')->group(function () {
+    Route::middleware(['role:customer', 'verified.account'])->group(function () {
 
     // Customer Routes/Shop
     Route::get('/customer/shop', [\App\Http\Controllers\Customer\ShopController::class, 'index'])->name('customer.shop');

@@ -80,6 +80,17 @@
                                             value="{{ auth()->user()->contact_number ?? '' }}">
                                         <label for="custPhone">Contact Number</label>
                                     </div>
+                                    {{-- Whether the number has proven it gets texts. A new number is
+                                         texted a code when saved (Customer\ProfileController). --}}
+                                    <div class="small mt-1 d-flex flex-wrap align-items-center gap-2 phone-verify-status">
+                                        @if (filled(auth()->user()->contact_number) && auth()->user()->phone_verified)
+                                            <span class="text-success fw-semibold"><i class="bi bi-patch-check-fill me-1"></i>Verified</span>
+                                        @elseif (filled(auth()->user()->contact_number))
+                                            <span class="fw-semibold" style="color: #997404;"><i class="bi bi-exclamation-circle me-1"></i>Not verified</span>
+                                            <button type="submit" form="verifyPhoneForm" class="btn btn-link btn-sm p-0 fw-semibold">Verify now</button>
+                                        @endif
+                                        <span class="text-muted">Changing it texts a code to the new number.</span>
+                                    </div>
                                 </div>
                                 <div class="col-md-6">
                                     <div class="form-floating profile-field">
@@ -196,6 +207,14 @@
         </div>
     </div>
 </div>
+
+{{-- The "Verify now" button sits inside the profile form but posts here: it
+     texts a code to the number on the account. --}}
+<form id="verifyPhoneForm" action="{{ route('verify.code.resend') }}" method="POST" class="d-none">
+    @csrf
+    <input type="hidden" name="verification_mode" value="sms">
+    <input type="hidden" name="target" value="current">
+</form>
 
 <style>
     /* The card, the close button and the eyebrow now come from the shared
