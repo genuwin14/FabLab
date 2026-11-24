@@ -37,7 +37,7 @@ class CategorySeeder extends Seeder
             ],
             [
                 'name' => 'Machinery & Equipment',
-                'description' => 'Permanent assets such as laser cutters and 3D printers.'
+                'description' => 'Permanent assets such as laser cutters, heat presses and printers.'
             ]
         ];
 

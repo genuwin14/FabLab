@@ -75,7 +75,7 @@ enum MaterialUnit: string
             self::Box => 'staples, rivets',
             self::Pack => 'blades, sanding discs',
             self::Ream => 'bond paper',
-            self::Roll => 'filament, vinyl, tarpaulin',
+            self::Roll => 'vinyl, tarpaulin, transfer film',
             self::Sheet => 'acrylic, plywood, vellum board',
             self::Bundle => 'dowels, wood strips',
 
@@ -90,7 +90,7 @@ enum MaterialUnit: string
             self::SquareFoot => 'laminate, veneer',
 
             self::Gram => 'ink, resin powder, pigment',
-            self::Kilogram => 'filament, resin, adhesive',
+            self::Kilogram => 'adhesive, powder, clay',
 
             self::Milliliter => 'ink, solvent, adhesive',
             self::Liter => 'varnish, paint, thinner',

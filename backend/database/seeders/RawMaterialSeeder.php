@@ -12,7 +12,7 @@ use App\Models\Supplier;
  *
  * Two rules this file follows on purpose:
  *
- * 1. Nothing here is also a product. Filament and acrylic used to be seeded on
+ * 1. Nothing here is also a product. Acrylic used to be seeded on
  *    both screens with two stock figures that never agreed.
  * 2. No `units_consumed` / `units_damaged` / `units_sponsored` /
  *    `units_on_display` values. Those counters belong to the usage ledger and
@@ -90,14 +90,16 @@ class RawMaterialSeeder extends Seeder
                 'department' => $dcc,
             ], ['Cyan', 'Magenta', 'Yellow', 'Black']),
             [
-                'name' => 'PLA Filament Red 1.75mm',
+                // The shop customises; it doesn't take 3D printing orders, so
+                // the stock that runs out in the demo is a pressing consumable.
+                'name' => 'Heat Transfer Vinyl (White)',
                 'supplier_id' => $techSupplier->supplier_id ?? 1,
                 'cost_per_unit' => 600.00,
                 // Out of stock — drives the reorder prompts on the dashboard.
                 'stock_quantity' => 0,
                 'low_stock_threshold' => 5,
                 'unit' => 'roll',
-                'description' => 'High quality PLA for the Creality 3D printers.',
+                'description' => 'Heat transfer vinyl for pressing names and numbers onto garments.',
                 'department' => $dcc,
             ],
 

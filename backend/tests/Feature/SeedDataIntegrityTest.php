@@ -371,4 +371,22 @@ class SeedDataIntegrityTest extends TestCase
 
         $this->assertGreaterThan(0, $colors->where('price_modifier', '>', 0)->count());
     }
+
+    /**
+     * The panel: remove 3D printing and focus on customization. The demo stock
+     * that runs out, and the draft order that restocks it, is a pressing
+     * consumable now, not printer filament. (The lab's own 3D printers stay
+     * in Machinery & Equipment: they are assets it owns, not a service.)
+     */
+    public function test_the_demo_data_sells_customisation_not_3d_printing(): void
+    {
+        $this->assertSame(0, RawMaterial::where('name', 'like', '%filament%')->count());
+
+        $vinyl = RawMaterial::where('name', 'Heat Transfer Vinyl (White)')->sole();
+        $this->assertEquals(0, $vinyl->stock_quantity, 'Still the out-of-stock example.');
+        $this->assertTrue(
+            \App\Models\PurchaseOrderItem::where('raw_material_id', $vinyl->raw_material_id)->exists(),
+            'The draft purchase order restocks it.'
+        );
+    }
 }

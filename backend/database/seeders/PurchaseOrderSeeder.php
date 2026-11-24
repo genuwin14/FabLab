@@ -33,17 +33,17 @@ class PurchaseOrderSeeder extends Seeder
         $mugWhite = $products->firstWhere('sku', 'MG-WHT-11');
         $mugBlack = $products->firstWhere('sku', 'MG-BLK-11');
 
-        // Filament is a raw material, not a product — a purchase order line
+        // Vinyl is a raw material, not a product — a purchase order line
         // points at it through raw_material_id.
-        $filament = RawMaterial::where('name', 'PLA Filament Red 1.75mm')->first();
+        $vinyl = RawMaterial::where('name', 'Heat Transfer Vinyl (White)')->first();
         // Only magenta is short, so only magenta is on order.
         $ink = RawMaterial::where('name', 'Sublimation Ink (Magenta)')->first();
 
         // IF data is missing (e.g. partial seed), skip
-        if (!$techSupply || !$genMerch || !$filament || !$mugWhite)
+        if (!$techSupply || !$genMerch || !$vinyl || !$mugWhite)
             return;
 
-        // PO 1: DRAFT (Tech Supply - Filament Restock)
+        // PO 1: DRAFT (Tech Supply - Vinyl Restock)
         $po1 = PurchaseOrder::create([
             'po_number' => 'PO-' . now()->format('Ymd') . '-DRFT',
             'supplier_id' => $techSupply->supplier_id,
@@ -55,7 +55,7 @@ class PurchaseOrderSeeder extends Seeder
 
         PurchaseOrderItem::create([
             'purchase_order_id' => $po1->purchase_order_id,
-            'raw_material_id' => $filament->raw_material_id, // Red Filament
+            'raw_material_id' => $vinyl->raw_material_id, // White HTV
             'quantity' => 5,
             'cost' => 600.00
         ]);

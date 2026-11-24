@@ -28,7 +28,7 @@
                         <div class="mb-3">
                             <label class="form-label small fw-bold text-muted text-uppercase">Category Name <span class="text-danger">*</span></label>
                             <input type="text" name="name" class="form-control category-field-input"
-                                placeholder="e.g. 3D Printing" required>
+                                placeholder="e.g. Apparel" required>
                         </div>
                         <div class="mb-0">
                             <label class="form-label small fw-bold text-muted text-uppercase">Description</label>
