@@ -25,9 +25,20 @@
             </tr>
         @endforeach
         <tr>
-            <td style="padding:12px 16px;font-weight:bold;color:#0e2e45;">Total</td>
+            <td style="padding:12px 16px;font-weight:bold;color:#0e2e45;">Estimated total</td>
             <td align="right" style="padding:12px 16px;font-weight:bold;color:#0e2e45;white-space:nowrap;">
                 &#8369;{{ number_format((float) $order->total_amount, 2) }}
+            </td>
+        </tr>
+    </table>
+
+    <table role="presentation" cellpadding="0" cellspacing="0" width="100%"
+        style="background-color:#fff8e1;border-left:4px solid #ffc508;border-radius:4px;margin:0 0 16px;">
+        <tr>
+            <td style="padding:12px 16px;color:#5c4a03;">
+                <strong>This price is an estimate.</strong> The system worked it out from your order and design;
+                FabLab confirms the final amount when it reviews your order, and that confirmed amount is the one
+                on your transaction slip.
             </td>
         </tr>
     </table>

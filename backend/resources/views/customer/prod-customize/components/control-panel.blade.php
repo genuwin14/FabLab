@@ -314,9 +314,15 @@
 
     <!-- Actions Footer -->
     <div class="p-3 p-md-4 border-top border-white-10 bg-darker-glass">
+        {{-- The panel: the cost the system works out is an estimate that the
+             shop confirms. Said beside the number, not under it in grey. --}}
+        <div class="estimate-notice mb-3" role="note">
+            <i class="bi bi-exclamation-circle-fill"></i>
+            <span><strong>Estimate only.</strong> FabLab reviews every design and confirms the final price before you pay.</span>
+        </div>
         <div class="d-flex justify-content-between align-items-end mb-3 mb-md-4">
             <div>
-                <div class="text-white-50 tiny text-uppercase fw-bold mb-1">Total Estimated Price</div>
+                <div class="text-accent tiny text-uppercase fw-bold mb-1">Estimated Price</div>
                 <div id="total-price-display" class="text-white h4 fw-bold mb-0">
                     ₱{{ number_format($product->price ?? 0, 2) }}</div>
             </div>

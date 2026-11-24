@@ -108,9 +108,18 @@
 
         <div class="customer-order-details-summary mb-3">
             <div class="d-flex justify-content-between align-items-center mb-2">
-                <span class="text-muted small">Total Amount</span>
-                <span class="fw-bold text-primary fs-5">₱{{ number_format($order->total_amount, 2) }}</span>
+                <span class="text-muted small">{{ $order->priceIsConfirmed() ? 'Confirmed Total' : 'Estimated Total' }}</span>
+                <span class="text-end">
+                    @include('partials.order-price-note')
+                    <span class="fw-bold text-primary fs-5 ms-1">₱{{ number_format($order->total_amount, 2) }}</span>
+                </span>
             </div>
+            @if(in_array($order->status, ['pending', 'awaiting_pr'], true))
+                <p class="small text-muted mb-2">
+                    <i class="bi bi-info-circle me-1"></i>The system's estimate. FabLab confirms the final price when it
+                    reviews your order, and the confirmed amount is the one on your transaction slip.
+                </p>
+            @endif
             <div class="d-flex justify-content-between align-items-center">
                 <span class="text-muted small">Items</span>
                 <span class="fw-medium">{{ $order->orderItems->sum('quantity') }} items</span>

@@ -53,9 +53,13 @@
                 <div class="border-top border-dark border-dashed my-2"></div>
 
                 <div class="d-flex justify-content-between align-items-center mb-2">
-                    <span class="fw-bold text-uppercase small">Total Amount</span>
+                    <span class="fw-bold text-uppercase small">Estimated Total</span>
                     <span class="fw-bold fs-5" id="previewTotal"></span>
                 </div>
+                <p class="small mb-0 text-center" style="color: #7a5c00;">
+                    <i class="bi bi-exclamation-circle-fill me-1"></i><strong>Estimate only.</strong>
+                    FabLab confirms the final price when it reviews your order.
+                </p>
 
                 <div class="border-top border-dark border-dashed my-3"></div>
 

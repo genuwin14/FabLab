@@ -37,6 +37,23 @@
         font-size: 0.7rem;
     }
 
+    /* "Estimate only" beside the price: gold on the dark panel, loud enough
+       to read before Add to Cart. */
+    .estimate-notice {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.5rem;
+        padding: 0.55rem 0.75rem;
+        border: 1px solid rgba(255, 197, 8, 0.45);
+        border-radius: 10px;
+        background: rgba(255, 197, 8, 0.12);
+        color: rgba(255, 255, 255, 0.85);
+        font-size: 0.72rem;
+        line-height: 1.35;
+    }
+    .estimate-notice i { color: #ffc508; font-size: 0.85rem; line-height: 1.2; }
+    .estimate-notice strong { color: #ffc508; }
+
     .line-height-1 {
         line-height: 1;
     }

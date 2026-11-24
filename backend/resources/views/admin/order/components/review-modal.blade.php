@@ -51,6 +51,53 @@
                         </table>
                     </div>
 
+                    {{-- The panel: the cost the system works out is an estimate
+                         the shop confirms. This is where it does. Each line
+                         arrives at the unit price the customer saw, and what is
+                         here when Approve is pressed becomes the confirmed price:
+                         on the slip, in the sales figures, and told to the
+                         customer. Hidden when cancelling, with nothing to price. --}}
+                    <div id="reviewPriceSection">
+                        <h6 class="order-section-title">
+                            <i class="bi bi-tags me-2"></i>Price Confirmation
+                        </h6>
+                        <p class="small text-muted mb-2">
+                            The customer saw the system's estimate. Approving confirms it, so change a unit price first
+                            if the job will cost more or less. The customer is told the confirmed total, and it is the
+                            amount on the transaction slip.
+                        </p>
+                        <div class="table-responsive border rounded-3 mb-3 overflow-hidden">
+                            <table class="table align-middle mb-0 modal-table">
+                                <thead>
+                                    <tr class="bg-primary bg-opacity-10">
+                                        <th class="ps-3 py-2 text-primary small text-uppercase fw-bold border-0">Item</th>
+                                        <th class="text-center py-2 text-primary small text-uppercase fw-bold border-0">Qty</th>
+                                        <th class="text-end py-2 text-primary small text-uppercase fw-bold border-0">Estimate (each)</th>
+                                        <th class="text-end pe-3 py-2 text-primary small text-uppercase fw-bold border-0"
+                                            style="width: 10rem;">Confirmed (each)</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="reviewPriceBody">
+                                    <!-- Populated by fillPriceConfirmation() -->
+                                </tbody>
+                                <tfoot>
+                                    <tr class="border-top">
+                                        <td colspan="2" class="ps-3 py-2 small text-muted">
+                                            Estimate <span id="reviewEstimatedTotal" class="fw-semibold text-dark"></span>
+                                        </td>
+                                        <td colspan="2" class="text-end pe-3 py-2">
+                                            <span class="small text-muted me-1">Confirmed total</span>
+                                            <span id="reviewConfirmedTotal" class="fw-bold text-primary"></span>
+                                            <div id="reviewPriceChanged" class="small fw-semibold d-none" style="color: #997404;">
+                                                Changed from the estimate
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    </div>
+
                     {{-- A tailored line's thumbnail opens the Design Inspection
                          popup the View modal uses — the model rebuilt from its
                          recipe, with the recipe and the charges floating over
@@ -170,6 +217,7 @@
 
         document.getElementById('reviewModalTitle').textContent = cancelOnly ? 'Cancel Order' : 'Review Order';
         document.getElementById('btnBackToReview').classList.toggle('d-none', cancelOnly);
+        document.getElementById('reviewPriceSection').classList.toggle('d-none', cancelOnly);
 
         if (cancelOnly) {
             showCancellation();
@@ -188,7 +236,105 @@
         document.getElementById('reviewOrderForm').submit();
     }
 
+    function peso(value) {
+        return '₱' + Number(value || 0).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    /**
+     * One row per order line in the Price Confirmation table, at the unit
+     * price the customer saw. Built as nodes, not markup: product names are
+     * typed in by staff.
+     */
+    function fillPriceConfirmation(items) {
+        const body = document.getElementById('reviewPriceBody');
+        let estimateTotal = 0;
+
+        body.replaceChildren.apply(body, items.map(function (item) {
+            const product = item.product || {};
+            const variant = item.product_variant || item.productVariant || null;
+            const quantity = Number(item.quantity) || 0;
+            const estimate = Number(item.estimated_price ?? item.price) || 0;
+            estimateTotal += estimate * quantity;
+
+            const cell = function (className, text) {
+                const td = document.createElement('td');
+                td.className = className;
+                if (text !== undefined) td.textContent = text;
+                return td;
+            };
+
+            const label = (product.name || 'Item')
+                + (variant && variant.label ? ' · ' + variant.label : '')
+                + (item.custom_design_id ? ' (customized)' : '');
+
+            const input = document.createElement('input');
+            input.type = 'number';
+            input.min = '0';
+            input.step = '0.01';
+            input.required = true;
+            input.name = 'confirmed_prices[' + item.order_item_id + ']';
+            input.value = Number(item.price).toFixed(2);
+            input.className = 'form-control form-control-sm text-end review-confirmed-price';
+            input.dataset.quantity = String(quantity);
+            input.dataset.estimate = String(estimate);
+            input.setAttribute('aria-label', 'Confirmed unit price for ' + label);
+
+            const priceCell = cell('pe-3 py-2');
+            priceCell.append(input);
+
+            const row = document.createElement('tr');
+            row.append(
+                cell('ps-3 py-2 small fw-semibold text-dark', label),
+                cell('text-center py-2 small fw-bold', String(quantity)),
+                cell('text-end py-2 small text-muted', peso(estimate)),
+                priceCell
+            );
+            return row;
+        }));
+
+        document.getElementById('reviewEstimatedTotal').textContent = peso(estimateTotal);
+        updateConfirmedTotal();
+    }
+
+    function updateConfirmedTotal() {
+        let total = 0;
+        let changed = false;
+
+        document.querySelectorAll('#reviewPriceBody .review-confirmed-price').forEach(function (input) {
+            const unit = parseFloat(input.value);
+            const price = Number.isFinite(unit) ? unit : 0;
+            const differs = Math.abs(price - Number(input.dataset.estimate)) >= 0.005;
+
+            total += price * Number(input.dataset.quantity);
+            changed = changed || differs;
+            input.classList.toggle('is-changed', differs);
+            input.classList.remove('is-invalid');
+        });
+
+        document.getElementById('reviewConfirmedTotal').textContent = peso(total);
+        document.getElementById('reviewPriceChanged').classList.toggle('d-none', !changed);
+    }
+
+    /** Every confirmed price a number of zero or more, or approval waits. */
+    function confirmedPricesValid() {
+        let valid = true;
+
+        document.querySelectorAll('#reviewPriceBody .review-confirmed-price').forEach(function (input) {
+            const unit = parseFloat(input.value);
+            const ok = input.value.trim() !== '' && Number.isFinite(unit) && unit >= 0;
+            input.classList.toggle('is-invalid', !ok);
+            if (!ok && valid) input.focus();
+            valid = valid && ok;
+        });
+
+        return valid;
+    }
+
     function submitReviewWithLoading(status) {
+        if (status === 'approved' && !confirmedPricesValid()) {
+            return;
+        }
+
         document.getElementById('reviewStatus').value = status;
 
         const btn = document.getElementById('btnApproveOrder');
@@ -232,6 +378,8 @@
                 }
             });
         }
+
+        document.getElementById('reviewPriceBody')?.addEventListener('input', updateConfirmedTotal);
 
         // Delegated: the rows this fires from are rebuilt every time the modal
         // opens, so binding per-thumbnail would have to be redone each time.
@@ -293,6 +441,14 @@
         transition: opacity .15s;
     }
     #reviewItemsBody .review-item-thumb:hover::after { opacity: 1; }
+
+    /* A re-priced line stands out from the ones left at the estimate. */
+    #reviewPriceBody .review-confirmed-price { max-width: 9rem; margin-left: auto; }
+    #reviewPriceBody .review-confirmed-price.is-changed {
+        border-color: #ffc508;
+        background-color: #fff8e0;
+        font-weight: 600;
+    }
 </style>
 
 @include('admin.order.components.required-reason')

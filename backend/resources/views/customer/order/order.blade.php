@@ -471,8 +471,10 @@
                                                 </div>
                                                 <div class="d-flex justify-content-between align-items-center mb-1">
                                                     <span class="text-muted small">Total Amount</span>
-                                                    <span
-                                                        class="fw-bold text-primary fs-5">₱{{ number_format($order->total_amount, 2) }}</span>
+                                                    <span class="text-end">
+                                                        @include('partials.order-price-note')
+                                                        <span class="fw-bold text-primary fs-5 ms-1">₱{{ number_format($order->total_amount, 2) }}</span>
+                                                    </span>
                                                 </div>
                                                 <div class="d-flex justify-content-between align-items-center">
                                                     <span class="text-muted small">Items</span>
@@ -631,7 +633,10 @@
                                                     <td class="ps-4 py-3 fw-bold text-dark">#{{ $order->order_number }}</td>
                                                     <td>@include('partials.order-ordered-for')</td>
                                                     <td class="fw-bold text-dark">{{ $order->orderItems->sum('quantity') }}</td>
-                                                    <td class="fw-bold text-primary">₱{{ number_format($order->total_amount, 2) }}</td>
+                                                    <td>
+                                                        <div class="fw-bold text-primary">₱{{ number_format($order->total_amount, 2) }}</div>
+                                                        @include('partials.order-price-note')
+                                                    </td>
                                                     <td>
                                                         <span class="d-inline-flex align-items-center gap-1 px-2 py-1 rounded-pill small fw-semibold"
                                                             style="background-color: {{ $rowStatusBg }}; color: {{ $rowStatusColor }};">

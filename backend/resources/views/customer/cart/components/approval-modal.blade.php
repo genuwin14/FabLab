@@ -17,6 +17,8 @@
 
                     <p class="text-muted small mb-4">
                         Your order has been submitted successfully and is waiting for <strong>Admin Approval</strong>.
+                        The price you saw is an estimate: FabLab confirms the final amount when it approves the order,
+                        and that is the amount on your transaction slip.
                     </p>
 
                     <div class="qv-tile text-start mb-4">
@@ -37,7 +39,8 @@
 
                     <p class="text-muted small mb-4">
                         File your Purchase Request with <strong>{{ config('fablab.procurement_email') }}</strong>,
-                        then enter the PR number on your order to release it for review.
+                        then enter the PR number on your order to release it for review. The price is an estimate
+                        until FabLab confirms it at that review.
                     </p>
 
                     <div class="qv-tile text-start mb-4" style="border-color: rgba(255,197,8,.45); background: rgba(255,197,8,.08);">

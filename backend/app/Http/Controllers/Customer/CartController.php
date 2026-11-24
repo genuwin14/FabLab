@@ -290,7 +290,10 @@ class CartController extends Controller
                         'payment_method' => $method,
                         'office' => $office !== '' ? $office : null,
                         'pr_deadline' => $prDeadline,
+                        // An estimate until the shop approves the order,
+                        // which may confirm it at a different figure.
                         'total_amount' => $total,
+                        'estimated_total' => $total,
                     ]);
 
                     break;
@@ -309,7 +312,8 @@ class CartController extends Controller
                     'product_variant_id' => $line->product_variant_id,
                     'custom_design_id' => $line->custom_design_id,
                     'quantity' => $line->quantity,
-                    'price' => $line->price
+                    'price' => $line->price,
+                    'estimated_price' => $line->price,
                 ]);
 
                 // Decrease Stock, in the cell the line took.

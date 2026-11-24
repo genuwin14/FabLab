@@ -20,6 +20,12 @@
     </table>
 
     <p style="margin:0 0 12px;">Your order has been approved!</p>
+    <p style="margin:0 0 12px;">FabLab has confirmed your total at
+        <strong>&#8369;{{ number_format((float) $order->total_amount, 2) }}</strong>.
+        @if($order->priceWasAdjusted())
+            The estimate at checkout was &#8369;{{ number_format($order->estimatedTotal(), 2) }}; the confirmed amount is the one to pay.
+        @endif
+    </p>
     <p style="margin:0 0 12px;">You can find the details of your transaction in the attached PDF slip. Please present
         this slip at PAXS for payment.</p>
     <p style="margin:0 0 12px;">Thank you for choosing CSPC FabLab.</p>

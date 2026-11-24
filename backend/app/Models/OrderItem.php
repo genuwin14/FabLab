@@ -16,7 +16,10 @@ class OrderItem extends Model
         'product_variant_id',
         'custom_design_id',
         'quantity',
-        'price'
+        'price',
+        // The unit price the system quoted at checkout. `price` is what the
+        // shop confirmed when it approved the order; see the review step.
+        'estimated_price',
     ];
 
     /**

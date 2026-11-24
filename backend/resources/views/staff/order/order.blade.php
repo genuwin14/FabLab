@@ -232,8 +232,9 @@
                                                     </div>
                                                 </td>
                                                 <td class="fw-bold text-dark">{{ $order->orderItems->count() }}</td>
-                                                <td class="fw-bold text-primary">
-                                                    ₱{{ number_format($order->total_amount, 2) }}
+                                                <td>
+                                                    <div class="fw-bold text-primary">₱{{ number_format($order->total_amount, 2) }}</div>
+                                                    @include('partials.order-price-note')
                                                 </td>
                                                 <td>
                                                     @php

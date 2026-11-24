@@ -15,6 +15,7 @@ class Order extends Model
         'payment_method',
         'office',
         'total_amount',
+        'estimated_total',
         'payment_reference',
         'pr_number',
         'pr_deadline',
@@ -72,6 +73,33 @@ class Order extends Model
     public function isPurchaseRequest(): bool
     {
         return $this->payment_method === self::METHOD_PR;
+    }
+
+    /**
+     * The statuses an order holds once the shop has confirmed its price,
+     * which it does by approving it. Until then the total is the system's
+     * estimate.
+     */
+    public const PRICE_CONFIRMED_STATUSES = ['approved', 'paid', 'processing', 'ready_for_pickup', 'for_delivery', 'completed'];
+
+    /**
+     * What the system quoted at checkout. An order from before estimates were
+     * kept was never re-priced, so its total is its estimate.
+     */
+    public function estimatedTotal(): float
+    {
+        return (float) ($this->estimated_total ?? $this->total_amount);
+    }
+
+    public function priceIsConfirmed(): bool
+    {
+        return in_array($this->status, self::PRICE_CONFIRMED_STATUSES, true);
+    }
+
+    /** Whether the shop confirmed a different total from the estimate. */
+    public function priceWasAdjusted(): bool
+    {
+        return abs($this->estimatedTotal() - (float) $this->total_amount) >= 0.005;
     }
 
     /**

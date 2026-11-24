@@ -243,8 +243,9 @@
                                                     </div>
                                                 </td>
                                                 <td class="fw-bold text-dark">{{ $order->orderItems->count() }}</td>
-                                                <td class="fw-bold text-primary">
-                                                    ₱{{ number_format($order->total_amount, 2) }}
+                                                <td>
+                                                    <div class="fw-bold text-primary">₱{{ number_format($order->total_amount, 2) }}</div>
+                                                    @include('partials.order-price-note')
                                                 </td>
                                                 <td>
                                                     @php
@@ -763,6 +764,15 @@
                             window.reviewDesignsByIndex[itemIndex] = design;
                         }
                     });
+
+                    // Each line at the price the customer saw, for the admin to
+                    // confirm or correct. Nothing to price when cancelling, and
+                    // no inputs means no prices ride along with the cancel.
+                    if (mode === 'cancel') {
+                        document.getElementById('reviewPriceBody').replaceChildren();
+                    } else {
+                        fillPriceConfirmation(items);
+                    }
 
                     // The finished-goods table above says whether there is a
                     // mug to sell. This says whether there is what it takes to

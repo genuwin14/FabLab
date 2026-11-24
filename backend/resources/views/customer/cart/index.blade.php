@@ -244,9 +244,20 @@
                                     </div>
 
                                     <hr class="my-4 opacity-50">
-                                    <div class="d-flex justify-content-between align-items-center mb-4">
-                                        <h5 class="fw-bold mb-0">Total</h5>
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <h5 class="fw-bold mb-0">Estimated Total</h5>
                                         <h4 class="fw-bold text-primary mb-0" id="summaryTotal">₱{{ number_format($total ?? 0, 2) }}</h4>
+                                    </div>
+
+                                    {{-- The panel: the cost the system gives is an estimate, and the
+                                         shop confirms it. Said here, where the customer commits to it. --}}
+                                    <div class="estimate-callout mb-4" role="note">
+                                        <i class="bi bi-exclamation-circle-fill"></i>
+                                        <div>
+                                            <strong>This is an estimate, not the final price.</strong>
+                                            FabLab reviews your order and confirms the final amount before you pay.
+                                            The confirmed amount is the one on your transaction slip.
+                                        </div>
                                     </div>
 
                                     <form id="checkoutForm" action="{{ route('customer.cart.checkout') }}" method="POST">
@@ -273,6 +284,23 @@
     @include('customer.cart.components.approval-modal')
 
     <style>
+        /* The estimate warning under the total: the one thing on this card
+           the customer must not miss before checking out. */
+        .estimate-callout {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.6rem;
+            padding: 0.75rem 0.9rem;
+            border-left: 4px solid #ffc508;
+            border-radius: 8px;
+            background: #fff8e0;
+            color: #5c4a03;
+            font-size: 0.82rem;
+            line-height: 1.4;
+        }
+        .estimate-callout i { color: #e0a800; font-size: 1.05rem; line-height: 1.2; }
+        .estimate-callout strong { color: #0e2e45; display: block; }
+
         .checkout-option {
             display: flex;
             gap: 10px;

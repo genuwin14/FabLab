@@ -39,12 +39,21 @@ class OrderStatusChanged extends Notification
     public function toArray(object $notifiable): array
     {
         $label = ucwords(str_replace('_', ' ', $this->newStatus));
+        $body = "Your order is now {$label}.";
+
+        // Approval is the shop confirming the price the system estimated.
+        if ($this->newStatus === 'approved') {
+            $body .= ' FabLab confirmed the total at ₱' . number_format((float) $this->order->total_amount, 2)
+                . ($this->order->priceWasAdjusted()
+                    ? ' (your estimate was ₱' . number_format($this->order->estimatedTotal(), 2) . ').'
+                    : '.');
+        }
 
         return [
             'category' => 'order',
             'icon' => 'bi-bag-check',
             'title' => "Order {$this->order->order_number}",
-            'body' => "Your order is now {$label}.",
+            'body' => $body,
             // Fragment opens this order's details drawer on arrival, rather
             // than leaving the customer to find it in the list.
             'url' => route('customer.orders.index', [], false) . '#order-' . $this->order->order_id,

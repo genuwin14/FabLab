@@ -53,8 +53,17 @@ class OrderController extends Controller
             // material. The service ignores anything the order doesn't already
             // draw, so this only ever narrows or adjusts an existing line.
             'material_quantities' => 'nullable|array',
-            'material_quantities.*' => 'nullable|numeric|min:0|max:99999999.9999'
-        ], $this->reasonMessages('rejecting'));
+            'material_quantities.*' => 'nullable|numeric|min:0|max:99999999.9999',
+            // The unit price the reviewer confirms each line at, keyed on the
+            // order item. What checkout charged is the system's estimate;
+            // approving confirms it, and this is where it gets corrected.
+            'confirmed_prices' => 'exclude_unless:status,approved|nullable|array',
+            'confirmed_prices.*' => 'exclude_unless:status,approved|nullable|numeric|min:0|max:9999999999.99',
+        ], $this->reasonMessages('rejecting') + [
+            'confirmed_prices.*.numeric' => 'A confirmed price must be a number.',
+            'confirmed_prices.*.min' => 'A confirmed price cannot be below zero.',
+            'confirmed_prices.*.max' => 'A confirmed price is too large.',
+        ]);
 
         $order = Order::with(['user', 'orderItems.product.rawMaterials', 'orderItems.customDesign'])->findOrFail($id);
 
@@ -77,6 +86,10 @@ class OrderController extends Controller
         }
 
         DB::transaction(function () use ($order, $request, $stock, $overrides) {
+            if ($request->status === 'approved') {
+                $this->confirmPrices($order, (array) $request->input('confirmed_prices', []));
+            }
+
             $order->update([
                 'status' => $request->status,
                 'reason' => $request->reason,
@@ -327,6 +340,44 @@ class OrderController extends Controller
         }
 
         return back()->with('success', "Order {$order->order_number} closed and stock returned.");
+    }
+
+    /**
+     * Approving an order is the shop confirming its price. A line the
+     * reviewer re-priced takes the new unit price and the total follows it;
+     * the estimate the customer saw at checkout stays on the order beside it.
+     * Prices for lines that aren't on this order are ignored.
+     *
+     * @param  array<int|string, mixed>  $confirmed  order_item_id => unit price
+     */
+    private function confirmPrices(Order $order, array $confirmed): void
+    {
+        $changed = false;
+
+        foreach ($order->orderItems as $item) {
+            $value = $confirmed[$item->order_item_id] ?? null;
+            if ($value === null || $value === '') {
+                continue;
+            }
+
+            $price = round((float) $value, 2);
+            if (abs($price - (float) $item->price) < 0.005) {
+                continue;
+            }
+
+            $item->estimated_price ??= $item->price;
+            $item->price = $price;
+            $item->save();
+            $changed = true;
+        }
+
+        if (! $changed) {
+            return;
+        }
+
+        $order->estimated_total ??= $order->total_amount;
+        $order->total_amount = round($order->orderItems->sum(fn ($item) => (float) $item->price * (int) $item->quantity), 2);
+        $order->save();
     }
 
     private function notifyCustomer(Order $order, string $oldStatus, string $newStatus): void

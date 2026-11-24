@@ -34,7 +34,8 @@ class OrderPlaced extends Notification
             'category' => 'order',
             'icon' => 'bi-cart-plus',
             'title' => "Order {$this->order->order_number}",
-            'body' => 'We received your order worth ₱' . number_format((float) $this->order->total_amount, 2) . '.',
+            'body' => 'We received your order, estimated at ₱' . number_format((float) $this->order->total_amount, 2)
+                . '. FabLab confirms the final price when it reviews the order.',
             // Fragment opens this order's details drawer on arrival, rather
             // than leaving the customer to find it in the list.
             'url' => route('customer.orders.index', [], false) . '#order-' . $this->order->order_id,
