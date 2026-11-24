@@ -71,7 +71,7 @@ class SalesReport
         $allTimeRevenue = (float) Order::where('status', 'completed')->sum('total_amount');
 
         // ---------------- Revenue / orders time series ----------------
-        [$labels, $revenueSeries, $orderSeries] = $groupByMonth
+        [$labels, $revenueSeries, $orderSeries, $periods] = $groupByMonth
             ? $this->monthlySeries($completedInRange, $start, $end)
             : $this->dailySeries($completedInRange, $start, $end);
 
@@ -121,6 +121,9 @@ class SalesReport
             'chartLabels'     => $labels,
             'revenueSeries'   => $revenueSeries,
             'orderSeries'     => $orderSeries,
+            // What each point covers: Y-m-d by day, Y-m by month. The Daily
+            // Sales table names the day from it ("Mon, Nov 24").
+            'periods'         => $periods,
             'groupByMonth'    => $groupByMonth,
             'topProducts'     => $topProducts,
             'recentSales'     => $recentSales,
@@ -156,6 +159,7 @@ class SalesReport
         $daily = $this->dailyTotals($completedInRange);
 
         $labels = [];
+        $periods = [];
         $revenueSeries = [];
         $orderSeries = [];
 
@@ -175,12 +179,13 @@ class SalesReport
             }
 
             $labels[] = $cursor->format('M Y');
+            $periods[] = $cursor->format('Y-m');
             $revenueSeries[] = round($revenue, 2);
             $orderSeries[] = $orders;
             $cursor->addMonth();
         }
 
-        return [$labels, $revenueSeries, $orderSeries];
+        return [$labels, $revenueSeries, $orderSeries, $periods];
     }
 
     private function dailySeries(callable $completedInRange, Carbon $start, Carbon $end): array
@@ -188,6 +193,7 @@ class SalesReport
         $daily = $this->dailyTotals($completedInRange);
 
         $labels = [];
+        $periods = [];
         $revenueSeries = [];
         $orderSeries = [];
 
@@ -197,12 +203,13 @@ class SalesReport
         while ($cursor->lte($stop)) {
             $key = $cursor->format('Y-m-d');
             $labels[] = $cursor->format('M j');
+            $periods[] = $key;
             $revenueSeries[] = round((float) ($daily[$key]['revenue'] ?? 0), 2);
             $orderSeries[] = (int) ($daily[$key]['orders'] ?? 0);
             $cursor->addDay();
         }
 
-        return [$labels, $revenueSeries, $orderSeries];
+        return [$labels, $revenueSeries, $orderSeries, $periods];
     }
 
     /** @return array<string, array{revenue: float, orders: int}> keyed Y-m-d */

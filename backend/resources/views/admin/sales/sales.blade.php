@@ -55,7 +55,7 @@
                     <!-- Header + Range Filter -->
                     <div class="d-flex align-items-end justify-content-between flex-wrap gap-3 mb-4">
                         <div>
-                            <h4 class="fw-bold text-dark mb-1">Sales</h4>
+                            <h4 class="fw-bold text-dark mb-1">Daily Sales</h4>
                             <p class="text-muted small mb-0">
                                 Completed sales from
                                 <span class="fw-semibold text-dark">{{ $rangeStart->format('M j, Y') }}</span>
@@ -203,6 +203,11 @@
                                     @endforelse
                                 </div>
                             </div>
+                        </div>
+
+                        <!-- Day by day, newest first -->
+                        <div class="col-12">
+                            @include('partials.sales-by-day')
                         </div>
 
                         <!-- Best-selling Products -->

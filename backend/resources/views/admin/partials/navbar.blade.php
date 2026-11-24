@@ -25,7 +25,7 @@
                     @elseif(request()->routeIs('admin.orders*'))
                         Order Management
                     @elseif(request()->routeIs('admin.sales*'))
-                        Sales
+                        Daily Sales
                     @elseif(request()->routeIs('admin.suppliers*'))
                         Supplier Management
                     @elseif(request()->routeIs('admin.purchase*'))

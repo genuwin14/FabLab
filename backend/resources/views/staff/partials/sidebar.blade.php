@@ -23,8 +23,8 @@
             </li>
         </ul>
 
-        <!-- Sales & Orders Section -->
-        <div class="mb-2 text-uppercase text-white-50 small fw-bold sidebar-section-title">Sales & Orders</div>
+        <!-- Orders Section -->
+        <div class="mb-2 text-uppercase text-white-50 small fw-bold sidebar-section-title">Orders</div>
         <ul class="nav nav-pills flex-column mb-3 gap-1">
             <li class="nav-item">
                 <a href="{{ route('staff.orders.index') }}"
@@ -37,9 +37,9 @@
             <li class="nav-item">
                 <a href="{{ route('staff.sales.index') }}"
                     class="nav-link sidebar-tooltip {{ request()->routeIs('staff.sales.*') ? 'active bg-accent text-primary fw-bold' : 'text-white hover-accent' }}"
-                    data-sidebar-tooltip="true" title="Sales">
+                    data-sidebar-tooltip="true" title="Daily Sales">
                     <i class="bi bi-cash-coin me-2"></i>
-                    <span class="sidebar-label">Sales</span>
+                    <span class="sidebar-label">Daily Sales</span>
                 </a>
             </li>
             <li class="nav-item">
