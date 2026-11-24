@@ -17,7 +17,7 @@ class OrderController extends Controller
     public function index(Request $request, OrderList $list)
     {
         $filters = $list->filters($request);
-        ['search' => $search, 'status' => $status, 'date' => $date] = $filters;
+        ['search' => $search, 'status' => $status, 'date' => $date, 'group' => $group] = $filters;
         $perPage = (int) $request->input('per_page', 10);
 
         // The detail modal renders each line from this JSON, cell included.
@@ -26,15 +26,14 @@ class OrderController extends Controller
             ->paginate($perPage)
             ->withQueryString();
 
-        $statusCounts = Order::selectRaw('status, COUNT(*) as total')
-            ->groupBy('status')
-            ->pluck('total', 'status')
-            ->toArray();
+        // The category tabs: Upcoming, Ongoing, Pickup, For Delivery and the
+        // rest, each counted under the search and date filters.
+        $groupCounts = $list->groupCounts($filters);
 
         // The design detail popout resolves a recipe's texture out of this.
         $customizerTextures = \App\Models\Texture::customizerPayload();
 
-        return view('staff.order.order', compact('orders', 'search', 'status', 'date', 'perPage', 'statusCounts', 'customizerTextures'));
+        return view('staff.order.order', compact('orders', 'search', 'status', 'date', 'group', 'perPage', 'groupCounts', 'customizerTextures'));
     }
 
     /**

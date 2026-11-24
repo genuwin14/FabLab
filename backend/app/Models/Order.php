@@ -60,6 +60,65 @@ class Order extends Model
     ];
 
     /**
+     * The orders directory's categories, as its tabs show them.
+     *
+     * The panel asked for the directory to be categorised by status into
+     * Upcoming, Ongoing, Pickup and For Delivery. Upcoming is everything not
+     * yet in production (awaiting review, a PR number, or payment); the
+     * finished and the cancelled get a tab each, so every order is under one.
+     */
+    public const GROUPS = [
+        'upcoming' => [
+            'label' => 'Upcoming',
+            'icon' => 'bi-calendar-event',
+            'statuses' => ['pending', 'awaiting_pr', 'approved', 'paid'],
+            'hint' => 'Not in production yet: awaiting review, a PR number or payment',
+        ],
+        'ongoing' => [
+            'label' => 'Ongoing',
+            'icon' => 'bi-arrow-repeat',
+            'statuses' => ['processing'],
+            'hint' => 'Being made now',
+        ],
+        'pickup' => [
+            'label' => 'Pickup',
+            'icon' => 'bi-bag-check',
+            'statuses' => ['ready_for_pickup'],
+            'hint' => 'Ready for the customer to collect',
+        ],
+        'delivery' => [
+            'label' => 'For Delivery',
+            'icon' => 'bi-truck',
+            'statuses' => ['for_delivery'],
+            'hint' => 'Going out to the customer',
+        ],
+        'completed' => [
+            'label' => 'Completed',
+            'icon' => 'bi-check-circle',
+            'statuses' => ['completed'],
+            'hint' => 'Handed over',
+        ],
+        'cancelled' => [
+            'label' => 'Cancelled',
+            'icon' => 'bi-x-circle',
+            'statuses' => ['cancelled'],
+            'hint' => 'Rejected, cancelled or closed',
+        ],
+    ];
+
+    /** The category a status falls under: "upcoming" for a pending order. */
+    public static function groupFor(string $status): ?string
+    {
+        foreach (self::GROUPS as $key => $group) {
+            if (in_array($status, $group['statuses'], true)) {
+                return $key;
+            }
+        }
+
+        return null;
+    }
+
+    /**
      * How a status reads on screen. Only the PR one needs saying explicitly —
      * everything else is already a sentence once the underscores go.
      */

@@ -30,47 +30,8 @@
             <main class="flex-grow-1 p-3 p-md-4" style="overflow-y: auto; overflow-x: hidden;">
                 <div class="container-fluid">
 
-                    <!-- Status Analytics -->
-                    @php
-                        $statusMeta = [
-                            'pending'          => ['label' => 'Pending',          'icon' => 'bi-hourglass-split',   'bg' => 'rgba(255, 193, 7, 0.15)',  'color' => '#997404'],
-                            'approved'         => ['label' => 'Approved',         'icon' => 'bi-clipboard-check',   'bg' => 'rgba(13, 110, 253, 0.12)', 'color' => '#0d6efd'],
-                            'paid'             => ['label' => 'Paid',             'icon' => 'bi-cash-coin',         'bg' => 'rgba(32, 201, 151, 0.15)', 'color' => '#0f8a6a'],
-                            'processing'       => ['label' => 'Processing',       'icon' => 'bi-arrow-repeat',      'bg' => 'rgba(13, 202, 240, 0.15)', 'color' => '#087990'],
-                            'awaiting_pr'      => ['label' => 'Awaiting PR',       'icon' => 'bi-file-earmark-text', 'bg' => 'rgba(108, 117, 125, 0.15)','color' => '#5c636a'],
-                            'ready_for_pickup' => ['label' => 'Ready for Pickup', 'icon' => 'bi-bag-check',         'bg' => 'rgba(255, 153, 0, 0.15)',  'color' => '#b95900'],
-                            'for_delivery'     => ['label' => 'For Delivery',     'icon' => 'bi-truck',             'bg' => 'rgba(111, 66, 193, 0.14)', 'color' => '#6f42c1'],
-                            'completed'        => ['label' => 'Completed',        'icon' => 'bi-check-circle-fill', 'bg' => 'rgba(25, 135, 84, 0.12)',  'color' => '#198754'],
-                            'cancelled'        => ['label' => 'Cancelled',        'icon' => 'bi-x-circle-fill',     'bg' => 'rgba(220, 53, 69, 0.12)',  'color' => '#dc3545'],
-                        ];
-                    @endphp
-                    {{-- One row of eight: a count per status, read-only. Filtering
-                         is the dropdown's job, so these only report. --}}
-                    <div class="order-stat-grid mb-4">
-                        @foreach($statusMeta as $key => $meta)
-                            @php
-                                $isActive = $status === $key;
-                                $count = $statusCounts[$key] ?? 0;
-                            @endphp
-                            <div class="card border-0 shadow-sm rounded-4 order-stat-card {{ $isActive ? 'order-stat-card-active' : '' }}"
-                                style="--stat-color: {{ $meta['color'] }};">
-                                <div class="card-body p-3">
-                                    <div class="d-flex align-items-center gap-2">
-                                        <div class="rounded-3 d-none d-xxl-flex align-items-center justify-content-center flex-shrink-0"
-                                            style="width: 38px; height: 38px; background-color: {{ $meta['bg'] }}; color: {{ $meta['color'] }};">
-                                            <i class="bi {{ $meta['icon'] }}"></i>
-                                        </div>
-                                        <div class="d-flex flex-column lh-1 flex-grow-1 min-w-0">
-                                            <span class="text-uppercase fw-bold text-muted order-stat-label">
-                                                {{ $meta['label'] }}
-                                            </span>
-                                            <h5 class="fw-bold text-dark mb-0 mt-1 order-stat-count">{{ $count }}</h5>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        @endforeach
-                    </div>
+                    {{-- The directory by category (the panel: Upcoming, Ongoing, Pickup, For Delivery). --}}
+                    @include('partials.order-group-tabs', ['route' => 'staff.orders.index'])
 
                     <!-- Filters, Search & Actions -->
                     <div class="card border-0 shadow-sm rounded-4 mb-4">
@@ -78,6 +39,7 @@
                             <form id="orderFilterForm" method="GET" action="{{ route('staff.orders.index') }}"
                                 class="row g-2 align-items-center">
                                 <input type="hidden" name="per_page" value="{{ $perPage }}">
+                                <input type="hidden" name="group" value="{{ $group }}">
 
                                 <!-- Search: inline on desktop; icon-triggered dropdown on mobile. -->
                                 <div class="col-auto col-lg dropdown search-dd">
@@ -112,7 +74,7 @@
                                             <select name="status" autocomplete="off" class="form-select rounded-2 w-100"
                                                 onchange="document.getElementById('orderFilterForm').submit()">
                                                 <option value="">All Statuses</option>
-                                                @foreach(['pending', 'awaiting_pr', 'approved', 'paid', 'processing', 'ready_for_pickup', 'for_delivery', 'completed', 'cancelled'] as $s)
+                                                @foreach($group !== '' ? \App\Models\Order::GROUPS[$group]['statuses'] : \App\Models\Order::STATUSES as $s)
                                                     <option value="{{ $s }}" {{ $status === $s ? 'selected' : '' }}>
                                                         {{ \App\Models\Order::statusLabel($s) }}
                                                     </option>
@@ -137,7 +99,7 @@
                                     </a>
                                     {{-- The export carries the filters the list is showing, so the
                                          file holds the same orders as the screen — every page. --}}
-                                    @php $exportQuery = array_filter(compact('search', 'status', 'date'), fn ($value) => $value !== ''); @endphp
+                                    @php $exportQuery = array_filter(compact('search', 'status', 'date', 'group'), fn ($value) => $value !== ''); @endphp
                                     <div class="dropdown">
                                         <button type="button"
                                             class="btn btn-primary d-flex align-items-center justify-content-center gap-2 rounded-2 px-3 dropdown-toggle"
@@ -368,35 +330,6 @@
     @include('staff.order.components.update-status-modal')
 
     <style>
-        /* ============================================
-           Order Status Stat Cards
-           ============================================ */
-        /* Eight statuses across one row. Bootstrap's 12-column grid can't
-           divide by 8, so these lay out on their own grid. */
-        .order-stat-grid {
-            display: grid;
-            gap: 0.75rem;
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-        }
-        @media (min-width: 576px) {
-            .order-stat-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
-        }
-        @media (min-width: 1200px) {
-            .order-stat-grid { grid-template-columns: repeat(8, minmax(0, 1fr)); }
-        }
-
-        /* Read-only now — filtering moved to the dropdown, so there's no hover
-           lift and no pointer. The ring stays: it shows which status the
-           dropdown is currently filtering by. */
-        .order-stat-card {
-            border: 1px solid transparent;
-            transition: border-color 0.15s ease, box-shadow 0.15s ease;
-        }
-        .order-stat-card-active {
-            border-color: var(--stat-color) !important;
-            box-shadow: 0 0 0 2px var(--stat-color) inset, 0 0.25rem 0.75rem rgba(0, 0, 0, 0.06) !important;
-        }
-        .order-stat-card-active .order-stat-count { color: var(--stat-color) !important; }
         /* Laravel's paginator spreads its summary and page links apart with
            justify-content-between, stranding a gap inside our own bar. Sit
            them side by side instead. */
@@ -408,11 +341,6 @@
         .pagination-bar nav p { margin-bottom: 0; }
         .pagination-bar .pagination { margin-bottom: 0; }
 
-        .order-stat-label {
-            font-size: 0.62rem;
-            letter-spacing: 0.03em;
-            line-height: 1.15;
-        }
 
         /* ============================================
            Order Modal Theme

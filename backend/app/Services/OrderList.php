@@ -23,23 +23,73 @@ class OrderList
      * an un-cast null would sail past the !== '' guard into a
      * `where status is null` that matches no order at all.
      *
-     * @return array{search: string, status: string, date: string}
+     * The category (`group`) is one of Order::GROUPS, or empty for all of
+     * them; an unknown one is treated as empty rather than matching nothing.
+     *
+     * @return array{search: string, status: string, date: string, group: string}
      */
     public function filters(Request $request): array
     {
+        $group = (string) $request->input('group', '');
+
         return [
             'search' => (string) $request->input('search', ''),
             'status' => (string) $request->input('status', ''),
             'date' => (string) $request->input('date', ''),
+            'group' => isset(Order::GROUPS[$group]) ? $group : '',
         ];
     }
 
     /**
      * Every order the filters let through, newest first.
      *
-     * @param  array{search: string, status: string, date: string}  $filters
+     * @param  array{search: string, status: string, date: string, group?: string}  $filters
      */
     public function query(array $filters): Builder
+    {
+        $query = $this->searched($filters);
+
+        if (($filters['group'] ?? '') !== '') {
+            $query->whereIn('status', Order::GROUPS[$filters['group']]['statuses']);
+        }
+
+        if ($filters['status'] !== '') {
+            $query->where('status', $filters['status']);
+        }
+
+        return $query;
+    }
+
+    /**
+     * How many orders each category tab holds under the search and date
+     * filters, plus `all`. The tabs are the choice of category, so they count
+     * across every category and status rather than inside the one picked.
+     *
+     * @param  array{search: string, status: string, date: string, group?: string}  $filters
+     * @return array<string, int>
+     */
+    public function groupCounts(array $filters): array
+    {
+        $byStatus = $this->searched($filters)
+            ->reorder()
+            ->selectRaw('status, COUNT(*) as total')
+            ->groupBy('status')
+            ->pluck('total', 'status');
+
+        $counts = ['all' => (int) $byStatus->sum()];
+        foreach (Order::GROUPS as $key => $group) {
+            $counts[$key] = (int) $byStatus->only($group['statuses'])->sum();
+        }
+
+        return $counts;
+    }
+
+    /**
+     * The search and date filters alone, newest first.
+     *
+     * @param  array{search: string, status: string, date: string, group?: string}  $filters
+     */
+    private function searched(array $filters): Builder
     {
         $query = Order::query()->latest();
         $search = $filters['search'];
@@ -53,10 +103,6 @@ class OrderList
                         $u->where('fullname', 'like', "%{$search}%");
                     });
             });
-        }
-
-        if ($filters['status'] !== '') {
-            $query->where('status', $filters['status']);
         }
 
         switch ($filters['date']) {
@@ -77,15 +123,18 @@ class OrderList
 
     /**
      * The filters in words, for the heading of an exported list:
-     * "All statuses · This month (September 2026) · Search: “Registrar”".
+     * "All statuses · This month (September 2026) · Search: “Registrar”",
+     * led by the category when one is picked: "Upcoming · All statuses · …".
      *
-     * @param  array{search: string, status: string, date: string}  $filters
+     * @param  array{search: string, status: string, date: string, group?: string}  $filters
      */
     public function describe(array $filters): string
     {
         $now = Carbon::now();
+        $group = $filters['group'] ?? '';
 
         $parts = [
+            ...($group !== '' ? [Order::GROUPS[$group]['label']] : []),
             $filters['status'] !== '' ? Order::statusLabel($filters['status']) : 'All statuses',
             match ($filters['date']) {
                 'today' => 'Today (' . $now->format('F j, Y') . ')',

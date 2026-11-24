@@ -37,38 +37,6 @@
             color: #ffc508;
         }
 
-        /* ============================================
-           Order History — Mini Stat Cards
-           ============================================ */
-        .order-stat-mini {
-            background-color: #fff;
-            border: 1px solid #e9ecef;
-            border-left: 3px solid var(--c, #0e2e45);
-            border-radius: 10px;
-            padding: 8px 12px;
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
-            min-width: 112px;
-            transition: transform 0.15s ease, box-shadow 0.15s ease;
-        }
-        .order-stat-mini:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.06);
-        }
-        .order-stat-mini-icon {
-            width: 32px;
-            height: 32px;
-            border-radius: 8px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            background-color: rgba(14, 46, 69, 0.08);
-            color: var(--c, #0e2e45);
-            font-size: 0.95rem;
-            flex-shrink: 0;
-        }
 
         /* ============================================
            Order Details Drawer (admin theme)
@@ -259,16 +227,6 @@
             .order-history-title {
                 font-size: 1.25rem;
             }
-            .order-stat-mini {
-                min-width: 0;
-                padding: 6px 10px;
-                gap: 8px;
-            }
-            .order-stat-mini-icon {
-                width: 28px;
-                height: 28px;
-                font-size: 0.85rem;
-            }
         }
     </style>
 
@@ -302,41 +260,20 @@
             <main class="flex-grow-1 p-3 p-md-4" style="overflow-y: auto;">
                 <div class="container-fluid">
                     @php
-                        $orderStats = [
-                            ['label' => 'Total',     'count' => $orders->count(),                                  'icon' => 'bi-receipt',           'color' => '#0e2e45'],
-                            ['label' => 'Pending',   'count' => $orders->where('status', 'pending')->count(),      'icon' => 'bi-hourglass-split',   'color' => '#997404'],
-                            // The one state that is waiting on the customer rather than on FabLab.
-                            ['label' => 'Awaiting PR', 'count' => $orders->where('status', 'awaiting_pr')->count(), 'icon' => 'bi-file-earmark-text', 'color' => '#5c636a'],
-                            ['label' => 'For Pickup','count' => $orders->where('status', 'ready_for_pickup')->count(), 'icon' => 'bi-bag-check',     'color' => '#b95900'],
-                            ['label' => 'For Delivery', 'count' => $orders->where('status', 'for_delivery')->count(), 'icon' => 'bi-truck',          'color' => '#6f42c1'],
-                            ['label' => 'Completed', 'count' => $orders->where('status', 'completed')->count(),    'icon' => 'bi-check-circle-fill', 'color' => '#198754'],
-                            ['label' => 'Cancelled', 'count' => $orders->where('status', 'cancelled')->count(),    'icon' => 'bi-x-circle-fill',     'color' => '#dc3545'],
-                        ];
+                        // The panel's categories for the directory, counted over this
+                        // customer's orders. The page filters them in the browser.
+                        $groupCounts = ['all' => $orders->count()] + collect(\App\Models\Order::GROUPS)
+                            ->map(fn ($group) => $orders->whereIn('status', $group['statuses'])->count())
+                            ->all();
                     @endphp
-                    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
-                        <div>
-                            <h3 class="fw-bold text-dark mb-1 order-history-title">Order History</h3>
-                            <p class="text-muted small mb-0">Review your past orders and their statuses.</p>
-                        </div>
-                        <div class="d-flex flex-wrap gap-2">
-                            @foreach($orderStats as $stat)
-                                <div class="order-stat-mini" style="--c: {{ $stat['color'] }};">
-                                    <div class="order-stat-mini-icon">
-                                        <i class="bi {{ $stat['icon'] }}"></i>
-                                    </div>
-                                    <div class="lh-1">
-                                        <div class="fw-bold text-dark" style="font-size: 1.05rem;">
-                                            {{ $stat['count'] }}
-                                        </div>
-                                        <div class="text-muted text-uppercase fw-bold mt-1"
-                                            style="font-size: 0.6rem; letter-spacing: 0.04em;">
-                                            {{ $stat['label'] }}
-                                        </div>
-                                    </div>
-                                </div>
-                            @endforeach
-                        </div>
+                    <div class="mb-3">
+                        <h3 class="fw-bold text-dark mb-1 order-history-title">Order History</h3>
+                        <p class="text-muted small mb-0">Review your past orders and their statuses.</p>
                     </div>
+
+                    @if($orders->count() > 0)
+                        @include('partials.order-group-tabs', ['clientSide' => true, 'group' => ''])
+                    @endif
 
                     @if($orders->count() > 0)
                         <!-- Filters & Search -->
@@ -432,6 +369,7 @@
                                 <div class="col-12 col-md-6 col-lg-4 order-card-wrapper"
                                     data-order-number="{{ strtolower($order->order_number) }}"
                                     data-status="{{ $order->status }}"
+                                    data-group="{{ \App\Models\Order::groupFor($order->status) }}"
                                     data-created-at="{{ $order->created_at->toDateString() }}">
                                     <div class="card border-0 shadow-sm rounded-4 overflow-hidden h-100">
                                         <div class="card-header bg-white border-bottom p-3">
@@ -629,6 +567,7 @@
                                                 <tr class="order-row-wrapper"
                                                     data-order-number="{{ strtolower($order->order_number) }}"
                                                     data-status="{{ $order->status }}"
+                                                    data-group="{{ \App\Models\Order::groupFor($order->status) }}"
                                                     data-created-at="{{ $order->created_at->toDateString() }}">
                                                     <td class="ps-4 py-3 fw-bold text-dark">#{{ $order->order_number }}</td>
                                                     <td>@include('partials.order-ordered-for')</td>
@@ -740,6 +679,8 @@
                 var resetBtn = document.getElementById('orderFilterReset');
                 var noResults = document.getElementById('orderNoResults');
                 var grid = document.getElementById('orderGrid');
+                var groupTabs = document.querySelectorAll('[data-group-tab]');
+                var activeGroup = '';
 
                 function matchesDateRange(dateStr, range) {
                     if (!range || !dateStr) return true;
@@ -772,9 +713,10 @@
 
                     items.forEach(function (item) {
                         var matchesTerm = !term || (item.dataset.orderNumber || '').indexOf(term) !== -1;
+                        var matchesGroup = !activeGroup || item.dataset.group === activeGroup;
                         var matchesStatus = !status || item.dataset.status === status;
                         var matchesDate = matchesDateRange(item.dataset.createdAt, range);
-                        if (matchesTerm && matchesStatus && matchesDate) {
+                        if (matchesGroup && matchesTerm && matchesStatus && matchesDate) {
                             item.classList.remove('d-none');
                             if (item.classList.contains('order-card-wrapper')) visibleCards++;
                         } else {
@@ -782,9 +724,28 @@
                         }
                     });
 
-                    var filtersActive = term !== '' || status !== '' || range !== '';
+                    var filtersActive = activeGroup !== '' || term !== '' || status !== '' || range !== '';
                     noResults.classList.toggle('d-none', visibleCards !== 0 || !filtersActive);
                 }
+
+                function selectGroup(key) {
+                    activeGroup = key;
+                    groupTabs.forEach(function (tab) {
+                        var on = tab.dataset.groupTab === key;
+                        tab.classList.toggle('active', on);
+                        tab.setAttribute('aria-pressed', on ? 'true' : 'false');
+                    });
+                    applyOrderFilters();
+                }
+
+                // A tab is the category; a status picked under another one would
+                // only empty the list, so switching tabs clears it.
+                groupTabs.forEach(function (tab) {
+                    tab.addEventListener('click', function () {
+                        if (statusFilter) statusFilter.value = '';
+                        selectGroup(tab.dataset.groupTab);
+                    });
+                });
 
                 if (searchInput) searchInput.addEventListener('input', applyOrderFilters);
                 if (statusFilter) statusFilter.addEventListener('change', applyOrderFilters);
@@ -793,7 +754,7 @@
                     searchInput.value = '';
                     statusFilter.value = '';
                     dateFilter.value = '';
-                    applyOrderFilters();
+                    selectGroup('');
                 });
 
                 // Grid / Table view toggle
