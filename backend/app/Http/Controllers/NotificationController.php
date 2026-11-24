@@ -31,9 +31,10 @@ class NotificationController extends Controller
     /**
      * JSON feed polled by the navbar bell.
      */
-    public function poll(Request $request, \App\Services\StockWatch $stock)
+    public function poll(Request $request, \App\Services\StockWatch $stock, \App\Support\StockAlerts $alerts)
     {
         $user = $request->user();
+        $team = in_array($user->role, ['admin', 'staff'], true);
 
         $items = $user->notifications()->latest()->limit(10)->get()
             ->map(fn (DatabaseNotification $n) => $this->present($n, (string) $user->role));
@@ -42,8 +43,26 @@ class NotificationController extends Controller
             'unread_count' => $user->unreadNotifications()->count(),
             'items' => $items,
             // The sidebar's Stock Monitoring badge. Only the team watches stock.
-            'stock_watch' => in_array($user->role, ['admin', 'staff'], true) ? $stock->count() : null,
+            'stock_watch' => $team ? $stock->count() : null,
+            // The banner at the top of the page, so an alert raised while the
+            // page is open shows there without a reload.
+            'stock_alerts' => $team ? $alerts->for($user) : null,
         ]);
+    }
+
+    /**
+     * The stock alert banner's dismiss button. The alerts are marked read,
+     * so the banner stays gone on every page and device until a new one comes.
+     */
+    public function dismissStockAlerts(Request $request, \App\Support\StockAlerts $alerts)
+    {
+        $alerts->dismiss($request->user());
+
+        if ($request->expectsJson()) {
+            return response()->json(['unread_count' => $request->user()->unreadNotifications()->count()]);
+        }
+
+        return back();
     }
 
     /**

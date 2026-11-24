@@ -199,8 +199,15 @@
                 return;
             }
 
-            const fresh = items.filter(function (it) { return !it.read && seen.indexOf(it.id) === -1; });
+            let fresh = items.filter(function (it) { return !it.read && seen.indexOf(it.id) === -1; });
             writeSeen(ids.concat(seen.filter(function (id) { return ids.indexOf(id) === -1; })).slice(0, 100));
+
+            // Admin and staff pages carry the stock alert banner, which holds a
+            // stock alert at the top until it is dismissed. A toast as well
+            // would say the same thing twice.
+            if (document.querySelector('[data-stock-alert-banner]')) {
+                fresh = fresh.filter(function (it) { return it.category !== 'stock'; });
+            }
 
             if (!fresh.length || typeof window.showNotificationToast !== 'function') return;
 
@@ -236,6 +243,7 @@
                 setBadge(data.unread_count || 0);
                 renderItems(data.items || []);
                 setStockBadge(data.stock_watch);
+                if (typeof window.renderStockAlerts === 'function') window.renderStockAlerts(data.stock_alerts);
                 toastArrivals(data.items || []);
             }).catch(function () { /* ignore transient errors */ });
         }

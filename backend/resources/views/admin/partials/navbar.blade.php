@@ -131,6 +131,8 @@
     </div>
 </nav>
 
+@include('partials.stock-alert-banner')
+
 <script>
     function updateClock() {
         const clockEl = document.getElementById('live-clock');
