@@ -206,6 +206,55 @@ class ThresholdRetuneTest extends TestCase
         $this->assertEquals(15, $product->refresh()->stockThreshold());
     }
 
+    // ------------------------------------------------------- sizes & colours
+
+    public function test_each_size_gets_a_line_from_its_own_demand(): void
+    {
+        $shirt = $this->product(stock: 0, threshold: 16);
+        $shirt->update(['has_sizes' => true]);
+        $shirt->ensureVariants();
+        $shirt->variants->each->update(['stock' => 40]);
+
+        $medium = $shirt->variantFor('medium', null);
+        $xxxxxl = $shirt->variantFor('5xl', null);
+        $large = $shirt->variantFor('large', null);
+
+        $this->sizedOrder($shirt, $medium->product_variant_id, 30, 'completed');
+        $this->sizedOrder($shirt, $xxxxxl->product_variant_id, 2, 'completed');
+        $this->sizedOrder($shirt, $large->product_variant_id, 50, 'cancelled');
+
+        $this->artisan('stock:retune-thresholds')->assertSuccessful();
+
+        $this->assertSame(15, $medium->refresh()->low_stock_threshold, 'Half of the thirty Mediums.');
+        $this->assertSame(1, $xxxxxl->refresh()->low_stock_threshold, 'Half of two, rounded up.');
+        $this->assertNull($large->refresh()->low_stock_threshold, 'A cancelled order took nothing.');
+    }
+
+    public function test_a_size_the_new_line_overtakes_is_alerted(): void
+    {
+        $shirt = $this->product(stock: 0, threshold: 8);
+        $shirt->update(['has_sizes' => true]);
+        $shirt->ensureVariants();
+        $shirt->variants->each->update(['stock' => 20]);
+
+        $medium = $shirt->variantFor('medium', null);
+        $medium->update(['stock' => 6]);
+        Notification::fake();
+
+        $this->sizedOrder($shirt, $medium->product_variant_id, 20, 'completed');
+
+        $this->artisan('stock:retune-thresholds')->assertSuccessful();
+
+        $this->assertSame(10, $medium->refresh()->low_stock_threshold);
+        Notification::assertSentTimes(LowStockAlert::class, 1);
+    }
+
+    private function sizedOrder(Product $product, int $variantId, int $quantity, string $status): void
+    {
+        $order = $this->order($product, $quantity, $status);
+        $order->orderItems()->update(['product_variant_id' => $variantId]);
+    }
+
     // ------------------------------------------------------------- textures
 
     public function test_a_textures_line_follows_the_finishes_ordered(): void

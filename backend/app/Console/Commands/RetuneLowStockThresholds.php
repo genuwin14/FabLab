@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use App\Enums\StockMovementReason;
 use App\Models\Order;
 use App\Models\Product;
+use App\Models\ProductVariant;
 use App\Models\RawMaterial;
 use App\Models\RawMaterialMovement;
 use App\Models\Texture;
@@ -19,8 +20,9 @@ use Illuminate\Support\Facades\DB;
  *
  * A hand-set threshold describes the demand somebody remembered on the day they
  * typed it, and it stays that number while the demand moves on. This walks
- * every stock-bearing item — products, raw materials, textures — and sets the
- * line to HALF of what the previous calendar month actually drew: two weeks of
+ * every stock-bearing item — products, each size and colour of a garment, raw
+ * materials, textures — and sets the line to HALF of what the previous
+ * calendar month actually drew: two weeks of
  * observed demand, which against this shop's two-to-ten-day supplier leads is
  * a lead time plus slack to place the order in.
  *
@@ -58,6 +60,7 @@ class RetuneLowStockThresholds extends Command
 
         $changed = $this->retune(RawMaterial::all(), $this->materialOutflow($start, $end))
             + $this->retune(Product::all(), $this->productOutflow($start, $end))
+            + $this->retune(ProductVariant::with('product', 'color')->get(), $this->variantOutflow($start, $end))
             + $this->retune(Texture::all(), $this->textureOutflow($start, $end));
 
         $this->info($changed . ' threshold(s) retuned.');
@@ -110,6 +113,31 @@ class RetuneLowStockThresholds extends Command
             ->groupBy('order_items.product_id')
             ->selectRaw('order_items.product_id, SUM(order_items.quantity) AS outflow')
             ->pluck('outflow', 'product_id')
+            ->map(fn ($value) => (float) $value)
+            ->all();
+    }
+
+    /**
+     * Units of each size-and-colour cell ordered during the window.
+     *
+     * A garment's own line is for the whole shelf, and split evenly over its
+     * cells it treats a Medium that sells thirty a month like a 5XL that sells
+     * one. Each cell that sold gets a line of its own from its own demand; a
+     * cell that didn't keeps whatever it had (its share of the product's,
+     * unless someone set one).
+     *
+     * @return array<int, float>
+     */
+    private function variantOutflow(Carbon $start, Carbon $end): array
+    {
+        return DB::table('order_items')
+            ->join('orders', 'orders.order_id', '=', 'order_items.order_id')
+            ->whereIn('orders.status', self::CONSUMING_STATUSES)
+            ->whereBetween('orders.created_at', [$start, $end])
+            ->whereNotNull('order_items.product_variant_id')
+            ->groupBy('order_items.product_variant_id')
+            ->selectRaw('order_items.product_variant_id, SUM(order_items.quantity) AS outflow')
+            ->pluck('outflow', 'product_variant_id')
             ->map(fn ($value) => (float) $value)
             ->all();
     }
