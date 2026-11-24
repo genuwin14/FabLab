@@ -46,6 +46,7 @@
         .variant-grid-table .variant-cell.is-low { border-color: #dc3545; background: rgba(220, 53, 69, .06); }
         .variant-grid-table .variant-cell.is-out { border-color: #dc3545; background: rgba(220, 53, 69, .12); font-weight: 700; color: #b02a37; }
         .variant-grid-table .variant-cell:disabled { background: #f8f9fa; color: #adb5bd; font-style: italic; }
+        .variant-grid-table .variant-price { font-variant-numeric: tabular-nums; }
         .variant-grid-table .variant-swatch { display: inline-block; width: 11px; height: 11px; border-radius: 3px; border: 1px solid rgba(0,0,0,.15); vertical-align: -1px; margin-right: 4px; }
     </style>
 
@@ -58,6 +59,9 @@
          * product.colors. Returns nothing; hides the grid and frees the
          * total field for a product that has no cells.
          */
+        /** Each size's surcharge, keyed by its rate (Customization Pricing → Sizes). */
+        const variantGridSurcharges = @json(\App\Models\CustomizationRate::amounts());
+
         function renderVariantGrid(gridId, product, sizes) {
             const grid = document.getElementById(gridId);
             if (!grid) return;
@@ -80,8 +84,13 @@
             if (!tracks) return;
 
             const sizeRows = hasSizes
-                ? Object.entries(sizes).map(([key, def]) => ({ key, label: def.label, short: def.short }))
-                : [{ key: null, label: 'One size', short: '—' }];
+                ? Object.entries(sizes).map(([key, def]) => ({ key, label: def.label, short: def.short, surcharge: Number(variantGridSurcharges[def.rate_key] || 0) }))
+                : [{ key: null, label: 'One size', short: '—', surcharge: 0 }];
+
+            // What each size sells for: the Price field above plus the size's
+            // surcharge, kept in step as the price is typed.
+            const priceInput = grid.closest('form')?.querySelector('[name="price"]') || null;
+            const peso = (n) => '₱' + Number(n || 0).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
             const colourCols = colours.length ? colours : [null];
             const keyFor = (size, colourId) => (size || '-') + ':' + (colourId || '-');
             // A cell's low line is its share of the product's threshold.
@@ -93,7 +102,8 @@
             tbody.innerHTML = '';
 
             const head = document.createElement('tr');
-            head.innerHTML = '<th class="ps-3">' + (hasSizes ? 'Size' : '') + '</th>' + colourCols.map(c => c
+            head.innerHTML = '<th class="ps-3">' + (hasSizes ? 'Size' : '') + '</th>'
+                + (hasSizes ? '<th class="text-end pe-2">Price</th>' : '') + colourCols.map(c => c
                 ? `<th class="text-end pe-2"><span class="variant-swatch" style="background:${c.hex_code}"></span>${c.name}</th>`
                 : '<th class="text-end pe-2">Stock</th>').join('');
             thead.appendChild(head);
@@ -102,6 +112,13 @@
             sizeRows.forEach(row => {
                 const tr = document.createElement('tr');
                 tr.innerHTML = `<td class="ps-3 fw-semibold text-dark">${row.short}<span class="text-muted fw-normal ms-1">${hasSizes ? row.label : ''}</span></td>`;
+                if (hasSizes) {
+                    const price = document.createElement('td');
+                    price.className = 'text-end pe-2 text-primary fw-semibold variant-price';
+                    price.dataset.surcharge = String(row.surcharge);
+                    price.title = row.surcharge ? `Price + ${peso(row.surcharge)} for ${row.label}` : 'The product price';
+                    tr.appendChild(price);
+                }
                 colourCols.forEach(c => {
                     const key = keyFor(row.key, c ? c.color_id : null);
                     const cell = existing[key];
@@ -140,6 +157,20 @@
             };
             grid.querySelectorAll('.variant-cell').forEach(input => input.addEventListener('input', recalc));
             recalc();
+
+            const reprice = () => {
+                const base = parseFloat(priceInput ? priceInput.value : product.price) || 0;
+                grid.querySelectorAll('.variant-price').forEach(td => {
+                    td.textContent = peso(base + Number(td.dataset.surcharge || 0));
+                });
+            };
+            if (priceInput) {
+                // One listener per field, however often the grid is redrawn.
+                if (priceInput._variantGridReprice) priceInput.removeEventListener('input', priceInput._variantGridReprice);
+                priceInput._variantGridReprice = reprice;
+                priceInput.addEventListener('input', reprice);
+            }
+            reprice();
 
             grid.querySelector('.variant-grid-intro').textContent = hasSizes && colours.length
                 ? 'One figure per size and colour. The Stock field above is their total.'

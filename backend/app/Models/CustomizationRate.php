@@ -59,10 +59,14 @@ class CustomizationRate extends Model
             'default' => 500,
         ],
 
-        // Sizes default to zero, so nothing reprices until someone sets them.
-        // Only one ever applies to an item — the size the customer picked.
-        // Listed smallest first, which is the order every screen shows them
-        // in; the shop takes garments up to 5XL.
+        // The panel asked for shirts to be priced by size, so the bigger sizes
+        // ship with a surcharge (XL up; Small to Large at no extra) that an
+        // admin adjusts on Customization Pricing. It is added to a garment in
+        // that size whether it is bought plain (Product::priceForSize) or
+        // customised (CustomDesign's price breakdown). Only one ever applies
+        // to an item — the size the customer picked. Listed smallest first,
+        // which is the order every screen shows them in; the shop takes
+        // garments up to 5XL.
         //
         // `area_factor` is how much bigger or smaller a design prints on this
         // size than on the product's Medium, which is the figure the
@@ -75,7 +79,7 @@ class CustomizationRate extends Model
             'group' => 'sizes',
             'label' => 'Small',
             'short' => 'S',
-            'description' => 'Added when the customer orders this size.',
+            'description' => 'Added to the price of a garment in this size, bought plain or customised.',
             'icon' => 'bi-dash-square',
             'suffix' => 'per item',
             'default' => 0,
@@ -85,7 +89,7 @@ class CustomizationRate extends Model
             'group' => 'sizes',
             'label' => 'Medium',
             'short' => 'M',
-            'description' => 'Added when the customer orders this size.',
+            'description' => 'Added to the price of a garment in this size, bought plain or customised.',
             'icon' => 'bi-square',
             'suffix' => 'per item',
             'default' => 0,
@@ -95,7 +99,7 @@ class CustomizationRate extends Model
             'group' => 'sizes',
             'label' => 'Large',
             'short' => 'L',
-            'description' => 'Added when the customer orders this size.',
+            'description' => 'Added to the price of a garment in this size, bought plain or customised.',
             'icon' => 'bi-plus-square',
             'suffix' => 'per item',
             'default' => 0,
@@ -105,50 +109,50 @@ class CustomizationRate extends Model
             'group' => 'sizes',
             'label' => 'X-Large',
             'short' => 'XL',
-            'description' => 'Added when the customer orders this size.',
+            'description' => 'Added to the price of a garment in this size, bought plain or customised.',
             'icon' => 'bi-plus-square-fill',
             'suffix' => 'per item',
-            'default' => 0,
+            'default' => 20,
             'area_factor' => 1.0,
         ],
         'size_2xl' => [
             'group' => 'sizes',
             'label' => '2X-Large',
             'short' => '2XL',
-            'description' => 'Added when the customer orders this size.',
+            'description' => 'Added to the price of a garment in this size, bought plain or customised.',
             'icon' => 'bi-plus-square-fill',
             'suffix' => 'per item',
-            'default' => 0,
+            'default' => 40,
             'area_factor' => 1.0,
         ],
         'size_3xl' => [
             'group' => 'sizes',
             'label' => '3X-Large',
             'short' => '3XL',
-            'description' => 'Added when the customer orders this size.',
+            'description' => 'Added to the price of a garment in this size, bought plain or customised.',
             'icon' => 'bi-plus-square-fill',
             'suffix' => 'per item',
-            'default' => 0,
+            'default' => 60,
             'area_factor' => 1.0,
         ],
         'size_4xl' => [
             'group' => 'sizes',
             'label' => '4X-Large',
             'short' => '4XL',
-            'description' => 'Added when the customer orders this size.',
+            'description' => 'Added to the price of a garment in this size, bought plain or customised.',
             'icon' => 'bi-plus-square-fill',
             'suffix' => 'per item',
-            'default' => 0,
+            'default' => 80,
             'area_factor' => 1.0,
         ],
         'size_5xl' => [
             'group' => 'sizes',
             'label' => '5X-Large',
             'short' => '5XL',
-            'description' => 'Added when the customer orders this size.',
+            'description' => 'Added to the price of a garment in this size, bought plain or customised.',
             'icon' => 'bi-plus-square-fill',
             'suffix' => 'per item',
-            'default' => 0,
+            'default' => 100,
             'area_factor' => 1.0,
         ],
     ];

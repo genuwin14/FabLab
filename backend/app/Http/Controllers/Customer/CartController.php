@@ -87,6 +87,10 @@ class CartController extends Controller
             }
 
             $variant = $product->variantFor($size, $colorId);
+
+            // A garment costs more in a bigger size (Customization Pricing →
+            // Sizes), bought plain as much as customised.
+            $price = $product->priceForSize($size);
         }
 
         // Check if stock is available — of the cell, where the product has cells.

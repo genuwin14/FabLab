@@ -290,8 +290,9 @@ class CustomizationPricingTest extends TestCase
 
         $response = $this->get(route('customer.customize.index', ['product_id' => $product->product_id]))
             ->assertOk()
-            // The rates payload the live quote reads carries every size too.
-            ->assertSee('"size_5xl":0', false);
+            // The rates payload the live quote reads carries every size too,
+            // at its shipped surcharge.
+            ->assertSee('"size_5xl":100', false);
 
         foreach (['small', 'medium', 'large', 'xl', '2xl', '3xl', '4xl', '5xl'] as $size) {
             $response->assertSee('data-size="' . $size . '"', false);

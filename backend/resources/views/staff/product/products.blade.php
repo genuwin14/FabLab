@@ -157,7 +157,14 @@
                                                         <span class="text-muted small">Uncategorized</span>
                                                     @endif
                                                 </td>
-                                                <td class="fw-bold text-primary">₱{{ number_format($product->price, 2) }}</td>
+                                                <td>
+                                                    <div class="fw-bold text-primary">₱{{ number_format($product->price, 2) }}</div>
+                                                    @if($product->priceVariesBySize())
+                                                        <small class="text-muted text-nowrap" title="Size surcharges are set on Customization Pricing">
+                                                            ₱{{ number_format(min($product->pricesBySize()), 2) }}–₱{{ number_format(max($product->pricesBySize()), 2) }} by size
+                                                        </small>
+                                                    @endif
+                                                </td>
                                                 <td>
                                                     <div class="d-flex flex-column" style="width: 100px;">
                                                         <span class="fw-bold text-dark small">{{ $product->stock }}

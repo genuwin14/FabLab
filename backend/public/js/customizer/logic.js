@@ -20,11 +20,11 @@ const CustomizerPricing = {
         size_small: 0,
         size_medium: 0,
         size_large: 0,
-        size_xl: 0,
-        size_2xl: 0,
-        size_3xl: 0,
-        size_4xl: 0,
-        size_5xl: 0
+        size_xl: 20,
+        size_2xl: 40,
+        size_3xl: 60,
+        size_4xl: 80,
+        size_5xl: 100
     },
 
     // How far the Size slider goes. An uploaded image is billed for the print

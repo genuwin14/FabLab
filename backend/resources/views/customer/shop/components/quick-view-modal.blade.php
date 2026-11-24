@@ -6,6 +6,8 @@
         font-weight: 700; font-size: 0.8rem; color: #0e2e45; cursor: pointer;
     }
     #quickViewModal .qv-size.active { border-color: #0e2e45; background: #0e2e45; color: #fff; }
+    /* A size's own price, under its code, when sizes are priced differently. */
+    #quickViewModal .qv-size .qv-size-price { display: block; font-size: 0.62rem; font-weight: 600; opacity: .7; }
     #quickViewModal .qv-size.is-out, #quickViewModal .qv-colour.is-out { opacity: .35; cursor: not-allowed; text-decoration: line-through; }
     #quickViewModal .qv-colour {
         width: 34px; height: 34px; border-radius: 50%; border: 3px solid #fff; box-shadow: 0 0 0 2px #dee2e6; cursor: pointer;
@@ -72,6 +74,9 @@
                             <div id="qv-sizes-block" class="mb-3" hidden>
                                 <h6 class="qv-label">Size</h6>
                                 <div id="qv-sizes" class="d-flex flex-wrap gap-2"></div>
+                                <div id="qv-size-price-hint" class="small text-muted mt-2" hidden>
+                                    <i class="bi bi-tag me-1"></i>Bigger sizes cost more. The price follows the size you pick.
+                                </div>
                             </div>
                             <div id="qv-colours-block" hidden>
                                 <h6 class="qv-label">Colour</h6>

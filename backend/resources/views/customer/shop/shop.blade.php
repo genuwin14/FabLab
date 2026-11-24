@@ -108,8 +108,14 @@
                                     <div class="mt-auto pt-3 border-top">
                                         <div class="d-flex justify-content-between align-items-center">
                                             <div>
-                                                <div class="small text-muted mb-0">Price per {{ $product->unit }}</div>
-                                                <h5 class="fw-bold text-primary mb-0">₱{{ number_format($product->price, 2) }}</h5>
+                                                {{-- Bigger garments cost more, so a sized product quotes its smallest. --}}
+                                                @if($product->priceVariesBySize())
+                                                    <div class="small text-muted mb-0">Sizes from</div>
+                                                    <h5 class="fw-bold text-primary mb-0">₱{{ number_format(min($product->pricesBySize()), 2) }}</h5>
+                                                @else
+                                                    <div class="small text-muted mb-0">Price per {{ $product->unit }}</div>
+                                                    <h5 class="fw-bold text-primary mb-0">₱{{ number_format($product->price, 2) }}</h5>
+                                                @endif
                                             </div>
                                             <div class="small fw-bold {{ $product->stock <= $product->low_stock_threshold ? 'text-danger' : 'text-success' }}">
                                                 {{ $product->stock }} {{ $product->unit }} left
@@ -133,6 +139,8 @@
                                                 'color' => $v->color?->name,
                                                 'hex' => $v->color?->hex_code,
                                                 'stock' => (int) $v->stock,
+                                                // The size's own price: the product's plus its surcharge.
+                                                'price' => $product->priceForSize($v->size),
                                             ])->values();
                                         @endphp
                                         <button class="btn btn-primary fw-bold rounded-pill w-100 small shadow-sm py-2 btn-add-to-cart"
@@ -150,7 +158,7 @@
                                                 data-has-sizes="{{ $product->has_sizes ? 1 : 0 }}"
                                                 data-variants="{{ $variantOptions->toJson() }}"
                                                 data-description="{{ $product->description }}"
-                                                data-price="₱{{ number_format($product->price, 2) }}"
+                                                data-price="{{ $product->priceVariesBySize() ? 'From ₱' . number_format(min($product->pricesBySize()), 2) : '₱' . number_format($product->price, 2) }}"
                                                 data-image="{{ $product->image_url ?: asset('img/FABLAB-LOGO.png') }}"
                                                 data-category="{{ $product->category->name ?? 'Uncategorized' }}"
                                                 data-stock="{{ $product->stock }}"
@@ -580,7 +588,9 @@
             });
 
             // The picker state for the product open in the quick view.
-            const picker = { productId: null, variants: [], hasSizes: false, size: null, colorId: null, unit: 'pcs' };
+            const picker = { productId: null, variants: [], hasSizes: false, size: null, colorId: null, unit: 'pcs', basePrice: '' };
+
+            const peso = (n) => '₱' + Number(n || 0).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
             function pickerStock() {
                 const hasColours = picker.variants.some(v => v.color_id);
@@ -600,7 +610,14 @@
                 const complete = (!picker.hasSizes || picker.size) && (!hasColours || picker.colorId);
 
                 const sizes = [];
-                picker.variants.forEach(v => { if (v.size && !sizes.find(s => s.size === v.size)) sizes.push({ size: v.size, short: v.size_short }); });
+                picker.variants.forEach(v => { if (v.size && !sizes.find(s => s.size === v.size)) sizes.push({ size: v.size, short: v.size_short, price: Number(v.price) }); });
+
+                // Bigger garments cost more: each size says its price, and the
+                // headline price follows the size picked.
+                const pricesVary = new Set(sizes.map(s => s.price.toFixed(2))).size > 1;
+                const picked = sizes.find(s => s.size === picker.size);
+                $('#qv-price').text(picked && pricesVary ? peso(picked.price) : picker.basePrice);
+                $('#qv-size-price-hint').prop('hidden', !pricesVary);
                 const colours = [];
                 picker.variants.forEach(v => { if (v.color_id && !colours.find(c => c.id === v.color_id)) colours.push({ id: v.color_id, name: v.color, hex: v.hex }); });
 
@@ -613,7 +630,8 @@
                 $('#qv-sizes-block').prop('hidden', !picker.hasSizes);
                 $('#qv-sizes').html(sizes.map(s => {
                     const stock = stockFor(s.size, hasColours && picker.colorId ? picker.colorId : undefined);
-                    return `<button type="button" class="qv-size ${picker.size === s.size ? 'active' : ''} ${stock <= 0 ? 'is-out' : ''}" data-size="${s.size}" title="${stock <= 0 ? 'Out of stock' : stock + ' available'}">${s.short}</button>`;
+                    const price = pricesVary ? `<span class="qv-size-price">${peso(s.price)}</span>` : '';
+                    return `<button type="button" class="qv-size ${picker.size === s.size ? 'active' : ''} ${stock <= 0 ? 'is-out' : ''}" data-size="${s.size}" title="${peso(s.price)} · ${stock <= 0 ? 'Out of stock' : stock + ' available'}">${s.short}${price}</button>`;
                 }).join(''));
 
                 $('#qv-colours-block').prop('hidden', !hasColours);
@@ -683,6 +701,7 @@
                 picker.size = null;
                 picker.colorId = null;
                 picker.unit = unit;
+                picker.basePrice = data.price;
 
                 const perCell = picker.variants.length > 0;
                 $('#qv-variants').prop('hidden', !perCell);

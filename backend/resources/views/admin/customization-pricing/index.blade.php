@@ -306,8 +306,9 @@
                                         <div>
                                             <h6 class="fw-bold mb-0 text-dark">Size surcharges</h6>
                                             <small class="text-muted">
-                                                Added on top when a customer orders that size, Small to 5XL. Only one ever
-                                                applies to an item. Leave a size at 0 to charge nothing extra for it.
+                                                Added to the price of a garment in that size, Small to 5XL, whether it is
+                                                bought plain from the shop or customised. Only one ever applies to an item.
+                                                Leave a size at 0 to charge nothing extra for it.
                                             </small>
                                         </div>
                                     </div>

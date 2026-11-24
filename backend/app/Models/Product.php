@@ -67,6 +67,50 @@ class Product extends Model
     }
 
     /**
+     * What one of this product costs in a given size: its own price plus that
+     * size's surcharge from Customization Pricing.
+     *
+     * The panel asked for shirts to be priced by size. The surcharge is set
+     * once per size and applies to every garment sold in sizes, bought plain
+     * or customised (a design adds it through CustomDesign's price breakdown,
+     * which reads the same rate). A product without sizes, or a size the shop
+     * doesn't sell, costs its own price.
+     */
+    public function priceForSize(?string $size): float
+    {
+        $price = (float) $this->price;
+        $key = $this->has_sizes ? CustomizationRate::keyForSize($size) : null;
+
+        return $key ? round($price + CustomizationRate::amountFor($key), 2) : $price;
+    }
+
+    /**
+     * Every size's price, smallest first, as `size => price`. Empty for a
+     * product that doesn't come in sizes.
+     *
+     * @return array<string, float>
+     */
+    public function pricesBySize(): array
+    {
+        if (! $this->has_sizes) {
+            return [];
+        }
+
+        $prices = [];
+        foreach (array_keys(CustomizationRate::sizes()) as $size) {
+            $prices[$size] = $this->priceForSize($size);
+        }
+
+        return $prices;
+    }
+
+    /** Whether any size costs more (or less) than the product's own price. */
+    public function priceVariesBySize(): bool
+    {
+        return collect($this->pricesBySize())->contains(fn (float $price) => abs($price - (float) $this->price) >= 0.005);
+    }
+
+    /**
      * The shapes the 3D studio can actually render, matched against a name.
      *
      * One entry per GLB in public/gbl — mug is cup.glb, umbrella is

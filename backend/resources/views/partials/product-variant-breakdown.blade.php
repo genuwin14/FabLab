@@ -38,6 +38,7 @@
         data-unit="{{ $product->unit }}"
         data-total="{{ $product->stock }}"
         data-has-sizes="{{ $product->has_sizes ? 1 : 0 }}"
+        data-prices="{{ json_encode($product->pricesBySize()) }}"
         data-cells="{{ $breakdown->toJson() }}">
         <i class="bi bi-grid-3x3-gap me-1"></i>by size / colour
         @if($short > 0)
@@ -98,6 +99,12 @@
                 try { cells = JSON.parse(data.cells || '[]'); } catch (e) { cells = []; }
 
                 const hasSizes = data.hasSizes === '1';
+                // What each size sells for (Customization Pricing adds a
+                // surcharge per size), beside how many of it are on the shelf.
+                let prices = {};
+                try { prices = JSON.parse(data.prices || '{}') || {}; } catch (e) { prices = {}; }
+                const showPrices = hasSizes && Object.keys(prices).length > 0;
+                const peso = (n) => '₱' + Number(n || 0).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
                 const colours = [];
                 cells.forEach(c => { if (c.color_id && !colours.find(x => x.id === c.color_id)) colours.push({ id: c.color_id, name: c.color, hex: c.hex }); });
                 const columns = colours.length ? colours : [null];
@@ -118,7 +125,8 @@
                 table.querySelector('tfoot')?.remove();
 
                 const head = document.createElement('tr');
-                head.innerHTML = '<th class="ps-3">' + (hasSizes ? 'Size' : '') + '</th>' + columns.map(c => c
+                head.innerHTML = '<th class="ps-3">' + (hasSizes ? 'Size' : '') + '</th>'
+                    + (showPrices ? '<th class="text-end pe-3">Price</th>' : '') + columns.map(c => c
                     ? `<th class="text-end pe-3"><span class="variant-breakdown-swatch" style="background:${c.hex}"></span>${c.name}</th>`
                     : '<th class="text-end pe-3">Stock</th>').join('');
                 thead.appendChild(head);
@@ -127,6 +135,12 @@
                 sizeRows.forEach(row => {
                     const tr = document.createElement('tr');
                     tr.innerHTML = `<td class="ps-3 fw-semibold text-dark">${row.short}<span class="text-muted fw-normal ms-1">${hasSizes ? row.label : ''}</span></td>`;
+                    if (showPrices) {
+                        const price = document.createElement('td');
+                        price.className = 'pe-3 text-end text-primary fw-semibold variant-breakdown-price';
+                        price.textContent = prices[row.key] !== undefined ? peso(prices[row.key]) : '—';
+                        tr.appendChild(price);
+                    }
                     columns.forEach((c, i) => {
                         const cell = cellFor(row.key, c ? c.id : null);
                         const td = document.createElement('td');
@@ -140,7 +154,8 @@
 
                 if (columns.length > 1 || sizeRows.length > 1) {
                     const tfoot = document.createElement('tfoot');
-                    tfoot.innerHTML = '<tr><td class="ps-3">Total</td>' + columnTotals.map(t => `<td class="pe-3 text-end">${t}</td>`).join('') + '</tr>';
+                    tfoot.innerHTML = '<tr><td class="ps-3">Total</td>' + (showPrices ? '<td></td>' : '')
+                        + columnTotals.map(t => `<td class="pe-3 text-end">${t}</td>`).join('') + '</tr>';
                     table.appendChild(tfoot);
                 }
 

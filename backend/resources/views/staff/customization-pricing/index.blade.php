@@ -222,8 +222,9 @@
                                         <div>
                                             <h6 class="fw-bold mb-0 text-dark">Size surcharges</h6>
                                             <small class="text-muted">
-                                                Added on top when a customer orders that size, Small to 5XL. Only one ever
-                                                applies to an item. A size at ₱0.00 costs nothing extra.
+                                                Added to the price of a garment in that size, Small to 5XL, whether it is
+                                                bought plain from the shop or customised. Only one ever applies to an item.
+                                                A size at ₱0.00 costs nothing extra.
                                             </small>
                                         </div>
                                     </div>
