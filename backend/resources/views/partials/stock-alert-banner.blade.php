@@ -162,8 +162,13 @@
         .stock-alert-review:hover { background: #05111a; color: #ffc508; }
         .stock-alert-close { font-size: 0.7rem; }
 
+        /* A phone gets the headline and the two buttons: the item list would
+           take a third of the screen above every page, and Review stock has
+           it in full. */
         @media (max-width: 575.98px) {
-            .stock-alert-list li { white-space: normal; }
+            .stock-alert-banner { padding: 0.45rem 0; }
+            .stock-alert-list, .stock-alert-more { display: none !important; }
+            .stock-alert-heading { font-size: 0.8rem; line-height: 1.3; }
             .stock-alert-review { padding: 0.25rem 0.6rem; }
         }
     </style>
