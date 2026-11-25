@@ -30,7 +30,7 @@
                             <!-- Google Button -->
                             <a href="{{ route('auth.google') }}"
                                 class="btn btn-light w-100 fw-bold py-2 d-flex align-items-center justify-content-center gap-2 mb-4 text-decoration-none">
-                                <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google"
+                                <img src="{{ asset('img/google-g.svg') }}" alt="Google"
                                     style="width: 20px; height: 20px;">
                                 <span>Sign Up with Google</span>
                             </a>
