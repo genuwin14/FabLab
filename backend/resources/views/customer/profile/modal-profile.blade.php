@@ -17,7 +17,7 @@
                         <div class="col-md-4 qv-rail profile-side-panel p-4 text-center d-flex flex-column justify-content-center">
                             <div class="mb-3 position-relative d-inline-block mx-auto">
                                 <div class="profile-avatar-frame">
-                                    <img src="{{ auth()->user() && auth()->user()->photo ? (Str::startsWith(auth()->user()->photo, 'http') ? auth()->user()->photo : asset('storage/' . auth()->user()->photo)) : 'https://ui-avatars.com/api/?name=' . urlencode(auth()->user()->fullname ?? 'Customer') . '&background=0e2e45&color=ffc508' }}"
+                                    <img src="{{ \App\Support\Avatar::for(auth()->user(), '0e2e45', 'ffc508', 'Customer') }}"
                                         alt="Profile Photo" class="w-100 h-100 rounded-circle object-fit-cover"
                                         id="customerProfilePreview">
                                 </div>

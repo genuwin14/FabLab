@@ -55,7 +55,7 @@
                 <button type="button"
                     class="d-flex align-items-center user-dropdown-btn"
                     id="dropdownUser1" data-bs-toggle="dropdown" aria-expanded="false">
-                    <img src="{{ Auth::user()->photo ? (Str::startsWith(Auth::user()->photo, 'http') ? Auth::user()->photo : asset('storage/' . Auth::user()->photo)) : 'https://ui-avatars.com/api/?name=' . urlencode(Auth::user()->fullname) . '&background=0e2e45&color=fff' }}"
+                    <img src="{{ \App\Support\Avatar::for(auth()->user(), '0e2e45', 'fff') }}"
                         alt="{{ Auth::user()->fullname }}" class="user-dropdown-avatar rounded-circle object-fit-cover">
                     <div class="d-none d-md-block ms-2 me-2 text-start">
                         <div class="text-white fw-semibold small text-truncate" style="max-width: 140px;">{{ Auth::user()->fullname }}</div>
@@ -67,7 +67,7 @@
                     aria-labelledby="dropdownUser1">
                     <li class="user-card-header">
                         <div class="d-flex align-items-center gap-3">
-                            <img src="{{ Auth::user()->photo ? (Str::startsWith(Auth::user()->photo, 'http') ? Auth::user()->photo : asset('storage/' . Auth::user()->photo)) : 'https://ui-avatars.com/api/?name=' . urlencode(Auth::user()->fullname) . '&background=ffc508&color=0e2e45' }}"
+                            <img src="{{ \App\Support\Avatar::for(auth()->user(), 'ffc508', '0e2e45') }}"
                                 alt="" width="44" height="44" class="rounded-circle object-fit-cover flex-shrink-0">
                             <div class="overflow-hidden">
                                 <div class="text-white fw-bold small text-truncate">{{ Auth::user()->fullname }}</div>
