@@ -437,8 +437,13 @@
                                                     <i class="bi bi-envelope-check-fill me-2 mt-1"></i>
                                                     <div class="lh-sm">
                                                         <span class="fw-bold">Order Approved - Action Required</span><br>
-                                                        A transaction slip has been sent to your email. Please present it to PAXS
-                                                        to process your payment.
+                                                        @if($order->notify_email)
+                                                            A transaction slip has been sent to your email. Please present it to PAXS
+                                                            to process your payment.
+                                                        @else
+                                                            Open your transaction slip with <strong>View Slip</strong> below and present it
+                                                            to PAXS to process your payment.
+                                                        @endif
                                                     </div>
                                                 </div>
                                             @endif

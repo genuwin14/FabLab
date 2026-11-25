@@ -5,8 +5,9 @@ reaches Globe, Smart, TNT, Sun and DITO, and unlike the MacroDroid setup there
 is no phone to keep charged and awake — you pay per message and UniSMS sends it.
 
 This is one of four drivers behind the same `SmsService`, so nothing else in the
-application changes. Registration OTPs, the resend button and password-reset
-codes all go out through whichever driver `SMS_DRIVER` names.
+application changes. Registration OTPs, the resend button, password-reset
+codes and the order updates customers ask for at checkout (*Order updates*,
+in §3) all go out through whichever driver `SMS_DRIVER` names.
 
 | Driver | What sends the text |
 | :--- | :--- |
@@ -118,6 +119,31 @@ Your FABLAB OTP code is 123456 for password reset. Please do not share. Expires 
 Keep that shape if you reword them, and keep the expiry true. Both kinds of
 code really do expire ten minutes after they are sent.
 
+### Order updates
+
+At checkout a customer ticks **Email**, **SMS**, both or neither. With SMS
+ticked, the order texts them at every step: placed, approved, payment
+recorded, in production, ready for pickup or out for delivery, completed,
+cancelled. That is up to **six texts for one PAXS order**, so budget credits
+for it. Each text is built to cost one credit:
+
+- 160 characters or fewer, in plain SMS characters. A single `₱` (or an em
+  dash, or curly quotes) turns the whole text into Unicode, which fits only 70
+  characters per part. That is why the texts write `PHP 1,250.00`.
+- No links. A test Sender ID cannot send them.
+- Every text starts with `FABLAB:`, because it arrives from the Sender ID's
+  name, not FabLab's.
+
+```
+FABLAB: Order ORDR-20261125-0001 is approved at PHP 1,250.00. Open View Slip in My Orders and pay at PAXS.
+```
+
+The texts are in `toSms()` on `OrderPlaced`, `OrderStatusChanged` and
+`PaymentRecorded` (`app/Notifications/`). They are sent by
+`app/Notifications/Channels/SmsChannel.php` through this same `SmsService`.
+`OrderUpdateChoiceTest` fails any text that is too long, contains a non-SMS
+character or a link. Keep it passing when you reword one.
+
 ---
 
 ## 4. Delivery receipts (optional)
@@ -161,7 +187,8 @@ UniSMS message.failed for +639171234567 (reference msg_84e8b93b): Subscriber unr
 | Settings | [`config/sms.php`](../config/sms.php) — `drivers.unisms` |
 | Webhook | [`app/Http/Controllers/Webhooks/UniSmsWebhookController.php`](../app/Http/Controllers/Webhooks/UniSmsWebhookController.php) |
 | Route | [`routes/api.php`](../routes/api.php) |
-| Tests | [`tests/Feature/SmsSendingTest.php`](../tests/Feature/SmsSendingTest.php), [`tests/Feature/UniSmsWebhookTest.php`](../tests/Feature/UniSmsWebhookTest.php) |
+| Order texts | [`app/Notifications/Channels/SmsChannel.php`](../app/Notifications/Channels/SmsChannel.php), and `toSms()` on the three order notifications beside it |
+| Tests | [`tests/Feature/SmsSendingTest.php`](../tests/Feature/SmsSendingTest.php), [`tests/Feature/UniSmsWebhookTest.php`](../tests/Feature/UniSmsWebhookTest.php), [`tests/Feature/OrderUpdateChoiceTest.php`](../tests/Feature/OrderUpdateChoiceTest.php) |
 
 `send()` never throws. Registration and password reset call it inline, so a
 gateway that is down has to return `false` and let the page finish rather than

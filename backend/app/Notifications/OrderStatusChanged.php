@@ -8,6 +8,8 @@ use Illuminate\Notifications\Notification;
 
 class OrderStatusChanged extends Notification
 {
+    use Concerns\FollowsUpdateChoice;
+
     public function __construct(
         public Order $order,
         public string $oldStatus,
@@ -18,9 +20,30 @@ class OrderStatusChanged extends Notification
     {
         // Approval already lands in the inbox as the transaction-slip email,
         // so mailing here too would tell the customer the same thing twice.
-        // Every other step gets an email as well as the in-app bell, so the
-        // customer stays up to date without opening the system.
-        return $this->newStatus === 'approved' ? ['database'] : ['database', 'mail'];
+        // Every other step emails as well, and every step texts, for the
+        // customers who ticked those at checkout.
+        return $this->customerChannels($notifiable, mail: $this->newStatus !== 'approved');
+    }
+
+    public function toSms(object $notifiable): string
+    {
+        $order = $this->order;
+        $number = $order->order_number;
+
+        $text = match ($this->newStatus) {
+            'approved' => $order->isPurchaseRequest()
+                ? "Order {$number} is approved at {$this->smsAmount($order->total_amount)}. Production starts once the Notice of Award is in."
+                : "Order {$number} is approved at {$this->smsAmount($order->total_amount)}. Open View Slip in My Orders and pay at PAXS.",
+            'processing' => "Order {$number} is now in production. We will text you when it moves to the next step.",
+            'ready_for_pickup' => "Order {$number} is ready for pickup at the CSPC FabLab. "
+                . (($receipt = $this->smsReceipt()) ? "Bring receipt no. {$receipt}." : 'Bring your official receipt.'),
+            'for_delivery' => "Order {$number} has been released for delivery.",
+            'completed' => "Order {$number} is completed. Thank you for choosing CSPC FabLab!",
+            'cancelled' => "Order {$number} was cancelled. The reason is on the order in My Orders.",
+            default => "Order {$number} is now " . Order::statusLabel($this->newStatus) . '.',
+        };
+
+        return 'FABLAB: ' . $text;
     }
 
     public function toMail(object $notifiable): MailMessage

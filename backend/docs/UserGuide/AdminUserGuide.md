@@ -53,7 +53,7 @@ Revenue counts `completed` orders only — an approved order that hasn't been ha
 
 `/admin/orders` lists every order in the system, newest first, 10 per page. Search by order number, receipt number, customer name, or office; filter by status or by date (today / this week / this month).
 
-Under each customer's email the list shows how the order is paid — a **PAXS** or **Procurement** tag — and who it is for: **Personal**, or the office the customer named at checkout. The Review and View windows repeat both.
+Under each customer's email the list shows how the order is paid — a **PAXS** or **Procurement** tag — and who it is for: **Personal**, or the office the customer named at checkout. The Review and View windows repeat both, and add how the customer asked to be updated: **Email**, **SMS**, **Email + SMS**, or **In-app only**. A customer who says no email arrived may simply not have ticked it.
 
 **Export** downloads the orders the filters are showing — every page of them, not just the one on screen — as a **PDF**, a **Word** document, or a **CSV** for Excel, named `orders-YYYY-MM-DD`. Each row carries the order number, date, customer, who it is for, PAXS or Procurement, the items, the receipt or PR number, the status, and the total; the heading repeats the filters, and the summary gives the count and the value of the orders not cancelled.
 
@@ -67,8 +67,8 @@ Open **Review** and check the lines and any customization — clicking a tailore
 2. **Reserves raw materials** — for every line, the product's bill of materials × the quantity ordered, plus whatever the design's customization options draw.
 3. **Reserves the design's ink and transfer paper, measured from its artwork.** Nobody types either figure. When the customer saved the design, the studio exported the flat print and the system measured how much of the product's printable area each of the four inks covers, and boxed the artwork on each panel. Approval multiplies the coverage by the printable area and by each ink's rate, and draws the fraction of a transfer sheet the cut piece takes, margin included (see [§8](#8-raw-materials)). The **Materials Required** panel on the review modal shows the working under each line, the print size of every panel, and the panels themselves cropped from the print. Each ink bottle carries its channel's colour swatch, and **Show where the magenta prints** (or cyan, yellow, black) repaints the enlarged print with only that ink, heavier where more goes down, so you can see exactly what a bottle is being charged for; the chips above the print switch between inks and full colour. You can still correct a figure if the artwork in front of you says otherwise. A print too big for the sheet is flagged there, because the printers cannot do it in one piece. A design saved before prints were kept is estimated from its recipe instead, and the panel says so.
 4. **Deducts texture stock** — one unit per ordered unit, for designs that use a texture.
-5. **Emails the customer their transaction slip** (the PDF receipt with the order-number barcode).
-6. Notifies the customer that the status changed.
+5. **Emails the customer their transaction slip** (the PDF receipt with the order-number barcode), if they ticked Email at checkout. Either way it is under **View Slip** on their order.
+6. Notifies the customer that the status changed, and texts them if they ticked SMS.
 
 Product stock was already deducted at checkout, so approval does not touch it again.
 
@@ -95,7 +95,7 @@ Approval sends the customer their transaction slip; they take it to **PAXS**, pa
 An approved PAXS order shows **Awaiting payment** under its status and a **Record Payment** button. Open it, type the number on the official receipt, and save. In one step the system:
 
 1. Stores the receipt number on the order and moves it to `paid`.
-2. Notifies and emails the customer that the payment was received, with the receipt number, telling them it is what they show to collect the order.
+2. Notifies the customer that the payment was received, with the receipt number, telling them it is what they show to collect the order. It is emailed or texted too, as they chose at checkout.
 3. Unlocks the **Process** button for staff — see [Staff Guide §4](StaffUserGuide.md#4-processing-orders). Until this point staff see *Awaiting payment* instead.
 
 A receipt number can only be on one order; the system refuses one that is already recorded elsewhere and names the order it belongs to. If a number was typed wrongly, the pencil beside it in the **Receipt No** column opens the same dialog to correct it. The customer is not notified again for a correction.

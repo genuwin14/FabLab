@@ -628,6 +628,7 @@
                     document.getElementById('reviewCustomerName').textContent = order.user ? (order.user.fullname || order.user.name || 'Guest') : 'Guest';
                     document.getElementById('reviewOrderedFor').textContent = order.ordered_for || 'Personal';
                     document.getElementById('reviewChannel').textContent = order.channel_label || 'PAXS';
+                    document.getElementById('reviewUpdates').textContent = order.updates_via || 'Email';
 
                     const tbody = document.getElementById('reviewItemsBody');
                     tbody.innerHTML = '';

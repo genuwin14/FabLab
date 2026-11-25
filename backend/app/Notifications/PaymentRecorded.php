@@ -15,11 +15,23 @@ use Illuminate\Notifications\Notification;
  */
 class PaymentRecorded extends Notification
 {
+    use Concerns\FollowsUpdateChoice;
+
     public function __construct(public Order $order) {}
 
     public function via(object $notifiable): array
     {
-        return ['database', 'mail'];
+        return $this->customerChannels($notifiable);
+    }
+
+    public function toSms(object $notifiable): string
+    {
+        $number = $this->order->order_number;
+        $receipt = $this->smsReceipt();
+
+        return $receipt
+            ? "FABLAB: Payment received for order {$number}, receipt no. {$receipt}. Show it when you collect the order."
+            : "FABLAB: Payment received for order {$number}. Show your official receipt when you collect the order.";
     }
 
     public function toMail(object $notifiable): MailMessage

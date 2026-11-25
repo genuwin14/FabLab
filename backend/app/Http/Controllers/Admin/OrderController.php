@@ -106,7 +106,9 @@ class OrderController extends Controller
             }
         });
 
-        if ($request->status === 'approved') {
+        // The slip is the approval email, so it goes where the customer asked
+        // for email. Without it they open the same PDF with View Slip.
+        if ($request->status === 'approved' && $order->notify_email) {
             try {
                 \Illuminate\Support\Facades\Mail::to($order->user->email)->send(new \App\Mail\OrderReceipt($order));
             } catch (\Exception $e) {

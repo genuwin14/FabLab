@@ -14,11 +14,26 @@ use Illuminate\Notifications\Notification;
  */
 class OrderPlaced extends Notification
 {
+    use Concerns\FollowsUpdateChoice;
+
     public function __construct(public Order $order) {}
 
     public function via(object $notifiable): array
     {
-        return ['database', 'mail'];
+        return $this->customerChannels($notifiable);
+    }
+
+    public function toSms(object $notifiable): string
+    {
+        $number = $this->order->order_number;
+
+        if ($this->order->isPurchaseRequest() && $this->order->pr_deadline) {
+            return "FABLAB: We received order {$number}. File your Purchase Request, then enter the PR number in My Orders by "
+                . $this->order->pr_deadline->format('j M Y') . '.';
+        }
+
+        return "FABLAB: We received order {$number}, estimated at {$this->smsAmount($this->order->total_amount)}. "
+            . 'We will text you again once FabLab reviews it.';
     }
 
     public function toMail(object $notifiable): MailMessage

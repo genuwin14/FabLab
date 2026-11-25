@@ -20,6 +20,7 @@
                     <span>Customer: <span id="reviewCustomerName" class="text-white fw-bold"></span></span>
                     <span>Ordered for: <span id="reviewOrderedFor" class="text-white fw-bold"></span></span>
                     <span>Paid through: <span id="reviewChannel" class="text-white fw-bold"></span></span>
+                    <span>Updates via: <span id="reviewUpdates" class="text-white fw-bold"></span></span>
                 </div>
             </div>
 

@@ -22,15 +22,19 @@ class Notifier
     }
 
     /**
-     * Send a notification to one customer, respecting their notification
-     * toggle. Some of these carry a mail channel that talks to SMTP inline,
-     * and a mail hiccup must not turn an already-saved status change into an
-     * error page — the database channel runs first, so the in-app bell
-     * survives even when the email doesn't go out.
+     * Send a notification to one customer. Which channels it takes is the
+     * notification's own call: the Settings switch turns the in-app bell on
+     * or off, and the email and texts follow what the customer ticked for the
+     * order at checkout (see Notifications\Concerns\FollowsUpdateChoice).
+     *
+     * Some of these carry a mail channel that talks to SMTP inline, and a
+     * mail hiccup must not turn an already-saved status change into an error
+     * page. The bell and the text go first, so they survive even when the
+     * email doesn't go out.
      */
     public static function customer(?User $user, Notification $notification): void
     {
-        if (! $user || ! $user->notifications_enabled) {
+        if (! $user) {
             return;
         }
 

@@ -76,6 +76,16 @@ class User extends Authenticatable
     }
 
     /**
+     * Where a notification sent over SmsChannel goes: the number on the
+     * account, verified or not. Order texts go only to customers who ticked
+     * SMS at checkout, and the box shows them this number.
+     */
+    public function routeNotificationForSms(): ?string
+    {
+        return filled($this->contact_number) ? $this->contact_number : null;
+    }
+
+    /**
      * Get the orders for the user.
      */
     public function orders()

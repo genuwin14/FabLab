@@ -12,7 +12,8 @@ use Tests\TestCase;
 
 /**
  * Every step of an order emails the customer as well as ringing the in-app
- * bell, so they stay up to date without opening the system. Approval is the
+ * bell, so they stay up to date without opening the system, unless they
+ * unticked Email at checkout (see OrderUpdateChoiceTest). Approval is the
  * one exception: the transaction-slip email already announces it.
  */
 class OrderStatusEmailTest extends TestCase
@@ -103,7 +104,11 @@ class OrderStatusEmailTest extends TestCase
         );
     }
 
-    public function test_a_customer_who_disabled_notifications_gets_no_email(): void
+    /**
+     * The Settings switch is about the in-app bell. The email follows what
+     * the customer ticked for the order at checkout.
+     */
+    public function test_turning_notifications_off_silences_the_bell_but_not_the_email_ticked_at_checkout(): void
     {
         Notification::fake();
 
@@ -119,6 +124,22 @@ class OrderStatusEmailTest extends TestCase
         $this->post("/staff/orders/{$order->order_id}/update-status", ['status' => 'completed'])
             ->assertSessionHas('success');
 
-        Notification::assertNotSentTo($this->customer, OrderStatusChanged::class);
+        Notification::assertSentTo(
+            $this->customer,
+            OrderStatusChanged::class,
+            fn ($notification, $channels) => $channels === ['mail']
+        );
+    }
+
+    public function test_an_order_whose_email_was_unticked_is_not_emailed(): void
+    {
+        $order = Order::create([
+            'order_number' => 'ORDR-MAIL', 'user_id' => $this->customer->id,
+            'status' => 'processing', 'total_amount' => 100, 'notify_email' => false,
+        ]);
+
+        $channels = (new OrderStatusChanged($order, 'paid', 'processing'))->via($this->customer);
+
+        $this->assertSame(['database'], $channels);
     }
 }

@@ -544,6 +544,7 @@
                     $('#viewOrderDate').text(new Date(order.created_at).toLocaleString());
                     $('#viewOrderedFor').text(order.ordered_for || 'Personal');
                     $('#viewChannel').text(order.channel_label || 'PAXS');
+                    $('#viewUpdates').text(order.updates_via || 'Email');
 
                     $('#viewPaymentRef').text(order.payment_reference || '—');
 

@@ -59,7 +59,7 @@ Two things to take from this:
 ### Finding an order
 
 - **Search** matches the order number, the receipt number, the customer's name, or the office.
-- Under each customer's email, a **PAXS** or **Procurement** tag says how the order is paid, next to who it is for: **Personal**, or the office named at checkout. **View** repeats both.
+- Under each customer's email, a **PAXS** or **Procurement** tag says how the order is paid, next to who it is for: **Personal**, or the office named at checkout. **View** repeats both, and shows how the customer asked to be updated: Email, SMS, both, or in-app only.
 - **Filter** by status, or by date (today / this week / this month).
 - Status tabs across the top carry live counts.
 - **Export** downloads the orders the filters show — every page, not just the one on screen — as PDF, Word, or a CSV for Excel.

@@ -79,7 +79,8 @@
             </div>
         @endif
 
-        {{-- Who the order is for and how it is paid, on every order. A
+        {{-- Who the order is for, how it is paid and how the customer hears
+             about it, on every order. A
              Purchase Request adds its PR number, or its deadline while the
              number is still to come. --}}
         <div class="customer-order-details-summary d-flex flex-column gap-2 mb-3">
@@ -90,6 +91,10 @@
             <div class="d-flex justify-content-between align-items-center">
                 <span class="text-muted small">Paid through</span>
                 <span class="fw-medium">{{ $order->channel_label }}</span>
+            </div>
+            <div class="d-flex justify-content-between align-items-center">
+                <span class="text-muted small">Updates via</span>
+                <span class="fw-medium">{{ $order->updates_via }}</span>
             </div>
             @if($order->isPurchaseRequest())
                 @if($order->pr_number)

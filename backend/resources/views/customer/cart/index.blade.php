@@ -243,6 +243,38 @@
                                         </div>
                                     </div>
 
+                                    {{-- How the customer hears about this order besides the bell,
+                                         which always rings. The boxes start as they were on the
+                                         customer's last order — see CartController::updateDefaults(). --}}
+                                    <div class="mb-3">
+                                        <label class="form-label fw-semibold small text-uppercase text-muted">How should we update you?</label>
+
+                                        <div class="checkout-option mb-2">
+                                            <input class="form-check-input" type="checkbox" id="notifyEmail" value="1"
+                                                {{ $updates['email'] ? 'checked' : '' }}>
+                                            <label class="form-check-label" for="notifyEmail">
+                                                <span class="fw-semibold">Email</span>
+                                                <span class="d-block text-muted text-break">Updates go to {{ auth()->user()->email }}, and so does your transaction slip.</span>
+                                            </label>
+                                        </div>
+
+                                        <div class="checkout-option">
+                                            <input class="form-check-input" type="checkbox" id="notifySms" value="1"
+                                                {{ $updates['sms'] ? 'checked' : '' }} {{ $updates['phone'] ? '' : 'disabled' }}>
+                                            <label class="form-check-label" for="notifySms">
+                                                <span class="fw-semibold">SMS</span>
+                                                @if($updates['phone'])
+                                                    <span class="d-block text-muted">Texts go to {{ $updates['phone'] }}.</span>
+                                                @else
+                                                    <span class="d-block text-muted">There is no phone number on your account. Add one in your
+                                                        <a href="#" data-bs-toggle="modal" data-bs-target="#profileModal">Profile</a> to get texts.</span>
+                                                @endif
+                                            </label>
+                                        </div>
+
+                                        <div class="form-text">You'll always see updates in the bell and on My Orders.</div>
+                                    </div>
+
                                     <hr class="my-4 opacity-50">
                                     <div class="d-flex justify-content-between align-items-center mb-3">
                                         <h5 class="fw-bold mb-0">Estimated Total</h5>
@@ -481,6 +513,16 @@
             // The browser may restore the radios on a back-navigation.
             syncOrderedFor();
 
+            // --- How the customer wants to hear about the order ---
+            function updateChoice() {
+                return {
+                    email: $('#notifyEmail').is(':checked'),
+                    // A disabled box (no phone number) never counts, even if
+                    // the browser restored it ticked.
+                    sms: $('#notifySms').is(':checked:enabled'),
+                };
+            }
+
             $('input[name="ordered_for"]').on('change', function () {
                 syncOrderedFor();
                 if (orderedFor().forOffice && !orderedFor().office) {
@@ -515,6 +557,12 @@
                 $('[data-preview-next]').each(function () {
                     this.hidden = $(this).data('preview-next') !== (isPr ? 'pr' : 'cash');
                 });
+
+                // Worded like Order::updates_via, which the order shows later.
+                const updates = updateChoice();
+                const ways = [updates.email && 'Email', updates.sms && 'SMS'].filter(Boolean);
+                $('#previewUpdates').text(ways.length ? ways.join(' + ') : 'In-app only');
+                $('[data-preview-slip-email]').prop('hidden', !updates.email);
 
                 // Populate Preview Modal
                 const previewBody = $('#previewItemsBody');
@@ -580,7 +628,9 @@
                         selected_items: selectedItems,
                         payment_method: $('input[name="payment_method"]:checked').val() || 'cash',
                         ordered_for: $('input[name="ordered_for"]:checked').val() || 'personal',
-                        office: orderedFor().office
+                        office: orderedFor().office,
+                        notify_email: updateChoice().email ? 1 : 0,
+                        notify_sms: updateChoice().sms ? 1 : 0
                     },
                     success: function(response) {
                         if (response.success) {

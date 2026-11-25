@@ -34,7 +34,31 @@ class CartController extends Controller
                 ->distinct()
                 ->orderBy('office')
                 ->pluck('office'),
+            'updates' => $this->updateDefaults(),
         ]);
+    }
+
+    /**
+     * How the "How should we update you?" boxes start: as the customer left
+     * them on their last order. A first order emails, as every order did
+     * before the choice existed, and texts only when asked, since each text
+     * spends a credit.
+     *
+     * @return array{email: bool, sms: bool, phone: ?string}
+     */
+    private function updateDefaults(): array
+    {
+        $phone = auth()->user()->routeNotificationForSms();
+
+        $last = \App\Models\Order::where('user_id', auth()->id())
+            ->orderByDesc('order_id')
+            ->first(['notify_email', 'notify_sms']);
+
+        return [
+            'email' => $last ? (bool) $last->notify_email : true,
+            'sms' => $phone !== null && $last && $last->notify_sms,
+            'phone' => $phone,
+        ];
     }
 
     /**
@@ -228,9 +252,21 @@ class CartController extends Controller
             'payment_method' => 'nullable|in:' . implode(',', \App\Models\Order::METHODS),
             'ordered_for' => 'nullable|in:personal,office',
             'office' => 'nullable|string|max:255',
+            'notify_email' => 'nullable|boolean',
+            'notify_sms' => 'nullable|boolean',
         ], [
             'office.max' => 'The office name is too long — keep it under 255 characters.',
         ]);
+
+        // How the customer wants to hear about this order besides the bell.
+        // A cart page loaded before the choice existed sends neither box,
+        // and gets what every order got then: email, no texts.
+        $notifyEmail = $request->boolean('notify_email', true);
+        $notifySms = $request->boolean('notify_sms');
+
+        if ($notifySms && auth()->user()->routeNotificationForSms() === null) {
+            return $this->checkoutRefused($request, 'There is no phone number on your account to text. Add one in your Profile, or untick SMS.');
+        }
 
         $method = $request->input('payment_method', \App\Models\Order::METHOD_CASH);
 
@@ -293,6 +329,8 @@ class CartController extends Controller
                         'status' => $status,
                         'payment_method' => $method,
                         'office' => $office !== '' ? $office : null,
+                        'notify_email' => $notifyEmail,
+                        'notify_sms' => $notifySms,
                         'pr_deadline' => $prDeadline,
                         // An estimate until the shop approves the order,
                         // which may confirm it at a different figure.

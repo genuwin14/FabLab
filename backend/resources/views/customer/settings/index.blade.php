@@ -50,7 +50,8 @@
                                 <div class="setting-row d-flex justify-content-between align-items-center gap-3 py-3 border-top">
                                     <div class="flex-grow-1">
                                         <div class="fw-semibold text-dark">Enable notifications</div>
-                                        <small class="text-muted">Receive order updates and account alerts in the navbar bell and notifications page.</small>
+                                        <small class="text-muted">Receive order updates and account alerts in the navbar bell and notifications page.
+                                            Emails and texts about an order follow what you ticked when you placed it.</small>
                                     </div>
                                     <div class="form-check form-switch m-0">
                                         <input type="hidden" name="notifications_enabled" value="0">

@@ -35,6 +35,10 @@
                         <span class="text-muted text-nowrap">Paid through:</span>
                         <span class="fw-bold text-dark text-end" id="previewChannel">PAXS</span>
                     </div>
+                    <div class="d-flex justify-content-between gap-3">
+                        <span class="text-muted text-nowrap">Updates via:</span>
+                        <span class="fw-bold text-dark text-end" id="previewUpdates">Email</span>
+                    </div>
                 </div>
 
                 <!-- Items Line -->
@@ -69,9 +73,12 @@
                      made-up reference is shown here. --}}
                 <div class="text-center mb-2">
                     <p class="small fw-bold mb-1">WHAT HAPPENS NEXT</p>
-                    {{-- The cart shows the one matching the chosen payment. --}}
+                    {{-- The cart shows the one matching the chosen payment. In the
+                         PAXS one, "emailed to you and" goes when Email is unticked:
+                         the slip is under View Slip in My Orders either way. --}}
                     <p class="small text-muted mb-0" data-preview-next="cash">
-                        Once an admin approves your order, your <strong>transaction slip</strong> is emailed to you.
+                        Once an admin approves your order, your <strong>transaction slip</strong> is
+                        <span data-preview-slip-email>emailed to you and</span> ready under <strong>View Slip</strong> in My Orders.
                         Present it at <strong>PAXS</strong> to pay, and keep the official receipt —
                         its number is what you show to collect your order.
                     </p>

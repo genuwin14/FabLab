@@ -42,7 +42,7 @@
                             style="font-size: 0.65rem; letter-spacing: 0.05em;">Total Amount</div>
                         <div class="fw-bold text-primary mt-1" id="viewTotal">₱0.00</div>
                     </div>
-                    <div class="col-md-8">
+                    <div class="col-md-4">
                         <div class="text-uppercase fw-bold text-muted"
                             style="font-size: 0.65rem; letter-spacing: 0.05em;">Ordered For</div>
                         <div class="fw-semibold text-dark small mt-1 text-break" id="viewOrderedFor">—</div>
@@ -51,6 +51,13 @@
                         <div class="text-uppercase fw-bold text-muted"
                             style="font-size: 0.65rem; letter-spacing: 0.05em;">Paid Through</div>
                         <div class="fw-semibold text-dark small mt-1" id="viewChannel">—</div>
+                    </div>
+                    {{-- What the customer ticked at checkout, so a "never got the
+                         email" can be answered from here. --}}
+                    <div class="col-md-4">
+                        <div class="text-uppercase fw-bold text-muted"
+                            style="font-size: 0.65rem; letter-spacing: 0.05em;">Customer Updates</div>
+                        <div class="fw-semibold text-dark small mt-1" id="viewUpdates">—</div>
                     </div>
                 </div>
 
@@ -202,6 +209,7 @@
                 document.getElementById('viewTotal').textContent = formatCurrency(order.total_amount);
                 document.getElementById('viewOrderedFor').textContent = order.ordered_for || 'Personal';
                 document.getElementById('viewChannel').textContent = order.channel_label || 'PAXS';
+                document.getElementById('viewUpdates').textContent = order.updates_via || 'Email';
 
                 const tbody = document.getElementById('viewItemsBody');
                 tbody.innerHTML = '';

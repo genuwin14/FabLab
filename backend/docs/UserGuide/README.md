@@ -78,7 +78,7 @@ Step by step, with who does what:
 | # | Step | Role | Where | Result |
 | :-- | :--- | :--- | :--- | :--- |
 | 1 | Place the order | Customer | [Customer §8](CustomerUserGuide.md#8-checking-out) | Order created as `pending`; **product stock is deducted immediately**; staff and admins are notified |
-| 2 | Review it | Admin | [Admin §4](AdminUserGuide.md#4-reviewing-orders) | `approved` (raw materials and textures deducted, transaction slip emailed) or `cancelled` with a reason (stock returned) |
+| 2 | Review it | Admin | [Admin §4](AdminUserGuide.md#4-reviewing-orders) | `approved` (raw materials and textures deducted, transaction slip emailed if the customer ticked Email) or `cancelled` with a reason (stock returned) |
 | 3 | Record the payment | Admin | [Admin §4](AdminUserGuide.md#recording-the-payment) | `paid` — the PAXS receipt number is on the order and the customer is told it is the number to bring |
 | 3b | Prepare it | Staff | [Staff §4](StaffUserGuide.md#4-processing-orders) | `processing` — offered only once the payment is recorded |
 | 4 | Set it aside | Staff | [Staff §4](StaffUserGuide.md#4-processing-orders) | `ready_for_pickup`; the customer is notified to collect |
@@ -237,4 +237,4 @@ The price is worked out from the saved design, so the studio's live quote, the c
 | **Design (recipe)** | A saved customization: base style, texture, and the text/shape/logo elements placed on it |
 | **Low-stock threshold** | The level at or below which an item appears on the inventory watchlist |
 | **Receipt number** | The number on the PAXS official receipt, recorded by an admin once the customer has paid; it lets staff start production and is what the customer shows to collect the order |
-| **Transaction slip** | The PDF receipt, carrying a barcode of the order number, emailed on approval and downloadable by the customer |
+| **Transaction slip** | The PDF receipt, carrying a barcode of the order number, emailed on approval (when the customer ticked Email at checkout) and always downloadable by the customer |

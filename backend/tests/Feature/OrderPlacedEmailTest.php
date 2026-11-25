@@ -104,7 +104,11 @@ class OrderPlacedEmailTest extends TestCase
         $this->assertStringContainsString($order->pr_deadline->format('j M Y'), $html);
     }
 
-    public function test_a_customer_who_disabled_notifications_gets_no_confirmation(): void
+    /**
+     * The Settings switch is about the in-app bell. The confirmation email
+     * follows what the customer ticked at checkout.
+     */
+    public function test_turning_notifications_off_silences_the_bell_but_not_the_confirmation_email(): void
     {
         Notification::fake();
 
@@ -112,6 +116,33 @@ class OrderPlacedEmailTest extends TestCase
 
         $this->checkout(Order::METHOD_CASH);
 
+        Notification::assertSentTo(
+            $this->customer,
+            OrderPlaced::class,
+            fn ($notification, $channels) => $channels === ['mail']
+        );
+    }
+
+    public function test_with_the_bell_off_and_email_unticked_nothing_is_sent(): void
+    {
+        Notification::fake();
+
+        $this->customer->update(['notifications_enabled' => false]);
+
+        Sanctum::actingAs($this->customer);
+        $line = CartItem::create([
+            'user_id' => $this->customer->id, 'product_id' => $this->product->product_id,
+            'quantity' => 1, 'price' => 100,
+        ]);
+
+        $this->post(route('customer.cart.checkout'), [
+            'selected_items' => [$line->lineKey()],
+            'payment_method' => Order::METHOD_CASH,
+            'notify_email' => 0,
+            'notify_sms' => 0,
+        ]);
+
+        $this->assertSame(1, Order::count());
         Notification::assertNotSentTo($this->customer, OrderPlaced::class);
     }
 }

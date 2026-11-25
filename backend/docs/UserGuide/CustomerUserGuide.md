@@ -132,9 +132,10 @@ From here you can:
 1. Tick the lines you want to buy. You can check out part of your cart and leave the rest.
 2. Choose **how you're paying** — see below.
 3. Say **who the order is for**: **Personal**, or an **Office** — type the office's name, and any office you ordered for before is offered back as you type. A Purchase Request is always filed by an office, so choosing it selects Office for you.
-4. Review the preview slip, then confirm.
-5. The system re-verifies stock for every selected line, creates the order under a number like `ORDR-20260827-0001` (the date it was placed plus that day’s sequence), deducts the stock, and clears just those lines from your cart.
-6. You land on **My Orders**.
+4. Tick **how we should update you**: **Email** (each update, and your transaction slip, goes to your email address), **SMS** (a short text at each step, to the phone number on your account), both, or neither. The bell and My Orders show every update whatever you tick. The boxes start as you left them on your last order; a first order starts with Email ticked. With no phone number on your account, SMS is greyed out until you add one in your Profile.
+5. Review the preview slip, then confirm.
+6. The system re-verifies stock for every selected line, creates the order under a number like `ORDR-20260827-0001` (the date it was placed plus that day’s sequence), deducts the stock, and clears just those lines from your cart.
+7. You land on **My Orders**.
 
 If anything sold out between adding and checking out, the whole checkout stops with a message naming the product, and nothing is charged or reserved.
 
@@ -163,7 +164,7 @@ Once approved, a PR order is driven by paperwork rather than by the workshop que
 | Status | What it means for you | Who set it |
 | :--- | :--- | :--- |
 | **Pending** | Submitted, waiting for the shop to review it. You can still cancel | The system, at checkout |
-| **Approved** | Accepted. A transaction slip has been emailed to you — pay at PAXS with it | An admin |
+| **Approved** | Accepted. Your transaction slip is under **View Slip**, and emailed to you if you ticked Email — pay at PAXS with it | An admin |
 | **Paid** | Your payment has been recorded. Details shows your **receipt number**, the number to bring when collecting, and production can start | An admin |
 | **Processing** | Being made | Staff |
 | **Ready for Pickup** | Waiting for you at the shop — go collect it | Staff |
@@ -172,7 +173,7 @@ Once approved, a PR order is driven by paperwork rather than by the workshop que
 
 Click **Details** on any order for the full picture: every line with its design preview, the receipt number (bring it to collect your order), the total, and the transaction slip.
 
-Each change also arrives as a notification, as long as notifications are on in your [Settings](#13-profile-and-settings) — and clicking it opens that order's details straight away.
+Each change also arrives as a notification, as long as notifications are on in your [Settings](#13-profile-and-settings) — and clicking it opens that order's details straight away. If you ticked **Email** or **SMS** at checkout, each change is emailed or texted to you as well; **Details** shows which you chose under *Updates via*.
 
 **Hand-off:** the production statuses are driven by staff — [Staff Guide §4](StaffUserGuide.md#4-processing-orders). Approval and rejection are an admin decision — [Admin Guide §4](AdminUserGuide.md#4-reviewing-orders).
 
@@ -192,7 +193,7 @@ So if you need to cancel something that's already **Approved** or further along,
 
 Every approved order has a **transaction slip**: a PDF carrying the order number as a barcode, your details, the lines, and the total.
 
-- It's **emailed to you automatically** the moment an admin approves the order.
+- It's **emailed to you automatically** the moment an admin approves the order, if you ticked **Email** at checkout.
 - You can also open it any time from the order itself — the **View Receipt** button on the order card, in the list, and inside the details panel. It opens the PDF in a new tab; print it or save it from there.
 
 The slip is available once the order reaches Approved, and stays available through Processing, Ready for Pickup, and Completed. Pending and cancelled orders have no slip.
@@ -205,7 +206,7 @@ The **bell** in the top bar carries an unread count and refreshes every 30 secon
 
 You'll be notified when your order status changes. From the list you can click a notification to open the order it refers to, **mark all as read**, or delete individual items.
 
-To stop in-app notifications entirely, switch them off in Settings. Transactional email — verification codes, password resets, and your transaction slip — is sent regardless.
+To stop in-app notifications, switch them off in Settings. That switch is about the bell only: order emails and texts follow what you ticked when you placed each order, and verification codes and password resets are sent regardless.
 
 ---
 

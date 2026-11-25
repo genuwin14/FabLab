@@ -354,14 +354,14 @@ flowchart TD
 **Where:** `/customer/cart` · **Detail:** [Customer §8](CustomerUserGuide.md#8-checking-out)
 
 1. Tick the lines to buy — part of a cart is fine, the rest stays.
-2. Choose the payment path, and say **who the order is for**: Personal, or an office by name. A Purchase Request must name its office.
+2. Choose the payment path, and say **who the order is for**: Personal, or an office by name. A Purchase Request must name its office. Then tick **how to be updated**: Email, SMS, both or neither.
 3. Review the **preview slip**, then confirm.
 4. The system re-verifies stock for every selected line, creates the order with a number of the form **`ORDR-YYYYMMDD-NNNN`** (the sequence restarts each day), **deducts product stock**, and clears only those lines from the cart.
 5. The customer lands on **My Orders** with the order at **Pending**.
 
 If anything sold out between adding and checking out, the **whole checkout stops** with a message naming the product — nothing is charged or reserved.
 
-**Notifies:** all staff and admins ("New order placed").
+**Notifies:** all staff and admins ("New order placed"). The customer gets the bell, plus the email and text they ticked. Every later step reaches them the same way.
 
 ## C2. Review — Admin
 
@@ -376,8 +376,8 @@ If anything sold out between adding and checking out, the **whole checkout stops
 1. Sets the order to `approved`.
 2. **Deducts raw materials** — BOM × quantity, for every line.
 3. **Deducts texture stock** — one unit per ordered unit, for designs using a texture.
-4. **Emails the transaction slip** (PDF receipt with the order-number barcode).
-5. Notifies the customer.
+4. **Emails the transaction slip** (PDF receipt with the order-number barcode), if the customer ticked Email.
+5. Notifies the customer, and texts them if they ticked SMS.
 
 Product stock was already taken at checkout, so approval doesn't touch it again. **Review runs once** — a reviewed order can't be reviewed again, otherwise a second approval would deduct materials twice.
 
@@ -491,7 +491,7 @@ flowchart LR
 | Step | Who | What happens |
 | :--- | :--- | :--- |
 | 1 | Customer | The checkout preview slip states: **present this receipt at PAXS for payment** |
-| 2 | Admin | Approving emails the **transaction slip** — a PDF carrying the order number as a **Code 128 barcode**, the customer's details, the lines, and the total |
+| 2 | Admin | Approving emails the **transaction slip** to a customer who ticked Email — a PDF carrying the order number as a **Code 128 barcode**, the customer's details, the lines, and the total. It is always under **View Slip** on the order |
 | 3 | Customer | Pays at **PAXS**, presenting the slip. PAXS issues a receipt or transaction number |
 | 4 | Admin | **Record Payment** on the approved order: type the number on the official receipt PAXS issued. The order becomes `paid`. The customer is notified that their payment was received and told the receipt number is what they bring to collect |
 | 5 | Staff | The order now reads **Paid**, with its own card on the list; the **Process** button appears and the confirmation dialog repeats the receipt number. The number is **searchable** on both order lists |

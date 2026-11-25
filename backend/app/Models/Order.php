@@ -21,18 +21,31 @@ class Order extends Model
         'pr_deadline',
         'noa_path',
         'po_path',
-        'reason'
+        'reason',
+        'notify_email',
+        'notify_sms',
     ];
 
     protected $casts = [
         'pr_deadline' => 'datetime',
+        'notify_email' => 'boolean',
+        'notify_sms' => 'boolean',
+    ];
+
+    /**
+     * The columns' own defaults, here too, so an order made in code without
+     * them reads the same before and after it is saved.
+     */
+    protected $attributes = [
+        'notify_email' => true,
+        'notify_sms' => false,
     ];
 
     /**
      * The admin and staff order modals render from the order's JSON, so the
-     * two labels below travel with it rather than being rebuilt in script.
+     * labels below travel with it rather than being rebuilt in script.
      */
-    protected $appends = ['channel_label', 'ordered_for'];
+    protected $appends = ['channel_label', 'ordered_for', 'updates_via'];
 
     /** Paid at PAXS against the transaction slip. */
     public const METHOD_CASH = 'cash';
@@ -182,6 +195,20 @@ class Order extends Model
         }
 
         return $this->isPurchaseRequest() ? 'Office not recorded' : 'Personal';
+    }
+
+    /**
+     * How the customer asked to hear about this order besides the bell:
+     * "Email + SMS", "Email", "SMS", or "In-app only" when they ticked neither.
+     */
+    public function getUpdatesViaAttribute(): string
+    {
+        $ways = array_keys(array_filter([
+            'Email' => (bool) $this->notify_email,
+            'SMS' => (bool) $this->notify_sms,
+        ]));
+
+        return $ways === [] ? 'In-app only' : implode(' + ', $ways);
     }
 
     /**
