@@ -1,5 +1,9 @@
 # Ink Consumption
 
+> Para sa simpleng paliwanag na may diagram, worked example, at mga sagot sa
+> posibleng tanong ng panel, buksan ang
+> [HowFabLabMeasuresInk.html](HowFabLabMeasuresInk.html) sa browser.
+
 Walang fixed na ink amount per order o per element ang system. Sinusukat
 niya yung mismong artwork ng customer at kinukwenta kung gaano karami ng
 bawat printer ink (Cyan, Magenta, Yellow, Black) ang gagamitin ng print.

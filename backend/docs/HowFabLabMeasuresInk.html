@@ -1,0 +1,464 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>How FabLab Measures Ink</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700&family=Source+Sans+3:wght@400;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+  /* Layout: one reading column (about 70ch) on a cool paper ground; figures and
+     tables may run a little wider and scroll inside themselves on a phone.
+     The four ink colours are the only bright colours, and only mean ink. */
+  :root {
+    --bg: #f4f6f8;
+    --surface: #ffffff;
+    --fg: #17222c;
+    --muted: #586673;
+    --line: #d7dde3;
+    --accent: #0e2e45;
+    --accent-soft: #e7eef4;
+    --flag: #ffc508;
+    --ink-c: #00a6d6;
+    --ink-m: #e0007f;
+    --ink-y: #f1d500;
+    --ink-k: #231f20;
+    --track: #e9edf1;
+    --font-display: "Archivo", "Segoe UI", system-ui, sans-serif;
+    --font-body: "Source Sans 3", "Segoe UI", system-ui, sans-serif;
+    --font-mono: "JetBrains Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0e141a; --surface: #151f28; --fg: #e4eaf0; --muted: #9aa8b5; --line: #2a3845;
+      --accent: #8cc2e8; --accent-soft: #1a2935; --flag: #ffc508;
+      --ink-c: #19b9e6; --ink-m: #f0389b; --ink-y: #f5dc2a; --ink-k: #020202; --track: #24323e;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0e141a; --surface: #151f28; --fg: #e4eaf0; --muted: #9aa8b5; --line: #2a3845;
+    --accent: #8cc2e8; --accent-soft: #1a2935; --flag: #ffc508;
+    --ink-c: #19b9e6; --ink-m: #f0389b; --ink-y: #f5dc2a; --ink-k: #020202; --track: #24323e;
+    color-scheme: dark;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--fg);
+    font-family: var(--font-body);
+    font-size: 17px;
+    line-height: 1.6;
+  }
+  .page {
+    max-width: 58rem;
+    margin: 0 auto;
+    padding-block: 2.5rem 4rem;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+    display: grid;
+    gap: 3rem;
+  }
+  h1, h2, h3 { font-family: var(--font-display); line-height: 1.2; text-wrap: balance; margin: 0; }
+  h1 { font-size: clamp(2rem, 6vw, 2.75rem); letter-spacing: -0.01em; }
+  h2 { font-size: 1.45rem; }
+  h3 { font-size: 1.05rem; }
+  p { margin: 0; max-width: 68ch; }
+  section { display: grid; gap: 1rem; min-width: 0; }
+  .eyebrow {
+    font-family: var(--font-mono); font-size: 0.75rem; letter-spacing: 0.08em;
+    text-transform: uppercase; color: var(--muted);
+  }
+  .lead { font-size: 1.15rem; color: var(--fg); }
+  .muted { color: var(--muted); }
+  code, .mono { font-family: var(--font-mono); font-size: 0.88em; }
+  strong { font-weight: 600; }
+
+  header { display: grid; gap: 0.9rem; }
+  .inks { display: flex; gap: 6px; }
+  .inks span { width: 22px; height: 8px; border-radius: 2px; }
+
+  /* The one thing to say first. */
+  .say {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-left: 5px solid var(--flag);
+    border-radius: 6px;
+    padding: 1.25rem 1.4rem;
+    display: grid;
+    gap: 0.9rem;
+  }
+  .formula {
+    font-family: var(--font-mono);
+    font-size: 0.95rem;
+    background: var(--accent-soft);
+    border-radius: 4px;
+    padding: 0.75rem 0.9rem;
+    overflow-wrap: anywhere;
+  }
+  .formula b { font-weight: 500; color: var(--accent); }
+
+  figure { margin: 0; display: grid; gap: 0.6rem; min-width: 0; }
+  .scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .diagram { display: block; width: 100%; min-width: 760px; height: auto; color: var(--fg); }
+  .diagram .box { fill: var(--surface); stroke: currentColor; stroke-width: 1.3; }
+  .diagram .src { fill: var(--accent-soft); stroke: var(--accent); stroke-width: 1.2; stroke-dasharray: 4 3; }
+  .diagram text { fill: currentColor; font-family: var(--font-body); }
+  .diagram .t { font-weight: 600; font-size: 13.5px; }
+  .diagram .s { font-size: 12px; fill: var(--muted); }
+  .diagram .a { font-size: 11.5px; fill: var(--muted); }
+  .diagram .src-t { font-weight: 600; font-size: 12.5px; fill: var(--accent); }
+  .diagram line, .diagram path { stroke: currentColor; stroke-width: 1.3; fill: none; }
+  .diagram .up { stroke: var(--accent); }
+  .diagram .head { fill: currentColor; stroke: none; }
+  .diagram .head-accent { fill: var(--accent); stroke: none; }
+  figcaption { font-size: 0.92rem; color: var(--muted); max-width: 68ch; }
+
+  table { border-collapse: collapse; width: 100%; font-size: 0.95rem; }
+  th, td { text-align: left; padding: 0.55rem 0.7rem; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); font-weight: 500; }
+  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .table-wrap { overflow-x: auto; background: var(--surface); border: 1px solid var(--line); border-radius: 6px; }
+  .table-wrap table { min-width: 34rem; }
+  tr:last-child td { border-bottom: 0; }
+  .path { font-family: var(--font-mono); font-size: 0.82rem; color: var(--accent); white-space: nowrap; }
+
+  .steps { counter-reset: step; list-style: none; margin: 0; padding: 0; display: grid; gap: 1rem; }
+  .steps li { display: grid; grid-template-columns: 2rem 1fr; gap: 0.8rem; align-items: start; }
+  .steps li::before {
+    counter-increment: step; content: counter(step);
+    font-family: var(--font-display); font-weight: 700;
+    width: 2rem; height: 2rem; border-radius: 50%;
+    display: grid; place-items: center;
+    background: var(--accent); color: var(--surface); font-size: 0.95rem;
+  }
+  .steps li > div { min-width: 0; display: grid; gap: 0.25rem; }
+
+  .swatch { display: inline-block; width: 1.1rem; height: 1.1rem; border-radius: 3px; border: 1px solid var(--line); vertical-align: -0.2rem; margin-right: 0.45rem; }
+  .bar { display: flex; align-items: center; gap: 0.5rem; }
+  .bar .track { flex: 1; min-width: 3rem; height: 0.6rem; background: var(--track); border-radius: 2px; overflow: hidden; }
+  .bar .fill { display: block; height: 100%; }
+  .bar .pct { font-variant-numeric: tabular-nums; font-size: 0.85rem; width: 2.6rem; text-align: right; color: var(--muted); }
+  .c { background: var(--ink-c); } .m { background: var(--ink-m); } .y { background: var(--ink-y); } .k { background: var(--ink-k); }
+
+  .screen-line {
+    font-family: var(--font-mono); font-size: 0.82rem; line-height: 1.5;
+    background: var(--surface); border: 1px solid var(--line); border-radius: 6px;
+    padding: 0.8rem 0.95rem;
+    display: grid; gap: 0.6rem; overflow-wrap: anywhere;
+  }
+
+  .qa { display: grid; gap: 0; margin: 0; background: var(--surface); border: 1px solid var(--line); border-radius: 6px; }
+  .qa > div { padding: 1rem 1.2rem; border-bottom: 1px solid var(--line); display: grid; gap: 0.35rem; }
+  .qa > div:last-child { border-bottom: 0; }
+  .qa dt { font-weight: 600; font-family: var(--font-display); font-size: 1rem; }
+  .qa dd { margin: 0; max-width: 68ch; }
+
+  .note {
+    background: var(--accent-soft); border-radius: 6px; padding: 1rem 1.2rem;
+    display: grid; gap: 0.5rem; font-size: 0.95rem;
+  }
+  footer { font-size: 0.85rem; color: var(--muted); border-top: 1px solid var(--line); padding-top: 1rem; }
+
+  @media (max-width: 480px) {
+    body { font-size: 16px; }
+    .say { padding: 1rem; }
+    .qa > div { padding: 0.9rem 1rem; }
+  }
+
+  /* Standalone page: the basics the artifact viewer used to provide. */
+  body { margin: 0; }
+  img { max-width: 100%; }
+  [hidden] { display: none !important; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <header>
+    <div class="inks" aria-hidden="true"><span class="c"></span><span class="m"></span><span class="y"></span><span class="k"></span></div>
+    <p class="eyebrow">CSPC FabLab system · for the panel defense</p>
+    <h1>How FabLab Measures Ink</h1>
+    <p class="lead">The system has no fixed amount of ink per order. It looks at the customer's actual design and works out how much of each printer ink that design needs.</p>
+  </header>
+
+  <section class="say" aria-labelledby="say-title">
+    <h2 id="say-title">If you only remember one thing</h2>
+    <p>“When a customer saves a design, the system measures the artwork. It finds what share of the printable area each of the four inks covers, multiplies that by the product's print area in square centimetres and by an ink rate, and gets millilitres. That amount is reserved from the ink bottles when the admin approves the order.”</p>
+    <div class="formula" aria-label="Formula">
+      ink (ml) = <b>coverage %</b> × <b>printable area (cm²)</b> × <b>ink rate (ml per cm²)</b> × <b>quantity</b>
+    </div>
+  </section>
+
+  <section aria-labelledby="flow-title">
+    <h2 id="flow-title">From a saved design to the ink bottles</h2>
+    <figure>
+      <div class="scroll">
+        <svg class="diagram" viewBox="0 0 1000 320" role="img" aria-label="A saved design is exported as a flat print, each pixel is split into cyan, magenta, yellow and black to get coverage per ink, coverage is multiplied by the product's print area and the ink rate to get millilitres per item, and on approval that times the quantity is reserved from the ink bottles. The print area comes from Products, the ink rate from Customization Pricing, and the admin can correct the figure at Review.">
+          <defs>
+            <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path class="head" d="M0,0 L10,5 L0,10 z"></path>
+            </marker>
+            <marker id="arrow-accent" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path class="head-accent" d="M0,0 L10,5 L0,10 z"></path>
+            </marker>
+          </defs>
+
+          <!-- Main chain -->
+          <rect class="box" x="10" y="40" width="140" height="96" rx="6"></rect>
+          <text class="t" x="80" y="74" text-anchor="middle">Customer's design</text>
+          <text class="s" x="80" y="96" text-anchor="middle">saved in the</text>
+          <text class="s" x="80" y="114" text-anchor="middle">design studio</text>
+
+          <rect class="box" x="220" y="40" width="140" height="96" rx="6"></rect>
+          <text class="t" x="290" y="74" text-anchor="middle">Flat print</text>
+          <text class="s" x="290" y="96" text-anchor="middle">the artwork only,</text>
+          <text class="s" x="290" y="114" text-anchor="middle">no shirt behind it</text>
+
+          <rect class="box" x="430" y="40" width="140" height="96" rx="6"></rect>
+          <text class="t" x="500" y="74" text-anchor="middle">Coverage per ink</text>
+          <text class="s" x="500" y="96" text-anchor="middle">C 0% · M 5%</text>
+          <text class="s" x="500" y="114" text-anchor="middle">Y 5% · K 2%</text>
+
+          <rect class="box" x="640" y="40" width="140" height="96" rx="6"></rect>
+          <text class="t" x="710" y="74" text-anchor="middle">Ink per item</text>
+          <text class="s" x="710" y="96" text-anchor="middle">M 0.30 ml · Y 0.30 ml</text>
+          <text class="s" x="710" y="114" text-anchor="middle">K 0.12 ml · C 0 ml</text>
+
+          <rect class="box" x="850" y="40" width="140" height="96" rx="6"></rect>
+          <text class="t" x="920" y="74" text-anchor="middle">Ink bottles</text>
+          <text class="s" x="920" y="96" text-anchor="middle">reserved, then used</text>
+          <text class="s" x="920" y="114" text-anchor="middle">in production</text>
+
+          <line x1="152" y1="96" x2="216" y2="96" marker-end="url(#arrow)"></line>
+          <text class="a" x="185" y="72" text-anchor="middle">exported</text>
+          <text class="a" x="185" y="86" text-anchor="middle">on save</text>
+
+          <line x1="362" y1="96" x2="426" y2="96" marker-end="url(#arrow)"></line>
+          <text class="a" x="395" y="72" text-anchor="middle">each pixel</text>
+          <text class="a" x="395" y="86" text-anchor="middle">split to CMYK</text>
+
+          <line x1="572" y1="96" x2="636" y2="96" marker-end="url(#arrow)"></line>
+          <text class="a" x="605" y="72" text-anchor="middle">× area</text>
+          <text class="a" x="605" y="86" text-anchor="middle">× rate</text>
+
+          <line x1="782" y1="96" x2="846" y2="96" marker-end="url(#arrow)"></line>
+          <text class="a" x="815" y="72" text-anchor="middle">× quantity,</text>
+          <text class="a" x="815" y="86" text-anchor="middle">on approval</text>
+
+          <!-- Where the numbers come from -->
+          <rect class="src" x="500" y="226" width="130" height="70" rx="6"></rect>
+          <text class="src-t" x="565" y="254" text-anchor="middle">Printable area</text>
+          <text class="s" x="565" y="274" text-anchor="middle">Products → Edit</text>
+          <path class="up" d="M 600 226 L 672 140" marker-end="url(#arrow-accent)"></path>
+
+          <rect class="src" x="650" y="226" width="130" height="70" rx="6"></rect>
+          <text class="src-t" x="715" y="254" text-anchor="middle">Ink rate</text>
+          <text class="s" x="715" y="274" text-anchor="middle">Customization Pricing</text>
+          <line class="up" x1="730" y1="226" x2="730" y2="140" marker-end="url(#arrow-accent)"></line>
+
+          <rect class="src" x="850" y="226" width="140" height="70" rx="6"></rect>
+          <text class="src-t" x="920" y="254" text-anchor="middle">Admin review</text>
+          <text class="s" x="920" y="274" text-anchor="middle">Orders → Review</text>
+          <line class="up" x1="920" y1="226" x2="920" y2="140" marker-end="url(#arrow-accent)"></line>
+          <text class="a" x="912" y="190" text-anchor="end">can correct</text>
+          <text class="a" x="912" y="204" text-anchor="end">before approving</text>
+        </svg>
+      </div>
+      <figcaption>The top row is what happens automatically. The dashed boxes are the settings the admin controls, and where to find them. The figures are the worked example further down: a red logo with black text on a white T-shirt.</figcaption>
+    </figure>
+  </section>
+
+  <section aria-labelledby="steps-title">
+    <h2 id="steps-title">How it works, step by step</h2>
+    <ol class="steps">
+      <li><div>
+        <h3>The design studio exports the artwork</h3>
+        <p>When the customer saves a design, the studio draws their shapes, text and images by themselves on a transparent background, with no shirt or mug behind them. This “flat print” is sent to the server with the design.</p>
+      </div></li>
+      <li><div>
+        <h3>The server splits every pixel into the four inks</h3>
+        <p>A sublimation printer makes every colour from four inks: <strong>Cyan, Magenta, Yellow and Black</strong> (CMYK). The server converts each pixel's colour into those four. Red becomes magenta plus yellow, black is black ink only, and white needs no ink at all. A transparent pixel has nothing to print, and a half-transparent one counts half.</p>
+      </div></li>
+      <li><div>
+        <h3>It adds them up into a coverage percentage</h3>
+        <p>The totals are divided by the printable area, giving the share of the print each ink covers. For example, “magenta covers 5% of the printable area”. This is saved with the design.</p>
+      </div></li>
+      <li><div>
+        <h3>Percent becomes square centimetres, then millilitres</h3>
+        <p>Coverage × the product's printable area (a T-shirt is 2,400 cm², a mug 200 cm²) gives the square centimetres of solid ink. Times the ink rate (0.0025 ml per cm²) gives millilitres per item. Times the quantity gives the order's total.</p>
+      </div></li>
+      <li><div>
+        <h3>The ink moves in inventory like any other material</h3>
+        <p>When the admin approves the order, the millilitres are <strong>reserved</strong> from each ink bottle. When staff start production, the reservation becomes <strong>used</strong>. If the order is cancelled, the ink goes back. The system won't approve an order if a bottle doesn't have enough.</p>
+      </div></li>
+    </ol>
+  </section>
+
+  <section aria-labelledby="colour-title">
+    <h2 id="colour-title">How a colour becomes ink</h2>
+    <p>This is the conversion the server applies to every pixel. These are the system's real results for these colours.</p>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Colour in the design</th><th>Cyan</th><th>Magenta</th><th>Yellow</th><th>Black</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="swatch" style="background:#ff0000"></span>Red</td>
+            <td><div class="bar"><span class="track"><span class="fill c" style="width:0%"></span></span><span class="pct">0%</span></div></td>
+            <td><div class="bar"><span class="track"><span class="fill m" style="width:100%"></span></span><span class="pct">100%</span></div></td>
+            <td><div class="bar"><span class="track"><span class="fill y" style="width:100%"></span></span><span class="pct">100%</span></div></td>
+            <td><div class="bar"><span class="track"><span class="fill k" style="width:0%"></span></span><span class="pct">0%</span></div></td>
+          </tr>
+          <tr>
+            <td><span class="swatch" style="background:#0000ff"></span>Blue</td>
+            <td><div class="bar"><span class="track"><span class="fill c" style="width:100%"></span></span><span class="pct">100%</span></div></td>
+            <td><div class="bar"><span class="track"><span class="fill m" style="width:100%"></span></span><span class="pct">100%</span></div></td>
+            <td><div class="bar"><span class="track"><span class="fill y" style="width:0%"></span></span><span class="pct">0%</span></div></td>
+            <td><div class="bar"><span class="track"><span class="fill k" style="width:0%"></span></span><span class="pct">0%</span></div></td>
+          </tr>
+          <tr>
+            <td><span class="swatch" style="background:#ff8000"></span>Orange</td>
+            <td><div class="bar"><span class="track"><span class="fill c" style="width:0%"></span></span><span class="pct">0%</span></div></td>
+            <td><div class="bar"><span class="track"><span class="fill m" style="width:50%"></span></span><span class="pct">50%</span></div></td>
+            <td><div class="bar"><span class="track"><span class="fill y" style="width:100%"></span></span><span class="pct">100%</span></div></td>
+            <td><div class="bar"><span class="track"><span class="fill k" style="width:0%"></span></span><span class="pct">0%</span></div></td>
+          </tr>
+          <tr>
+            <td><span class="swatch" style="background:#808080"></span>Grey</td>
+            <td><div class="bar"><span class="track"><span class="fill c" style="width:0%"></span></span><span class="pct">0%</span></div></td>
+            <td><div class="bar"><span class="track"><span class="fill m" style="width:0%"></span></span><span class="pct">0%</span></div></td>
+            <td><div class="bar"><span class="track"><span class="fill y" style="width:0%"></span></span><span class="pct">0%</span></div></td>
+            <td><div class="bar"><span class="track"><span class="fill k" style="width:50%"></span></span><span class="pct">50%</span></div></td>
+          </tr>
+          <tr>
+            <td><span class="swatch" style="background:#000000"></span>Black</td>
+            <td><div class="bar"><span class="track"><span class="fill c" style="width:0%"></span></span><span class="pct">0%</span></div></td>
+            <td><div class="bar"><span class="track"><span class="fill m" style="width:0%"></span></span><span class="pct">0%</span></div></td>
+            <td><div class="bar"><span class="track"><span class="fill y" style="width:0%"></span></span><span class="pct">0%</span></div></td>
+            <td><div class="bar"><span class="track"><span class="fill k" style="width:100%"></span></span><span class="pct">100%</span></div></td>
+          </tr>
+          <tr>
+            <td><span class="swatch" style="background:#ffffff"></span>White</td>
+            <td colspan="4" class="muted">No ink. Sublimation can't print white; the white comes from the shirt or mug itself.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section aria-labelledby="example-title">
+    <h2 id="example-title">Worked example: 10 white T-shirts</h2>
+    <p>The design is a red logo that covers 5% of the shirt's printable area, with black text covering 2%. The settings are the system's own: a White Cotton T-Shirt has a printable area of <strong>2,400 cm²</strong> (front and back), and every ink's rate is <strong>0.0025 ml per cm²</strong>.</p>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Ink</th><th class="num">Coverage</th><th class="num">Solid ink area</th><th class="num">Per shirt</th><th class="num">10 shirts</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><span class="swatch c"></span>Cyan</td><td class="num">0%</td><td class="num">0 cm²</td><td class="num">0 ml</td><td class="num">0 ml</td></tr>
+          <tr><td><span class="swatch m"></span>Magenta</td><td class="num">5%</td><td class="num">120 cm²</td><td class="num">0.30 ml</td><td class="num">3.0 ml</td></tr>
+          <tr><td><span class="swatch y"></span>Yellow</td><td class="num">5%</td><td class="num">120 cm²</td><td class="num">0.30 ml</td><td class="num">3.0 ml</td></tr>
+          <tr><td><span class="swatch k"></span>Black</td><td class="num">2%</td><td class="num">48 cm²</td><td class="num">0.12 ml</td><td class="num">1.2 ml</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>Magenta, for one shirt: 5% × 2,400 cm² = 120 cm², and 120 cm² × 0.0025 ml/cm² = 0.30 ml. The red logo uses magenta and yellow equally because red is 100% of each. The cyan bottle isn't touched.</p>
+    <p>On the admin's Review screen, under <strong>Materials Required</strong>, each ink bottle shows the working, like this:</p>
+    <div class="screen-line" aria-label="Example lines from the Review screen">
+      <div>White Cotton T-Shirt: 5% Magenta coverage of 2400 cm² (measured from the print, size M) × 0.0025 ml/cm² × 10 items</div>
+      <div>White Cotton T-Shirt: 0% Cyan coverage of 2400 cm² (measured from the print, size M) × 0.0025 ml/cm² × 10 items — none of this colour in the artwork</div>
+    </div>
+  </section>
+
+  <section aria-labelledby="paper-title">
+    <h2 id="paper-title">Transfer paper is measured the same way</h2>
+    <p>The shop prints the artwork on an A4 transfer sheet (21 × 29.7 cm), cuts it out and presses it on. So the system draws a box around the artwork, adds a 0.5 cm cutting margin on every side, and counts that piece as a fraction of a sheet.</p>
+    <p>For a front print 12 × 14 cm: the cut piece is 13 × 15 cm = 195 cm². An A4 sheet is 623.7 cm², so one shirt takes <strong>0.31 of a sheet</strong>, and 10 shirts take about <strong>3.1 sheets</strong>. If a design is too big to fit on one sheet, the Review screen shows a warning before the admin approves.</p>
+  </section>
+
+  <section aria-labelledby="where-title">
+    <h2 id="where-title">Where it is in the system</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Where</th><th>What you'll find</th></tr></thead>
+        <tbody>
+          <tr><td class="path">Customer → Customize Product</td><td>Nothing to do. Saving the design exports the flat print and the system measures it.</td></tr>
+          <tr><td class="path">Admin → Products → Edit</td><td><strong>Printable Area (cm²)</strong> for each product, for example 2,400 for a T-shirt and 200 for a mug.</td></tr>
+          <tr><td class="path">Admin → Customization Pricing</td><td><strong>Sublimation ink</strong>: which bottle each of the four inks comes from, and its rate (ml/cm²). <strong>Transfer paper</strong>: the sheet size and the cutting margin.</td></tr>
+          <tr><td class="path">Admin → Orders → Review</td><td><strong>Materials Required</strong>: every ink bottle with its working line and the print size. <strong>Show where the magenta prints</strong> (or cyan, yellow, black) highlights exactly where that ink goes. The admin can correct any figure before approving.</td></tr>
+          <tr><td class="path">Raw Materials → Usage Log</td><td>Every reserve, use and return of ink, per order. Ink used for cleaning the printer or test prints is recorded here by hand.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section aria-labelledby="qa-title">
+    <h2 id="qa-title">If the panel asks</h2>
+    <dl class="qa">
+      <div>
+        <dt>How does the system know how much ink an order uses?</dt>
+        <dd>It measures the customer's actual artwork. Every pixel is split into the four printer inks, and the share of the printable area each ink covers is turned into millilitres using the product's print area and the ink rate.</dd>
+      </div>
+      <div>
+        <dt>Why not a fixed amount of ink per order?</dt>
+        <dd>A small chest logo and a full-front photo would then use the same ink, and the inventory would drift from the real bottles. Measuring the design means a bigger or darker print takes more ink and a small one takes less.</dd>
+      </div>
+      <div>
+        <dt>Why four inks, and why CMYK?</dt>
+        <dd>The sublimation printer has four ink bottles, Cyan, Magenta, Yellow and Black, and mixes every colour from them. Screens show colour as red, green and blue light, so the system converts each pixel from RGB to CMYK, the same way a printer driver does.</dd>
+      </div>
+      <div>
+        <dt>Where did 0.0025 ml per cm² come from? Is it accurate?</dt>
+        <dd>It's a starting value: roughly 1.5 ml for a solid A4 sheet of one colour on a desktop sublimation printer. It's meant to be calibrated for the shop's own printer: print a solid 10 × 10 cm square of one colour, weigh the bottle before and after, and divide the millilitres used by 100. The admin enters the result for each ink under Customization Pricing.</dd>
+      </div>
+      <div>
+        <dt>Does a 2XL shirt use more ink than a Small?</dt>
+        <dd>No. The shop presses a cut transfer, and a 12 × 14 cm print is 12 × 14 cm on any shirt size. The ink depends on the design, not the size of the shirt.</dd>
+      </div>
+      <div>
+        <dt>What about white?</dt>
+        <dd>White uses no ink. Sublimation can't print white; white parts of a design show the white of the shirt or mug. That's why the system counts white as zero.</dd>
+      </div>
+      <div>
+        <dt>When is the ink deducted from the inventory?</dt>
+        <dd>It's reserved when the admin approves the order, and becomes “used” when staff start production. If the order is cancelled, the ink is returned. The system won't approve an order if a bottle doesn't have enough.</dd>
+      </div>
+      <div>
+        <dt>What if the computed amount is wrong?</dt>
+        <dd>The admin sees the full working on the Review screen and can change any figure before approving. The corrected amount is what gets reserved.</dd>
+      </div>
+      <div>
+        <dt>What about ink wasted on printer cleaning and test prints?</dt>
+        <dd>That isn't part of any order, so staff record it by hand in the Usage Log. The bottle's stock stays true to what's really left.</dd>
+      </div>
+      <div>
+        <dt>How exact is it?</dt>
+        <dd>It's an estimate from the artwork, not a measurement at the printer. Real printers vary with their colour settings and fabric. That's why the rate can be calibrated and the admin can correct each order. It's still far closer than a fixed amount, because it follows the actual design.</dd>
+      </div>
+      <div>
+        <dt>What about designs saved before this feature?</dt>
+        <dd>Those have no flat print, so the system estimates their ink from the shapes, text and images in the design. The Review screen labels them “estimated from the design” instead of “measured from the print”.</dd>
+      </div>
+    </dl>
+  </section>
+
+  <section aria-labelledby="demo-title">
+    <h2 id="demo-title">Show it live in a few minutes</h2>
+    <ol class="steps">
+      <li><div><p>As a customer, customize a white T-shirt: add a red shape and some black text. Save it, add it to the cart and check out. Untick <strong>SMS</strong> for practice orders, so no text credits are spent.</p></div></li>
+      <li><div><p>As admin, open <strong>Orders</strong> and click <strong>Review</strong> on that order.</p></div></li>
+      <li><div><p>Scroll to <strong>Materials Required</strong>. Read out the magenta line, then click <strong>Show where the magenta prints</strong> to show the red parts lighting up.</p></div></li>
+      <li><div><p>Open <strong>Customization Pricing</strong> to show the ink rates and the transfer paper, and <strong>Products → Edit</strong> to show the printable area.</p></div></li>
+      <li><div><p>If you approve the demo order, show the reserved ink in <strong>Raw Materials → Usage Log</strong>, then cancel the order so the ink goes back.</p></div></li>
+    </ol>
+  </section>
+
+  <footer>
+    The figures use the system's settings as of 26 November 2026: T-shirt printable area 2,400 cm², every ink 0.0025 ml/cm², A4 transfer paper with a 0.5 cm margin. If an admin changes them, the results change with them.
+  </footer>
+</div>
+</body>
+</html>
