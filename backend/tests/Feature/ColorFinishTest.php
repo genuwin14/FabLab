@@ -225,35 +225,64 @@ class ColorFinishTest extends TestCase
             ->assertSee('data-color-id="' . $b->color_id . '"', false);
     }
 
-    public function test_a_texture_is_the_default_finish_when_the_product_has_one(): void
+    // ── The finish the studio opens on: the plain product ───────────────
+
+    public function test_a_texture_is_never_preselected(): void
     {
         $product = $this->product();
-        $this->color('Navy Blue');
-        $texture = $this->texture();
+        $texture = $this->texture(50, 'Leather');
         $product->textures()->sync([$texture->texture_id]);
 
         Sanctum::actingAs($this->customer());
 
-        // The colour swatches render, but none of them starts selected.
+        // The swatch is offered, but the product opens plain: a texture is a
+        // surcharge the customer opts into, not how the product comes.
+        $html = $this->get(route('customer.customize.index', ['product_id' => $product->product_id]))
+            ->assertOk()->getContent();
+
+        $this->assertStringContainsString('data-texture-id="' . $texture->texture_id . '"', $html);
+        $this->assertStringNotContainsString('texture-option active', $html);
+    }
+
+    public function test_a_product_with_its_own_colors_opens_in_the_first_even_with_textures(): void
+    {
+        $product = $this->product();
+        $white = $this->color('Classic White');
+        $black = $this->color('Jet Black');
+        $product->colors()->sync([$white->color_id, $black->color_id]);
+        $product->textures()->sync([$this->texture()->texture_id]);
+
+        Sanctum::actingAs($this->customer());
+
+        // The first assigned colour is the one a design naming none takes its
+        // stock from (Product::defaultColorId), so the studio shows that one.
+        $html = $this->get(route('customer.customize.index', ['product_id' => $product->product_id]))
+            ->assertOk()->getContent();
+
+        $this->assertSame(1, substr_count($html, 'color-option active'));
+        $this->assertMatchesRegularExpression(
+            '/class="color-option active"\s+data-color-id="' . $white->color_id . '"/',
+            $html
+        );
+        $this->assertStringNotContainsString('texture-option active', $html);
+    }
+
+    public function test_a_product_with_no_colors_of_its_own_opens_untinted(): void
+    {
+        $product = $this->product();
+        $this->color('Cherry Red');
+        $this->color('Navy Blue');
+
+        Sanctum::actingAs($this->customer());
+
+        // Every colour is offered (none are assigned), but none starts
+        // selected: the first of the whole catalogue opened a white mug in
+        // Cherry Red.
         $html = $this->get(route('customer.customize.index', ['product_id' => $product->product_id]))
             ->assertOk()->getContent();
 
         $this->assertStringContainsString('class="color-option "', $html);
-        $this->assertStringNotContainsString('class="color-option active"', $html);
-    }
-
-    public function test_the_first_color_is_the_default_when_there_are_no_textures(): void
-    {
-        $product = $this->product();
-        $this->color('Navy Blue');
-
-        // Only this product's colours exist; it has no textures assigned and
-        // the catalogue has none either.
-        Sanctum::actingAs($this->customer());
-
-        $this->get(route('customer.customize.index', ['product_id' => $product->product_id]))
-            ->assertOk()
-            ->assertSee('class="color-option active"', false);
+        $this->assertStringNotContainsString('color-option active', $html);
     }
 
     public function test_the_customizer_offers_only_the_textures_assigned_to_the_product(): void

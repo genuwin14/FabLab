@@ -61,6 +61,16 @@ class CustomizeController extends Controller
             $colors = \App\Models\Color::orderBy('name')->get();
         }
 
+        // The studio opens on the plain product. A texture is never
+        // pre-selected: it is a surcharge the customer opts into, and opening
+        // a white mug wrapped in leather priced it in before they chose it.
+        // A product with colours of its own starts in the first of them, the
+        // colour whose stock a design that names none is taken from
+        // (Product::defaultColorId). One with none starts untinted, as the
+        // model ships, not in the first colour of the whole catalogue — that
+        // opened a white mug in Cherry Red.
+        $defaultColorId = $product?->defaultColorId();
+
         // The studio quotes live in the browser, so it needs the same rates the
         // cart will price the design with when it arrives — and the same size
         // list, Small to 5XL, so its buttons and the surcharges line up.
@@ -80,7 +90,7 @@ class CustomizeController extends Controller
             ])->values()->all()
             : [];
 
-        return view('customer.prod-customize.customize-product', compact('product', 'initialShape', 'design', 'requiresSelection', 'textures', 'colors', 'rates', 'sizes', 'hasSizes', 'variants'));
+        return view('customer.prod-customize.customize-product', compact('product', 'initialShape', 'design', 'requiresSelection', 'textures', 'colors', 'defaultColorId', 'rates', 'sizes', 'hasSizes', 'variants'));
     }
 
     public function save(Request $request)

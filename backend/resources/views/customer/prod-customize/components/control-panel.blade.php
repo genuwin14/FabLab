@@ -162,11 +162,12 @@
                     <i class="bi bi-palette me-1"></i>PLAIN COLORS
                 </div>
                 <div class="row g-3 mb-4">
-                    @foreach($colors as $index => $color)
-                        {{-- A texture is the default finish when the product has any;
-                             otherwise the first colour stands in as the default. --}}
+                    @foreach($colors as $color)
+                        {{-- The studio opens on the plain product: its own first
+                             colour when it has colours, nothing when it has none.
+                             See CustomizeController::index. --}}
                         <div class="col-3 text-center">
-                            <div class="color-option {{ $textures->isEmpty() && $index === 0 ? 'active' : '' }}"
+                            <div class="color-option {{ ($defaultColorId ?? null) !== null && (int) $color->color_id === (int) $defaultColorId ? 'active' : '' }}"
                                 data-color-id="{{ $color->color_id }}"
                                 data-hex="{{ $color->hex_code }}"
                                 data-price-modifier="{{ $color->price_modifier ?? 0 }}"
@@ -205,9 +206,11 @@
                     </div>
                 @endif
                 <div class="row g-3">
-                    @foreach($textures as $index => $texture)
+                    @foreach($textures as $texture)
+                        {{-- Never pre-selected: a texture is an add-on the
+                             customer picks, not how the product comes. --}}
                         <div class="col-3 text-center">
-                            <div class="texture-option {{ $index === 0 ? 'active' : '' }}"
+                            <div class="texture-option"
                                 data-texture-id="{{ $texture->texture_id }}"
                                 data-image-path="{{ $texture->image_url }}"
                                 data-price-modifier="{{ $texture->price_modifier ?? 0 }}"
