@@ -199,7 +199,13 @@
                                                             <div class="fw-bold text-dark small mb-0">
                                                                 {{ $order->user->fullname ?? 'Guest' }}
                                                             </div>
-                                                            <small class="text-muted">{{ $order->user->email ?? '' }}</small>
+                                                            {{-- May break before the @ when the column is tight, so
+                                                                 an address never pushes the table off the screen. --}}
+                                                            @php
+                                                                $email = (string) ($order->user->email ?? '');
+                                                                [$emailUser, $emailDomain] = str_contains($email, '@') ? explode('@', $email, 2) : [$email, null];
+                                                            @endphp
+                                                            <small class="text-muted">{{ $emailUser }}@if($emailDomain !== null)<wbr>{{ '@' . $emailDomain }}@endif</small>
                                                             <div class="mt-1">@include('partials.order-ordered-for')</div>
                                                         </div>
                                                     </div>
@@ -224,7 +230,7 @@
                                                         };
                                                     @endphp
                                                     <span
-                                                        class="d-inline-flex align-items-center gap-1 px-2 py-1 rounded-pill small fw-semibold"
+                                                        class="order-status-pill d-inline-flex align-items-center gap-1 px-2 py-1 rounded-pill small fw-semibold"
                                                         style="background-color: {{ $statusBg }}; color: {{ $statusColor }};">
                                                         <i class="bi {{ $statusIcon }}" style="font-size: 0.75rem;"></i>
                                                         {{ \App\Models\Order::statusLabel($order->status) }}
@@ -235,11 +241,13 @@
                                                         @endif
                                                     </span>
                                                 </td>
-                                                <td class="text-end pe-4">
+                                                <td class="text-end pe-4 order-actions">
                                                     @php
                                                         $orderItemsJson = json_encode($order->orderItems()->with(['product', 'customDesign', 'productVariant.color'])->get());
                                                         $orderJson = json_encode($order);
                                                     @endphp
+                                                    {{-- One line, spaced by the gap rather than per-button margins. --}}
+                                                    <div class="d-inline-flex align-items-center gap-1">
                                                     @if($order->status == 'pending')
                                                         <button class="btn btn-primary btn-sm table-action-btn px-3 fw-bold shadow-sm btn-review-order"
                                                             data-bs-toggle="modal" data-bs-target="#reviewOrderModal"
@@ -250,10 +258,10 @@
                                                     @elseif($order->status == 'awaiting_pr')
                                                         {{-- Nothing to review yet. Closing it early is the only
                                                              call an admin can make before the window runs out. --}}
-                                                        <span class="badge bg-light text-muted border table-action-btn px-3 py-2 me-1 fw-semibold small">
+                                                        <span class="badge bg-light text-muted border table-action-btn px-3 py-2 fw-semibold small">
                                                             <i class="bi bi-clock-history me-1"></i>PR due {{ $order->pr_deadline?->format('j M') ?? '—' }}
                                                         </span>
-                                                        <button class="btn btn-outline-danger btn-sm table-action-btn px-3 fw-bold shadow-sm btn-close-pr me-1"
+                                                        <button class="btn btn-outline-danger btn-sm table-action-btn px-3 fw-bold shadow-sm btn-close-pr"
                                                             data-bs-toggle="modal" data-bs-target="#closePrModal"
                                                             data-order-number="{{ $order->order_number }}"
                                                             data-url="{{ route('admin.orders.closePr', $order->order_id) }}">
@@ -264,7 +272,7 @@
                                                             {{-- The customer pays at PAXS against the slip;
                                                                  recording the receipt number is what lets staff
                                                                  start production. --}}
-                                                            <button class="btn btn-warning btn-sm table-action-btn px-3 fw-bold shadow-sm btn-record-payment me-1"
+                                                            <button class="btn btn-warning btn-sm table-action-btn px-3 fw-bold shadow-sm btn-record-payment"
                                                                 data-bs-toggle="modal" data-bs-target="#recordPaymentModal"
                                                                 data-order-number="{{ $order->order_number }}"
                                                                 data-receipt=""
@@ -276,7 +284,7 @@
                                                             {{-- The paperwork is what moves a PR order: the NOA
                                                                  starts production, the PO releases delivery. --}}
                                                             @php $docType = $order->status === 'approved' ? 'noa' : 'po'; @endphp
-                                                            <button class="btn btn-warning btn-sm table-action-btn px-3 fw-bold shadow-sm btn-upload-doc me-1"
+                                                            <button class="btn btn-warning btn-sm table-action-btn px-3 fw-bold shadow-sm btn-upload-doc"
                                                                 data-bs-toggle="modal" data-bs-target="#uploadDocModal"
                                                                 data-order-number="{{ $order->order_number }}"
                                                                 data-doc-type="{{ $docType }}"
@@ -289,29 +297,34 @@
                                                                 {{-- Served through the admin route, never a public URL. --}}
                                                                 <a href="{{ route('admin.orders.documents.show', [$order->order_id, $type]) }}"
                                                                     target="_blank"
-                                                                    class="btn btn-light btn-sm table-action-btn px-3 fw-bold shadow-sm border me-1">
-                                                                    <i class="bi bi-file-earmark-text me-1 text-primary"></i>{{ strtoupper($type) }}
+                                                                    class="btn btn-light btn-sm table-action-btn px-3 fw-bold shadow-sm border">
+                                                                    <i class="bi bi-file-earmark-text me-1 text-primary doc-link-icon"></i>{{ strtoupper($type) }}
                                                                 </a>
                                                             @endif
                                                         @endforeach
                                                         @if(in_array($order->status, ['approved', 'paid', 'processing', 'ready_for_pickup', 'for_delivery']))
                                                             {{-- Past review but not yet handed over: cancelling here
                                                                  returns the stock and the materials it consumed. --}}
-                                                            <button class="btn btn-outline-danger btn-sm table-action-btn px-3 fw-bold shadow-sm btn-review-order me-1"
+                                                            {{-- The label hides when the table is short of room;
+                                                                 the title still says what the icon does. --}}
+                                                            <button class="btn btn-outline-danger btn-sm table-action-btn px-3 fw-bold shadow-sm btn-review-order collapses-to-icon"
                                                                 data-bs-toggle="modal" data-bs-target="#reviewOrderModal"
                                                                 data-mode="cancel"
                                                                 data-order="{{ $orderJson }}"
-                                                                data-items="{{ $orderItemsJson }}">
-                                                                <i class="bi bi-x-lg me-1"></i>Cancel
+                                                                data-items="{{ $orderItemsJson }}"
+                                                                title="Cancel order" aria-label="Cancel order">
+                                                                <i class="bi bi-x-lg"></i><span class="action-label ms-1">Cancel</span>
                                                             </button>
                                                         @endif
-                                                        <button class="btn btn-light btn-sm table-action-btn px-3 fw-bold shadow-sm border"
+                                                        <button class="btn btn-light btn-sm table-action-btn px-3 fw-bold shadow-sm border collapses-to-icon"
                                                             data-bs-toggle="modal" data-bs-target="#viewOrderModal"
                                                             data-order="{{ $orderJson }}"
-                                                            data-items="{{ $orderItemsJson }}">
-                                                            <i class="bi bi-eye me-1 text-primary"></i>View
+                                                            data-items="{{ $orderItemsJson }}"
+                                                            title="View order" aria-label="View order">
+                                                            <i class="bi bi-eye text-primary"></i><span class="action-label ms-1">View</span>
                                                         </button>
                                                     @endif
+                                                    </div>
                                                 </td>
                                             </tr>
                                         @empty
@@ -373,6 +386,46 @@
         }
         .pagination-bar nav p { margin-bottom: 0; }
         .pagination-bar .pagination { margin-bottom: 0; }
+
+        /* ============================================
+           Orders table: status and actions on one line
+           ============================================
+           A row's actions read as one toolbar. Left to wrap, View dropped
+           onto a line of its own under Record Payment and Cancel, and the
+           status pill broke "(Awaiting payment)" in two. How much room there
+           is depends on the table, not the screen (the sidebar collapses),
+           so the steps below are container queries. They are desktop only:
+           a phone keeps its one-line, swipe-sideways table (see below). */
+        .data-table-card .table-responsive { container-type: inline-size; }
+        .order-actions,
+        .order-status-pill { white-space: nowrap; }
+
+        @media (min-width: 992px) {
+            /* Short of room: "(Awaiting payment)" drops under "Approved"
+               whole, rather than the actions wrapping. */
+            @container (max-width: 1279.98px) {
+                .order-status-pill { flex-wrap: wrap; row-gap: 0 !important; }
+            }
+
+            /* A small laptop: Cancel and View go to their icons (the title
+               says which), and the NOA / PO links keep their name but lose
+               the file icon, so the actions still fit on their line. */
+            @container (max-width: 1159.98px) {
+                .order-actions .action-label { display: none; }
+                .order-actions .collapses-to-icon {
+                    padding-left: .6rem !important;
+                    padding-right: .6rem !important;
+                }
+                .order-actions .doc-link-icon { display: none; }
+            }
+
+            /* Narrower still (a 1280 screen): the actions may break between
+               buttons, never inside one, rather than push the table off the
+               screen. */
+            @container (max-width: 999.98px) {
+                .order-actions > div { flex-wrap: wrap; justify-content: flex-end; }
+            }
+        }
 
 
         /* ============================================

@@ -188,7 +188,13 @@
                                                             <div class="fw-bold text-dark small mb-0">
                                                                 {{ $order->user->fullname ?? 'Guest' }}
                                                             </div>
-                                                            <small class="text-muted">{{ $order->user->email ?? '' }}</small>
+                                                            {{-- May break before the @ when the column is tight, so
+                                                                 an address never pushes the table off the screen. --}}
+                                                            @php
+                                                                $email = (string) ($order->user->email ?? '');
+                                                                [$emailUser, $emailDomain] = str_contains($email, '@') ? explode('@', $email, 2) : [$email, null];
+                                                            @endphp
+                                                            <small class="text-muted">{{ $emailUser }}@if($emailDomain !== null)<wbr>{{ '@' . $emailDomain }}@endif</small>
                                                             <div class="mt-1">@include('partials.order-ordered-for')</div>
                                                         </div>
                                                     </div>
@@ -213,13 +219,13 @@
                                                         };
                                                     @endphp
                                                     <span
-                                                        class="d-inline-flex align-items-center gap-1 px-2 py-1 rounded-pill small fw-semibold"
+                                                        class="order-status-pill d-inline-flex align-items-center gap-1 px-2 py-1 rounded-pill small fw-semibold"
                                                         style="background-color: {{ $statusBg }}; color: {{ $statusColor }};">
                                                         <i class="bi {{ $statusIcon }}" style="font-size: 0.75rem;"></i>
                                                         {{ \App\Models\Order::statusLabel($order->status) }}
                                                     </span>
                                                 </td>
-                                                <td class="text-end pe-4">
+                                                <td class="text-end pe-4 order-actions">
                                                     @php
                                                         // A PR order is driven by the admin's paperwork; the only
                                                         // step staff take is handing it over after delivery.
@@ -249,26 +255,28 @@
                                                         };
                                                     @endphp
 
+                                                    {{-- One line, spaced by the gap rather than per-item margins. --}}
+                                                    <div class="d-inline-flex align-items-center gap-1">
                                                     @if($order->status === 'pending')
-                                                        <span class="badge bg-light text-muted border table-action-btn px-3 py-2 me-1 fw-semibold small">
+                                                        <span class="badge bg-light text-muted border table-action-btn px-3 py-2 fw-semibold small">
                                                             <i class="bi bi-hourglass-split me-1"></i>Awaiting admin
                                                         </span>
                                                     @elseif($order->status === 'awaiting_pr')
-                                                        <span class="badge bg-light text-muted border table-action-btn px-3 py-2 me-1 fw-semibold small">
+                                                        <span class="badge bg-light text-muted border table-action-btn px-3 py-2 fw-semibold small">
                                                             <i class="bi bi-file-earmark-text me-1"></i>Awaiting PR number
                                                         </span>
                                                     @elseif($isPr && in_array($order->status, ['approved', 'processing']))
-                                                        <span class="badge bg-light text-muted border table-action-btn px-3 py-2 me-1 fw-semibold small">
+                                                        <span class="badge bg-light text-muted border table-action-btn px-3 py-2 fw-semibold small">
                                                             <i class="bi bi-hourglass-split me-1"></i>Awaiting {{ $order->status === 'approved' ? 'NOA' : 'PO' }}
                                                         </span>
                                                     @elseif($order->isAwaitingPayment())
                                                         {{-- The customer pays at PAXS and the admin records
                                                              the receipt number; production waits for that. --}}
-                                                        <span class="badge bg-light text-muted border table-action-btn px-3 py-2 me-1 fw-semibold small">
+                                                        <span class="badge bg-light text-muted border table-action-btn px-3 py-2 fw-semibold small">
                                                             <i class="bi bi-cash-coin me-1"></i>Awaiting payment
                                                         </span>
                                                     @elseif($nextStatus)
-                                                        <button class="btn {{ $btnClass }} btn-sm table-action-btn px-3 fw-bold shadow-sm btn-update-status me-1"
+                                                        <button class="btn {{ $btnClass }} btn-sm table-action-btn px-3 fw-bold shadow-sm btn-update-status"
                                                             data-id="{{ $order->order_id }}" data-status="{{ $order->status }}"
                                                             data-receipt="{{ $order->payment_reference }}"
                                                             data-next-status="{{ $nextStatus }}">
@@ -276,11 +284,15 @@
                                                         </button>
                                                     @endif
 
-                                                    <button class="btn btn-light btn-sm table-action-btn px-3 fw-bold shadow-sm border btn-view-order"
+                                                    {{-- The label hides when the table is short of room; the title
+                                                         still says what the icon does. --}}
+                                                    <button class="btn btn-light btn-sm table-action-btn px-3 fw-bold shadow-sm border btn-view-order collapses-to-icon"
                                                         data-order='@json($order)'
-                                                        data-items='@json($order->orderItems)'>
-                                                        <i class="bi bi-eye me-1 text-primary"></i>View
+                                                        data-items='@json($order->orderItems)'
+                                                        title="View order" aria-label="View order">
+                                                        <i class="bi bi-eye text-primary"></i><span class="action-label ms-1">View</span>
                                                     </button>
+                                                    </div>
                                                 </td>
                                             </tr>
                                         @empty
@@ -340,6 +352,35 @@
         }
         .pagination-bar nav p { margin-bottom: 0; }
         .pagination-bar .pagination { margin-bottom: 0; }
+
+        /* ============================================
+           Orders table: status and actions on one line
+           ============================================
+           As on the admin list: a row's actions read as one toolbar, and
+           left to wrap, View dropped under "Awaiting admin" while "Ready For
+           Pickup" broke inside its pill. The steps below are container
+           queries (the sidebar collapses), desktop only; a phone keeps its
+           one-line, swipe-sideways table. */
+        .data-table-card .table-responsive { container-type: inline-size; }
+        .order-actions,
+        .order-status-pill { white-space: nowrap; }
+
+        @media (min-width: 992px) {
+            /* A small laptop: View goes to its icon (the title says so). */
+            @container (max-width: 1159.98px) {
+                .order-actions .action-label { display: none; }
+                .order-actions .collapses-to-icon {
+                    padding-left: .6rem !important;
+                    padding-right: .6rem !important;
+                }
+            }
+
+            /* Narrower still: the actions may break between buttons, never
+               inside one, rather than push the table off the screen. */
+            @container (max-width: 999.98px) {
+                .order-actions > div { flex-wrap: wrap; justify-content: flex-end; }
+            }
+        }
 
 
         /* ============================================
