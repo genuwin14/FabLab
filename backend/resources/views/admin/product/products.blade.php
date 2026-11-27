@@ -96,13 +96,15 @@
                                         class="btn btn-light rounded-2 flex-shrink-0" data-bs-toggle="tooltip" title="Reset filters">
                                         <i class="bi bi-arrow-clockwise text-primary"></i>
                                     </a>
-                                    {{-- Exporting lives in Reports › Materials, which builds
-                                         the PDF and Word files; this opens it on the products. --}}
+                                    {{-- Opens Reports › Materials on the products; the PDF and
+                                         Word files are made there. Named for where it goes, with
+                                         the sidebar's Materials icon. --}}
                                     <a href="{{ route('admin.reports.materials', ['group' => 'products']) }}"
                                         class="btn btn-primary d-flex align-items-center justify-content-center gap-2 rounded-2 px-3"
-                                        data-bs-toggle="tooltip" title="Export products from Reports › Materials">
-                                        <i class="bi bi-download small"></i>
-                                        <span class="small fw-bold d-none d-lg-inline">Export</span>
+                                        data-bs-toggle="tooltip" title="Open Reports › Materials, showing products only"
+                                        aria-label="Materials Report">
+                                        <i class="bi bi-clipboard-data small"></i>
+                                        <span class="small fw-bold d-none d-lg-inline">Materials Report</span>
                                     </a>
                                     <button type="button"
                                         class="btn btn-primary d-flex align-items-center justify-content-center gap-2 rounded-2 px-3"

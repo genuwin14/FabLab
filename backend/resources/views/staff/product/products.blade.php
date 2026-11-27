@@ -95,12 +95,8 @@
                                         class="btn btn-light rounded-2 flex-shrink-0" data-bs-toggle="tooltip" title="Reset filters">
                                         <i class="bi bi-arrow-clockwise text-primary"></i>
                                     </a>
-                                    <button type="button"
-                                        class="btn btn-primary d-flex align-items-center justify-content-center gap-2 rounded-2 px-3"
-                                        title="Export">
-                                        <i class="bi bi-download small"></i>
-                                        <span class="small fw-bold d-none d-lg-inline">Export</span>
-                                    </button>
+                                    {{-- No Export here: it did nothing, and the reports it
+                                         would lead to are the admin's alone. --}}
                                 </div>
                             </form>
                         </div>
